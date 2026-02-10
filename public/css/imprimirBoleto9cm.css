@@ -1,0 +1,82 @@
+#ticket{
+  font-family: 'Arial Narrow';
+  font-size: 17px;
+  font-style: bold;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px
+}
+thead tr th{
+  border-top: 1.5px dashed black;
+  border-bottom: 1.5px dashed black;
+}
+.producto {
+  width: 60px;
+  max-width: 75px;
+}
+.cantidad {
+  width: 100px;
+  word-break: break-all;
+  background: yellow
+}
+.precio{
+  word-break: break-all;
+}
+.centrado {
+  text-align: center;
+  align-content: center;
+}
+.ticket {
+  width: 9cm;
+  max-width: 9cm;
+}
+img {
+  width: 100px;
+}
+p{
+  font-size: 13px;
+}
+.lineas{
+  font-size: 17px;
+}
+.etiq{
+  width: 100px;
+  display: block;
+  float: left;
+}
+.etiq2{
+  width: 40%;
+  display: block;
+  float: left;
+}.etiq3{
+  width: 90%;
+  display: block;
+  float: left;
+}.etiq4{
+  width: 100%;
+  display: block;
+  float: left;
+}
+.puntos{
+  width: 10%;
+  display: block;
+  float: left;
+}
+.moneda{
+  width: 50%;
+  display: block;
+  float: right;
+  text-align: right;
+}
+.montos{
+  width: 100%;
+}
+.oculto{
+  display: none;
+}
+    @media print{
+    .oculto-impresion, .oculto-impresion *{
+      display: none !important;
+    }

@@ -1,0 +1,130 @@
+.bg-yellow{
+		background-image: -ms-radial-gradient(center, circle farthest-corner, #FFCE10 0%, #86BC42 100%);
+		background-image: -moz-radial-gradient(center, circle farthest-corner, #FFCE10 0%, #86BC42 100%);
+		background-image: -o-radial-gradient(center, circle farthest-corner, #FFCE10 0%, #86BC42 100%);
+		background-image: -webkit-gradient(radial, center center, 0, center center, 497, color-stop(0, #FFCE10), color-stop(1, #86BC42));
+		background-image: -webkit-radial-gradient(center, circle farthest-corner, #FFCE10 0%, #86BC42 100%);
+		background-image: radial-gradient(circle farthest-corner at center, #FFCE10 0%, #86BC42 100%);
+		  border-left: 5px solid #86BC42;
+	}
+	.form-group-default{
+		border: 1px solid rgba(20, 20, 20, 1);
+		border-radius:3px;
+	}
+	.login-wrapper .bg-caption {
+ 		 width: 700px;
+	}
+	.login-wrapper {
+ 	  background-color: #3C3C3C;
+	}
+	@media (max-width: 2900px){
+	.login-wrapper .bg-caption {
+ 		 width: 800px;
+	}
+	}
+	@media (max-width: 1024px){
+	.login-wrapper .bg-caption {
+ 		 width: 500px;
+	}
+	}
+	@media (max-width: 1400px){
+	h2 {
+	  font-size: 28px;
+	  line-height: 30px;
+	}
+	}
+	.btn-danger, .btn-danger:focus {
+	  color: #ffffff;
+	  background-color: #ff3333;
+	  border-color: #ff3333;
+	}
+	.pace .pace-progress {
+	  background: #ff3333;
+	  height: 3px;
+	}
+	.text-white1{
+		color: #ffffff;
+        background: rgba(0, 0, 0, 0.45);
+        padding-right: 30px;
+        padding-left: 30px;
+        padding-bottom: 10px;
+        padding-top: 5px;
+	}
+.pace .pace-activity {
+    -webkit-animation: none;
+    animation: none;
+    top: 73px;
+    background: url('/Content/login/pages/img/progress/progress-circle-master.svg') no-repeat top left;
+    background-size: 100% auto;
+    margin: 0 auto;
+    border-width: 0;
+    border-radius: 0;
+    width: 28px;
+    height: 40px;
+    right: 19px;
+}
+.login-wrapper .bg-pic > img {
+  opacity: 0.8;
+}
+.navbar {
+    margin-bottom: 0;
+}
+.navbar-inverse {
+  border-bottom: 1px solid #C7A419;
+  background-color: #86BC42;
+  background-image: none;
+}
+.navbar-inverse .navbar-brand {
+    color: #000;
+}
+.navbar-inverse .navbar-nav > li > a {
+    color: #222;
+}
+.navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:focus, .navbar-inverse .navbar-nav > .active > a:hover {
+    background-color: rgba(65, 58, 58, 0.3);
+    color: #fff;
+}
+.label-role-info {
+    color: #777;
+    font-weight: bold;
+    vertical-align: middle;
+    font-size: 9px;
+}
+
+.wrapper {
+    margin: -10px auto 0;
+}
+
+body {
+    background-image: url(/Content/images/debut_dark.png);
+}
+.wrapper .container {
+   background: #fff;
+   border: 0px solid rgba(102, 102, 102, 0.9);
+   border-radius: 0 0 10px 10px;
+   padding: 5px 25px;
+}
+
+.member-role-label {
+    border-radius: 0.23em;
+    display: inline;
+    font-family: arial;
+    font-size: 10px;
+    font-weight: normal;
+    padding: 0.1em 0.4em 0.2em;
+}
+
+.pagination-custom a, .pagination-custom span {
+  background: #ccc;
+  box-shadow: none !important;
+    border: solid 1px #BABABA;
+}
+
+.red {
+    font-weight: 500;
+    color: #f33;
+}
+.yellow {
+    font-weight: 500;
+    color: #86BC42;
+}

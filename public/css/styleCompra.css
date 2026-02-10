@@ -1,0 +1,21 @@
+
+/* Estilos para el icono del select */
+.input-group-select {
+    position: relative;
+}
+
+.input-group-select select {
+    appearance: none; /* Ocultar el icono del desplegable por defecto */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 30px; /* Dejar espacio para el icono de la flecha */
+}
+
+.input-group-select .dropdown-icon {
+    position: absolute;
+    right: 10px; /* Ajustar a la derecha del select */
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none; /* Para que no interfiera con la interacción */
+    color: #6c757d;
+}
