@@ -36,6 +36,7 @@ class ProfileController extends Controller
 	{
 		$user = auth()->user();
 		$ubicacionNegocio = "central";
+		$id = null;
 		if (tenant()) {
 			// Estás en el contexto de un TENANT
 			$id = tenant('id');

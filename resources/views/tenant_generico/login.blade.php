@@ -173,7 +173,7 @@
 
                 $.ajax({
                     data: $('#LoginForm').serialize(),
-                    url: "{{ route('tenant.login.post') }}",
+                    url: "{{ tenant_url('tenant.login.post') }}",
                     type: "POST",
                     dataType: 'json',
                     success: function(data) {

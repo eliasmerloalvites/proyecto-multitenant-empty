@@ -26,13 +26,9 @@ Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
-    Route::get('/test-tenant', function () {
-        return response()->json([
-            'tenant_id' => tenant('id'),
-            'database' => config('database.connections.tenant.database'),
-            'host' => request()->getHost()
-        ]);
-    });
+    
+    Route::get('/', [HomeController::class, 'inicio'])->name('tenant.inicio');
+    
     
     Route::get('/tenant/login', [UserController::class, 'showlogin'])->name('tenant.login');
     Route::post('/tenant/login', [UserController::class, 'login'])->name('tenant.login.post');
@@ -46,3 +42,19 @@ Route::middleware([
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');
     });
 });
+
+Route::get('/__debug', function () {
+    dd([
+        'host' => request()->getHost(),
+        'tenant' => tenant(),
+    ]);
+});
+Route::get('/__who', fn () => dd('TENANT', tenant()));
+
+// Route::get('/test-tenant', function () {
+//         return response()->json([
+//             'tenant_id' => tenant('id'),
+//             'database' => config('database.connections.tenant.database'),
+//             'host' => request()->getHost()
+//         ]);
+//     }); 

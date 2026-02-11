@@ -247,7 +247,7 @@
 
             function Datos() {
                 $.ajax({
-                    url: "{{ route('tenant.personal.getimagen') }}",
+                    url: "{{ tenant_url('tenant.personal.getimagen') }}",
                     type: "GET",
                 }).done(function(data) {
                     $('#avatarImageHeader').attr('src', data.ruta);

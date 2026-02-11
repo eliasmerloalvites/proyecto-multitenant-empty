@@ -42,6 +42,18 @@ Instala dependencias de PHP:
 
 ```bash
 composer install
+
+php artisan migrate:fresh --path=database/migrations/central
+
+php artisan db:seed 
+
+```
+
+Eliminamos la carpeta storage del public y ejecutamos el siguiento comando:
+
+```bash
+php artisan storage:link
+
 ```
 
 Instala dependencias frontend (si aplica):

@@ -9,11 +9,13 @@ use App\Http\Controllers\central\UserController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Database\Models\Domain;
 
+
+
 Route::middleware([
   'web',
-  'central',
+  'no-tenant',
   ])->group(function () {
-  Route::get('/', [HomeController::class, 'inicio'])->name('inicio');
+  Route::get('/', [HomeController::class, 'inicio'])->name('central.inicio');
   Route::get('/login', [UserController::class, 'showlogin'])->name('central.login');
   Route::post('/login', [UserController::class, 'login'])->name('central.login.post');
   Route::get('/cancelarusuario', function () {
@@ -24,7 +26,7 @@ Route::middleware([
 
   Route::middleware(['auth:central'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('central.home');
-    // Route::get('/personal/getimagen', [ProfileController::class, 'getimagen'])->name('personal.getimagen');
+    Route::get('/personal/getimagen', [ProfileController::class, 'getimagen'])->name('personal.getimagen');
     Route::resource('permiso', PermisoController::class);
     Route::resource('role', RoleController::class);
     Route::resource('central-usuarios', UserController::class);
@@ -39,10 +41,10 @@ Route::middleware([
     ]);
   });
 });
-
-Route::get('/debug-domains', function () {
-    return response()->json([
-        'Request Host' => request()->getHost(),
-        'Domains in DB' => Domain::all()->pluck('domain'),
+Route::get('/__who', fn () => dd('CENTRAL', tenant()));
+Route::get('/__central-debug', function () {
+    dd([
+        'tenant' => tenant(),
+        'middleware' => app('router')->getRoutes()->getByName('central.inicio')->middleware(),
     ]);
 });

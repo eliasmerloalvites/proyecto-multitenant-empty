@@ -11,17 +11,17 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta content="" name="description">
     <meta content="" name="author">
-    <link href="/pluginlogin/pace-theme-flash.css" rel="stylesheet"
+    <link href="{{asset_root('/pluginlogin/pace-theme-flash.css')}}" rel="stylesheet"
         type="text/css"> {{-- DESCARGADO --}}
     <link type="text/css" rel="stylesheet" href="{{ asset_root('assets/libs/bootstrap-3.3.5/css/bootstrap.css') }}"
         rel="stylesheet" type="text/css">
     <link type="text/css" rel="stylesheet"
             href="{{ asset_root('assets/font/font-icon/font-awesome-4.4.0/css/font-awesome.css') }}">
-    <link class="main-stylesheet" href="/pluginlogin/pages.css" rel="stylesheet"
+    <link class="main-stylesheet" href="{{asset_root('/pluginlogin/pages.css')}}" rel="stylesheet"
         type="text/css"> {{-- DESCARGADO --}}
-    <link rel="stylesheet" type="text/css" href="/pluginlogin/style.css"> {{-- DESCARGADO --}}
-    <script src="/pluginlogin/jquery/jquery-1.11.1.min.js" type="text/javascript"></script>
-    <script src="/pluginlogin/modernizr.custom.js" type="text/javascript">
+    <link rel="stylesheet" type="text/css" href="{{asset_root('/pluginlogin/style.css')}}"> {{-- DESCARGADO --}}
+    <script src="{{ asset_root('/pluginlogin/jquery/jquery-1.11.1.min.js')}}" type="text/javascript"></script>
+    <script src="{{ asset_root('/pluginlogin/modernizr.custom.js')}}" type="text/javascript">
     </script>{{-- DESCARGADO --}}
 
     {{-- <script type="text/javascript">
@@ -144,13 +144,13 @@
     </div>
 
 
-    <script src="/pluginlogin/pace.min.js" type="text/javascript"></script> {{-- DESCARGADO --}}
-    <script src="/pluginlogin/jquery.scrollTo.js" type="text/javascript"></script> {{-- DESCARGADO --}}
+    <script src="{{ asset_root('/pluginlogin/pace.min.js')}}" type="text/javascript"></script> {{-- DESCARGADO --}}
+    <script src="{{ asset_root('/pluginlogin/jquery.scrollTo.js')}}" type="text/javascript"></script> {{-- DESCARGADO --}}
     <script src="{{ asset_root('assets/libs/bootstrap-3.3.5/js/bootstrap.min.js') }}"></script>
-    <script src="/pluginlogin/jquery.blockUI.js" type="text/javascript"></script> {{-- DESCARGADO --}}
-    <script src="/pluginlogin/bootstrap-dialog.min.js"
+    <script src="{{ asset_root('/pluginlogin/jquery.blockUI.js')}}" type="text/javascript"></script> {{-- DESCARGADO --}}
+    <script src="{{ asset_root('/pluginlogin/bootstrap-dialog.min.js')}}"
         type="text/javascript"></script> {{-- DESCARGADO --}}
-    <script src="/pluginlogin/simple.tools.core.js" type="text/javascript"></script> {{-- DESCARGADO --}}
+    <script src="{{ asset_root('/pluginlogin/simple.tools.core.js')}}" type="text/javascript"></script> {{-- DESCARGADO --}}
     <script type="text/javascript">
         App.BaseURL("");
     </script>

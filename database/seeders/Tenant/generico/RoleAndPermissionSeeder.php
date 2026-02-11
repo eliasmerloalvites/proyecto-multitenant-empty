@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders\Tenant;
+namespace Database\Seeders\Tenant\generico;
 
 use App\Models\Tenant\User;
 use Illuminate\Database\Seeder;

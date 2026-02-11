@@ -17,7 +17,8 @@ class HomeController extends Controller
     }
     public function inicio()
     {
-        return view('welcome');
+        $tenantid = null;
+        return view('welcome',compact('tenantid'));
     }
 
     public function salir()

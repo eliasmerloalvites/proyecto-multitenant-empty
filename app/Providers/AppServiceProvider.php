@@ -19,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->loadMigrationsFrom([
+        /* $this->loadMigrationsFrom([
             database_path('migrations/central')
         ]);
         // Si la conexión es la central, llama a los de central
@@ -28,6 +28,6 @@ class AppServiceProvider extends ServiceProvider
         } else {
             // Si no, llama a los de tenant
             $this->call(\Database\Seeders\Tenant\DatabaseSeeder::class);
-        }
+        } */
     }
 }

@@ -93,7 +93,7 @@ class ClientController extends Controller
                 // 2. Ejecutar Seeders Maestros (Datos fijos: categorías, configuraciones, etc.)
                 // Usamos el namespace completo de tu seeder seccionado
                 Artisan::call('db:seed', [
-                    '--class' => "Database\Seeders\Tenant\\" . $validated['tipo_negocio'] . "DatabaseSeeder",
+                    '--class' => "Database\Seeders\Tenant\\" . $validated['tipo_negocio'] . "\DatabaseSeeder",
                     '--force' => true,
                 ]);
                 User::create([
