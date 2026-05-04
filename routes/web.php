@@ -5,7 +5,7 @@ use App\Http\Controllers\Central\HomeController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
-use App\Http\Controllers\central\UserController;
+use App\Http\Controllers\Central\UserController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Database\Models\Domain;
 

@@ -41,6 +41,7 @@ Route::middleware([
         Route::get('/tenant/home', [HomeController::class,'index'])->name('tenant.home');
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');
     });
+    
 });
 
 Route::get('/__debug', function () {
