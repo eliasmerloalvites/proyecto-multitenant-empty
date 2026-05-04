@@ -18,8 +18,8 @@ return [
      */
     'central_domains' => [
         //'apptenancy.test',
-        'localhost',
-        '127.0.0.1',
+        'multitenant.yourkate.net',
+       // '127.0.0.1',
     ],
 
     /**
