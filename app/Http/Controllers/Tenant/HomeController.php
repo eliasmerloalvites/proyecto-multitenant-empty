@@ -19,10 +19,11 @@ class HomeController extends Controller
     {
         if(tenant() !== null){
             $tenantid = tenant('id');
+            return view('tenant_generico.welcome', compact('tenantid'));
         } else {
             $tenantid = null;
+            return view('welcome', compact('tenantid'));
         }
-        return view('welcome', compact('tenantid'));
     }
     public function salir()
     {

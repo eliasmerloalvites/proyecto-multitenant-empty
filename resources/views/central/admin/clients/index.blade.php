@@ -103,6 +103,7 @@
                                 <thead style="background-color:#FF5F67;color: #fff;">
                                     <tr>
                                         <th scope="col">N°</th>
+                                        <th scope="col">Ruc</th>
                                         <th scope="col">Razon Social</th>
                                         <th scope="col">Tipo de Negocio</th>
                                         <th scope="col">Dominio</th>
@@ -214,6 +215,10 @@
                     {
                         data: 'tipo_negocio',
                         name: 'tipo_negocio'
+                    },
+                    {
+                        data: 'domain',
+                        name: 'domain'
                     },
                     {
                         data: 'billing_day',

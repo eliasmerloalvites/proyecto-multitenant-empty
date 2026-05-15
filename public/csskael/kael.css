@@ -1,0 +1,358 @@
+/* =======================================================
+   KAEL UI DARK THEME
+======================================================= */
+
+:root{
+    --primary:#2563EB;
+    --accent:#7C3AED;
+
+    --bg-main:#0B1120;
+    --bg-sidebar:#111827;
+
+    --bg-card:rgba(255,255,255,.05);
+    --bg-hover:rgba(255,255,255,.06);
+
+    --border:rgba(255,255,255,.08);
+
+    --text-main:#FFFFFF;
+    --text-muted:#94A3B8;
+
+    --success:#22C55E;
+    --danger:#EF4444;
+
+    --radius:16px;
+    --transition:.25s ease;
+}
+
+/* =======================================================
+   GLOBAL
+======================================================= */
+
+body{
+    background:var(--bg-main)!important;
+    color:var(--text-main);
+}
+
+.content-wrapper{
+    background:var(--bg-main)!important;
+}
+
+/* =======================================================
+   NAVBAR
+======================================================= */
+
+.main-header{
+    background:var(--bg-sidebar)!important;
+    border-bottom:1px solid var(--border);
+}
+
+.main-header .navbar{
+    background:transparent!important;
+}
+
+/* =======================================================
+   SIDEBAR
+======================================================= */
+
+.main-sidebar{
+    background:linear-gradient(180deg,#111827 0%,#1f2937 100%);
+    box-shadow:4px 0 25px rgba(0,0,0,.18);
+}
+
+/* BRAND */
+
+.brand-link{
+    background:rgba(255,255,255,.03);
+    border-bottom:1px solid var(--border)!important;
+}
+
+.brand-text{
+    color:#fff!important;
+    font-weight:600;
+}
+
+/* MENU */
+
+.nav-sidebar .nav-link{
+    color:var(--text-muted)!important;
+    border-radius:12px;
+    margin:5px 10px;
+    transition:all var(--transition);
+    position:relative;
+    font-weight:500;
+}
+
+.nav-sidebar .nav-link:hover{
+    background:var(--bg-hover)!important;
+    color:#fff!important;
+    transform:translateX(4px);
+}
+
+.nav-sidebar .nav-link.active{
+    background:linear-gradient(135deg,var(--primary),var(--accent))!important;
+    color:#fff!important;
+    box-shadow:0 8px 20px rgba(37,99,235,.35);
+}
+
+/* ACTIVE INDICATOR */
+
+.nav-sidebar .nav-link.active::before{
+    content:'';
+    position:absolute;
+    left:0;
+    top:8px;
+    bottom:8px;
+    width:4px;
+    border-radius:10px;
+    background:#93C5FD;
+}
+
+/* ICONS */
+
+.nav-sidebar .nav-icon{
+    color:#93C5FD!important;
+}
+
+.nav-sidebar .nav-link.active .nav-icon{
+    color:#fff!important;
+}
+
+/* SUBMENU */
+
+.nav-treeview{
+    padding-left:12px;
+}
+
+.nav-treeview .nav-link{
+    font-size:14px;
+    opacity:.92;
+}
+
+.menu-open > .nav-link{
+    background:rgba(255,255,255,.04);
+    color:#fff!important;
+}
+
+/* SCROLL */
+
+.sidebar::-webkit-scrollbar{
+    width:6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+    background:#374151;
+    border-radius:10px;
+}
+
+/* =======================================================
+   CARDS
+======================================================= */
+
+.card,
+.box,
+.kael-card,
+.card-dark{
+    background:var(--bg-card)!important;
+    border:1px solid var(--border);
+    border-radius:18px;
+    color:var(--text-main);
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+    backdrop-filter:blur(10px);
+}
+
+.card-body-dark{
+    background:transparent;
+}
+
+.card-header-dark{
+    border-left:4px solid var(--primary);
+    padding-left:12px;
+    margin-bottom:20px;
+}
+
+.card-footer-dark{
+    border-top:1px solid var(--border);
+    margin-top:20px;
+    padding-top:15px;
+}
+
+/* =======================================================
+   TITLES
+======================================================= */
+
+.section-title,
+.kael-title{
+    color:var(--text-main);
+    font-weight:600;
+    letter-spacing:.5px;
+}
+
+/* =======================================================
+   TABLES
+======================================================= */
+
+.table,
+table.dataTable{
+    background:transparent!important;
+    color:var(--text-main)!important;
+}
+
+.table thead,
+table.dataTable thead{
+    background:rgba(255,255,255,.05);
+}
+
+.table th,
+table.dataTable thead th{
+    color:var(--text-muted);
+    font-weight:600;
+    border-bottom:1px solid var(--border);
+    text-align:center;
+}
+
+.table td{
+    vertical-align:middle;
+}
+
+table.dataTable tbody tr:hover{
+    background:rgba(255,255,255,.04)!important;
+}
+
+/* =======================================================
+   DATATABLES
+======================================================= */
+
+.dataTables_wrapper{
+    color:var(--text-main);
+}
+
+.dataTables_scrollBody{
+    background:transparent!important;
+}
+
+/* FILTERS */
+
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select{
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--border);
+    color:var(--text-main);
+    border-radius:10px;
+    padding:4px 10px;
+}
+
+/* PAGINATION */
+
+.dataTables_wrapper .paginate_button{
+    background:transparent!important;
+    color:var(--text-muted)!important;
+    border-radius:20px;
+}
+
+.dataTables_wrapper .paginate_button.current{
+    background:var(--primary)!important;
+    color:#fff!important;
+}
+
+/* =======================================================
+   FORMS
+======================================================= */
+
+.form-control{
+    background:rgba(255,255,255,.05)!important;
+    border:1px solid rgba(255,255,255,.15)!important;
+    border-radius:10px;
+    color:var(--text-main)!important;
+}
+
+.form-control:focus{
+    background:rgba(255,255,255,.08)!important;
+    border-color:var(--primary)!important;
+    box-shadow:0 0 0 0.15rem rgba(37,99,235,.25)!important;
+}
+
+/* SELECT OPTIONS */
+
+select option{
+    background:#1f2937;
+    color:#fff;
+}
+
+/* =======================================================
+   BUTTONS
+======================================================= */
+
+.btn{
+    border-radius:30px!important;
+    padding:6px 14px;
+    font-size:13px;
+}
+
+.btn-kael{
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.15);
+    color:#fff;
+}
+
+.btn-kael:hover{
+    background:var(--primary);
+    color:#fff;
+}
+
+/* =======================================================
+   MODALS
+======================================================= */
+
+.modal-content{
+    background:#111827!important;
+    color:#fff;
+    border-radius:18px;
+}
+
+.modal-body.panel-body{
+    background:transparent!important;
+    padding:0!important;
+}
+
+/* =======================================================
+   DETAIL HEADER
+======================================================= */
+
+.detalle-header{
+    background:linear-gradient(90deg,#1E88E5,#1565C0);
+    border-radius:12px;
+    padding:10px 15px;
+    color:#fff;
+    margin-bottom:15px;
+}
+
+/* =======================================================
+   HELPERS
+======================================================= */
+
+.online-status{
+    color:var(--success);
+    font-weight:600;
+}
+
+.crud-header,
+.kael-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.crud-table,
+.kael-table-container{
+    overflow-y:auto;
+}
+
+.crud-table{
+    max-height:calc(78vh - 120px);
+}
+
+.kael-table-container{
+    max-height:calc(90vh - 180px);
+}

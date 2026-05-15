@@ -77,7 +77,7 @@ class UserController extends Controller
         // ->where('users.name','like','%'.$buscarpor.'%')
         // ->orderby('id')->paginate($this::PAGINATION);
 
-        // return view('seguridad.users.index', compact('usuarios','buscarpor'));
+        // return view('tenant_generico.seguridad.users.index', compact('usuarios','buscarpor'));
 
         if ($request->ajax()) {
             $data = DB::table('users as u')
@@ -104,7 +104,7 @@ class UserController extends Controller
                 ->make(true);
         }
 
-        return view('seguridad.users.index');
+        return view('tenant_generico.seguridad.users.index');
     }
 
     /**
@@ -155,7 +155,7 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $tenant_id, string $id)
     {
         $usuario = User::find($id);
         return response()->json(['data' => $usuario]);
@@ -164,19 +164,19 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $tenant_id, string $id)
     {
         $roles = Role::all();
         $usuario = User::find($id);
         $rolesAsignados = $usuario->roles;
 
-        return view('seguridad.users.edit', compact('usuario', 'rolesAsignados', 'roles'));
+        return view('tenant_generico.seguridad.users.edit', compact('usuario', 'rolesAsignados', 'roles'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request,string $tenant_id,  string $id)
     {
         $data = request()->validate(
             [
@@ -199,13 +199,13 @@ class UserController extends Controller
 
         $usuario->save();
 
-        return redirect()->route('usuario.index')->with('datos', 'Usuario actualizado y roles asignados correctamente ...!');
+        return redirect()->route('tenant.seguridad.usuario.index',tenant('id'))->with('datos', 'Usuario actualizado y roles asignados correctamente ...!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $tenant_id, string $id)
     {
         $usuario = User::find($id);
         $usuario->estadousuario = 0;

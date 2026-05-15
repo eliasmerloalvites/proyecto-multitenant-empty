@@ -12,6 +12,7 @@ class Client extends Model
         'ruc',
         'tipo_negocio',
         'billing_day',
+        'domain_id',
         'status',
     ];
 }

@@ -19,7 +19,8 @@ class ClientController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Client::select('*');
+            $data = Client::join('domains', 'clients.domain_id', '=', 'domains.id')->select('clients.*','domains.domain as domain')->get();
+
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action1', function ($row) {
@@ -66,7 +67,7 @@ class ClientController extends Controller
                 'tipo_negocio' => $validated['tipo_negocio'],
             ]);
 
-            $tenant->domains()->create([
+            $domain = $tenant->domains()->create([
                 'domain' => $validated['domain'] . '.' . config('app.central_domain'),
             ]);
 
@@ -77,6 +78,7 @@ class ClientController extends Controller
                 'ruc'          => $validated['ruc'],
                 'tipo_negocio' => $validated['tipo_negocio'],
                 'billing_day'  => $validated['billing_day'],
+                'domain_id'    => $domain->id,
                 'status'       => 'activo',
             ]);
 
