@@ -6,6 +6,7 @@ use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\Central\UserController;
+use App\Http\Controllers\ConsultaDocumentoController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Database\Models\Domain;
 
@@ -23,6 +24,7 @@ Route::middleware([
   })->name('central.usuario.cancelar');
   Route::post('/logout', [UserController::class, 'logout'])->name('central.logout');
 
+  
 
   Route::middleware(['auth:central'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('central.home');
