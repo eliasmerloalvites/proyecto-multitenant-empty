@@ -5,7 +5,6 @@
 /public/storage
 /storage/*.key
 /storage/pail
-/app/Providers/AppServiceProvider.php
 /vendor
 .env
 .env.backup
