@@ -5,7 +5,7 @@
 /public/storage
 /storage/*.key
 /storage/pail
-/config/tenancy.php
+/config
 /vendor
 .env
 .env.backup
