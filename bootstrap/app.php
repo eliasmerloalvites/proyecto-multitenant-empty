@@ -19,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->redirectGuestsTo(function () {
         if (tenant()) {
-            return route('tenant.login');
+            return route('tenant.login', tenant('id'));
         }
 
         return route('central.login');

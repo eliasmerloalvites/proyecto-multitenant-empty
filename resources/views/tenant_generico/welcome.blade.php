@@ -123,7 +123,7 @@
 
             <div class="flex items-center gap-3">
 
-                <a href="{{ tenant_url('tenant.login') }}"
+                <a href="{{ tenant_url('tenant.login', [tenant('id')]) }}"
                     class="hidden md:flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition">
                     👤 Acceso empleados
                 </a>
@@ -450,7 +450,7 @@
                         Ingresa al sistema interno de la empresa.
                     </p>
 
-                    <a href="{{ tenant_url('tenant.login') }}"
+                    <a href="{{ tenant_url('tenant.login', [tenant('id')]) }}"
                         class="block text-center w-full bg-blue-600 hover:bg-blue-700 transition text-white font-semibold py-4 rounded-2xl shadow-lg">
                         Ir al sistema →
                     </a>

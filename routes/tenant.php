@@ -97,6 +97,11 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
         ])->parameters([
             'cliente' => 'cliente'
         ]);
+        
+        Route::get('/tenant/ventas/venta/{id}/ticket', [VentaController::class,'ticket'] )->name('tenant.ventas.venta.ticket');
+        Route::get('/tenant/ventas/venta/{id}/pdf', [VentaController::class,'pdf'] )->name('tenant.ventas.venta.pdf');
+        Route::get('/tenant/ventas/venta/filtro/{filtro}', [VentaController::class,'filtro'] )->name('tenant.ventas.venta.filtro');
+        Route::get('/tenant/ventas/venta/{id}/ticket-imagen',[VentaController::class, 'ticketImagen'])->name('tenant.ventas.venta.ticket-imagen');
 
         Route::resource('/tenant/compras/proveedor', ProveedorController::class)->names([
             'index' => 'tenant.compras.proveedor.index',
@@ -146,7 +151,9 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
         ])->parameters([
             'tipogasto' => 'tipogasto'
         ]);
-
+        
+        Route::get('/tenant/inventario/controlinventario', [ProductoController::class,'controlinventario'] )->name('tenant.inventario.controlinventario.index');
+        Route::get('/tenant/inventario/controlinventario/{producto}', [ProductoController::class,'lotes'] )->name('tenant.inventario.controlinventario.lotes');
         Route::resource('/tenant/inventario/producto', ProductoController::class)->names([
             'index' => 'tenant.inventario.producto.index',
             'create' => 'tenant.inventario.producto.create',
@@ -154,7 +161,7 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
             'edit' => 'tenant.inventario.producto.edit',
             'update' => 'tenant.inventario.producto.update',
             'destroy' => 'tenant.inventario.producto.destroy',
-            'show' => 'tenant.inventario.producto.show'
+            'show' => 'tenant.inventario.producto.show',
         ])->parameters([
             'producto' => 'producto'
         ]);

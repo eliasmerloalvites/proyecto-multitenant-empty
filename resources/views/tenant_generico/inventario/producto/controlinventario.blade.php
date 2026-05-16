@@ -4,95 +4,7 @@
 
 @section('contenido')
 
-    @can('tenant.inventario.producto.create')
-    <div class="col-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">CREAR PRODUCTO</h5>
-                <p class="card-text"></p>
-                <form method="POST" id="product_form" action="{{route('tenant.inventario.producto.store',tenant('id'))}}" enctype="multipart/form-data">
-                    @csrf
-                    <input type="text" id="producto_id_edit" hidden>
-                    <input type="hidden" id="_method" name="_method" value="" style="display: none;">
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label" style=" text-align: left; display: block;">Categoria:</label>
-                            <select class="form-control select2 select2-info" id="CAT_Id" name="CAT_Id"
-                                data-dropdown-css-class="select2-info"  style="width: 100%; ">
-                                <option value="">Seleccionar ...</option>
-                                @foreach ($categorias as $itemCategoria)
-                                    <option value="{{ $itemCategoria->CAT_Id }}">{{ $itemCategoria->CAT_Nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Nombre:</label>
-                            <input type="text" id="PRO_Nombre" name="PRO_Nombre"
-                                class="form-control input_user "
-                                placeholder="Nombre" required>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Descripción:</label>
-                            <input type="text" id="PRO_Descripcion" name="PRO_Descripcion"
-                                class="form-control input_user "
-                                placeholder="Descripción" required>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Precio de Compra:</label>
-                            <input type="number" id="PRO_PrecioCompra" name="PRO_PrecioCompra"
-                                class="form-control input_user "
-                                placeholder="Precio de Compra" required>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Precio de Venta:</label>
-                            <input type="number" id="PRO_PrecioVenta" name="PRO_PrecioVenta"
-                                class="form-control input_user "
-                                placeholder="Precio de Venta" required>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Marca:</label>
-                            <input type="text" id="PRO_Marca" name="PRO_Marca"
-                                class="form-control input_user "
-                                placeholder="Marca" required>
-                        </div>
-                    </div>
-                    <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12" style="text-align: left;">
-                        <label>Añadir Imagen </label>
-                        <div class="custom-file center">
-                            <input type="file" class="custom-file-input"
-                                accept="image/*"
-                                name="file" id="fileImagen">
-                            <label class="custom-file-label" id="idFileImagen">Añadir Imagen</label>
-                        </div>
-                    </div>
-                    <p></p>
-                    
-                    <div class="form-group text-right">
-                        <button id="productosave" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
-                        <button id="updateBtn" class="btn btn-info" style="display: none;"><i
-                            class="fas fa-save"></i> Actualizar</button>
-                        <button type="reset" id="btncancelar" class="btn btn-danger"> <i
-                            class="fas fa-ban"></i> Cancelar </button>
-                    </div>
-                    
-                </form>
-            </div>
-        </div>
-    </div>
-    @endcan
-    @can('tenant.inventario.producto.index')
-    <div class="col-8">
+    <div class="col-12">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">LISTA DE PRODUCTOS</h5>
@@ -104,6 +16,7 @@
                                 <th scope="col">Id</th>
                                 <th scope="col">Nombre</th>
                                 <th scope="col">Categoria</th>
+                                <th scope="col">Stock</th>
                                 <th scope="col">P. Venta</th>
                                 <th scope="col">P. Compra</th>
                                 <th scope="col">Opciones</th>
@@ -114,7 +27,6 @@
             </div>
         </div>
     </div>
-    @endcan
     
 
     <div class="modal fade" id="modalVerDetalle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -200,6 +112,57 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalVerLotes" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content ">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Detalles del Producto</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Producto:</strong>
+                            <span id="lote_producto"></span>
+                        </div>
+
+                        <div class="col-md-6 text-right">
+                            <strong>Stock Total:</strong>
+                            <span id="lote_stock_total"></span>
+                        </div>
+
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="tablaLotes" class="table table-bordered table-hover">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Lote</th>
+                                    <th>Fecha Ingreso</th>
+                                    <th>Stock Ingreso</th>
+                                    <th>Stock Actual</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="tbody_lotes">
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 @section('script')
     <script>
@@ -244,7 +207,7 @@
                 order: [
                     [0, "asc"]
                 ],
-                ajax: "{{ route('tenant.inventario.producto.index', tenant('id')) }}",
+                ajax: "{{ route('tenant.inventario.controlinventario.index', tenant('id')) }}",
                 columns: [{
                         data: 'PRO_Id',
                         name: 'PRO_Id',
@@ -258,6 +221,11 @@
                     {
                         data: 'CAT_Nombre',
                         name: 'CAT_Nombre',
+                        className: 'text-start'
+                    },
+                    {
+                        data: 'cantidad_total',
+                        name: 'cantidad_total',
                         className: 'text-start'
                     },
                     {
@@ -279,11 +247,11 @@
                                 @endcan
                             '' 
                             @can('tenant.inventario.producto.edit')
-                                + data.action1 + ' ' +
+                                + data.lotes + ' ' +
                             @endcan
                             ''
                             @can('tenant.inventario.producto.destroy')
-                                +data.action2
+                                +data.kardex
                             @endcan ;
                         }
                     }
@@ -367,6 +335,68 @@
                         $('#ver_PRO_PrecioCompra').text(data.data.PRO_PrecioCompra);
                         $('#ver_PRO_PrecioVenta').text(data.data.PRO_PrecioVenta);
                         $('#ver_Imagen').attr('src', data.imagen);
+                    })
+            });
+
+            $('body').on('click', '.lotesProducto', function() {
+                var Producto_id_ver = $(this).data('id');
+                $('#modalVerLotes').modal('show');
+                $.get('{{ route('tenant.inventario.controlinventario.lotes', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'.replace(':producto', Producto_id_ver),
+                    function(data) {
+                        console.log(data)
+                        $('#lote_producto').text(data.producto.PRO_Nombre);
+                        $('#lote_stock_total').text(data.producto.cantidad_total);
+                        // LIMPIAR TABLA
+                        $('#tbody_lotes').html('');
+
+                        // RECORRER LOTES
+                        data.lotes.forEach(function (lote) {
+
+                            let estado = '';
+                            let badge = '';
+
+                            // EJEMPLO SIMPLE ESTADO
+                            if (lote.LOT_CantidadReal <= 0) {
+
+                                badge = '<span class="badge badge-danger">Agotado</span>';
+
+                            } else {
+
+                                badge = '<span class="badge badge-success">Disponible</span>';
+                            }
+
+                            let fila = `
+                                <tr>
+                                    <td>${lote.LOT_Id}</td>
+                                    <td>${lote.created_at}</td>
+                                    <td>${lote.LOT_CantidadIngreso}</td>
+                                    <td>${lote.LOT_CantidadReal}</td>
+                                    <td>${badge}</td>
+                                </tr>
+                            `;
+
+                            $('#tbody_lotes').append(fila);
+
+                            
+
+                        });
+
+                        if ($.fn.DataTable.isDataTable('#tablaLotes')) {
+                            $('#tablaLotes').DataTable().destroy();
+                        }
+
+                        $('#tablaLotes').DataTable({
+                            responsive: true,
+                            autoWidth: false,
+                            destroy: true,
+                            pageLength: 5,
+                            lengthChange: false,
+                            order: [[1, 'desc']],
+                            language: {
+                                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                            }
+                        });
+
                     })
             });
 

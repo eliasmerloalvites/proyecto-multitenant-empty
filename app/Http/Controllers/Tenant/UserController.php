@@ -65,7 +65,7 @@ class UserController extends Controller
     public function salir()
     {
         Auth::guard('tenant')->logout();
-        return redirect()->route('tenant1.login');
+        return redirect()->route('tenant1.login',tenant('id'));
     }
 
     const PAGINATION = 10;

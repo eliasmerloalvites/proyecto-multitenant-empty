@@ -27,13 +27,15 @@
                 {{ request()->routeIs('tenant.inventario.clase*') || 
                 request()->routeIs('tenant.inventario.categoria*') || 
                 request()->routeIs('tenant.inventario.almacen*') ||
-                request()->routeIs('tenant.inventario.producto*') ? 'menu-open' : '' }}" >
+                request()->routeIs('tenant.inventario.producto*') ||
+                request()->routeIs('tenant.inventario.controlinventario*') ? 'menu-open' : '' }}" >
                 <a href="#"
                     class="nav-link 
                     {{ request()->routeIs('tenant.inventario.clase*') || 
                     request()->routeIs('tenant.inventario.categoria*') || 
                     request()->routeIs('tenant.inventario.almacen*') ||
-                    request()->routeIs('tenant.inventario.producto*')  ? 'active' : '' }}" >
+                    request()->routeIs('tenant.inventario.producto*') ||
+                    request()->routeIs('tenant.inventario.controlinventario*')  ? 'active' : '' }}" >
                     <i class="nav-icon fas fa-boxes"></i>
                     <p>
                         INVENTARIO
@@ -41,42 +43,49 @@
                     </p>
                 </a>
                 <ul class="nav nav-treeview">
-                        @can('tenant.inventario.producto.index')
-                        <li class="nav-item">
-                            <a href="{{ route('tenant.inventario.producto.index', tenant('id')) }}"
-                                class="nav-link {{ request()->routeIs('tenant.inventario.producto*') ? 'active' : '' }}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Productos</p>
-                            </a>
-                        </li>
-                        @endcan
-                        @can('tenant.inventario.categoria.index')
-                        <li class="nav-item">
-                            <a href="{{ route('tenant.inventario.categoria.index', tenant('id')) }}"
-                                class="nav-link {{ request()->routeIs('tenant.inventario.categoria*') ? 'active' : '' }}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Categorias</p>
-                            </a>
-                        </li>
-                        @endcan
-                        @can('tenant.inventario.clase.index')
-                        <li class="nav-item">
-                            <a href="{{ route('tenant.inventario.clase.index', tenant('id')) }}"
-                                class="nav-link {{ request()->routeIs('tenant.inventario.clase*') ? 'active' : '' }}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Clases</p>
-                            </a>
-                        </li>
-                        @endcan
-                        @can('tenant.inventario.almacen.index')
-                        <li class="nav-item">
-                            <a href="{{ route('tenant.inventario.almacen.index', tenant('id')) }}"
-                                class="nav-link {{ request()->routeIs('tenant.inventario.almacen*') ? 'active' : '' }}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Almacenes</p>
-                            </a>
-                        </li>
-                        @endcan
+                    @can('tenant.inventario.producto.index')
+                    <li class="nav-item">
+                        <a href="{{ route('tenant.inventario.controlinventario.index', tenant('id')) }}"
+                            class="nav-link {{ request()->routeIs('tenant.inventario.controlinventario.*') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Control Inventario</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('tenant.inventario.producto.index', tenant('id')) }}"
+                            class="nav-link {{ request()->routeIs('tenant.inventario.producto*') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Productos</p>
+                        </a>
+                    </li>
+                    @endcan
+                    @can('tenant.inventario.categoria.index')
+                    <li class="nav-item">
+                        <a href="{{ route('tenant.inventario.categoria.index', tenant('id')) }}"
+                            class="nav-link {{ request()->routeIs('tenant.inventario.categoria*') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Categorias</p>
+                        </a>
+                    </li>
+                    @endcan
+                    @can('tenant.inventario.clase.index')
+                    <li class="nav-item">
+                        <a href="{{ route('tenant.inventario.clase.index', tenant('id')) }}"
+                            class="nav-link {{ request()->routeIs('tenant.inventario.clase*') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Clases</p>
+                        </a>
+                    </li>
+                    @endcan
+                    @can('tenant.inventario.almacen.index')
+                    <li class="nav-item">
+                        <a href="{{ route('tenant.inventario.almacen.index', tenant('id')) }}"
+                            class="nav-link {{ request()->routeIs('tenant.inventario.almacen*') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Almacenes</p>
+                        </a>
+                    </li>
+                    @endcan
                         
                 </ul>
             </li>
