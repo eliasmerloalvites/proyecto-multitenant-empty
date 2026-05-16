@@ -3,6 +3,37 @@
 @section('titulo', 'Productos')
 
 @section('contenido')
+<style>
+    table.dataTable{
+        width:100% !important;
+    }
+    #tablaKardex thead th{
+        font-weight:600;
+        vertical-align:middle;
+    }
+
+    #tablaKardex td{
+        vertical-align:middle;
+    }
+
+    .badge-kardex{
+        padding:6px 10px;
+        border-radius:20px;
+        font-size:12px;
+    }
+
+    .kardex-entrada{
+        background:#eafaf1;
+    }
+
+    .kardex-salida{
+        background:#fdeeee;
+    }
+
+    .modal-xl{
+        max-width: 95%;
+    }
+</style>
 
     <div class="col-12">
         <div class="card">
@@ -123,16 +154,20 @@
                 </div>
                 <div class="modal-body">
                     <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong>Producto:</strong>
-                            <span id="lote_producto"></span>
+                        <div class="col-md-8">
+                            <h5 class="mb-1 font-weight-bold" id="lote_producto"></h5>
+                            <small class="text-muted">Gestión de lotes del producto</small>
                         </div>
-
-                        <div class="col-md-6 text-right">
-                            <strong>Stock Total:</strong>
-                            <span id="lote_stock_total"></span>
+                        <div class="col-md-4 text-right">
+                            <div class="card shadow-sm border-0 bg-light d-inline-block px-3 py-2">
+                                <small class="text-muted d-block">
+                                    Stock Total
+                                </small>
+                                <strong class="h5 mb-0" id="lote_stock_total" >
+                                    203.00
+                                </strong>
+                            </div>
                         </div>
-
                     </div>
 
                     <div class="table-responsive">
@@ -147,12 +182,8 @@
                                 </tr>
                             </thead>
 
-                            <tbody id="tbody_lotes">
-
-                            </tbody>
-
+                            <tbody id="tbody_lotes"></tbody>
                         </table>
-
                     </div>
 
                 </div>
@@ -161,6 +192,197 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- MODAL KARDEX -->
+    <div class="modal fade" id="modalKardex" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content border-0 shadow">
+                <!-- HEADER -->
+                <div class="modal-header">
+                    <h4 class="modal-title font-weight-bold">Kardex del Producto</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <!-- BODY -->
+                <div class="modal-body">
+                    <!-- RESUMEN -->
+                    <div class="row mb-4 align-items-center">
+                        <!-- PRODUCTO -->
+                        <div class="col-md-6">
+                            <h3 class="font-weight-bold mb-1" id="kardex_producto"></h3>
+                            <p class="text-muted mb-0">Historial de movimientos del producto</p>
+                        </div>
+
+                        <!-- STOCK -->
+                        <div class="col-md-6 text-right">
+                            <div class="d-inline-block bg-light shadow-sm rounded px-4 py-3">
+                                <small class="text-muted d-block">Stock Actual</small>
+                                <h3 class="font-weight-bold mb-0" id="kardex_stock_total">203.00</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FILTROS -->
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- FECHA INICIO -->
+                                <div class="col-md-3">
+
+                                    <label>
+                                        Fecha Inicio
+                                    </label>
+
+                                    <input type="date"
+                                        class="form-control"
+                                        id="fecha_inicio_kardex">
+
+                                </div>
+
+                                <!-- FECHA FIN -->
+                                <div class="col-md-3">
+
+                                    <label>
+                                        Fecha Fin
+                                    </label>
+
+                                    <input type="date"
+                                        class="form-control"
+                                        id="fecha_fin_kardex">
+
+                                </div>
+
+                                <!-- TIPO -->
+                                <div class="col-md-3">
+
+                                    <label>
+                                        Tipo Movimiento
+                                    </label>
+
+                                    <select class="form-control"
+                                            id="tipo_movimiento_kardex">
+
+                                        <option value="">
+                                            Todos
+                                        </option>
+
+                                        <option value="COMPRA">
+                                            Compra
+                                        </option>
+
+                                        <option value="VENTA">
+                                            Venta
+                                        </option>
+
+                                        <option value="AJUSTE">
+                                            Ajuste
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                                <!-- BOTON -->
+                                <div class="col-md-3 d-flex align-items-end">
+
+                                    <button class="btn btn-primary btn-block"
+                                            id="btnFiltrarKardex">
+
+                                        <i class="fas fa-search mr-1"></i>
+
+                                        Filtrar
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- TABLA -->
+                    <div class="card shadow-sm border-0">
+
+                        <div class="card-body">
+
+                            <div class="table-responsive">
+
+                                <table id="tablaKardex"
+                                    class="table table-sm table-hover align-middle">
+
+                                    <thead class="bg-light">
+
+                                        <tr>
+
+                                            <th>
+                                                Fecha
+                                            </th>
+
+                                            <th>
+                                                Tipo
+                                            </th>
+
+                                            <th>
+                                                Documento
+                                            </th>
+
+                                            <th>
+                                                Lote
+                                            </th>
+
+                                            <th class="text-center">
+                                                Entrada
+                                            </th>
+
+                                            <th class="text-center">
+                                                Salida
+                                            </th>
+
+                                            <th class="text-center">
+                                                Stock
+                                            </th>
+
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody id="tbody_kardex">
+
+                                        <!-- DINAMICO -->
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-dismiss="modal">
+
+                        Cerrar
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
 @endsection
@@ -392,13 +614,78 @@
                             pageLength: 5,
                             lengthChange: false,
                             order: [[1, 'desc']],
-                            language: {
-                                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
-                            }
+                            scrollX: false,
+                            responsive: true,
+                            autoWidth: false
                         });
 
                     })
             });
+
+            
+
+            $('body').on('click', '.kardexProducto', function() {
+                var Producto_id_ver = $(this).data('id');
+                $('#modalKardex').modal('show');
+                $.get('{{ route('tenant.inventario.controlinventario.lotes', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'.replace(':producto', Producto_id_ver),
+                    function(data) {
+                        console.log(data)
+                        $('#kardex_producto').text(data.producto.PRO_Nombre);
+                        $('#kardex_stock_total').text(data.producto.cantidad_total);
+                        // LIMPIAR TABLA
+                        $('#tbody_lotes').html('');
+
+                        // RECORRER LOTES
+                        data.lotes.forEach(function (lote) {
+
+                            let estado = '';
+                            let badge = '';
+
+                            // EJEMPLO SIMPLE ESTADO
+                            if (lote.LOT_CantidadReal <= 0) {
+
+                                badge = '<span class="badge badge-danger">Agotado</span>';
+
+                            } else {
+
+                                badge = '<span class="badge badge-success">Disponible</span>';
+                            }
+
+                            let fila = `
+                                <tr>
+                                    <td>${lote.LOT_Id}</td>
+                                    <td>${lote.created_at}</td>
+                                    <td>${lote.LOT_CantidadIngreso}</td>
+                                    <td>${lote.LOT_CantidadReal}</td>
+                                    <td>${badge}</td>
+                                </tr>
+                            `;
+
+                            $('#tbody_lotes').append(fila);
+
+                            
+
+                        });
+
+                        if ($.fn.DataTable.isDataTable('#tablaLotes')) {
+                            $('#tablaLotes').DataTable().destroy();
+                        }
+
+                        $('#tablaLotes').DataTable({
+                            responsive: true,
+                            autoWidth: false,
+                            destroy: true,
+                            pageLength: 5,
+                            lengthChange: false,
+                            order: [[1, 'desc']],
+                            scrollX: false,
+                            responsive: true,
+                            autoWidth: false
+                        });
+
+                    })
+            });
+
 
             $('#updateBtn').click(function(e) {
                 e.preventDefault();

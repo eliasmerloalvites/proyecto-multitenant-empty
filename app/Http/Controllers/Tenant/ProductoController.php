@@ -181,6 +181,27 @@ class ProductoController extends Controller
         return response()->json(['lotes' => $lotes, 'producto' => $producto]);
     }
 
+
+    public function kardex(Request $request,string $tenant_id, string $id)
+    {
+        $producto = DB::table('producto as p')
+            ->join('categoria as c','p.CAT_Id','=','c.CAT_Id')
+            ->join('lote as lt','p.PRO_Id','=','lt.PRO_Id')
+            ->select('p.PRO_Id', 'p.PRO_Nombre','c.CAT_Nombre', DB::raw('SUM(lt.LOT_CantidadReal) as cantidad_total'))
+            ->where('p.PRO_Id',$id)
+            ->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'c.CAT_Nombre')
+            ->first();
+
+        $kardex = DB::table('kardex as k')
+            ->join('producto as pd', 'k.PRO_Id', '=', 'pd.PRO_Id')
+            ->select('k.*', 'pd.PRO_Nombre')
+            ->where('k.PRO_Id', $id)
+            ->orderBy('k.created_at', 'desc')
+            ->get();
+
+        return response()->json(['kardex' => $kardex, 'producto' => $producto]);
+    }
+
     /**
      * Show the form for editing the specified resource.
      */
