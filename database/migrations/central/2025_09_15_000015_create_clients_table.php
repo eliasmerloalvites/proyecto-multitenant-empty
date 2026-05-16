@@ -25,8 +25,15 @@ return new class extends Migration
             ]);
             $table->unsignedTinyInteger('billing_day'); // día de facturación
             $table->enum('status', ['activo', 'suspendido'])->default('activo');
+            $table->unsignedInteger('domain_id');
             $table->timestamps();
-        });
+
+            $table->foreign('domain_id')
+                ->references('id')
+                ->on('domains')
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
+            });
     }
 
     /**
