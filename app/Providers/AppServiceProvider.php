@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,5 +30,8 @@ class AppServiceProvider extends ServiceProvider
             // Si no, llama a los de tenant
             $this->call(\Database\Seeders\Tenant\DatabaseSeeder::class);
         } */
+        if(env('app.env') !== 'local') {
+        URL::forceScheme('https');
+        }
     }
 }
