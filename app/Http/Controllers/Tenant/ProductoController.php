@@ -181,6 +181,166 @@ class ProductoController extends Controller
         return response()->json(['lotes' => $lotes, 'producto' => $producto]);
     }
 
+
+    public function kardex(Request $request, string $tenant_id, string $id)
+    {
+        $fecha_inicio = $request->fecha_inicio;
+        $fecha_fin = $request->fecha_fin;
+        $tipo = $request->tipo;
+
+        // PRODUCTO
+        $producto = DB::table('producto as p')
+            ->join('categoria as c', 'p.CAT_Id', '=', 'c.CAT_Id')
+            ->join('lote as lt', 'p.PRO_Id', '=', 'lt.PRO_Id')
+            ->select('p.PRO_Id', 'p.PRO_Nombre', 'c.CAT_Nombre', DB::raw('SUM(lt.LOT_CantidadReal) as cantidad_total'))
+            ->where('p.PRO_Id', $id)
+            ->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'c.CAT_Nombre')
+            ->first();
+
+        /*
+        |--------------------------------------------------------------------------
+        | QUERIES BASE
+        |--------------------------------------------------------------------------
+        */
+
+        $EntradasBase = DB::table('lote as lt')
+            ->join('compra as cp', 'lt.LOT_IdIngreso', '=', 'cp.COM_Id')
+            ->select(
+                'cp.COM_Id as id',
+                'cp.COM_NumDocumento as documento',
+                'cp.created_at as fecha',
+                'lt.LOT_Id as lote_id',
+                'lt.LOT_CantidadIngreso as entrada',
+                DB::raw('0 as salida'),
+                DB::raw('"Entrada" as tipo')
+            )
+            ->where('lt.PRO_Id', $id)
+            ->where('lt.LOT_TipoIngreso', 'COMPRA');
+
+        $SalidasBase = DB::table('venta as v')
+            ->join('documento_venta as dov', 'v.VEN_Id', '=', 'dov.VEN_Id')
+            ->join('detalle_venta as dv', 'v.VEN_Id', '=', 'dv.VEN_Id')
+            ->select(
+                'v.VEN_Id as id',
+                DB::raw('CONCAT(dov.DOV_Serie, "-", dov.DOV_Numero) as documento'),
+                'v.created_at as fecha',
+                'dv.LOT_Id as lote_id',
+                DB::raw('0 as entrada'),
+                'dv.DEV_Cantidad as salida',
+                DB::raw('"Salida" as tipo')
+            )
+            ->where('dv.PRO_Id', $id);
+
+        /*
+        |--------------------------------------------------------------------------
+        | CLONAR QUERIES
+        |--------------------------------------------------------------------------
+        */
+
+        $Entradas = clone $EntradasBase;
+        $Salidas = clone $SalidasBase;
+
+        /*
+        |--------------------------------------------------------------------------
+        | STOCK INICIAL
+        |--------------------------------------------------------------------------
+        */
+
+        $stock = 0;
+
+        if ($fecha_inicio) {
+
+            // ENTRADAS PREVIAS
+            $entradasPrevias = (clone $EntradasBase)
+                ->where('cp.created_at','<',$fecha_inicio . ' 00:00:00')
+                ->sum('lt.LOT_CantidadIngreso');
+
+            // SALIDAS PREVIAS
+            $salidasPrevias = (clone $SalidasBase)
+                ->where('v.created_at','<',$fecha_inicio . ' 00:00:00')
+                ->sum('dv.DEV_Cantidad');
+
+            // STOCK INICIAL
+            $stock = $entradasPrevias - $salidasPrevias;
+
+            // FILTRO FECHA INICIO
+            $Entradas->where('cp.created_at','>=',$fecha_inicio . ' 00:00:00');
+            $Salidas->where('v.created_at','>=',$fecha_inicio . ' 00:00:00');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | FILTRO FECHA FIN
+        |--------------------------------------------------------------------------
+        */
+
+        if ($fecha_fin) {
+            $Entradas->where('cp.created_at','<=',$fecha_fin . ' 23:59:59');
+            $Salidas->where('v.created_at','<=',$fecha_fin . ' 23:59:59');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | FILTRO TIPO
+        |--------------------------------------------------------------------------
+        */
+
+        if ($tipo == 'Entrada') {
+            $kardex = $Entradas->get();
+        } elseif ($tipo == 'Salida') {
+            $kardex = $Salidas->get();
+        } else {
+            $kardex = $Entradas
+                ->unionAll($Salidas)
+                ->get();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ORDENAR ASC PARA CALCULAR STOCK
+        |--------------------------------------------------------------------------
+        */
+
+        $kardex = $kardex
+            ->sortBy('fecha')
+            ->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | CALCULAR STOCK ACUMULADO
+        |--------------------------------------------------------------------------
+        */
+
+        $kardex = $kardex->map(function ($item) use (&$stock) {
+
+            // STOCK ANTES DEL MOVIMIENTO
+            $item->stock_inicial = $stock;
+
+            // CALCULAR NUEVO STOCK
+            $stock += $item->entrada;
+            $stock -= $item->salida;
+
+            // STOCK FINAL
+            $item->stock_final = $stock;
+
+            return $item;
+        });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ORDEN FINAL DESCENDENTE
+        |--------------------------------------------------------------------------
+        */
+
+        $kardex = $kardex->sortByDesc('fecha')->values();
+
+        return response()->json([
+            'kardex' => $kardex,
+            'producto' => $producto
+        ]);
+    }
+
     /**
      * Show the form for editing the specified resource.
      */
