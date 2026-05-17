@@ -95,7 +95,7 @@
             <div class="col-7">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">LISTA DE CLIENTESA</h5>
+                        <h5 class="card-title">LISTA DE CLIENTES</h5>
                         <p class="card-text">
 
                         <div class="table-responsive" style="background:#FFF;">
