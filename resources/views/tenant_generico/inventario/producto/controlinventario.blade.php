@@ -7,13 +7,51 @@
     table.dataTable{
         width:100% !important;
     }
+    .kardex-table-container{
+        max-height: 500px;
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+    #tablaKardex{
+        min-width: 1200px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
     #tablaKardex thead th{
-        font-weight:600;
-        vertical-align:middle;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+        white-space: nowrap;
+        box-shadow: 0 2px 2px rgba(0,0,0,.05);
+    }
+    #tablaKardex thead th:first-child{
+        z-index: 11;
     }
 
     #tablaKardex td{
         vertical-align:middle;
+    }
+    /* PRIMERA COLUMNA */
+    #tablaKardex th:first-child,
+    #tablaKardex td:first-child{
+        width: 170px;
+        min-width: 170px;
+        max-width: 170px;
+        position: sticky;
+        left: 0;
+        background: white;
+        z-index: 5;
+    }
+    /* ESQUINA SUPERIOR IZQUIERDA */
+    #tablaKardex thead th:first-child{
+        z-index: 20;
+    }
+
+    /* CELDAS */
+    #tablaKardex td,
+    #tablaKardex th{
+        white-space: nowrap;
     }
 
     .badge-kardex{
@@ -33,6 +71,17 @@
     .modal-xl{
         max-width: 95%;
     }
+
+    @media(max-width:768px){
+        .kardex-table-container{
+            height: 50vh;
+        }
+
+        #tablaKardex{
+            min-width: 900px;
+        }
+    }
+
 </style>
 
     <div class="col-12">
@@ -219,7 +268,7 @@
                         <div class="col-md-6 text-right">
                             <div class="d-inline-block bg-light shadow-sm rounded px-4 py-3">
                                 <small class="text-muted d-block">Stock Actual</small>
-                                <h3 class="font-weight-bold mb-0" id="kardex_stock_total">203.00</h3>
+                                <h3 class="font-weight-bold mb-0" id="kardex_stock_total"></h3>
                             </div>
                         </div>
                     </div>
@@ -230,140 +279,60 @@
                             <div class="row">
                                 <!-- FECHA INICIO -->
                                 <div class="col-md-3">
-
-                                    <label>
-                                        Fecha Inicio
-                                    </label>
-
-                                    <input type="date"
-                                        class="form-control"
-                                        id="fecha_inicio_kardex">
-
+                                    <label>Fecha Inicio</label>
+                                    <input type="date" class="form-control" id="fecha_inicio_kardex">
                                 </div>
-
                                 <!-- FECHA FIN -->
                                 <div class="col-md-3">
-
-                                    <label>
-                                        Fecha Fin
-                                    </label>
-
-                                    <input type="date"
-                                        class="form-control"
-                                        id="fecha_fin_kardex">
-
+                                    <label>Fecha Fin</label>
+                                    <input type="date" class="form-control" id="fecha_fin_kardex">
                                 </div>
 
                                 <!-- TIPO -->
                                 <div class="col-md-3">
-
-                                    <label>
-                                        Tipo Movimiento
-                                    </label>
-
-                                    <select class="form-control"
-                                            id="tipo_movimiento_kardex">
-
-                                        <option value="">
-                                            Todos
-                                        </option>
-
-                                        <option value="COMPRA">
-                                            Compra
-                                        </option>
-
-                                        <option value="VENTA">
-                                            Venta
-                                        </option>
-
-                                        <option value="AJUSTE">
-                                            Ajuste
-                                        </option>
-
+                                    <label>Tipo Movimiento</label>
+                                    <select class="form-control" id="tipo_movimiento_kardex">
+                                        <option value="">Todos</option>
+                                        <option value="COMPRA">Compra</option>
+                                        <option value="VENTA">Venta</option>
+                                        <option value="AJUSTE">Ajuste</option>
                                     </select>
-
                                 </div>
 
                                 <!-- BOTON -->
                                 <div class="col-md-3 d-flex align-items-end">
-
-                                    <button class="btn btn-primary btn-block"
-                                            id="btnFiltrarKardex">
-
+                                    <button class="btn btn-primary btn-block" id="btnFiltrarKardex">
                                         <i class="fas fa-search mr-1"></i>
-
                                         Filtrar
-
                                     </button>
-
                                 </div>
-
                             </div>
-
                         </div>
-
                     </div>
 
                     <!-- TABLA -->
                     <div class="card shadow-sm border-0">
-
                         <div class="card-body">
-
-                            <div class="table-responsive">
-
-                                <table id="tablaKardex"
-                                    class="table table-sm table-hover align-middle">
-
+                            <div class="kardex-table-container">
+                                <table id="tablaKardex" class="table table-sm table-hover align-middle">
                                     <thead class="bg-light">
-
                                         <tr>
-
-                                            <th>
-                                                Fecha
-                                            </th>
-
-                                            <th>
-                                                Tipo
-                                            </th>
-
-                                            <th>
-                                                Documento
-                                            </th>
-
-                                            <th>
-                                                Lote
-                                            </th>
-
-                                            <th class="text-center">
-                                                Entrada
-                                            </th>
-
-                                            <th class="text-center">
-                                                Salida
-                                            </th>
-
-                                            <th class="text-center">
-                                                Stock
-                                            </th>
-
+                                            <th>Fecha</th>
+                                            <th>Tipo</th>
+                                            <th>Documento</th>
+                                            <th>Lote</th>
+                                            <th class="text-center">Stock Inicial</th>
+                                            <th class="text-center">Entrada</th>
+                                            <th class="text-center">Salida</th>
+                                            <th class="text-center">Stock Final</th>
                                         </tr>
-
                                     </thead>
-
                                     <tbody id="tbody_kardex">
-
-                                        <!-- DINAMICO -->
-
                                     </tbody>
-
                                 </table>
-
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
 
                 <!-- FOOTER -->
@@ -579,11 +548,8 @@
 
                             // EJEMPLO SIMPLE ESTADO
                             if (lote.LOT_CantidadReal <= 0) {
-
                                 badge = '<span class="badge badge-danger">Agotado</span>';
-
                             } else {
-
                                 badge = '<span class="badge badge-success">Disponible</span>';
                             }
 
@@ -624,68 +590,21 @@
 
             
 
-            $('body').on('click', '.kardexProducto', function() {
+            $('body').on('click', '.kardexProducto', function () {
                 var Producto_id_ver = $(this).data('id');
                 $('#modalKardex').modal('show');
-                $.get('{{ route('tenant.inventario.controlinventario.lotes', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'.replace(':producto', Producto_id_ver),
-                    function(data) {
-                        console.log(data)
-                        $('#kardex_producto').text(data.producto.PRO_Nombre);
-                        $('#kardex_stock_total').text(data.producto.cantidad_total);
-                        // LIMPIAR TABLA
-                        $('#tbody_lotes').html('');
-
-                        // RECORRER LOTES
-                        data.lotes.forEach(function (lote) {
-
-                            let estado = '';
-                            let badge = '';
-
-                            // EJEMPLO SIMPLE ESTADO
-                            if (lote.LOT_CantidadReal <= 0) {
-
-                                badge = '<span class="badge badge-danger">Agotado</span>';
-
-                            } else {
-
-                                badge = '<span class="badge badge-success">Disponible</span>';
-                            }
-
-                            let fila = `
-                                <tr>
-                                    <td>${lote.LOT_Id}</td>
-                                    <td>${lote.created_at}</td>
-                                    <td>${lote.LOT_CantidadIngreso}</td>
-                                    <td>${lote.LOT_CantidadReal}</td>
-                                    <td>${badge}</td>
-                                </tr>
-                            `;
-
-                            $('#tbody_lotes').append(fila);
-
-                            
-
-                        });
-
-                        if ($.fn.DataTable.isDataTable('#tablaLotes')) {
-                            $('#tablaLotes').DataTable().destroy();
-                        }
-
-                        $('#tablaLotes').DataTable({
-                            responsive: true,
-                            autoWidth: false,
-                            destroy: true,
-                            pageLength: 5,
-                            lengthChange: false,
-                            order: [[1, 'desc']],
-                            scrollX: false,
-                            responsive: true,
-                            autoWidth: false
-                        });
-
-                    })
+                $('#btnFiltrarKardex').data('producto', Producto_id_ver);
+                cargarKardex(Producto_id_ver);
             });
 
+            $('#btnFiltrarKardex').click(function () {
+                let producto = $(this).data('producto');
+                let fecha_inicio = $('#fecha_inicio_kardex').val();
+                let fecha_fin = $('#fecha_fin_kardex').val();
+                let tipo = $('#tipo_movimiento_kardex').val();
+                cargarKardex(producto, fecha_inicio, fecha_fin, tipo);
+            });
+            
 
             $('#updateBtn').click(function(e) {
                 e.preventDefault();
@@ -784,5 +703,69 @@
                  }
             });
         })
+
+        function cargarKardex(producto, fecha_inicio = '', fecha_fin = '', tipo = '') {
+
+            $.get(
+                '{{ route('tenant.inventario.controlinventario.kardex', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'
+                .replace(':producto', producto),
+
+                {
+                    fecha_inicio: fecha_inicio,
+                    fecha_fin: fecha_fin,
+                    tipo: tipo
+                },
+
+                function (data) {
+
+                    $('#tbody_kardex').html('');
+
+                    $('#kardex_producto').text(data.producto.PRO_Nombre);
+
+                    $('#kardex_stock_total').text(data.producto.cantidad_total);
+
+                    data.kardex.forEach(function (kardex) {
+
+                        let badgeTipo = '';
+
+                        if(kardex.tipo == 'Entrada'){
+
+                            badgeTipo = `
+                                <span class="badge badge-success badge-kardex">
+                                    Compra
+                                </span>
+                            `;
+
+                        }else{
+
+                            badgeTipo = `
+                                <span class="badge badge-danger badge-kardex">
+                                    Venta
+                                </span>
+                            `;
+                        }
+
+                        let fila = `
+                            <tr>
+                                <td>${kardex.fecha}</td>
+                                <td>${badgeTipo}</td>
+                                <td>${kardex.documento}</td>
+                                <td>LT_${kardex.lote_id}</td>
+                                <td class="text-center">${kardex.stock_inicial}</td>
+                                <td class="text-center">${kardex.entrada}</td>
+                                <td class="text-center">${kardex.salida}</td>
+                                <td class="text-center">${kardex.stock_final}</td>
+                            </tr>
+                        `;
+
+                        $('#tbody_kardex').append(fila);
+
+                    });
+
+                }
+            );
+
+        }
+
     </script>
 @endsection

@@ -154,7 +154,7 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
         
         Route::get('/tenant/inventario/controlinventario', [ProductoController::class,'controlinventario'] )->name('tenant.inventario.controlinventario.index');
         Route::get('/tenant/inventario/controlinventario/{producto}', [ProductoController::class,'lotes'] )->name('tenant.inventario.controlinventario.lotes');
-        Route::get('/tenant/inventario/controlinventario/{producto}', [ProductoController::class,'kardex'] )->name('tenant.inventario.controlinventario.kardex');
+        Route::get('/tenant/inventario/controlinventario/kardex/{producto}', [ProductoController::class,'kardex'] )->name('tenant.inventario.controlinventario.kardex');
         Route::resource('/tenant/inventario/producto', ProductoController::class)->names([
             'index' => 'tenant.inventario.producto.index',
             'create' => 'tenant.inventario.producto.create',
