@@ -52,7 +52,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">LISTA DE CLIENTESA</h5>
+                <h5 class="card-title">LISTA DE CLIENTES</h5>
                 <p class="card-text">
                     <button type="button" class="btn btn-primary btn-lg float-right"
                         onclick="window.location.href='{{ route('tenant.ventas.venta.create', tenant('id')) }}'">
