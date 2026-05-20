@@ -1,4 +1,4 @@
-<aside class="main-sidebar sidebar-dark-primary elevation-4">
+<aside class="main-sidebar sidebar-primary elevation-4">
     <!-- Brand Logo -->
     <a href="/home" class="brand-link navbar-light">
       <img id="avatarImageHeader" class="brand-image img-circle elevation-3" alt="User Image">
@@ -8,28 +8,6 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-      <!-- Sidebar user panel (optional)
-      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-        <div class="image">
-          <img src="adminlte/dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
-        </div>
-        <div class="info">
-          <a href="#" class="d-block">Alexander Pierce</a>
-        </div>
-      </div> -->
-
-      <!-- SidebarSearch Form 
-      <div class="form-inline">
-        <div class="input-group" data-widget="sidebar-search">
-          <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
-          <div class="input-group-append">
-            <button class="btn btn-sidebar">
-              <i class="fas fa-search fa-fw"></i>
-            </button>
-          </div>
-        </div>
-      </div>-->
-
       <!-- Sidebar Menu -->
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
@@ -43,10 +21,10 @@
             </a>
           </li>
           @can('admin.clients.index')
-            <li class="nav-item has-treeview {{ request()->is('usuario*') || request()->is('permiso*') || request()->is('rol*') ? 'menu-open' : '' }}"
+            <li class="nav-item has-treeview {{ request()->routeIs('admin.clients*')  ? 'menu-open' : '' }}"
                 id="idCabSeguridad">
                 <a href="#"
-                    class="nav-link {{ request()->is('usuario*') || request()->is('permisos*') || request()->is('roles*') ? 'active' : '' }}"
+                    class="nav-link {{ request()->routeIs('admin.clients*')  ? 'active' : '' }}"
                     id="idSeguridad">
                     <i class="nav-icon fas fa-lock"></i>
                     <p>
@@ -58,7 +36,7 @@
                     @can('admin.clients.index')
                         <li class="nav-item">
                             <a href="{{ route('admin.clients.index') }}"
-                                class="nav-link {{ request()->is('admin.clients*') ? 'active' : '' }}"
+                                class="nav-link {{ request()->routeIs('admin.clients*') ? 'active' : '' }}"
                                 id="idSegClientes">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Clientes</p>
@@ -70,10 +48,10 @@
         @endcan
         
           @can('seguridad.users.index')
-            <li class="nav-item has-treeview {{ request()->is('usuario*') || request()->is('permiso*') || request()->is('rol*') ? 'menu-open' : '' }}"
+            <li class="nav-item has-treeview {{ request()->routeIs('usuario*') || request()->routeIs('permiso*') || request()->routeIs('rol*') ? 'menu-open' : '' }}"
                 id="idCabSeguridad">
                 <a href="#"
-                    class="nav-link {{ request()->is('usuario*') || request()->is('permisos*') || request()->is('roles*') ? 'active' : '' }}"
+                    class="nav-link {{ request()->routeIs('usuario*') || request()->routeIs('permisos*') || request()->routeIs('roles*') ? 'active' : '' }}"
                     id="idSeguridad">
                     <i class="nav-icon fas fa-lock"></i>
                     <p>
@@ -85,7 +63,7 @@
                     @can('seguridad.permiso.index')
                         <li class="nav-item">
                             <a href="{{ route('permiso.index') }}"
-                                class="nav-link {{ request()->is('permiso*') ? 'active' : '' }}"
+                                class="nav-link {{ request()->routeIs('permiso*') ? 'active' : '' }}"
                                 id="idSegPermiso">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Permiso</p>
@@ -95,7 +73,7 @@
                     @can('seguridad.roles.index')
                         <li class="nav-item">
                             <a href="{{ route('role.index') }}"
-                                class="nav-link  {{ request()->is('rol*') ? 'active' : '' }}"
+                                class="nav-link  {{ request()->routeIs('rol*') ? 'active' : '' }}"
                                 id="idSegRoles">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Roles</p>
@@ -104,8 +82,8 @@
                     @endcan
                     @can('seguridad.users.index')
                         <li class="nav-item">
-                            <a href="{{ route('central-usuarios.index') }}"
-                                class="nav-link {{ request()->is('central-usuarios*') ? 'active' : '' }}"
+                            <a href="{{ route('usuario.index') }}"
+                                class="nav-link {{ request()->routeIs('usuario*') ? 'active' : '' }}"
                                 id="idSegUsuario">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Usuario</p>

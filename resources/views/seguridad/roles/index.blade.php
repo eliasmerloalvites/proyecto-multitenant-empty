@@ -3,10 +3,8 @@
 @section('titulo', 'Roles')
 
 @section('contenido')
-    <style>
 
-    </style>
-
+@can('seguridad.roles.create')
     <div class="col-5">
         <div class="card">
             <div class="card-body">
@@ -126,6 +124,9 @@
 
         </div>
     </div>
+    @endcan
+    
+    @can('seguridad.roles.index')
     <div class="col-7">
         <div class="card">
             <div class="card-body">
@@ -133,7 +134,7 @@
                 <p class="card-text">
 
                 <table class="table" id="table-roles">
-                    <thead style="background-color:#FF5F67;color: #fff;">
+                    <thead >
                         <tr>
                             <th scope="col">N°</th>
                             <th scope="col">Nombre</th>
@@ -147,7 +148,7 @@
             </div>
         </div>
     </div>
-
+    @endcan
     <!-- Modal Ver detalles-->
     <div class="modal fade" id="modalVerDetalle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">

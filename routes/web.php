@@ -31,7 +31,15 @@ Route::middleware([
     Route::get('/personal/getimagen', [ProfileController::class, 'getimagen'])->name('personal.getimagen');
     Route::resource('permiso', PermisoController::class);
     Route::resource('role', RoleController::class);
-    Route::resource('central-usuarios', UserController::class);
+    Route::resource('usuario', UserController::class)->names([
+            'index' => 'usuario.index',
+            'create' => 'usuario.create',
+            'store' => 'usuario.store',
+            'edit' => 'usuario.edit',
+            'update' => 'usuario.update',
+            'destroy' => 'usuario.destroy',
+            'show' => 'usuario.show'
+        ]);
     Route::resource('admin/clients', ClientController::class)->names([
       'index' => 'admin.clients.index',
       'create' => 'admin.clients.create',
