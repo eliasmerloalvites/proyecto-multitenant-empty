@@ -9,6 +9,19 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+
+    /*
+        |       DOV_StateToRes        |
+
+        | Valor | Significado         |
+        | ----- | ------------------- |
+        | 0     | pendiente evaluar   |
+        | 1     | agregado a resumen  |
+        | 2     | enviado resumen     |
+        | 3     | no requiere resumen |
+        | 4     | rechazado resumen   |
+
+    */
     public function up(): void
     {
         Schema::create('documento_venta', function (Blueprint $table) {
@@ -22,13 +35,22 @@ return new class extends Migration
             /* FOREIGN KEY */
             $table->unsignedInteger('VEN_Id');
             /* ESTADO */
-            $table->string('DOV_Estado', 15);
             $table->string('DOV_Nombre', 100)->nullable();
-            $table->integer('DOV_IdRes')->nullable();
-            $table->tinyInteger('DOV_StateToRes');
-            $table->string('DOV_Pdf', 40)->nullable();
+            $table->string('DOV_Estado', 20)->default('PENDIENTE');
+            $table->string('DOV_EstadoSunat', 20)->nullable();
+            $table->string('DOV_CodigoSunat', 20)->nullable();
+            $table->text('DOV_DescripcionSunat')->nullable();
+            $table->longText('DOV_ResponseSunat')->nullable();
+            $table->string('DOV_Hash', 255)->nullable();
+            $table->string('DOV_Pdf', 255)->nullable();
             $table->boolean('DOV_Anulado')->default(0);
-            $table->integer('DOV_Vista')->nullable();
+            $table->tinyInteger('DOV_IntentosSunat')->default(0);
+            $table->tinyInteger('DOV_Vista')->nullable();
+            $table->dateTime('DOV_FechaEnvioSunat')->nullable();
+            $table->dateTime('DOV_FechaRespuestaSunat')->nullable();
+            /* ESTADO */
+            $table->integer('DOV_IdRes')->nullable();
+            $table->tinyInteger('DOV_StateToRes')->default(0);
             /* INDEX */
             $table->index('VEN_Id', 'R_DOV_KFR1');
             /* FOREIGN KEY */
@@ -36,6 +58,7 @@ return new class extends Migration
                   ->references('VEN_Id')
                   ->on('venta')
                   ->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

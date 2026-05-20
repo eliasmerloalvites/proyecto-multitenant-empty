@@ -10,6 +10,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
 
@@ -119,156 +120,154 @@
 
     <section class="relative overflow-hidden bg-[#020817] min-h-screen flex items-center">
 
-    <!-- EFECTOS -->
-    <div class="absolute inset-0 overflow-hidden">
+        <!-- EFECTOS -->
+        <div class="absolute inset-0 overflow-hidden">
 
-        <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-600/20 blur-[120px] rounded-full"></div>
+            <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-600/20 blur-[120px] rounded-full"></div>
 
-        <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-indigo-600/20 blur-[120px] rounded-full"></div>
+            <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-indigo-600/20 blur-[120px] rounded-full"></div>
 
-        <div class="absolute inset-0 opacity-[0.05]"
-            style="
+            <div class="absolute inset-0 opacity-[0.05]"
+                style="
                 background-image: radial-gradient(#ffffff 1px, transparent 1px);
                 background-size: 20px 20px;
             ">
+            </div>
+
         </div>
 
-    </div>
+        <div class="relative z-10 max-w-7xl mx-auto px-0 py-24 w-full">
 
-    <div class="relative z-10 max-w-7xl mx-auto px-0 py-24 w-full">
+            <div class="grid lg:grid-cols-[0.9fr_1.1fr] gap-10 items-center pt-8">
 
-        <div class="grid lg:grid-cols-[0.9fr_1.1fr] gap-10 items-center pt-8">
+                <!-- LEFT -->
+                <div class="max-w-xl">
 
-            <!-- LEFT -->
-            <div class="max-w-xl">
+                    <!-- BADGE -->
+                    <div
+                        class="inline-flex items-center gap-2 bg-white/10 border border-white/10 text-white px-5 py-2 rounded-full text-sm font-medium backdrop-blur-md mb-8">
 
-                <!-- BADGE -->
-                <div
-                    class="inline-flex items-center gap-2 bg-white/10 border border-white/10 text-white px-5 py-2 rounded-full text-sm font-medium backdrop-blur-md mb-8">
+                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
 
-                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        Plataforma #1 para la gestión de negocios
 
-                    Plataforma #1 para la gestión de negocios
+                    </div>
 
-                </div>
+                    <!-- TITULO -->
+                    <h1 class="text-4xl md:text-5xl xl:text-6xl font-black leading-[1] text-white mb-8 tracking-tight">
 
-                <!-- TITULO -->
-                <h1
-                    class="text-4xl md:text-5xl xl:text-6xl font-black leading-[1] text-white mb-8 tracking-tight">
+                        Crea y administra
+                        <br>
 
-                    Crea y administra
-                    <br>
+                        tu negocio
 
-                    tu negocio
-
-                    <span class="text-blue-500">
-                        en minutos
-                    </span>
-
-                </h1>
-
-                <!-- DESCRIPCION -->
-                <p class="text-slate-300 text-base md:text-lg leading-relaxed mb-10 max-w-lg">
-
-                    Sistemas completos en la nube para ópticas,
-                    restaurantes, ferreterías, veterinarias y cualquier
-                    tipo de empresa.
-
-                </p>
-
-                <!-- BOTONES -->
-                <div class="flex items-center gap-4 mb-12">
-
-                    <!-- BTN -->
-                    <a href="#planes"
-                        class="group bg-blue-600 hover:bg-blue-700 text-white px-7 py-4 rounded-2xl font-bold text-base shadow-2xl transition-all duration-300 hover:scale-105 whitespace-nowrap">
-
-                        <span class="flex items-center gap-3">
-
-                            Crear mi empresa ahora
-
-                            <span class="group-hover:translate-x-1 transition">
-                                →
-                            </span>
-
+                        <span class="text-blue-500">
+                            en minutos
                         </span>
 
-                    </a>
+                    </h1>
 
-                    <!-- BTN -->
-                    <a href="#demos"
-                        class="group bg-white/5 hover:bg-white/10 border border-white/10 text-white px-7 py-4 rounded-2xl font-bold text-base backdrop-blur-md transition-all duration-300 whitespace-nowrap">
+                    <!-- DESCRIPCION -->
+                    <p class="text-slate-300 text-base md:text-lg leading-relaxed mb-10 max-w-lg">
 
-                        <span class="flex items-center gap-3">
+                        Sistemas completos en la nube para ópticas,
+                        restaurantes, ferreterías, veterinarias y cualquier
+                        tipo de empresa.
+
+                    </p>
+
+                    <!-- BOTONES -->
+                    <div class="flex items-center gap-4 mb-12">
+
+                        <!-- BTN -->
+                        <a href="#planes"
+                            class="group bg-blue-600 hover:bg-blue-700 text-white px-7 py-4 rounded-2xl font-bold text-base shadow-2xl transition-all duration-300 hover:scale-105 whitespace-nowrap">
+
+                            <span class="flex items-center gap-3">
+
+                                Crear mi empresa ahora
+
+                                <span class="group-hover:translate-x-1 transition">
+                                    →
+                                </span>
+
+                            </span>
+
+                        </a>
+
+                        <!-- BTN -->
+                        <a href="#demos"
+                            class="group bg-white/5 hover:bg-white/10 border border-white/10 text-white px-7 py-4 rounded-2xl font-bold text-base backdrop-blur-md transition-all duration-300 whitespace-nowrap">
+
+                            <span class="flex items-center gap-3">
+
+                                <div
+                                    class="w-7 h-7 rounded-full border border-white/30 flex items-center justify-center text-xs">
+
+                                    ▶
+
+                                </div>
+
+                                Ver demos en vivo
+
+                            </span>
+
+                        </a>
+
+                    </div>
+
+                    <!-- BENEFICIOS -->
+                    <div class="flex flex-wrap gap-8">
+
+                        <div class="flex items-center gap-3 text-slate-300 font-medium">
 
                             <div
-                                class="w-7 h-7 rounded-full border border-white/30 flex items-center justify-center text-xs">
+                                class="w-6 h-6 rounded-full border border-blue-500/30 bg-blue-500/10 flex items-center justify-center text-blue-400 text-sm">
 
-                                ▶
+                                ✓
 
                             </div>
 
-                            Ver demos en vivo
-
-                        </span>
-
-                    </a>
-
-                </div>
-
-                <!-- BENEFICIOS -->
-                <div class="flex flex-wrap gap-8">
-
-                    <div class="flex items-center gap-3 text-slate-300 font-medium">
-
-                        <div
-                            class="w-6 h-6 rounded-full border border-blue-500/30 bg-blue-500/10 flex items-center justify-center text-blue-400 text-sm">
-
-                            ✓
+                            Sin instalación
 
                         </div>
 
-                        Sin instalación
+                        <div class="flex items-center gap-3 text-slate-300 font-medium">
 
-                    </div>
+                            <div
+                                class="w-6 h-6 rounded-full border border-blue-500/30 bg-blue-500/10 flex items-center justify-center text-blue-400 text-sm">
 
-                    <div class="flex items-center gap-3 text-slate-300 font-medium">
+                                ☁
 
-                        <div
-                            class="w-6 h-6 rounded-full border border-blue-500/30 bg-blue-500/10 flex items-center justify-center text-blue-400 text-sm">
+                            </div>
 
-                            ☁
-
-                        </div>
-
-                        En la nube
-
-                    </div>
-
-                    <div class="flex items-center gap-3 text-slate-300 font-medium">
-
-                        <div
-                            class="w-6 h-6 rounded-full border border-blue-500/30 bg-blue-500/10 flex items-center justify-center text-blue-400 text-sm">
-
-                            🛡
+                            En la nube
 
                         </div>
 
-                        Seguro y confiable
+                        <div class="flex items-center gap-3 text-slate-300 font-medium">
+
+                            <div
+                                class="w-6 h-6 rounded-full border border-blue-500/30 bg-blue-500/10 flex items-center justify-center text-blue-400 text-sm">
+
+                                🛡
+
+                            </div>
+
+                            Seguro y confiable
+
+                        </div>
 
                     </div>
 
                 </div>
 
-            </div>
+                <!-- RIGHT -->
+                <div class="relative flex justify-center lg:justify-end">
 
-            <!-- RIGHT -->
-            <div class="relative flex justify-center lg:justify-end">
-
-                <!-- WEB -->
-                <img
-                    src="{{ asset('/images/web/dashboard-web.png') }}"
-                    class="
+                    <!-- WEB -->
+                    <img src="{{ asset('/images/web/dashboard-web.png') }}"
+                        class="
                         relative
                         z-10
                         w-full
@@ -285,10 +284,9 @@
                         overflow-hidden
                     ">
 
-                <!-- MOBILE -->
-                <img
-                    src="{{ asset('/images/web/dashboard-mobile.png') }}"
-                    class="
+                    <!-- MOBILE -->
+                    <img src="{{ asset('/images/web/dashboard-mobile.png') }}"
+                        class="
                         hidden
                         md:block
                         absolute
@@ -306,6 +304,1156 @@
                         animate-float
                     ">
 
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    {{-- ========================================= --}}
+    {{-- SOLUCIONES --}}
+    {{-- ========================================= --}}
+
+    <section id="soluciones" class="py-24 bg-[#f8fafc] overflow-hidden">
+
+        <div class="max-w-7xl mx-auto px-6">
+
+            {{-- TITLE --}}
+            <div class="text-center mb-16">
+
+                <span
+                    class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-blue-50 text-blue-600 text-sm font-semibold mb-5">
+
+                    NUESTRAS SOLUCIONES
+
+                </span>
+
+                <h2 class="text-4xl md:text-5xl font-black text-slate-900 mb-5">
+
+                    Dos soluciones,
+                    <span class="text-blue-600">
+                        un mismo objetivo
+                    </span>
+
+                </h2>
+
+                <p class="text-slate-500 text-lg max-w-3xl mx-auto leading-relaxed">
+
+                    Sistemas modernos diseñados para ayudarte a gestionar,
+                    vender y hacer crecer tu negocio.
+
+                </p>
+
+            </div>
+
+            {{-- GRID --}}
+            <div class="grid lg:grid-cols-2 gap-8">
+
+                {{-- ================================= --}}
+                {{-- POS --}}
+                {{-- ================================= --}}
+
+                <div class="bg-white border border-slate-200 rounded-[32px] p-8 overflow-hidden relative">
+
+                    <div class="grid grid-cols-[0.9fr_1.1fr] items-center gap-4">
+
+                        {{-- LEFT --}}
+                        <div>
+
+                            {{-- HEADER --}}
+                            <div class="flex items-start gap-4 mb-6">
+
+                                <div
+                                    class="w-16 h-16 rounded-2xl bg-blue-600 shadow-lg flex items-center justify-center shrink-0">
+
+                                    <i class="fa-solid fa-cart-shopping text-white text-2xl"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <h3 class="text-[20px] font-black leading-tight text-slate-900">
+
+                                        KAELTECH
+                                        <span class="text-blue-600">
+                                            POS
+                                        </span>
+
+                                    </h3>
+
+                                    <p class="text-slate-500 text-sm font-medium">
+                                        Sistema Genérico
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                            {{-- DESC --}}
+                            <p class="text-slate-600 text-[15px] leading-7 mb-6">
+
+                                Ideal para tiendas, bodegas, minimarkets y
+                                todo tipo de negocios que necesitan controlar
+                                sus ventas, inventario y facturación.
+
+                            </p>
+
+                            {{-- FEATURES --}}
+                            <div class="space-y-3 mb-7">
+
+                                <div class="flex items-center gap-3 text-[15px] text-slate-700">
+
+                                    <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+
+                                        <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+
+                                    </div>
+
+                                    Ventas e inventario
+
+                                </div>
+
+                                <div class="flex items-center gap-3 text-[15px] text-slate-700">
+
+                                    <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+
+                                        <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+
+                                    </div>
+
+                                    Clientes y proveedores
+
+                                </div>
+
+                                <div class="flex items-center gap-3 text-[15px] text-slate-700">
+
+                                    <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+
+                                        <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+
+                                    </div>
+
+                                    Reportes de ventas
+
+                                </div>
+
+                                <div class="flex items-center gap-3 text-[15px] text-slate-700">
+
+                                    <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+
+                                        <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+
+                                    </div>
+
+                                    Control de productos
+
+                                </div>
+
+                            </div>
+
+                            {{-- BUTTON --}}
+                            <a href="#planes-pos"
+                                class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 transition text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg">
+
+                                Conocer más
+
+                                <i class="fa-solid fa-arrow-right text-xs"></i>
+
+                            </a>
+
+                        </div>
+
+                        {{-- RIGHT --}}
+                        <div class="flex justify-center items-end">
+
+                            <img src="{{ asset('/images/web/pos-system.png') }}"
+                                class="w-full max-w-[360px] object-contain">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {{-- ================================= --}}
+                {{-- MOTO --}}
+                {{-- ================================= --}}
+
+                <div class="bg-white border border-green-200 rounded-[32px] p-8 overflow-hidden relative">
+
+                    <div class="grid grid-cols-[0.9fr_1.1fr] items-center gap-4">
+
+                        {{-- LEFT --}}
+                        <div>
+
+                            {{-- HEADER --}}
+                            <div class="flex items-start gap-4 mb-6">
+
+                                <div
+                                    class="w-16 h-16 rounded-2xl bg-green-600 shadow-lg flex items-center justify-center shrink-0">
+
+                                    <i class="fa-solid fa-motorcycle text-white text-2xl"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <h3 class="text-[20px] font-black leading-tight text-slate-900">
+
+                                        KAELTECH
+                                        <span class="text-green-600">
+                                            MOTO
+                                        </span>
+
+                                    </h3>
+
+                                    <p class="text-slate-500 text-sm font-medium">
+                                        Sistema para Talleres de Motos
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                            {{-- DESC --}}
+                            <p class="text-slate-600 text-[15px] leading-7 mb-6">
+
+                                Especializado para talleres de motos.
+                                Controla mantenimientos, clientes,
+                                técnicos, repuestos y mucho más.
+
+                            </p>
+
+                            {{-- FEATURES --}}
+                            <div class="space-y-3 mb-7">
+
+                                <div class="flex items-center gap-3 text-[15px] text-slate-700">
+
+                                    <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+
+                                        <i class="fa-solid fa-check text-[10px] text-green-600"></i>
+
+                                    </div>
+
+                                    Órdenes de servicio
+
+                                </div>
+
+                                <div class="flex items-center gap-3 text-[15px] text-slate-700">
+
+                                    <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+
+                                        <i class="fa-solid fa-check text-[10px] text-green-600"></i>
+
+                                    </div>
+
+                                    Historial por moto y cliente
+
+                                </div>
+
+                                <div class="flex items-center gap-3 text-[15px] text-slate-700">
+
+                                    <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+
+                                        <i class="fa-solid fa-check text-[10px] text-green-600"></i>
+
+                                    </div>
+
+                                    Agenda y técnicos
+
+                                </div>
+
+                                <div class="flex items-center gap-3 text-[15px] text-slate-700">
+
+                                    <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+
+                                        <i class="fa-solid fa-check text-[10px] text-green-600"></i>
+
+                                    </div>
+
+                                    Reportes y estadísticas
+
+                                </div>
+
+                            </div>
+
+                            {{-- BUTTON --}}
+                            <a href="#planes-moto"
+                                class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 transition text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg">
+
+                                Conocer más
+
+                                <i class="fa-solid fa-arrow-right text-xs"></i>
+
+                            </a>
+
+                        </div>
+
+                        {{-- RIGHT --}}
+                        <div class="flex justify-center items-end">
+
+                            <img src="{{ asset('/images/web/moto-system.png') }}"
+                                class="w-full max-w-[420px] object-contain">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    {{-- ========================================= --}}
+    {{-- PLANES POS --}}
+    {{-- ========================================= --}}
+
+    <section id="planes-pos" class="py-24 bg-[#f8fafc] overflow-hidden">
+
+        <div class="max-w-5xl mx-auto px-6">
+
+            {{-- HEADER --}}
+            <div class="text-center mb-14">
+
+                <div class="inline-flex items-center gap-3 mb-4">
+
+                    <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg">
+
+                        <i class="fa-solid fa-cart-shopping text-white"></i>
+
+                    </div>
+
+                    <div class="text-left">
+
+                        <h2 class="text-3xl font-black text-slate-900">
+
+                            PLANES KAELTECH
+                            <span class="text-blue-600">
+                                POS
+                            </span>
+
+                        </h2>
+
+                        <p class="text-slate-500 text-sm">
+                            Planes simples para empezar rápido
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {{-- CARDS --}}
+            <div class="grid md:grid-cols-2 gap-8">
+
+                {{-- PLAN BASICO --}}
+                <div
+                    class="bg-white rounded-[28px] border border-slate-200 p-8 shadow-sm hover:shadow-xl transition-all duration-300">
+
+                    <div class="text-center mb-8">
+
+                        <span
+                            class="inline-flex px-4 py-2 rounded-full bg-blue-50 text-blue-600 text-xs font-bold mb-5">
+
+                            PLAN BÁSICO
+
+                        </span>
+
+                        <p class="text-slate-500 text-sm mb-4">
+                            Ideal para empezar
+                        </p>
+
+                        <div class="flex items-end justify-center gap-1">
+
+                            <span class="text-2xl font-semibold text-slate-700">
+                                S/
+                            </span>
+
+                            <span class="text-6xl font-black text-slate-900 leading-none">
+                                29
+                            </span>
+
+                            <span class="text-slate-500 mb-1">
+                                /mes
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    {{-- FEATURES --}}
+                    <div class="space-y-4 mb-8">
+
+                        <div class="flex items-center gap-3 text-slate-700 text-[15px]">
+
+                            <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+
+                                <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+
+                            </div>
+
+                            Ventas e inventario
+
+                        </div>
+
+                        <div class="flex items-center gap-3 text-slate-700 text-[15px]">
+
+                            <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+
+                                <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+
+                            </div>
+
+                            Clientes y proveedores
+
+                        </div>
+
+                        <div class="flex items-center gap-3 text-slate-700 text-[15px]">
+
+                            <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+
+                                <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+
+                            </div>
+
+                            Reportes básicos
+
+                        </div>
+
+                        <div class="flex items-center gap-3 text-slate-700 text-[15px]">
+
+                            <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+
+                                <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+
+                            </div>
+
+                            Sin facturación electrónica
+
+                        </div>
+
+                    </div>
+
+                    {{-- BUTTON --}}
+                    <button
+                        class="w-full bg-blue-600 hover:bg-blue-700 transition text-white py-4 rounded-xl font-bold text-sm shadow-lg">
+
+                        Probar gratis 14 días
+
+                    </button>
+
+                </div>
+
+                {{-- PLAN FACTURACION --}}
+                <div
+                    class="bg-gradient-to-b from-blue-600 to-blue-700 rounded-[28px] p-8 text-white shadow-2xl relative overflow-hidden">
+
+                    {{-- GLOW --}}
+                    <div class="absolute top-0 right-0 w-52 h-52 bg-white/10 rounded-full blur-3xl">
+                    </div>
+
+                    {{-- BADGE --}}
+                    <div
+                        class="absolute top-5 right-5 bg-white text-blue-700 px-4 py-2 rounded-full text-xs font-black shadow-lg">
+
+                        MÁS POPULAR
+
+                    </div>
+
+                    <div class="relative z-10">
+
+                        <div class="text-center mb-8">
+
+                            <span
+                                class="inline-flex px-4 py-2 rounded-full bg-white/10 text-white text-xs font-bold mb-5">
+
+                                PLAN FACTURACIÓN
+
+                            </span>
+
+                            <p class="text-blue-100 text-sm mb-4">
+                                Para crecer tu negocio
+                            </p>
+
+                            <div class="flex items-end justify-center gap-1">
+
+                                <span class="text-2xl font-semibold text-blue-100">
+                                    S/
+                                </span>
+
+                                <span class="text-6xl font-black leading-none">
+                                    69
+                                </span>
+
+                                <span class="text-blue-100 mb-1">
+                                    /mes
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        {{-- FEATURES --}}
+                        <div class="space-y-4 mb-8">
+
+                            <div class="flex items-center gap-3 text-[15px]">
+
+                                <div
+                                    class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+
+                                    <i class="fa-solid fa-check text-[10px]"></i>
+
+                                </div>
+
+                                Todo lo del plan Básico
+
+                            </div>
+
+                            <div class="flex items-center gap-3 text-[15px]">
+
+                                <div
+                                    class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+
+                                    <i class="fa-solid fa-check text-[10px]"></i>
+
+                                </div>
+
+                                Facturación electrónica (SUNAT)
+
+                            </div>
+
+                            <div class="flex items-center gap-3 text-[15px]">
+
+                                <div
+                                    class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+
+                                    <i class="fa-solid fa-check text-[10px]"></i>
+
+                                </div>
+
+                                Cotizaciones y boletas
+
+                            </div>
+
+                            <div class="flex items-center gap-3 text-[15px]">
+
+                                <div
+                                    class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+
+                                    <i class="fa-solid fa-check text-[10px]"></i>
+
+                                </div>
+
+                                Reportes avanzados
+
+                            </div>
+
+                        </div>
+
+                        {{-- BUTTON --}}
+                        <button
+                            class="w-full bg-white hover:bg-slate-100 transition text-blue-700 py-4 rounded-xl font-black text-sm shadow-xl">
+
+                            Probar gratis 14 días
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {{-- FOOT --}}
+            <div class="flex items-center justify-center gap-2 mt-8 text-slate-500 text-sm">
+
+                <i class="fa-regular fa-circle-check text-blue-600"></i>
+
+                Sin permanencias. Cancela cuando quieras.
+
+            </div>
+
+        </div>
+
+    </section>
+
+    {{-- ========================================= --}}
+{{-- PLANES KAELTECH MOTO --}}
+{{-- ========================================= --}}
+
+<section id="planes-moto" class="py-20 bg-[#f4f7fb] overflow-hidden">
+
+    <div class="max-w-7xl mx-auto px-6">
+
+        {{-- ================================= --}}
+        {{-- HEADER --}}
+        {{-- ================================= --}}
+
+        <div
+            class="relative overflow-hidden rounded-[32px] bg-[#020817] border border-slate-800 mb-10">
+
+            {{-- EFFECTS --}}
+            <div
+                class="absolute top-0 left-0 w-[350px] h-[350px] bg-blue-600/20 blur-[120px] rounded-full">
+            </div>
+
+            <div
+                class="absolute bottom-0 right-0 w-[350px] h-[350px] bg-green-600/20 blur-[120px] rounded-full">
+            </div>
+
+            <div
+                class="relative z-10 grid lg:grid-cols-[1fr_480px] gap-10 items-center p-8 lg:p-12">
+
+                {{-- LEFT --}}
+                <div>
+
+                    {{-- TOP --}}
+                    <div class="flex items-center gap-4 mb-6">
+
+                        <div
+                            class="w-14 h-14 rounded-2xl bg-green-600 flex items-center justify-center shadow-xl">
+
+                            <i class="fa-solid fa-motorcycle text-white text-xl"></i>
+
+                        </div>
+
+                        <div>
+
+                            <h2 class="text-3xl font-black text-white">
+
+                                PLANES KAELTECH
+                                <span class="text-green-500">
+                                    MOTO
+                                </span>
+
+                            </h2>
+
+                            <p class="text-slate-400 text-sm mt-1">
+                                Sistema de gestión para talleres de motos
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    {{-- TITLE --}}
+                    <h1
+                        class="text-4xl md:text-5xl font-black leading-tight text-white mb-5 uppercase">
+
+                        Haz que tu taller
+                        trabaje como
+
+                        <span class="text-green-500">
+                            empresa
+                        </span>
+
+                    </h1>
+
+                    <p class="text-slate-300 text-lg mb-8 max-w-2xl">
+
+                        Más orden, más clientes y más ganancias
+                        desde el primer mes.
+
+                    </p>
+
+                    {{-- BENEFITS --}}
+                    <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
+
+                        {{-- ITEM --}}
+                        <div class="flex items-start gap-3">
+
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center shrink-0">
+
+                                <i
+                                    class="fa-regular fa-calendar-check text-green-400"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h3 class="text-white font-black text-sm">
+                                    MÁS ORDEN
+                                </h3>
+
+                                <p class="text-slate-400 text-xs">
+                                    en tus procesos
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        {{-- ITEM --}}
+                        <div class="flex items-start gap-3">
+
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+
+                                <i
+                                    class="fa-solid fa-shield-halved text-blue-400"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h3 class="text-white font-black text-sm">
+                                    MÁS CONTROL
+                                </h3>
+
+                                <p class="text-slate-400 text-xs">
+                                    de tu taller
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        {{-- ITEM --}}
+                        <div class="flex items-start gap-3">
+
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center shrink-0">
+
+                                <i
+                                    class="fa-solid fa-chart-line text-green-400"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h3 class="text-white font-black text-sm">
+                                    MÁS CLIENTES
+                                </h3>
+
+                                <p class="text-slate-400 text-xs">
+                                    y más ganancias
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        {{-- ITEM --}}
+                        <div class="flex items-start gap-3">
+
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+
+                                <i
+                                    class="fa-regular fa-star text-blue-400"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h3 class="text-white font-black text-sm">
+                                    MEJOR IMAGEN
+                                </h3>
+
+                                <p class="text-slate-400 text-xs">
+                                    profesionalismo
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {{-- RIGHT --}}
+                <div class="relative flex justify-center">
+
+                    {{-- DASHBOARD --}}
+                    <img
+                        src="{{ asset('/images/web/moto-dashboard.png') }}"
+                        class="w-full max-w-[480px] relative z-10">
+
+                    {{-- PHONE --}}
+                    <img
+                        src="{{ asset('/images/web/moto-phone.png') }}"
+                        class="absolute bottom-0 right-4 w-[250px] z-20">
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {{-- ================================= --}}
+        {{-- CARDS --}}
+        {{-- ================================= --}}
+
+        <div class="grid xl:grid-cols-3 gap-6">
+
+            {{-- ================================= --}}
+            {{-- STARTER --}}
+            {{-- ================================= --}}
+
+            <div
+                class="relative overflow-hidden rounded-[30px] bg-gradient-to-b from-[#119c36] to-[#0d7428] text-white shadow-[0_15px_40px_rgba(16,185,129,.25)]">
+
+                <div class="p-6">
+
+                    {{-- TOP --}}
+                    <div class="flex items-start justify-between mb-5">
+
+                        <div>
+
+                            <h3 class="text-3xl font-black uppercase leading-none">
+
+                                PLAN
+                                <br>
+
+                                <span class="text-green-300">
+                                    STARTER
+                                </span>
+
+                            </h3>
+
+                            <p class="text-green-100 mt-3 text-sm">
+                                Ideal para talleres pequeños
+                            </p>
+
+                        </div>
+
+                        <div
+                            class="px-4 py-2 rounded-full bg-green-400/20 border border-green-300/20 text-xs font-black">
+
+                            INICIAL
+
+                        </div>
+
+                    </div>
+
+                    {{-- PRICE --}}
+                    <div
+                        class="bg-gradient-to-r from-green-500 to-green-600 rounded-[22px] p-5 mb-6 shadow-xl">
+
+                        <div class="text-center">
+
+                            <div class="flex items-end justify-center gap-2">
+
+                                <span class="text-2xl font-bold">
+                                    S/
+                                </span>
+
+                                <span
+                                    class="text-5xl font-black tracking-tight leading-none">
+
+                                    99 - 149
+
+                                </span>
+
+                            </div>
+
+                            <div
+                                class="uppercase text-green-100 font-bold tracking-widest text-sm mt-2">
+
+                                POR MES
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {{-- FEATURES --}}
+                    <div class="space-y-4 mb-6 text-[15px]">
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-green-200"></i>
+                            Agenda semanal visual
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-green-200"></i>
+                            Reservas de citas
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-green-200"></i>
+                            Gestión de clientes
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-green-200"></i>
+                            Historial básico de motos
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-green-200"></i>
+                            Mantenimientos y servicios
+                        </div>
+
+                    </div>
+
+                    {{-- FOOT --}}
+                    <div
+                        class="rounded-2xl border border-green-300/20 bg-black/20 p-4 mb-6">
+
+                        <div class="space-y-3 text-sm">
+
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-shop"></i>
+                                1 sucursal
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-users"></i>
+                                Usuarios limitados
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-ban"></i>
+                                Sin personalización
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {{-- BUTTON --}}
+                    <button
+                        class="w-full bg-white hover:bg-slate-100 transition text-green-700 py-4 rounded-2xl text-sm font-black shadow-xl">
+
+                        Solicitar información
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            {{-- ================================= --}}
+            {{-- PROFESIONAL --}}
+            {{-- ================================= --}}
+
+            <div
+                class="relative overflow-hidden rounded-[30px] bg-gradient-to-b from-[#0d56f0] to-[#0835a1] text-white shadow-[0_20px_60px_rgba(37,99,235,.35)] scale-[1.01]">
+
+                {{-- BADGE --}}
+                <div
+                    class="absolute top-5 right-5 bg-white text-blue-700 px-5 py-2 rounded-full font-black text-xs shadow-xl">
+
+                    MÁS VENDIDO
+
+                </div>
+
+                <div class="p-6">
+
+                    <div class="mb-5">
+
+                        <h3 class="text-3xl font-black uppercase leading-none">
+
+                            PLAN
+                            <br>
+
+                            <span class="text-blue-300">
+                                PROFESIONAL
+                            </span>
+
+                        </h3>
+
+                        <p class="text-blue-100 mt-3 text-sm">
+                            Para talleres que buscan crecer
+                        </p>
+
+                    </div>
+
+                    {{-- PRICE --}}
+                    <div
+                        class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-[22px] p-5 mb-6 shadow-xl">
+
+                        <div class="text-center">
+
+                            <div class="flex items-end justify-center gap-2">
+
+                                <span class="text-2xl font-bold">
+                                    S/
+                                </span>
+
+                                <span
+                                    class="text-5xl font-black tracking-tight leading-none">
+
+                                    249 - 399
+
+                                </span>
+
+                            </div>
+
+                            <div
+                                class="uppercase text-blue-100 font-bold tracking-widest text-sm mt-2">
+
+                                POR MES
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {{-- FEATURES --}}
+                    <div class="space-y-4 mb-6 text-[15px]">
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-blue-200"></i>
+                            Todo lo del plan Starter
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-blue-200"></i>
+                            Página web profesional
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-blue-200"></i>
+                            Historial completo por placa
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-blue-200"></i>
+                            Reportes PDF profesionales
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-blue-200"></i>
+                            Integración con WhatsApp
+                        </div>
+
+                    </div>
+
+                    {{-- BUTTON --}}
+                    <button
+                        class="w-full bg-white hover:bg-slate-100 transition text-blue-700 py-4 rounded-2xl text-sm font-black shadow-xl">
+
+                        Agendar demo
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            {{-- ================================= --}}
+            {{-- EMPRESA --}}
+            {{-- ================================= --}}
+
+            <div
+                class="relative overflow-hidden rounded-[30px] bg-gradient-to-b from-[#ea0914] to-[#a1070e] text-white shadow-[0_15px_40px_rgba(239,68,68,.35)]">
+
+                <div class="p-6">
+
+                    <div class="flex items-start justify-between mb-5">
+
+                        <div>
+
+                            <h3 class="text-3xl font-black uppercase leading-none">
+
+                                PLAN
+                                <br>
+
+                                <span class="text-red-300">
+                                    EMPRESA
+                                </span>
+
+                            </h3>
+
+                            <p class="text-red-100 mt-3 text-sm">
+                                Solución personalizada
+                            </p>
+
+                        </div>
+
+                        <div
+                            class="px-4 py-2 rounded-full bg-red-400/20 border border-red-300/20 text-xs font-black">
+
+                            ENTERPRISE
+
+                        </div>
+
+                    </div>
+
+                    {{-- PRICE --}}
+                    <div
+                        class="bg-gradient-to-r from-red-500 to-red-600 rounded-[22px] p-5 mb-6 shadow-xl">
+
+                        <div class="text-center">
+
+                            <div class="flex items-end justify-center gap-2">
+
+                                <span class="text-2xl font-bold">
+                                    S/
+                                </span>
+
+                                <span
+                                    class="text-5xl font-black tracking-tight leading-none">
+
+                                    3,500
+
+                                </span>
+
+                            </div>
+
+                            <div
+                                class="uppercase text-red-100 font-bold tracking-widest text-sm mt-2">
+
+                                PAGO ÚNICO
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {{-- FEATURES --}}
+                    <div class="space-y-4 mb-6 text-[15px]">
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-red-200"></i>
+                            Sistema 100% personalizado
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-red-200"></i>
+                            Marca y dominio propio
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-red-200"></i>
+                            Implementación completa
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-red-200"></i>
+                            Capacitación a tu equipo
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-red-200"></i>
+                            Soporte preferencial
+                        </div>
+
+                    </div>
+
+                    {{-- BUTTON --}}
+                    <button
+                        class="w-full bg-white hover:bg-slate-100 transition text-red-700 py-4 rounded-2xl text-sm font-black shadow-xl">
+
+                        Solicitar cotización
+
+                    </button>
+
+                </div>
+
             </div>
 
         </div>
@@ -313,438 +1461,6 @@
     </div>
 
 </section>
-
-    <!-- SOLUCIONES -->
-    <section id="soluciones" class="py-24 bg-[#f5f7fb] overflow-hidden">
-
-        <div class="max-w-7xl mx-auto px-6">
-
-            <!-- TITULO -->
-            <div class="text-center mb-16">
-
-                <h2 class="text-5xl md:text-6xl font-black text-slate-900 mb-5 leading-tight">
-                    Soluciones diseñadas para cada negocio
-                </h2>
-
-                <p class="text-slate-500 text-xl max-w-3xl mx-auto">
-                    Elige el sistema ideal para tu rubro y empieza a crecer.
-                </p>
-            </div>
-
-            @php
-
-                $rubros = [
-                    [
-                        'nombre' => 'Ópticas',
-                        'descripcion' => 'Ventas, recetas, control de monturas, exámenes visuales y catálogo web.',
-                        'icono' => '👓',
-                        'imagen' =>
-                            'https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=1200&auto=format&fit=crop',
-                        'color' => 'bg-violet-100 text-violet-600',
-                    ],
-
-                    [
-                        'nombre' => 'Restaurantes',
-                        'descripcion' => 'Pedidos, mesas, cocina, delivery y control de inventario.',
-                        'icono' => '🍔',
-                        'imagen' =>
-                            'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=1200&auto=format&fit=crop',
-                        'color' => 'bg-orange-100 text-orange-600',
-                    ],
-
-                    [
-                        'nombre' => 'Ferreterías',
-                        'descripcion' => 'Inventario, cotizaciones, ventas al por mayor y proveedores.',
-                        'icono' => '🛠️',
-                        'imagen' =>
-                            'https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1200&auto=format&fit=crop',
-                        'color' => 'bg-green-100 text-green-600',
-                    ],
-
-                    [
-                        'nombre' => 'Veterinarias',
-                        'descripcion' => 'Historial clínico, citas, vacunas, pacientes y más.',
-                        'icono' => '🐶',
-                        'imagen' =>
-                            'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=1200&auto=format&fit=crop',
-                        'color' => 'bg-indigo-100 text-indigo-600',
-                    ],
-
-                    [
-                        'nombre' => 'Farmacias',
-                        'descripcion' => 'Control de medicamentos, ventas, lotes y vencimientos.',
-                        'icono' => '💊',
-                        'imagen' =>
-                            'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?q=80&w=1200&auto=format&fit=crop',
-                        'color' => 'bg-emerald-100 text-emerald-600',
-                    ],
-
-                    [
-                        'nombre' => 'Minimarkets',
-                        'descripcion' => 'POS rápido, códigos de barras y control de stock.',
-                        'icono' => '🛒',
-                        'imagen' =>
-                            'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1200&auto=format&fit=crop',
-                        'color' => 'bg-yellow-100 text-yellow-700',
-                    ],
-
-                    [
-                        'nombre' => 'Salones & Spa',
-                        'descripcion' => 'Reservas, clientes, servicios y caja diaria.',
-                        'icono' => '💇',
-                        'imagen' =>
-                            'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?q=80&w=1200&auto=format&fit=crop',
-                        'color' => 'bg-pink-100 text-pink-600',
-                    ],
-
-                    [
-                        'nombre' => 'Tiendas de ropa',
-                        'descripcion' => 'Tallas, colores, inventario y ventas rápidas.',
-                        'icono' => '👕',
-                        'imagen' =>
-                            'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop',
-                        'color' => 'bg-blue-100 text-blue-600',
-                    ],
-
-                    [
-                        'nombre' => 'Genérico',
-                        'descripcion' => 'Adaptable a cualquier tipo de negocio o empresa.',
-                        'icono' => '🏢',
-                        'imagen' =>
-                            'https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop',
-                        'color' => 'bg-slate-100 text-slate-700',
-                    ],
-                ];
-
-            @endphp
-
-            <!-- WRAPPER -->
-            <div class="relative">
-
-                <!-- BOTON IZQUIERDA -->
-                <button id="prevBtn"
-                    class="hidden lg:flex absolute -left-6 top-1/2 -translate-y-1/2 z-20 w-16 h-16 rounded-full bg-white shadow-2xl items-center justify-center text-3xl font-bold hover:scale-110 transition">
-
-                    ←
-                </button>
-
-                <!-- BOTON DERECHA -->
-                <button id="nextBtn"
-                    class="hidden lg:flex absolute -right-6 top-1/2 -translate-y-1/2 z-20 w-16 h-16 rounded-full bg-white shadow-2xl items-center justify-center text-3xl font-bold hover:scale-110 transition">
-
-                    →
-                </button>
-
-                <!-- CAROUSEL -->
-                <div id="carousel" class="flex gap-8 overflow-x-auto scroll-smooth no-scrollbar pb-4">
-
-                    @foreach ($rubros as $rubro)
-                        <div
-                            class="min-w-[340px] max-w-[340px] bg-white rounded-[32px] overflow-hidden shadow-xl border border-slate-100 hover:-translate-y-3 hover:shadow-2xl transition-all duration-500">
-
-                            <!-- IMAGEN -->
-                            <div class="relative h-64 overflow-hidden">
-
-                                <img src="{{ $rubro['imagen'] }}"
-                                    class="w-full h-full object-cover hover:scale-110 transition duration-700">
-
-                                <!-- ICONO -->
-                                <div
-                                    class="absolute top-5 left-5 w-16 h-16 rounded-2xl {{ $rubro['color'] }} flex items-center justify-center text-3xl shadow-xl">
-
-                                    {{ $rubro['icono'] }}
-
-                                </div>
-
-                                <!-- OVERLAY -->
-                                <div
-                                    class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent">
-                                </div>
-
-                            </div>
-
-                            <!-- CONTENT -->
-                            <div class="p-8">
-
-                                <h3 class="text-4xl font-black text-slate-900 mb-4 leading-tight">
-                                    {{ $rubro['nombre'] }}
-                                </h3>
-
-                                <p class="text-slate-500 leading-relaxed text-lg mb-8 min-h-[120px]">
-                                    {{ $rubro['descripcion'] }}
-                                </p>
-
-                                <a href="#"
-                                    class="inline-flex items-center gap-2 text-blue-600 font-black text-xl hover:gap-4 transition-all">
-
-                                    Ver demo
-
-                                    <span>→</span>
-                                </a>
-                            </div>
-                        </div>
-                    @endforeach
-
-                </div>
-
-                <!-- PAGINATION -->
-                <div class="flex justify-center gap-3 mt-10">
-
-                    @for ($i = 0; $i < 6; $i++)
-                        <div class="w-3 h-3 rounded-full {{ $i == 0 ? 'bg-blue-600 w-10' : 'bg-slate-300' }}"></div>
-                    @endfor
-
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- PASOS -->
-    <section class="pb-24">
-        <div class="max-w-6xl mx-auto px-6">
-
-            <div class="text-center mb-16">
-                <h2 class="text-5xl font-black mb-5">
-                    Así de fácil es empezar
-                </h2>
-            </div>
-
-            <div class="grid lg:grid-cols-3 gap-8">
-
-                <div class="bg-white rounded-[32px] p-10 shadow-xl border border-slate-100 text-center card-hover">
-                    <div
-                        class="w-20 h-20 rounded-full bg-blue-600 text-white flex items-center justify-center text-3xl font-black mx-auto mb-8">
-                        1
-                    </div>
-
-                    <h3 class="text-3xl font-black mb-4">Crea tu empresa</h3>
-
-                    <p class="text-slate-500 text-lg leading-relaxed">
-                        Registra tu empresa en pocos minutos.
-                    </p>
-                </div>
-
-                <div class="bg-white rounded-[32px] p-10 shadow-xl border border-slate-100 text-center card-hover">
-                    <div
-                        class="w-20 h-20 rounded-full bg-indigo-600 text-white flex items-center justify-center text-3xl font-black mx-auto mb-8">
-                        2
-                    </div>
-
-                    <h3 class="text-3xl font-black mb-4">Obtén tu subdominio</h3>
-
-                    <p class="text-slate-500 text-lg leading-relaxed">
-                        Tu sistema se crea automáticamente.
-                    </p>
-                </div>
-
-                <div class="bg-white rounded-[32px] p-10 shadow-xl border border-slate-100 text-center card-hover">
-                    <div
-                        class="w-20 h-20 rounded-full bg-violet-600 text-white flex items-center justify-center text-3xl font-black mx-auto mb-8">
-                        3
-                    </div>
-
-                    <h3 class="text-3xl font-black mb-4">Empieza a vender</h3>
-
-                    <p class="text-slate-500 text-lg leading-relaxed">
-                        Configura tu negocio y comienza hoy.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- BENEFICIOS -->
-    <section class="pb-24">
-        <div class="max-w-7xl mx-auto px-6">
-
-            <div class="bg-white rounded-[36px] shadow-2xl border border-slate-100 p-12">
-
-                <div class="text-center mb-14">
-                    <h2 class="text-5xl font-black mb-5">
-                        Todo lo que necesitas para crecer
-                    </h2>
-                </div>
-
-                <div class="grid md:grid-cols-2 lg:grid-cols-6 gap-8">
-
-                    @php
-                        $beneficios = [
-                            ['☁️', 'En la nube'],
-                            ['🔒', 'Seguro'],
-                            ['⚡', 'Rápido'],
-                            ['📱', 'Responsive'],
-                            ['📊', 'Reportes'],
-                            ['🌐', 'Catálogo web'],
-                        ];
-                    @endphp
-
-                    @foreach ($beneficios as $beneficio)
-                        <div class="text-center">
-                            <div
-                                class="w-20 h-20 rounded-3xl bg-blue-100 flex items-center justify-center text-4xl mx-auto mb-5">
-                                {{ $beneficio[0] }}
-                            </div>
-
-                            <h3 class="font-black text-xl mb-2">
-                                {{ $beneficio[1] }}
-                            </h3>
-
-                            <p class="text-slate-500 text-sm">
-                                Funcionalidades avanzadas incluidas.
-                            </p>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- PLANES -->
-    <section id="planes" class="pb-24">
-
-        <div class="max-w-7xl mx-auto px-6">
-
-            <div class="text-center mb-16">
-                <h2 class="text-5xl font-black mb-5">
-                    Planes para cada etapa de tu negocio
-                </h2>
-
-                <p class="text-slate-500 text-xl">
-                    Elige el plan que mejor se adapte a tus necesidades.
-                </p>
-            </div>
-
-            <div class="grid lg:grid-cols-3 gap-8 items-center">
-
-                <!-- BASICO -->
-                <div class="bg-white rounded-[36px] p-10 shadow-xl border border-slate-100 card-hover">
-
-                    <div class="mb-8">
-                        <h3 class="text-3xl font-black mb-3">Básico</h3>
-                        <p class="text-slate-500">Ideal para empezar</p>
-                    </div>
-
-                    <div class="mb-8">
-                        <span class="text-6xl font-black">S/49</span>
-                        <span class="text-slate-500">/ mes</span>
-                    </div>
-
-                    <ul class="space-y-4 mb-10 text-slate-600">
-                        <li>✅ 1 usuario</li>
-                        <li>✅ Ventas e inventario</li>
-                        <li>✅ Reportes básicos</li>
-                        <li>✅ Soporte WhatsApp</li>
-                    </ul>
-
-                    <button
-                        class="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition py-4 rounded-2xl font-bold">
-                        Elegir plan
-                    </button>
-                </div>
-
-                <!-- PROFESIONAL -->
-                <div
-                    class="bg-gradient-to-b from-blue-600 to-indigo-700 text-white rounded-[40px] p-10 shadow-2xl scale-105 relative overflow-hidden">
-
-                    <div
-                        class="absolute top-5 right-5 bg-white text-blue-600 px-4 py-2 rounded-full text-sm font-black">
-                        MÁS POPULAR
-                    </div>
-
-                    <div class="mb-8">
-                        <h3 class="text-3xl font-black mb-3">Profesional</h3>
-                        <p class="text-blue-100">Todo lo necesario para crecer</p>
-                    </div>
-
-                    <div class="mb-8">
-                        <span class="text-7xl font-black">S/99</span>
-                        <span class="text-blue-100">/ mes</span>
-                    </div>
-
-                    <ul class="space-y-4 mb-10 text-blue-50">
-                        <li>✅ Usuarios ilimitados</li>
-                        <li>✅ Catálogo web incluido</li>
-                        <li>✅ WhatsApp integrado</li>
-                        <li>✅ Reportes avanzados</li>
-                        <li>✅ Respaldo automático</li>
-                    </ul>
-
-                    <button
-                        class="w-full bg-white text-blue-700 hover:bg-slate-100 transition py-5 rounded-2xl font-black text-lg shadow-2xl">
-                        Elegir plan
-                    </button>
-                </div>
-
-                <!-- EMPRESA -->
-                <div class="bg-white rounded-[36px] p-10 shadow-xl border border-slate-100 card-hover">
-
-                    <div class="mb-8">
-                        <h3 class="text-3xl font-black mb-3">Empresa</h3>
-                        <p class="text-slate-500">Máxima potencia y control</p>
-                    </div>
-
-                    <div class="mb-8">
-                        <span class="text-6xl font-black">S/199</span>
-                        <span class="text-slate-500">/ mes</span>
-                    </div>
-
-                    <ul class="space-y-4 mb-10 text-slate-600">
-                        <li>✅ Sucursales</li>
-                        <li>✅ API y webhooks</li>
-                        <li>✅ Personalización avanzada</li>
-                        <li>✅ Soporte prioritario</li>
-                    </ul>
-
-                    <button
-                        class="w-full border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white transition py-4 rounded-2xl font-bold">
-                        Elegir plan
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="pb-24">
-        <div class="max-w-7xl mx-auto px-6">
-
-            <div
-                class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-[40px] overflow-hidden relative p-14 text-white shadow-2xl">
-
-                <div class="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-
-                <div class="relative z-10 grid lg:grid-cols-2 gap-12 items-center">
-
-                    <div>
-                        <h2 class="text-5xl font-black leading-tight mb-6">
-                            ¿Listo para llevar tu negocio al siguiente nivel?
-                        </h2>
-
-                        <p class="text-blue-100 text-xl mb-10">
-                            Únete a cientos de empresas que ya confían en Kael.
-                        </p>
-
-                        <div class="flex flex-wrap gap-4">
-                            <a href="#planes"
-                                class="bg-white text-blue-700 hover:bg-slate-100 px-8 py-5 rounded-2xl font-black shadow-2xl transition">
-                                Crear empresa ahora
-                            </a>
-
-                            <a href="https://wa.me/51999999999"
-                                class="glass border border-white/10 hover:bg-white/10 px-8 py-5 rounded-2xl font-bold transition">
-                                Hablar por WhatsApp
-                            </a>
-                        </div>
-                    </div>
-
-                    <div>
-                        <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop"
-                            class="rounded-[32px] shadow-2xl w-full h-[360px] object-cover border border-white/10">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- FOOTER -->
     <footer id="contacto" class="bg-[#020817] text-white py-20">

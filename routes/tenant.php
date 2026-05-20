@@ -16,9 +16,11 @@ use App\Http\Controllers\Tenant\HomeController;
 use App\Http\Controllers\Tenant\MetodoPagoController;
 use App\Http\Controllers\Tenant\ProductoController;
 use App\Http\Controllers\Tenant\ProveedorController;
+use App\Http\Controllers\Tenant\TestFacturacionController;
 use App\Http\Controllers\Tenant\TipoGastoController;
 use App\Http\Controllers\Tenant\UserController;
 use App\Http\Controllers\Tenant\VentaController;
+use App\Services\Facturacion\GreenterService;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
@@ -240,6 +242,91 @@ Route::get('/__debug', function () {
     ]);
 });
 Route::get('/__who', fn () => dd('TENANT', tenant()));
+
+Route::get('/test-greenter', function () {
+
+    return class_exists(\Greenter\See::class)
+        ? 'Greenter OK'
+        : 'Error';
+
+});
+
+Route::get('/test-see', function () {
+    $service = new GreenterService();
+    $see = $service->getSee();
+    return $see
+        ? 'SEE OK'
+        : 'ERROR';
+});
+
+Route::get('/test-company', function () {
+    $service = new GreenterService();
+    $company = $service->getCompany();
+
+    return response()->json([
+        'ruc' => $company->getRuc(),
+        'razon_social' => $company->getRazonSocial(),
+        'nombre_comercial' => $company->getNombreComercial(),
+    ]);
+
+});
+
+Route::get('/test-client', function () {
+
+    $service = new GreenterService();
+
+    $client = $service->getClient([
+        'tipo_doc' => '6',
+        'numero_doc' => '20111111111',
+        'razon_social' => 'CLIENTE DEMO SAC'
+    ]);
+
+    return response()->json([
+        'tipo_doc' => $client->getTipoDoc(),
+        'numero_doc' => $client->getNumDoc(),
+        'razon_social' => $client->getRznSocial()
+    ]);
+
+});
+
+Route::get('/test-invoice', function () {
+
+    $service = new GreenterService();
+
+    $invoice = $service->getInvoice();
+
+    return response()->json([
+        'serie' => $invoice->getSerie(),
+        'correlativo' => $invoice->getCorrelativo(),
+        'cliente' => $invoice->getClient()->getRznSocial(),
+        'total' => $invoice->getMtoImpVenta(),
+    ]);
+
+});
+
+Route::get('/test-xml', function () {
+
+    $service = new GreenterService();
+
+    return response()->json(
+        $service->generateXml()
+    );
+
+});
+
+Route::get('/test-send', function () {
+
+    $service = new GreenterService();
+
+    return response()->json(
+        $service->send()
+    );
+
+});
+
+Route::get('/test-facturacion', [TestFacturacionController::class, 'enviar']);
+
+
 
 // Route::get('/test-tenant', function () {
 //         return response()->json([

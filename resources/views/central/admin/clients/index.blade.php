@@ -1,168 +1,152 @@
 @extends('central.layout.appAdminLte')
-
 @section('titulo', 'Clientes')
-
-
 @section('contenido')
+    @can('admin.clients.create')
+    <div class="col-5">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">CREAR CLIENTES</h5>
+                <p class="card-text"></p>
+                <form id="ClienteForm" name="ClienteForm" action="{{ route('admin.clients.store') }}">
+                    @csrf
 
-    <div class="container ">
-        {{-- Mensaje de alerta --}}
-        <div id="mensaje">
-            @if (session('datos'))
-                <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
-                    {{ session('datos') }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true"><i></i></span>
-                    </button>
-                </div>
-            @endif
-        </div>
-        <div class="row ">
-            <div class="col-5">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">CREAR CLIENTES</h5>
-                        <p class="card-text"></p>
-                        <form id="ClienteForm" name="ClienteForm" action="{{ route('admin.clients.store') }}">
-                            @csrf
-
-                            <div class="form-group row">
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                    <label class="control-label" style="text-align: left; display: block;">Ruc:</label>
-                                    <input type="text" name="ruc" id="ruc"
-                                        class="form-control input_user @error('ruc') is-invalid @enderror"
-                                        placeholder="Ruc" required>
-                                </div>
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                    <label class="control-label" style="text-align: left; display: block;">Razón Social:</label>
-                                    <input type="text" name="razon_social" id="razon_social"
-                                        class="form-control input_user @error('razon_social') is-invalid @enderror"
-                                        placeholder="Razón Social" required>
-                                </div>
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                    <label class="control-label" style="text-align: left; display: block;">Tipo de Negocio:</label>
-                                    <select class="form-control select2 select2-primary" id="tipo_negocio" name="tipo_negocio"
-                                        data-dropdown-css-class="select2-primary"  style="width: 100%; ">
-                                        <option value="generico">Generico</option>
-                                        <option value="optica">Óptica</option>
-                                        <option value="ferreteria">Ferretería</option>
-                                        <option value="restaurant">Restaurant</option>
-                                        <option value="hotel">Hotel</option>
-                                    </select>
-                                </div>  
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                    <label class="control-label" style="text-align: left; display: block;">Día de Facturación:</label>
-                                    <input type="number" name="billing_day" min="1" max="28" class="form-control input_user @error('billing_day') is-invalid @enderror"
-                                        placeholder="Día de Facturación" required>
-                                </div>
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                    <label class="control-label" style="text-align: left; display: block;">Dominio:</label>
-                                    <input type="text" name="domain" id="domain"
-                                        class="form-control input_user @error('domain') is-invalid @enderror"
-                                        placeholder="Dominio" required>
-                                </div>
-                                
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                    <label class="control-label"  style="text-align: left; display: block;">Email:</label>
-                                    <input type="email" name="email" id="email" class="form-control input_user @error('email') is-invalid @enderror"  placeholder="email" required>
-                                    @error('email') 
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{$message}}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                    <label class="control-label"  style="text-align: left; display: block;">Contraseña:</label>
-                                    <input type="password" name="password" id="password" class="form-control input_pass @error('password') is-invalid @enderror"  placeholder="contraseña" required>
-                                    @error('password') 
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{$message}}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            @can('admin.clients.create')
-                                <button id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i>Guardar</button>
-                            @endcan
-
-                            <button type="reset" class="btn btn-danger"> <i class="fas fa-ban"></i>Cancelar </button>
-
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div class="col-7">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">LISTA DE CLIENTES</h5>
-                        <p class="card-text">
-
-                        <div class="table-responsive" style="background:#FFF;">
-                            <table class="table table-striped nowrap" id="table-users" name="table-users">
-                                <thead style="background-color:#FF5F67;color: #fff;">
-                                    <tr>
-                                        <th scope="col">N°</th>
-                                        <th scope="col">Ruc</th>
-                                        <th scope="col">Razon Social</th>
-                                        <th scope="col">Tipo de Negocio</th>
-                                        <th scope="col">Dominio</th>
-                                        <th scope="col">Día de Facturación</th>
-                                        <th scope="col">Opciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-
-                                </tbody>
-
-                            </table>
+                    <div class="form-group row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <label class="control-label" style="text-align: left; display: block;">Ruc:</label>
+                            <input type="text" name="ruc" id="ruc"
+                                class="form-control input_user @error('ruc') is-invalid @enderror"
+                                placeholder="Ruc" required>
+                        </div>
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <label class="control-label" style="text-align: left; display: block;">Razón Social:</label>
+                            <input type="text" name="razon_social" id="razon_social"
+                                class="form-control input_user @error('razon_social') is-invalid @enderror"
+                                placeholder="Razón Social" required>
+                        </div>
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <label class="control-label" style="text-align: left; display: block;">Tipo de Negocio:</label>
+                            <select class="form-control select2 select2-primary" id="tipo_negocio" name="tipo_negocio"
+                                data-dropdown-css-class="select2-primary"  style="width: 100%; ">
+                                <option value="generico">Generico</option>
+                                <option value="optica">Óptica</option>
+                                <option value="ferreteria">Ferretería</option>
+                                <option value="restaurant">Restaurant</option>
+                                <option value="hotel">Hotel</option>
+                            </select>
+                        </div>  
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <label class="control-label" style="text-align: left; display: block;">Día de Facturación:</label>
+                            <input type="number" name="billing_day" min="1" max="28" class="form-control input_user @error('billing_day') is-invalid @enderror"
+                                placeholder="Día de Facturación" required>
+                        </div>
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <label class="control-label" style="text-align: left; display: block;">Dominio:</label>
+                            <input type="text" name="domain" id="domain"
+                                class="form-control input_user @error('domain') is-invalid @enderror"
+                                placeholder="Dominio" required>
+                        </div>
+                        
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <label class="control-label"  style="text-align: left; display: block;">Email:</label>
+                            <input type="email" name="email" id="email" class="form-control input_user @error('email') is-invalid @enderror"  placeholder="email" required>
+                            @error('email') 
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{$message}}</strong>
+                                </span>
+                            @enderror
+                        </div>
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <label class="control-label"  style="text-align: left; display: block;">Contraseña:</label>
+                            <input type="password" name="password" id="password" class="form-control input_pass @error('password') is-invalid @enderror"  placeholder="contraseña" required>
+                            @error('password') 
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{$message}}</strong>
+                                </span>
+                            @enderror
                         </div>
                     </div>
-                </div>
-            </div>
 
-        </div>
+                    @can('admin.clients.create')
+                        <button id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i>Guardar</button>
+                    @endcan
 
-        <!-- Modal Ver detalles-->
-        <div class="modal fade" id="modalVerDetalle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <p class="col">id de usuario: </p>
-                            <p id="ver_id" class="col"></p>
-                        </div>
-                        <div class="row">
-                            <p class="col">Nombre de usuario:</p>
-                            <p id="ver_nombre" class="col"></p>
-                        </div>
-                        <div class="row">
-                            <p class="col">Email de usuario:</p>
-                            <p id="ver_email" class="col"></p>
-                        </div>
-                        <div class="row">
-                            <p class="col">Fecha de registro de usuario: </p>
-                            <p id="ver_fecha_registro" class="col"></p>
-                        </div>
-                        <div class="row">
-                            <p class="col">Fecha de actualización de usuario: </p>
-                            <p id="ver_fecha_update" class="col"></p>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    </div>
-                </div>
+                    <button type="reset" class="btn btn-danger"> <i class="fas fa-ban"></i>Cancelar </button>
+
+                </form>
             </div>
         </div>
-
     </div>
+    @endcan
+    @can('admin.clients.index')
+    <div class="col-7">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">LISTA DE CLIENTES</h5>
+                <p class="card-text">
+
+                <div class="table-responsive" style="background:#FFF;">
+                    <table class="table table-striped nowrap" id="table-users" name="table-users">
+                        <thead>
+                            <tr>
+                                <th scope="col">N°</th>
+                                <th scope="col">Ruc</th>
+                                <th scope="col">Razon Social</th>
+                                <th scope="col">Tipo de Negocio</th>
+                                <th scope="col">Dominio</th>
+                                <th scope="col">Día de Facturación</th>
+                                <th scope="col">Opciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endcan
+
+    <!-- Modal Ver detalles-->
+    <div class="modal fade" id="modalVerDetalle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <p class="col">id de usuario: </p>
+                        <p id="ver_id" class="col"></p>
+                    </div>
+                    <div class="row">
+                        <p class="col">Nombre de usuario:</p>
+                        <p id="ver_nombre" class="col"></p>
+                    </div>
+                    <div class="row">
+                        <p class="col">Email de usuario:</p>
+                        <p id="ver_email" class="col"></p>
+                    </div>
+                    <div class="row">
+                        <p class="col">Fecha de registro de usuario: </p>
+                        <p id="ver_fecha_registro" class="col"></p>
+                    </div>
+                    <div class="row">
+                        <p class="col">Fecha de actualización de usuario: </p>
+                        <p id="ver_fecha_update" class="col"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @section('script')

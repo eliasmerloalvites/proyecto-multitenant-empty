@@ -11,41 +11,29 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- Google Font --}}
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     {{-- Font Awesome --}}
-    <link rel="stylesheet"
-        href="{{ asset_root('adminlte/plugins/fontawesome-free/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset_root('adminlte/plugins/fontawesome-free/css/all.min.css') }}">
 
     {{-- AdminLTE --}}
-    <link rel="stylesheet"
-        href="{{ asset_root('adminlte/dist/css/adminlte.min.css') }}">
+    <link rel="stylesheet" href="{{ asset_root('adminlte/dist/css/adminlte.min.css') }}">
 
     {{-- Plugins --}}
-    <link rel="stylesheet"
-        href="{{ asset_root('adminlte/plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
+    <link rel="stylesheet" href="{{ asset_root('adminlte/plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
+    <link rel="stylesheet" href="{{ asset_root('adminlte/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css') }}">
 
-    <link rel="stylesheet"
-        href="{{ asset_root('adminlte/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css') }}">
-
-    <link rel="stylesheet"
-        href="{{ asset_root('adminlte/plugins/toastr/toastr.min.css') }}">
+    <link rel="stylesheet" href="{{ asset_root('adminlte/plugins/toastr/toastr.min.css') }}">
 
     {{-- DataTables --}}
-    <link rel="stylesheet"
-        href="{{ asset_root('css/dataTables.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset_root('css/dataTables.bootstrap4.min.css') }}">
 
-    <link rel="stylesheet"
-        href="{{ asset_root('css/jquery.dataTables.min.css') }}">
+    <link rel="stylesheet" href="{{ asset_root('css/jquery.dataTables.min.css') }}">
 
     {{-- Daterangepicker --}}
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 
     {{-- Crop Tool --}}
-    <link rel="stylesheet"
-        href="{{ asset_root('ijaboCropTool/ijaboCropTool.min.css') }}">
+    <link rel="stylesheet" href="{{ asset_root('ijaboCropTool/ijaboCropTool.min.css') }}">
     <link href="{{ asset_root('plugins/select2/css/select2.min.css') }}" rel="stylesheet">
     <link href="{{ asset_root('plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}" rel="stylesheet">
     

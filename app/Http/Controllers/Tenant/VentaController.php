@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\EnviarVentaSunatJob;
 use App\Models\Tenant\Venta;
 use App\Models\Tenant\DetalleVenta;
 use App\Models\Tenant\DocumentoVenta;
@@ -14,12 +15,22 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Browsershot\Browsershot;
+use App\Services\Facturacion\SunatService;
 
 class VentaController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
+    protected $sunatService;
+
+    public function __construct(
+        SunatService $sunatService
+    ){
+        $this->sunatService = $sunatService;
+    }
+
     public function index(Request $request)
     {
         $mytime = Carbon::now('America/Lima');
@@ -255,29 +266,11 @@ class VentaController extends Controller
                 ->first();
 
             DB::commit();
-            
-            self::ticketImagen($venta->VEN_Id);
-            /* $ubicacionNegocio = "";
-            $id = null;
-            if (tenant()) {
-                // Estás en el contexto de un TENANT
-                $id = tenant('id');
-                $ubicacionNegocio = tenant('tipo_negocio');
-            }
+            $this->sunatService->enviarVenta( $venta->VEN_Id );
+            //EnviarVentaSunatJob::dispatch($venta->VEN_Id,tenant('id'),tenant('tipo_negocio'));
+            /* $responseSunat = $this->sunatService->enviarVenta($venta->VEN_Id);
+            self::ticketImagen($venta->VEN_Id); */
 
-            $path = public_path('storage/' .$ubicacionNegocio . '/' .$id . '/archivos/tickets/');
-            if (!file_exists($path)) {
-
-                mkdir($path, 0777, true);
-            }
-            $fileName = $DocumentoVenta->DOV_Pdf .'.png';
-            $rutaCompleta = $path . $fileName;
-
-            Browsershot::url(
-                url("/tenant/ventas/venta/".$venta->VEN_Id."/ticket?captura=1")
-            )
-            ->windowSize(900, 1800)
-            ->save($rutaCompleta); */
         } catch (Exception $e) {
             DB::rollback();
             $e->getMessage();
@@ -427,7 +420,7 @@ class VentaController extends Controller
         return view('tenant_generico/ventas/venta/ticket/ticket_A4', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal','generaimagen'));
     }
 
-    function ticketImagen($idventa)
+    public static function ticketImagen($idventa)
     {
         $ventae = DB::table('detalle_venta as dv')
             ->join('venta as v', 'v.VEN_Id', '=', 'dv.VEN_Id')
@@ -611,7 +604,7 @@ class VentaController extends Controller
 
 
 
-    function ReducirStock($pro, $can, $alm)
+    public static function ReducirStock($pro, $can, $alm)
     {
         $lot = DB::table('lote')
             ->select('LOT_Id', 'PRO_Id', 'LOT_CantidadReal')
@@ -664,7 +657,7 @@ class VentaController extends Controller
         }
     }
 
-    function CrearDocumentoDetalleVentaLibre($idventa, $idalmacen)
+    public static  function CrearDocumentoDetalleVentaLibre($idventa, $idalmacen)
     {
         $correlativoPRO = 1;
         $numPro = self::creaFolioPro($idalmacen, $correlativoPRO);
@@ -702,9 +695,10 @@ class VentaController extends Controller
         $documento->DOV_TipoOriginal = 'PRO';
         $documento->DOV_Serie = $serPro;
         $documento->DOV_Numero = $numPro;
+        $documento->DOV_Nombre = $serPro.'-'.$numPro;
         $documento->VEN_Id = $idventa;
         $documento->DOV_Estado = 'ACTIVADO';
-        $documento->DOV_StateToRes = '0';
+        $documento->DOV_StateToRes = 0;
         $documento->DOV_Pdf = $cod_rndon;
         $documento->DOV_Vista = 1;
         $documento->save();
@@ -712,7 +706,7 @@ class VentaController extends Controller
         return $documento;
     }
 
-    function creaFolioPro($idalmacen, $correlativo)
+    public static function creaFolioPro($idalmacen, $correlativo)
     {
         $id = 0;
         $corre = $correlativo;
@@ -741,7 +735,7 @@ class VentaController extends Controller
         }
     }
 
-    function IndiceDocumentVentaP($Num)
+    public static function IndiceDocumentVentaP($Num)
     {
 
         $newNum = '';
@@ -756,7 +750,7 @@ class VentaController extends Controller
         }
     }
 
-    function generate_string($input, $strength = 20)
+    public static function generate_string($input, $strength = 20)
     {
         $input_length = strlen($input);
         $random_string = '';
@@ -768,7 +762,7 @@ class VentaController extends Controller
         return $random_string;
     }
 
-    function IndiceNumeroDocumentoVenta($Num)
+    public static function IndiceNumeroDocumentoVenta($Num)
     {
 
         $newNum = '';
@@ -814,7 +808,7 @@ class VentaController extends Controller
         }
     }
 
-    function numletras($numero)
+    public static function numletras($numero)
     {
 
         $tempnum = explode('.', $numero);
@@ -860,7 +854,7 @@ class VentaController extends Controller
         return $TextEnd;
     }
 
-    function unidad($numuero)
+    public static function unidad($numuero)
     {
 
         switch ($numuero) {
@@ -941,7 +935,7 @@ class VentaController extends Controller
 
 
 
-    function decena($numdero)
+    public static function decena($numdero)
     {
 
 
@@ -1087,7 +1081,7 @@ class VentaController extends Controller
 
 
 
-    function centena($numc)
+    public static function centena($numc)
     {
 
         if ($numc >= 100) {
@@ -1169,7 +1163,7 @@ class VentaController extends Controller
 
 
 
-    function miles($nummero)
+    public static function miles($nummero)
     {
 
         if ($nummero >= 1000 && $nummero < 2000) {
@@ -1193,7 +1187,7 @@ class VentaController extends Controller
 
 
 
-    function decmiles($numdmero)
+    public static function decmiles($numdmero)
     {
 
         if ($numdmero == 10000)
@@ -1221,7 +1215,7 @@ class VentaController extends Controller
 
 
 
-    function cienmiles($numcmero)
+    public static function cienmiles($numcmero)
     {
 
         if ($numcmero == 100000)
@@ -1242,7 +1236,7 @@ class VentaController extends Controller
 
 
 
-    function millon($nummiero)
+    public static function millon($nummiero)
     {
 
         if ($nummiero >= 1000000 && $nummiero < 2000000) {
@@ -1266,7 +1260,7 @@ class VentaController extends Controller
 
 
 
-    function decmillon($numerodm)
+    public static function decmillon($numerodm)
     {
 
         if ($numerodm == 10000000)
@@ -1294,7 +1288,7 @@ class VentaController extends Controller
 
 
 
-    function cienmillon($numcmeros)
+    public static function cienmillon($numcmeros)
     {
 
         if ($numcmeros == 100000000)
@@ -1315,7 +1309,7 @@ class VentaController extends Controller
 
 
 
-    function milmillon($nummierod)
+    public static function milmillon($nummierod)
     {
 
         if ($nummierod >= 1000000000 && $nummierod < 2000000000) {
