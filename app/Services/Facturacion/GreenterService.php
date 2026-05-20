@@ -14,6 +14,9 @@ use Greenter\Model\Sale\FormaPagos\FormaPagoContado;
 use Greenter\Model\Sale\Invoice;
 use Greenter\Model\Sale\SaleDetail;
 use Greenter\Model\Sale\Legend;
+use Greenter\XMLSecLibs\Certificate\X509Certificate;
+use Greenter\XMLSecLibs\Certificate\X509ContentType;
+
 
 class GreenterService
 {
@@ -38,10 +41,16 @@ class GreenterService
 
         $certPath = storage_path('app/tenant/' .tenant('tipo_negocio') .'/' .tenant('id') .
             '/sunat/certificado/' .$this->empresa->certificado);
-
-        /* CERTIFICADO */
+        
+        /* CERTIFICADO PEM */
         $see->setCertificate(file_get_contents($certPath));
 
+        /* CERTIFICADO P12 
+        $p12 = file_get_contents($certPath);
+        $password = $this->empresa->certificado_password;
+
+        $certificate = new X509Certificate($p12, $password);
+        $see->setCertificate($certificate->export(X509ContentType::PEM));*/
                 // BETA
         if ($this->empresa->ambiente == 'beta') {
             $see->setService(SunatEndpoints::FE_BETA);
@@ -110,23 +119,26 @@ class GreenterService
 
 
     $invoice = (new Invoice())
-    ->setUblVersion('2.1')
-    ->setTipoOperacion('0101') // Venta - Catalog. 51
+    ->setUblVersion('2.0')
+    ->setTipoOperacion('01') // Venta - Catalog. 51
     ->setTipoDoc('01') // Factura - Catalog. 01 
     ->setSerie('F001')
-    ->setCorrelativo('1')
-    ->setFechaEmision(new \DateTime()) // Zona horaria: Lima
-    ->setFormaPago(new FormaPagoContado()) // FormaPago: Contado
+    ->setCorrelativo('00000001')
+    ->setFechaEmision(
+    new \DateTime('now', new \DateTimeZone('America/Lima'))
+)// Zona horaria: Lima
+    // ->setFormaPago(new FormaPagoContado()) // FormaPago: Contado
     ->setTipoMoneda('PEN') // Sol - Catalog. 02
     ->setCompany($this->getCompany())
     ->setClient($client)
     ->setMtoOperGravadas(100.00)
     ->setMtoIGV(18.00)
+    ->setMtoOperExoneradas(0)
+    ->setIcbper(0)  
     ->setTotalImpuestos(18.00)
     ->setValorVenta(100.00)
     ->setSubTotal(118.00)
-    ->setMtoImpVenta(118.00)
-    ;
+    ->setMtoImpVenta(118.00);
 
         /*
     |--------------------------------------------------------------------------
@@ -182,8 +194,7 @@ class GreenterService
             ->setMtoImpVenta(236)
             ->setDetails([$detail])
             ->setLegends([$legend]); */
-        $invoice->setDetails([$item])
-        ->setLegends([$legend]);
+        $invoice->setDetails([$item])->setLegends([$legend]);
 
         return $invoice;
     }
@@ -229,9 +240,8 @@ class GreenterService
 
         /* SEE */
         $see = $this->getSee();
-
-        /* ENVIAR */
         $result = $see->send($invoice);
+
 
         /** @var \Greenter\Model\Response\BillResult $result */
         /* RESPUESTA */
@@ -258,5 +268,6 @@ class GreenterService
             ]
         ];
     }
+
 
 }

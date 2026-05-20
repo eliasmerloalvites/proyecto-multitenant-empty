@@ -16,6 +16,7 @@ use App\Http\Controllers\Tenant\HomeController;
 use App\Http\Controllers\Tenant\MetodoPagoController;
 use App\Http\Controllers\Tenant\ProductoController;
 use App\Http\Controllers\Tenant\ProveedorController;
+use App\Http\Controllers\Tenant\TestFacturacionController;
 use App\Http\Controllers\Tenant\TipoGastoController;
 use App\Http\Controllers\Tenant\UserController;
 use App\Http\Controllers\Tenant\VentaController;
@@ -322,6 +323,8 @@ Route::get('/test-send', function () {
     );
 
 });
+
+Route::get('/test-facturacion', [TestFacturacionController::class, 'enviar']);
 
 
 
