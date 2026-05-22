@@ -66,7 +66,7 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.inventario.producto.show',    'Productos', 'Ver Producto',        'Ver Producto'],
             ['tenant.inventario.producto.destroy', 'Productos', 'Eliminar Productos',  'Eliminar Productos'],
             
-            // Almacen
+            // Almacen || Sede
             ['tenant.configuracion.sede.index',   'Sedes', 'Ver Lista Sedes', 'Listar Sedes'],
             ['tenant.configuracion.sede.create',  'Sedes', 'Crear Sedes',     'Crear Sedes'],
             ['tenant.configuracion.sede.edit',    'Sedes', 'Editar Sedes',    'Editar Sedes'],
@@ -121,6 +121,21 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.ventas.venta.edit',    'Ventas', 'Editar Ventas',    'Editar Ventas'],
             ['tenant.ventas.venta.show',    'Ventas', 'Ver Venta',        'Ver Venta'],
             ['tenant.ventas.venta.destroy', 'Ventas', 'Eliminar Ventas',  'Eliminar Ventas'],
+
+            // Turno
+            ['tenant.configuracion.turno.index',   'Turnos', 'Ver Lista Turnos', 'Listar Turnos'],
+            ['tenant.configuracion.turno.create',  'Turnos', 'Crear Turnos',     'Crear Turnos'],
+            ['tenant.configuracion.turno.edit',    'Turnos', 'Editar Turnos',    'Editar Turnos'],
+            ['tenant.configuracion.turno.show',    'Turnos', 'Ver Sede',        'Ver Sede'],
+            ['tenant.configuracion.turno.destroy', 'Turnos', 'Eliminar Turnos',  'Eliminar Turnos'],
+
+            // Turno
+            ['tenant.configuracion.turno.index',   'Turnos', 'Ver Lista Turnos', 'Listar Turnos'],
+            ['tenant.configuracion.turno.create',  'Turnos', 'Crear Turnos',     'Crear Turnos'],
+            ['tenant.configuracion.turno.edit',    'Turnos', 'Editar Turnos',    'Editar Turnos'],
+            ['tenant.configuracion.turno.show',    'Turnos', 'Ver Sede',        'Ver Sede'],
+            ['tenant.configuracion.turno.destroy', 'Turnos', 'Eliminar Turnos',  'Eliminar Turnos'],
+
             
         ];
 

@@ -2,11 +2,11 @@
 @section('titulo', 'Almacen')
 @section('contenido')
 
-    @can('tenant.inventario.almacen.create')
+    @can('tenant.configuracion.sede.create')
     <div class="col-5">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">CREAR ALMACEN</h5>
+                <h5 class="card-title">CREAR SEDE</h5>
                 <p class="card-text"></p>
                 <form method="POST" id="almacen_form" action="{{ tenant_url('tenant.configuracion.sede.store') }}">
                     @csrf
@@ -31,16 +31,16 @@
                     </div>
                     <div class="form-group row">
                         <div class="col-12">
-                            <label class="control-label" style=" text-align: left; display: block;">Nombre:</label>
+                            <label class="control-label" style=" text-align: left; display: block;">Nombre Empresa:</label>
                             <input type="text" id="ALM_Nombre" name="ALM_Nombre" class="form-control "
                                 placeholder="Nombre" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <div class="col-12">
-                            <label class="control-label" style=" text-align: left; display: block;">Almacen:</label>
+                            <label class="control-label" style=" text-align: left; display: block;">Sede:</label>
                             <input type="text" id="ALM_NombreAlmacen" name="ALM_NombreAlmacen"
-                                class="form-control " placeholder="Almacen" required>
+                                class="form-control " placeholder="Sede" required>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -72,11 +72,11 @@
     </div>
     @endcan
 
-    @can('tenant.inventario.almacen.index')
+    @can('tenant.configuracion.sede.index')
     <div class="col-7">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">LISTA DE ALMACEN</h5>
+                <h5 class="card-title">LISTA DE SEDE</h5>
                 <p class="card-text">
                 <div class="table-responsive" style="background:#FFF;">
                     <table class="table" id="tabla_almacen">
@@ -85,7 +85,7 @@
                                 <th scope="col">N°</th>
                                 <th scope="col">RUC</th>
                                 <th scope="col">Empresa</th>
-                                <th scope="col">Almacen</th>
+                                <th scope="col">Sede</th>
                                 <th scope="col">Dirección</th>
                                 <th scope="col">N° celular</th>
                                 <th scope="col">Opciones</th>

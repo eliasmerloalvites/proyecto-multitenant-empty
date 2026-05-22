@@ -358,8 +358,10 @@
                 @endcan
                 <!-- CONFIGURACIÓN -->
                 <li class="nav-item has-treeview 
-                    {{ request()->routeIs('tenant.configuracion.sede*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->routeIs('tenant.configuracion.sede*') ? 'active' : '' }}">
+                    {{ request()->routeIs('tenant.configuracion.sede*') ||
+                        request()->routeIs('tenant.configuracion.turno*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('tenant.configuracion.sede*') ||
+                        request()->routeIs('tenant.configuracion.turno*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-cogs"></i>
                         <p>
                             CONFIGURACIÓN
@@ -377,7 +379,8 @@
                         </li>
                         <!-- TURNOS -->
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="{{ tenant_url('tenant.configuracion.turno.index') }}" 
+                                class="nav-link  {{ request()->routeIs('tenant.configuracion.turno*') ? 'active' : '' }}">
                                 <i class="fas fa-user-clock nav-icon"></i>
                                 <p>Turnos</p>
                             </a>

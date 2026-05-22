@@ -21,6 +21,7 @@ use App\Http\Controllers\Tenant\TestFacturacionController;
 use App\Http\Controllers\Tenant\TipoGastoController;
 use App\Http\Controllers\Tenant\UserController;
 use App\Http\Controllers\Tenant\VentaController;
+use App\Http\Controllers\TenantTallerMotos\TurnoController;
 use App\Services\Facturacion\GreenterService;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
@@ -64,6 +65,21 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
         Route::get('/tenant/home', [HomeController::class,'index'])->name('tenant.home');
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');
         
+        Route::resource('/tenant/configuracion/turno', TurnoController::class)->names([
+            'index' => 'tenant.configuracion.turno.index',
+            'create' => 'tenant.configuracion.turno.create',
+            'store' => 'tenant.configuracion.turno.store',
+            'edit' => 'tenant.configuracion.turno.edit',
+            'update' => 'tenant.configuracion.turno.update',
+            'destroy' => 'tenant.configuracion.turno.destroy',
+            'activar' => 'tenant.configuracion.turno.activar',
+            'show' => 'tenant.configuracion.turno.show'
+        ])->parameters([
+            'turno' => 'turno'
+        ]);
+        Route::put('/tenant/configuracion/turno/{turno}/activar',
+        [TurnoController::class, 'activar'])->name('tenant.configuracion.turno.activar');
+
         Route::resource('/tenant/ventas/venta', VentaController::class)->names([
             'index' => 'tenant.ventas.venta.index',
             'create' => 'tenant.ventas.venta.create',
