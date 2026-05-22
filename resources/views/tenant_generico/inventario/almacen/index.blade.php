@@ -1,4 +1,4 @@
-@extends('tenant_generico.layout.appAdminLte')
+@extends('tenant_'.tenant('tipo_negocio').'.layout.appAdminLte')
 @section('titulo', 'Almacen')
 @section('contenido')
 
@@ -8,7 +8,7 @@
             <div class="card-body">
                 <h5 class="card-title">CREAR ALMACEN</h5>
                 <p class="card-text"></p>
-                <form method="POST" id="almacen_form" action="{{ route('tenant.inventario.almacen.store', tenant('id')) }}">
+                <form method="POST" id="almacen_form" action="{{ tenant_url('tenant.inventario.almacen.store') }}">
                     @csrf
                     <input type="text" id="almacen_id_edit" hidden>
                     <div class="form-group row">
@@ -138,7 +138,7 @@
                 order: [
                     [0, "asc"]
                 ],
-                ajax: "{{ route('tenant.inventario.almacen.index', tenant('id')) }}",
+                ajax: "{{ tenant_url('tenant.inventario.almacen.index') }}",
                 columns: [{
                         data: 'ALM_Id',
                         name: 'ALM_Id'
@@ -190,7 +190,7 @@
                 }
                 $.ajax({
                     data: $('#almacen_form').serialize(),
-                    url: "{{ route('tenant.inventario.almacen.store', tenant('id')) }}",
+                    url: "{{ tenant_url('tenant.inventario.almacen.store') }}",
                     type: "POST",
                     dataType: 'json',
                     success: function(data) {
@@ -215,7 +215,7 @@
 
             $('body').on('click', '.editAlmacen', function() {
                 var Almacen_id_edit = $(this).data('identificador');
-                $.get('{{ route('tenant.inventario.almacen.edit', ['almacen' => ':almacen', 'tenant' => tenant('id')]) }}'.replace(':almacen', Almacen_id_edit),
+                $.get('{{ tenant_url('tenant.inventario.almacen.edit', ['almacen' => ':almacen', 'tenant' => tenant('id')]) }}'.replace(':almacen', Almacen_id_edit),
                     function(result) {
                         console.log(result);
                         $('#almacen_id_edit').val(result.data.ALM_Id);
@@ -237,7 +237,7 @@
                 Almacen_id_update = $('#almacen_id_edit').val();
                 $.ajax({
                     data: $('#almacen_form').serialize(),
-                    url: '{{ route('tenant.inventario.almacen.update', ['almacen' => ':almacen', 'tenant' => tenant('id')]) }}'.replace(':almacen', Almacen_id_update),
+                    url: '{{ tenant_url('tenant.inventario.almacen.update', ['almacen' => ':almacen', 'tenant' => tenant('id')]) }}'.replace(':almacen', Almacen_id_update),
                     type: "PUT",
                     dataType: 'json',
                     success: function(data) {
@@ -280,7 +280,7 @@
                     $.ajax({
                         type: "DELETE",
 
-                        url: '{{ route('tenant.inventario.almacen.destroy', ['almacen' => ':almacen', 'tenant' => tenant('id')]) }}'.replace(
+                        url: '{{ tenant_url('tenant.inventario.almacen.destroy', ['almacen' => ':almacen', 'tenant' => tenant('id')]) }}'.replace(
                             ':almacen', Almacen_id_delete),
                         data: {
                             _token: '{{ csrf_token() }}'

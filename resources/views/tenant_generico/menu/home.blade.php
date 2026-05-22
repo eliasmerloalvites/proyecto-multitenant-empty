@@ -1,4 +1,4 @@
-@extends('tenant_generico.layout.appAdminLte')
+@extends('tenant_'.tenant('tipo_negocio').'.layout.appAdminLte')
 @section('titulo','Inicio')
 
 @section('contenido')

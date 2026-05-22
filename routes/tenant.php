@@ -16,6 +16,7 @@ use App\Http\Controllers\Tenant\HomeController;
 use App\Http\Controllers\Tenant\MetodoPagoController;
 use App\Http\Controllers\Tenant\ProductoController;
 use App\Http\Controllers\Tenant\ProveedorController;
+use App\Http\Controllers\TenantTallerMotos\SedeController;
 use App\Http\Controllers\Tenant\TestFacturacionController;
 use App\Http\Controllers\Tenant\TipoGastoController;
 use App\Http\Controllers\Tenant\UserController;
@@ -189,6 +190,18 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
             'update' => 'tenant.inventario.clase.update',
             'destroy' => 'tenant.inventario.clase.destroy',
             'show' => 'tenant.inventario.clase.show'
+        ]);
+
+        Route::resource('/tenant/configuracion/sede', SedeController::class)->names([
+            'index' => 'tenant.configuracion.sede.index',
+            'create' => 'tenant.configuracion.sede.create',
+            'store' => 'tenant.configuracion.sede.store',
+            'edit' => 'tenant.configuracion.sede.edit',
+            'update' => 'tenant.configuracion.sede.update',
+            'destroy' => 'tenant.configuracion.sede.destroy',
+            'show' => 'tenant.configuracion.sede.show'
+        ])->parameters([
+            'sede' => 'sede'
         ]);
 
         Route::resource('/tenant/inventario/almacen', AlmacenController::class)->names([

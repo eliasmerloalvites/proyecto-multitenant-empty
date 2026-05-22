@@ -19,7 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->redirectGuestsTo(function () {
         if (tenant()) {
-            return route('tenant.login', tenant('id'));
+            $tenantName = str_replace(tenant()->tipo_negocio . '_','',tenant()->id);
+            return route('tenant.login', ['tenant' => $tenantName]);
         }
 
         return route('central.login');

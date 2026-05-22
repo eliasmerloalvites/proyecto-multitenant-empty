@@ -54,7 +54,7 @@ class CompraController extends Controller
         }
         $proveedor = Proveedor::all();
         $metodo_pago = MetodoPago::all();
-        return view('tenant_generico.compras.compra.index', compact('proveedor', 'metodo_pago'));
+        return view('tenant_'.tenant('tipo_negocio').'.compras.compra.index', compact('proveedor', 'metodo_pago'));
     }
 
     /**
@@ -72,7 +72,7 @@ class CompraController extends Controller
             ->get();
 
         $categoria = Categoria::all();
-        return view('tenant_generico.compras.compra.create', compact('proveedor', 'metodo_pago', 'detalleCompra', 'almacen', 'producto', 'categoria'));
+        return view('tenant_'.tenant('tipo_negocio').'.compras.compra.create', compact('proveedor', 'metodo_pago', 'detalleCompra', 'almacen', 'producto', 'categoria'));
     }
 
     /**

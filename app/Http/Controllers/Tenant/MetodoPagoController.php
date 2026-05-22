@@ -33,7 +33,7 @@ class MetodoPagoController extends Controller
                 ->rawColumns(['action1','action2'])
                 ->make(true);
         }
-        return view('tenant_generico.ventas.metodoPago.index');
+        return view('tenant_'.tenant('tipo_negocio').'.ventas.metodoPago.index');
     }
 
     /**

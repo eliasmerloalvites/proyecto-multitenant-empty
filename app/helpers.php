@@ -8,13 +8,18 @@ if (! function_exists('asset_root')) {
 }
 
 if (! function_exists('tenant_url')) {
+
     function tenant_url(string $name, array $params = [])
     {
         if (function_exists('tenant') && tenant()) {
-            return route($name, ['tenant' => tenant()->id] + $params);
+
+            $tenantName = str_replace(tenant()->tipo_negocio.'_', '', tenant()->id);
+
+            return route($name, [
+                'tenant' => $tenantName
+            ] + $params);
         }
 
-        // fallback a central login
         return route('central.login');
     }
 }

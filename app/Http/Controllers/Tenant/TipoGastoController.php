@@ -34,7 +34,7 @@ class TipoGastoController extends Controller
                 ->make(true);
         }
         
-        return view('tenant_generico.compras.tipogasto.index');
+        return view('tenant_'.tenant('tipo_negocio').'.compras.tipogasto.index');
     }
 
     /**
