@@ -3,101 +3,161 @@
 namespace App\Http\Controllers\TenantTallerMotos;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\TenantTallerMotos\Turno;
-use Illuminate\Support\Facades\Redirect;
-use DataTables;
-use DB;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Yajra\DataTables\Facades\DataTables;
 
 class TurnoController extends Controller
 {
-	public function __construct()
-	{
+    // VALIDACIONES
 
-	}
+    private function validateTurno(Request $request, $id = null)
+    {
+        return Validator::make($request->all(), [
 
-	public function index(Request $request)
-	{
-		if ($request->ajax()) {
-			$data = DB::table('turno as p')
-			->get();
-            return Datatables::of($data)
+            'TUR_Nombre' => ['required', 'string', 'max:60', 'unique:turno,TUR_Nombre,' . $id . ',TUR_Id'],
+
+            'TUR_Descripcion' => ['required', 'string', 'max:60'],
+
+            'TUR_Estado' => ['nullable', 'in:ACT,DESACT']
+
+        ]);
+    }
+
+    // LISTADO
+
+    public function index(Request $request)
+    {
+        if ($request->ajax()) {
+
+            $data = Turno::orderBy('TUR_Id', 'desc');
+
+            return DataTables::of($data)
+
                 ->addIndexColumn()
-				->addColumn('action1', function ($row) {
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->TUR_Id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm editTurno"><i class="fa fa-edit"></i></a>';
-                    return $btn;
+
+                ->addColumn('action1', function ($row) {
+                    return '<a href="javascript:void(0)" data-id="' . $row->TUR_Id . '" class="btn btn-primary btn-sm editTurno"><i class="fa fa-edit"></i></a>';
                 })
+
                 ->addColumn('action2', function ($row) {
-					if($row->TUR_Estado == 'ACT'){
-						$btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->TUR_Id . '" data-original-title="Delete" class="btn btn-danger btn-sm deleteTurno"><i class="fa fa-trash"></i></a>';
-					}else{
-						$btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->TUR_Id . '" data-original-title="Activar" class="btn btn-success btn-sm activarTurno"><i class="fa fa-check"></i></a>';
-					}
-                    return $btn;
+
+                    if ($row->TUR_Estado == 'ACT') {
+                        return '<a href="javascript:void(0)" data-id="' . $row->TUR_Id . '" class="btn btn-danger btn-sm deleteTurno"><i class="fa fa-trash"></i></a>';
+                    }
+
+                    return '<a href="javascript:void(0)" data-id="' . $row->TUR_Id . '" class="btn btn-success btn-sm activarTurno"><i class="fa fa-check"></i></a>';
                 })
-                ->rawColumns(['action1','action2'])
+
+                ->rawColumns(['action1', 'action2'])
+
                 ->make(true);
         }
 
-        return view('tenant_'.tenant('tipo_negocio').'.configuracion.turno.index');
-	}
+        return view('tenant_' . tenant('tipo_negocio') . '.configuracion.turno.index');
+    }
 
-	public function create()
-	{
+    // REGISTRAR
 
-	}
+    public function store(Request $request)
+    {
+        $validator = $this->validateTurno($request);
 
-	public function store (Request $request)
-	{
-        $Turno = Turno::create($request->all());
-        return response()->json(['success' => 'Turno Registrado Exitosamente.']);
-	}
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
 
-	public function show($id)
-	{
-		//return view("rrhh.turno.show",["Turno"=>Turno::findOrFail($id)]);
-	}
+        $payload = $validator->validated();
 
-	public function edit(string $tenant_id, $id)
-	{
-		$turno = Turno::find($id);
-        return response()->json(['data' => $turno]);
-	}
+        $payload['TUR_Estado'] = 'ACT';
 
-	public function update(Request $request,string $tenant_id, string $id)
-	{
-		$Turno=Turno::findOrFail($id);
-		$Turno->update($request->all());
-		return response()->json(['success' => 'Turno Editado Exitosamente.']);
-	}
+        Turno::create($payload);
 
-	public function activar(string $tenant_id, string $id)
-	{
-		try{
-			$turno = Turno::find($id);
-			$turno->TUR_Estado = 'ACT';
-			$turno->update();
-			return response()->json(['success'=> true,'message' => 'Turno Activado Exitosamente.']);
-		}
-		catch(\Illuminate\Database\QueryException $ex)
-		{
-			return response()->json(['success'=> false,'message' => 'Turno Fallo al Eliminar.']);
-		}
-	}
+        return response()->json(['success' => true, 'message' => 'Turno registrado exitosamente.']);
+    }
 
-	public function destroy(string $tenant_id, string $id)
-	{
-		try{
-			$turno = Turno::find($id);
-			$turno->TUR_Estado = 'DESACT';
-			$turno->update();
-			return response()->json(['success'=> true,'message' => 'Turno Eliminado Exitosamente.']);
-		}
-		catch(\Illuminate\Database\QueryException $ex)
-		{
-			return response()->json(['success'=> false,'message' => 'Turno Fallo al Eliminar.']);
-		}
+    // EDITAR
 
-	}
+    public function edit(string $tenant_id, string $id)
+    {
+        $turno = Turno::find($id);
+
+        if (!$turno) {
+            return response()->json(['success' => false, 'message' => 'Turno no encontrado.'], 404);
+        }
+
+        return response()->json(['success' => true, 'data' => $turno]);
+    }
+
+    // ACTUALIZAR
+
+    public function update(Request $request, string $tenant_id, string $id)
+    {
+        $validator = $this->validateTurno($request, $id);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        $turno = Turno::find($id);
+
+        if (!$turno) {
+            return response()->json(['success' => false, 'message' => 'Turno no encontrado.'], 404);
+        }
+
+        $turno->update($validator->validated());
+
+        return response()->json(['success' => true, 'message' => 'Turno actualizado exitosamente.']);
+    }
+
+    // ACTIVAR
+
+    public function activar(string $tenant_id, string $id)
+    {
+        try {
+
+            $turno = Turno::find($id);
+
+            if (!$turno) {
+                return response()->json(['success' => false, 'message' => 'Turno no encontrado.'], 404);
+            }
+
+            $turno->TUR_Estado = 'ACT';
+
+            $turno->save();
+
+            return response()->json(['success' => true, 'message' => 'Turno activado exitosamente.']);
+
+        } catch (\Exception $e) {
+
+            return response()->json(['success' => false, 'message' => 'El turno falló al activarse.'], 500);
+
+        }
+    }
+
+    // ELIMINAR
+
+    public function destroy(string $tenant_id, string $id)
+    {
+        try {
+
+            $turno = Turno::find($id);
+
+            if (!$turno) {
+                return response()->json(['success' => false, 'message' => 'Turno no encontrado.'], 404);
+            }
+
+            $turno->TUR_Estado = 'DESACT';
+
+            $turno->save();
+
+            return response()->json(['success' => true, 'message' => 'Turno eliminado exitosamente.']);
+
+        } catch (\Exception $e) {
+
+            return response()->json(['success' => false, 'message' => 'El turno falló al eliminarse.'], 500);
+
+        }
+    }
 }

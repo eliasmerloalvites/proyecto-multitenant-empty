@@ -129,12 +129,12 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.configuracion.turno.show',    'Turnos', 'Ver Sede',        'Ver Sede'],
             ['tenant.configuracion.turno.destroy', 'Turnos', 'Eliminar Turnos',  'Eliminar Turnos'],
 
-            // Turno
-            ['tenant.configuracion.turno.index',   'Turnos', 'Ver Lista Turnos', 'Listar Turnos'],
-            ['tenant.configuracion.turno.create',  'Turnos', 'Crear Turnos',     'Crear Turnos'],
-            ['tenant.configuracion.turno.edit',    'Turnos', 'Editar Turnos',    'Editar Turnos'],
-            ['tenant.configuracion.turno.show',    'Turnos', 'Ver Sede',        'Ver Sede'],
-            ['tenant.configuracion.turno.destroy', 'Turnos', 'Eliminar Turnos',  'Eliminar Turnos'],
+            // Bahia
+            ['tenant.configuracion.bahia.index',   'Bahia', 'Ver Lista Bahia', 'Listar Bahia'],
+            ['tenant.configuracion.bahia.create',  'Bahia', 'Crear Bahia',     'Crear Bahia'],
+            ['tenant.configuracion.bahia.edit',    'Bahia', 'Editar Bahia',    'Editar Bahia'],
+            ['tenant.configuracion.bahia.show',    'Bahia', 'Ver Sede',        'Ver Sede'],
+            ['tenant.configuracion.bahia.destroy', 'Bahia', 'Eliminar Bahia',  'Eliminar Bahia'],
 
             
         ];
