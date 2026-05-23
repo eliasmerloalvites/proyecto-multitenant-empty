@@ -45,14 +45,14 @@
                 <ul class="nav nav-treeview">
                     @can('tenant.inventario.producto.index')
                     <li class="nav-item">
-                        <a href="{{ route('tenant.inventario.controlinventario.index', tenant('id')) }}"
+                        <a href="{{ tenant_url('tenant.inventario.controlinventario.index') }}"
                             class="nav-link {{ request()->routeIs('tenant.inventario.controlinventario.*') ? 'active' : '' }}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Control Inventario</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ route('tenant.inventario.producto.index', tenant('id')) }}"
+                        <a href="{{ tenant_url('tenant.inventario.producto.index') }}"
                             class="nav-link {{ request()->routeIs('tenant.inventario.producto*') ? 'active' : '' }}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Productos</p>
@@ -61,7 +61,7 @@
                     @endcan
                     @can('tenant.inventario.categoria.index')
                     <li class="nav-item">
-                        <a href="{{ route('tenant.inventario.categoria.index', tenant('id')) }}"
+                        <a href="{{ tenant_url('tenant.inventario.categoria.index') }}"
                             class="nav-link {{ request()->routeIs('tenant.inventario.categoria*') ? 'active' : '' }}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Categorias</p>
@@ -70,7 +70,7 @@
                     @endcan
                     @can('tenant.inventario.clase.index')
                     <li class="nav-item">
-                        <a href="{{ route('tenant.inventario.clase.index', tenant('id')) }}"
+                        <a href="{{ tenant_url('tenant.inventario.clase.index') }}"
                             class="nav-link {{ request()->routeIs('tenant.inventario.clase*') ? 'active' : '' }}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Clases</p>
@@ -79,7 +79,7 @@
                     @endcan
                     @can('tenant.inventario.almacen.index')
                     <li class="nav-item">
-                        <a href="{{ route('tenant.inventario.almacen.index', tenant('id')) }}"
+                        <a href="{{ tenant_url('tenant.inventario.almacen.index') }}"
                             class="nav-link {{ request()->routeIs('tenant.inventario.almacen*') ? 'active' : '' }}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Almacenes</p>
@@ -111,7 +111,7 @@
                 <ul class="nav nav-treeview">
                         @can('tenant.compras.compra.index')
                         <li class="nav-item">
-                            <a href="{{ route('tenant.compras.compra.index', tenant('id')) }}"
+                            <a href="{{ tenant_url('tenant.compras.compra.index') }}"
                                 class="nav-link {{ request()->routeIs('tenant.compras.compra*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Compras</p>
@@ -120,7 +120,7 @@
                         @endcan
                         @can('tenant.compras.proveedor.index')
                         <li class="nav-item">
-                            <a href="{{ route('tenant.compras.proveedor.index', tenant('id')) }}"
+                            <a href="{{ tenant_url('tenant.compras.proveedor.index') }}"
                                 class="nav-link {{ request()->routeIs('tenant.compras.proveedor*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Proveedores</p>
@@ -129,7 +129,7 @@
                         @endcan
                         @can('tenant.compras.gasto.index')
                         <li class="nav-item">
-                            <a href="{{ route('tenant.compras.gasto.index', tenant('id')) }}"
+                            <a href="{{ tenant_url('tenant.compras.gasto.index') }}"
                                 class="nav-link {{ request()->routeIs('tenant.compras.gasto*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Gastos</p>
@@ -138,7 +138,7 @@
                         @endcan
                         @can('tenant.compras.tipogasto.index')
                         <li class="nav-item">
-                            <a href="{{ route('tenant.compras.tipogasto.index', tenant('id')) }}"
+                            <a href="{{ tenant_url('tenant.compras.tipogasto.index') }}"
                                 class="nav-link {{ request()->routeIs('tenant.compras.tipogasto*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Tipo de Gastos</p>
@@ -169,7 +169,7 @@
                 <ul class="nav nav-treeview">
                     @can('tenant.ventas.venta.index')
                     <li class="nav-item">
-                        <a href="{{ route('tenant.ventas.venta.index', tenant('id')) }}"
+                        <a href="{{ tenant_url('tenant.ventas.venta.index') }}"
                             class="nav-link {{ request()->routeIs('tenant.ventas.venta*') ? 'active' : '' }}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Ventas</p>
@@ -178,7 +178,7 @@
                     @endcan
                     @can('tenant.ventas.cliente.index')
                     <li class="nav-item">
-                        <a href="{{ route('tenant.ventas.cliente.index', tenant('id')) }}"
+                        <a href="{{ tenant_url('tenant.ventas.cliente.index') }}"
                             class="nav-link {{ request()->routeIs('tenant.ventas.cliente*') ? 'active' : '' }}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Clientes</p>
@@ -187,7 +187,7 @@
                     @endcan
                     @can('tenant.ventas.metodopago.index')
                     <li class="nav-item">
-                        <a href="{{ route('tenant.ventas.metodopago.index', tenant('id')) }}"
+                        <a href="{{ tenant_url('tenant.ventas.metodopago.index') }}"
                             class="nav-link {{ request()->routeIs('tenant.ventas.metodopago*') ? 'active' : '' }}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Métodos de Pago</p>
@@ -214,7 +214,7 @@
                 <ul class="nav nav-treeview">
                     @can('tenant.seguridad.permiso.index')
                         <li class="nav-item">
-                            <a href="{{ route('tenant.seguridad.permiso.index', tenant('id')) }}"
+                            <a href="{{ tenant_url('tenant.seguridad.permiso.index') }}"
                                 class="nav-link {{ request()->routeIs('tenant.seguridad.permiso*') ? 'active' : '' }}"
                                 id="idSegPermiso">
                                 <i class="far fa-circle nav-icon"></i>
@@ -224,7 +224,7 @@
                     @endcan
                     @can('tenant.seguridad.roles.index')
                         <li class="nav-item">
-                            <a href="{{ route('tenant.seguridad.role.index', tenant('id')) }}"
+                            <a href="{{ tenant_url('tenant.seguridad.role.index') }}"
                                 class="nav-link  {{ request()->routeIs('tenant.seguridad.role*') ? 'active' : '' }}"
                                 id="idSegRoles">
                                 <i class="far fa-circle nav-icon"></i>
@@ -234,7 +234,7 @@
                     @endcan
                     @can('tenant.seguridad.users.index')
                         <li class="nav-item">
-                            <a href="{{ route('tenant.seguridad.usuario.index', tenant('id')) }}"
+                            <a href="{{ tenant_url('tenant.seguridad.usuario.index') }}"
                                 class="nav-link {{ request()->routeIs('tenant.seguridad.usuario*') ? 'active' : '' }}"
                                 id="idSegUsuario">
                                 <i class="far fa-circle nav-icon"></i>
@@ -244,7 +244,7 @@
                     @endcan
                     @can('grupo.index')
                         <li class="nav-item">
-                            <a href="{{ route('seguridad.grupo.index') }}" class="nav-link" id="idSegGrupo">
+                            <a href="{{ tenant_url('seguridad.grupo.index') }}" class="nav-link" id="idSegGrupo">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Grupo</p>
                             </a>

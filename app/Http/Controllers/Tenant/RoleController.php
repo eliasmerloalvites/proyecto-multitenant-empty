@@ -42,7 +42,7 @@ class RoleController extends Controller
                 ->rawColumns(['action1','action2','action3'])
                 ->make(true);
         }
-        return view('tenant_generico.seguridad.roles.index',compact('permissionsGrouped'));
+        return view('tenant_'.tenant('tipo_negocio').'.seguridad.roles.index',compact('permissionsGrouped'));
     }
 
     /**

@@ -120,10 +120,9 @@ class TenancyServiceProvider extends ServiceProvider
         }
     }
 
-    protected function mapRoutes()
+    /* protected function mapRoutes()
     {
         $this->app->booted(function () {
-
             // TENANT
             Route::domain('{tenant}.' . config('tenancy.central_domains')[0])
                 ->middleware([
@@ -141,13 +140,23 @@ class TenancyServiceProvider extends ServiceProvider
                 ])
                 ->group(base_path('routes/web.php'));
         });
+    } */
 
-        /* $this->app->booted(function () {
-            if (file_exists(base_path('routes/tenant.php'))) {
-                Route::namespace(static::$controllerNamespace)
-                    ->group(base_path('routes/tenant.php'));
-            }
-        }); */
+    protected function mapRoutes()
+    {
+        $this->app->booted(function () {
+            /* CENTRAL ROUTES */
+            Route::middleware([
+                'web',
+            ])->group(base_path('routes/web.php'));
+
+            /* TENANT ROUTES */
+            Route::middleware([
+                'web',
+                'no-tenant',
+            ])->group(base_path('routes/tenant.php'));
+
+        });
     }
 
     protected function makeTenancyMiddlewareHighestPriority()

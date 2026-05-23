@@ -33,7 +33,7 @@ class AlmacenController extends Controller
                 ->rawColumns(['action1','action2'])
                 ->make(true);
         }
-        return view('tenant_generico.inventario.almacen.index');
+        return view('tenant_'.tenant('tipo_negocio').'.inventario.almacen.index');
     }
 
     /**

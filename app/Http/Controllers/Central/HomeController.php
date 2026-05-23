@@ -20,7 +20,8 @@ class HomeController extends Controller
         $tenantid = null;
         if(tenant() !== null){
             $tenantid = tenant('id');
-            return view('tenant_generico.welcome',compact('tenantid'));
+            $tiponegocio = tenant('tipo_negocio');
+            return view('tenant_'.$tiponegocio.'.welcome',compact('tenantid'));
         } else {
             $tenantid = null;
             return view('welcome',compact('tenantid'));

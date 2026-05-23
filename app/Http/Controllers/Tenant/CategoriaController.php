@@ -42,7 +42,7 @@ class CategoriaController extends Controller
         }
 
         $clases = DB::table('clase')->get();
-        return view('tenant_generico.inventario.categoria.index', compact('clases'));
+        return view('tenant_'.tenant('tipo_negocio').'.inventario.categoria.index', compact('clases'));
     }
 
     /**

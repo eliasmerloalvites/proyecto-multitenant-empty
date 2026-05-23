@@ -46,7 +46,7 @@ class GastoController extends Controller
         $metodo_pago = DB::table('metodo_pago')->orderBy('MEP_Pago', 'asc')->get();
         $tipo_gasto = DB::table('tipo_gasto')->orderBy('TG_Descripcion', 'asc')->get();
         $proveedor = Proveedor::all();
-        return view('tenant_generico.compras.gasto.index',compact('metodo_pago','tipo_gasto','proveedor'));
+        return view('tenant_'.tenant('tipo_negocio').'.compras.gasto.index',compact('metodo_pago','tipo_gasto','proveedor'));
     }
 
     /**

@@ -2,155 +2,302 @@
 @section('titulo', 'Clientes')
 @section('contenido')
     @can('admin.clients.create')
-    <div class="col-5">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">CREAR CLIENTES</h5>
-                <p class="card-text"></p>
-                <form id="ClienteForm" name="ClienteForm" action="{{ route('admin.clients.store') }}">
-                    @csrf
+        <div class="col-4">
+            <div class="card shadow-sm border-0">
 
-                    <div class="form-group row">
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <label class="control-label" style="text-align: left; display: block;">Ruc:</label>
-                            <input type="text" name="ruc" id="ruc"
-                                class="form-control input_user @error('ruc') is-invalid @enderror"
-                                placeholder="Ruc" required>
-                        </div>
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <label class="control-label" style="text-align: left; display: block;">Razón Social:</label>
-                            <input type="text" name="razon_social" id="razon_social"
-                                class="form-control input_user @error('razon_social') is-invalid @enderror"
-                                placeholder="Razón Social" required>
-                        </div>
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <label class="control-label" style="text-align: left; display: block;">Tipo de Negocio:</label>
-                            <select class="form-control select2 select2-primary" id="tipo_negocio" name="tipo_negocio"
-                                data-dropdown-css-class="select2-primary"  style="width: 100%; ">
-                                <option value="generico">Generico</option>
-                                <option value="optica">Óptica</option>
-                                <option value="ferreteria">Ferretería</option>
-                                <option value="restaurant">Restaurant</option>
-                                <option value="hotel">Hotel</option>
-                            </select>
-                        </div>  
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <label class="control-label" style="text-align: left; display: block;">Día de Facturación:</label>
-                            <input type="number" name="billing_day" min="1" max="28" class="form-control input_user @error('billing_day') is-invalid @enderror"
-                                placeholder="Día de Facturación" required>
-                        </div>
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <label class="control-label" style="text-align: left; display: block;">Dominio:</label>
-                            <input type="text" name="domain" id="domain"
-                                class="form-control input_user @error('domain') is-invalid @enderror"
-                                placeholder="Dominio" required>
-                        </div>
-                        
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <label class="control-label"  style="text-align: left; display: block;">Email:</label>
-                            <input type="email" name="email" id="email" class="form-control input_user @error('email') is-invalid @enderror"  placeholder="email" required>
-                            @error('email') 
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{$message}}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <label class="control-label"  style="text-align: left; display: block;">Contraseña:</label>
-                            <input type="password" name="password" id="password" class="form-control input_pass @error('password') is-invalid @enderror"  placeholder="contraseña" required>
-                            @error('password') 
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{$message}}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                    </div>
+                <div class="card-header bg-white border-0 pb-0">
+                    <h4 class="mb-1 font-weight-bold text-primary">
+                        CREAR CLIENTE
+                    </h4>
+                    <small class="text-muted">
+                        Registra un nuevo cliente en la plataforma SaaS
+                    </small>
+                </div>
 
-                    @can('admin.clients.create')
-                        <button id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i>Guardar</button>
-                    @endcan
+                <div class="card-body">
 
-                    <button type="reset" class="btn btn-danger"> <i class="fas fa-ban"></i>Cancelar </button>
+                    <form id="ClienteForm" name="ClienteForm" action="{{ route('admin.clients.store') }}">
+                        @csrf
 
-                </form>
+                        {{-- ===================================================== --}}
+                        {{-- INFORMACION CLIENTE --}}
+                        {{-- ===================================================== --}}
+
+                        <div class="mb-4">
+                            <h6 class="font-weight-bold text-primary mb-3">
+                                <i class="fas fa-user-circle mr-1"></i>
+                                Información del Cliente
+                            </h6>
+
+                            <div class="row">
+
+                                <div class="col-md-6 mb-3">
+                                    <label>RUC</label>
+                                    <input type="text" name="ruc" id="ruc" class="form-control"
+                                        placeholder="Ingrese RUC">
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label>Razón Social</label>
+                                    <input type="text" name="razon_social" id="razon_social" class="form-control"
+                                        placeholder="Ingrese razón social" required>
+                                </div>
+
+                                <div class="col-md-12 mb-3">
+                                    <label>Tipo de Negocio</label>
+
+                                    <select class="form-control select2" id="tipo_negocio" name="tipo_negocio">
+                                        <option value="generico">Genérico</option>
+                                        <option value="tallermoto">Taller de Motos</option>
+                                        <option value="optica">Óptica</option>
+                                        <option value="ferreteria">Ferretería</option>
+                                        <option value="restaurant">Restaurant</option>
+                                        <option value="hotel">Hotel</option>
+                                    </select>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        {{-- ===================================================== --}}
+                        {{-- PLAN Y FACTURACION --}}
+                        {{-- ===================================================== --}}
+
+                        <div class="mb-4">
+
+                            <h6 class="font-weight-bold text-primary mb-3">
+                                <i class="fas fa-file-invoice-dollar mr-1"></i>
+                                Plan y Facturación
+                            </h6>
+
+                            <div class="row">
+
+                                <div class="col-md-6 mb-3">
+                                    <label>Plan SaaS</label>
+
+                                    <select class="form-control" name="plan" id="plan">
+                                        <option value="start">START</option>
+                                        <option value="basic">BASIC</option>
+                                        <option value="plus">PLUS</option>
+                                        <option value="empresarial">EMPRESARIAL</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label>Día de Facturación</label>
+
+                                    <input type="number" min="1" max="28" name="billing_day" class="form-control"
+                                        placeholder="Día del mes">
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        {{-- ===================================================== --}}
+                        {{-- DOMINIO Y ACCESO --}}
+                        {{-- ===================================================== --}}
+
+                        <div class="mb-4">
+
+                            <h6 class="font-weight-bold text-primary mb-3">
+                                <i class="fas fa-globe mr-1"></i>
+                                Dominio y Acceso
+                            </h6>
+
+                            <div class="alert alert-light border small">
+                                El subdominio se utiliza para crear la base de datos y el identificador interno del tenant.
+                                <br>
+                                El dominio personalizado es opcional y solo aplica para planes premium.
+                            </div>
+
+
+                            {{-- TIPO DOMINIO --}}
+
+                            <div class="mb-3">
+
+                                <label class="d-block mb-2">
+                                    Tipo de Dominio
+                                </label>
+
+                                <div class="custom-control custom-radio custom-control-inline">
+
+                                    <input type="radio" id="use_subdomain" name="domain_type" class="custom-control-input"
+                                        value="subdomain" checked>
+
+                                    <label class="custom-control-label" for="use_subdomain">
+                                        Subdominio KaelTech
+                                    </label>
+                                </div>
+
+                                <div class="custom-control custom-radio custom-control-inline">
+
+                                    <input type="radio" id="use_custom_domain" name="domain_type" class="custom-control-input"
+                                        value="custom_domain">
+
+                                    <label class="custom-control-label" for="use_custom_domain">
+                                        Dominio Personalizado
+                                    </label>
+                                </div>
+                            </div>
+
+
+                            {{-- SUBDOMAIN --}}
+
+                            <div class="mb-3" id="subdomainContainer">
+
+                                <label>Subdominio</label>
+
+                                <div class="input-group">
+
+                                    <input type="text" class="form-control" name="subdomain" id="subdomain"
+                                        placeholder="ejemplo">
+
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">
+                                            .{{ config('app.central_domain') }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <small class="text-muted">
+                                    Solo letras y números.
+                                </small>
+                            </div>
+
+
+                            {{-- CUSTOM DOMAIN --}}
+
+                            <div class="mb-3 d-none" id="customDomainContainer">
+
+                                <label>Dominio Personalizado</label>
+
+                                <input type="text" class="form-control" name="custom_domain" id="custom_domain"
+                                    placeholder="midominio.com">
+
+                                <small class="text-muted">
+                                    Debe apuntar correctamente a tu servidor.
+                                </small>
+                            </div>
+
+                        </div>
+
+
+                        {{-- ===================================================== --}}
+                        {{-- ACCESO SISTEMA --}}
+                        {{-- ===================================================== --}}
+
+                        <div class="mb-4">
+
+                            <h6 class="font-weight-bold text-primary mb-3">
+                                <i class="fas fa-user-lock mr-1"></i>
+                                Acceso al Sistema
+                            </h6>
+
+                            <div class="row">
+
+                                <div class="col-md-12 mb-3">
+                                    <label>Email</label>
+
+                                    <input type="email" name="email" id="email" class="form-control"
+                                        placeholder="correo@empresa.com" required>
+                                </div>
+
+                                <div class="col-md-12 mb-3">
+                                    <label>Contraseña</label>
+
+                                    <div class="input-group">
+
+                                        <input type="password" name="password" id="password" class="form-control"
+                                            placeholder="Ingrese contraseña" required>
+
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-eye"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        {{-- BOTONES --}}
+
+                        <div class="d-flex align-items-center">
+
+                            <button id="saveBtn" class="btn btn-primary mr-2">
+                                <i class="fas fa-save mr-1"></i>
+                                Guardar Cliente
+                            </button>
+
+                            <button type="reset" class="btn btn-danger">
+                                <i class="fas fa-ban mr-1"></i>
+                                Cancelar
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
             </div>
         </div>
-    </div>
     @endcan
     @can('admin.clients.index')
-    <div class="col-7">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">LISTA DE CLIENTES</h5>
-                <p class="card-text">
+        <div class="col-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">LISTA DE CLIENTES</h5>
+                    <p class="card-text">
 
-                <div class="table-responsive" style="background:#FFF;">
-                    <table class="table table-striped nowrap" id="table-users" name="table-users">
-                        <thead>
-                            <tr>
-                                <th scope="col">N°</th>
-                                <th scope="col">Ruc</th>
-                                <th scope="col">Razon Social</th>
-                                <th scope="col">Tipo de Negocio</th>
-                                <th scope="col">Dominio</th>
-                                <th scope="col">Día de Facturación</th>
-                                <th scope="col">Opciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    <div class="table-responsive" style="background:#FFF;">
+                        <table class="table table-striped nowrap" id="table-users" name="table-users">
+                            <thead>
+                                <tr>
+                                    <th scope="col">N°</th>
+                                    <th scope="col">Ruc</th>
+                                    <th scope="col">Razon Social</th>
+                                    <th scope="col">Negocio</th>
+                                    <th scope="col">Plan</th>
+                                    <th scope="col">Dominio</th>
+                                    <th scope="col">Día Fact</th>
+                                    <th scope="col">Estado</th>
+                                    <th scope="col">Opciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
 
-                        </tbody>
+                            </tbody>
 
-                    </table>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     @endcan
-
-    <!-- Modal Ver detalles-->
-    <div class="modal fade" id="modalVerDetalle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <p class="col">id de usuario: </p>
-                        <p id="ver_id" class="col"></p>
-                    </div>
-                    <div class="row">
-                        <p class="col">Nombre de usuario:</p>
-                        <p id="ver_nombre" class="col"></p>
-                    </div>
-                    <div class="row">
-                        <p class="col">Email de usuario:</p>
-                        <p id="ver_email" class="col"></p>
-                    </div>
-                    <div class="row">
-                        <p class="col">Fecha de registro de usuario: </p>
-                        <p id="ver_fecha_registro" class="col"></p>
-                    </div>
-                    <div class="row">
-                        <p class="col">Fecha de actualización de usuario: </p>
-                        <p id="ver_fecha_update" class="col"></p>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
 @endsection
 
 @section('script')
     <script>
+        $('input[name="domain_type"]').on('change', function() {
+
+            const value = $(this).val();
+
+            if (value === 'subdomain') {
+
+                $('#subdomainContainer').removeClass('d-none');
+                $('#customDomainContainer').addClass('d-none');
+
+            } else {
+
+                $('#subdomainContainer').addClass('d-none');
+                $('#customDomainContainer').removeClass('d-none');
+            }
+        });
+
         $(document).ready(function() {
             $.ajaxSetup({
                 headers: {
@@ -203,6 +350,10 @@
                         name: 'tipo_negocio'
                     },
                     {
+                        data: 'plan',
+                        name: 'plan'
+                    },
+                    {
                         data: 'domain',
                         name: 'domain'
                     },
@@ -211,12 +362,24 @@
                         name: 'billing_day'
                     },
                     {
+                        data: 'estado',
+                        name: 'estado'
+                    },
+                    {
                         data: null,
                         name: 'name',
                         'render': function(data, type, row) {
-                            return @can('admin.clients.show') data.action3 + ' ' + @endcan ''
-                            @can('admin.clients.edit') +data.action1 + ' ' + @endcan ''
-                            @can('admin.clients.destroy') +data.action2 @endcan ;
+                            return @can('admin.clients.show')
+                                    data.action3 + ' ' +
+                                @endcan
+                            ''
+                            @can('admin.clients.edit')
+                                +data.action1 + ' ' +
+                            @endcan
+                            ''
+                            @can('admin.clients.destroy')
+                                +data.action2
+                            @endcan ;
                         }
                     }
                 ]
@@ -259,10 +422,6 @@
                     }
                 });
             });
-            $('body').on('click', '.editClient', function() {
-                var Cliente_id = $(this).data('id');
-                window.location.href = "/cliente/" + Cliente_id + "/edit";
-            });
 
 
             $('body').on('click', '.deleteClient', function() {
@@ -297,25 +456,7 @@
                 }
             });
 
-            $('body').on('click', '.eyeClient', function() {
-                var Cliente_id_ver = $(this).data('id');
-                $('#modalVerDetalle').modal('show');
-                $.get('{{ route('admin.clients.show', ['client' => ':client']) }}'.replace(':client',
-                        Cliente_id_ver),
-                    function(data) {
-                        console.log(data);
-                        $('#ver_id').text(data.data.id);
-                        $('#ver_razon_social').text(data.data.razon_social);
-                        $('#ver_tipo_negocio').text(data.data.tipo_negocio);
-                        $('#ver_billing_day').text(data.data.billing_day);
-                        $('#ver_fecha_registro').text(moment(data.data.created_at).format(
-                            'YYYY-MM-DD HH:mm:ss'));
-                        $('#ver_fecha_update').text(moment(data.data.updated_at).format(
-                            'YYYY-MM-DD HH:mm:ss'));
 
-                    })
-
-            });
 
         });
     </script>

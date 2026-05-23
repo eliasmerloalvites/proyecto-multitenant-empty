@@ -41,7 +41,7 @@ class ProductoController extends Controller
         }
 
         $categorias = DB::table('categoria')->get();
-        return view('tenant_generico.inventario.producto.index', compact('categorias'));
+        return view('tenant_'.tenant('tipo_negocio').'.inventario.producto.index', compact('categorias'));
     }
 
     /**
@@ -158,7 +158,7 @@ class ProductoController extends Controller
         }
 
         $categorias = DB::table('categoria')->get();
-        return view('tenant_generico.inventario.producto.controlinventario', compact('categorias'));
+        return view('tenant_'.tenant('tipo_negocio').'.inventario.producto.controlinventario', compact('categorias'));
     }
 
     public function lotes(Request $request,string $tenant_id, string $id)

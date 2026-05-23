@@ -41,7 +41,7 @@ class PermisoController extends Controller
                 ->rawColumns(['action1','action2','action3'])
                 ->make(true);
         }
-        return view('tenant_generico.seguridad.permisos.index');
+        return view('tenant_'.tenant('tipo_negocio').'.seguridad.permisos.index');
 
     }
 

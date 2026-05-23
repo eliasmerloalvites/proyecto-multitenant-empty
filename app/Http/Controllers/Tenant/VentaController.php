@@ -98,7 +98,7 @@ class VentaController extends Controller
                 ->make(true);
         }
 
-        return view('tenant_generico.ventas.venta.index');
+        return view('tenant_'.tenant('tipo_negocio').'.ventas.venta.index');
     }
 
     public function filtro(Request $request, $fecharange)
@@ -183,7 +183,7 @@ class VentaController extends Controller
             ->groupBy('a.ALM_Id', 'p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Descripcion', 'p.PRO_Imagen', 'p.PRO_Marca', 'p.CAT_Id', 'cat.CAT_Nombre', 'cl.CLA_Nombre', 'a.ALM_Id', 'a.ALM_Nombre')
             ->get();
 
-        return view('tenant_generico.ventas.venta.create', compact('clase', 'categoria', 'clientes', 'metodo_pago', 'lotesuni'));
+        return view('tenant_'.tenant('tipo_negocio').'.ventas.venta.create', compact('clase', 'categoria', 'clientes', 'metodo_pago', 'lotesuni'));
     }
 
     /**
@@ -347,7 +347,7 @@ class VentaController extends Controller
 
         $generaimagen = false;
 
-        return view('tenant_generico/ventas/venta/ticket/ticketventa9cm', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal','generaimagen'));
+        return view('tenant_'.tenant('tipo_negocio').'/ventas/venta/ticket/ticketventa9cm', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal','generaimagen'));
     }
 
     function pdf(string $tenant_id, string $idventa)
@@ -417,7 +417,7 @@ class VentaController extends Controller
 
         $generaimagen = false;
 
-        return view('tenant_generico/ventas/venta/ticket/ticket_A4', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal','generaimagen'));
+        return view('tenant_'.tenant('tipo_negocio').'/ventas/venta/ticket/ticket_A4', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal','generaimagen'));
     }
 
     public static function ticketImagen($idventa)

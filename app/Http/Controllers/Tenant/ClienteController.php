@@ -36,7 +36,7 @@ class ClienteController extends Controller
                 ->rawColumns(['action1','action2','action3'])
                 ->make(true);
         }
-        return view('tenant_generico.ventas.cliente.index');
+        return view('tenant_'.tenant('tipo_negocio').'.ventas.cliente.index');
     }
 
     /**
