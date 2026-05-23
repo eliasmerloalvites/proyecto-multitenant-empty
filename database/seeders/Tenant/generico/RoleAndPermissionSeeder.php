@@ -66,12 +66,12 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.inventario.producto.show',    'Productos', 'Ver Producto',        'Ver Producto'],
             ['tenant.inventario.producto.destroy', 'Productos', 'Eliminar Productos',  'Eliminar Productos'],
             
-            // Almacen
-            ['tenant.inventario.almacen.index',   'Almacenes', 'Ver Lista Almacenes', 'Listar Almacenes'],
-            ['tenant.inventario.almacen.create',  'Almacenes', 'Crear Almacenes',     'Crear Almacenes'],
-            ['tenant.inventario.almacen.edit',    'Almacenes', 'Editar Almacenes',    'Editar Almacenes'],
-            ['tenant.inventario.almacen.show',    'Almacenes', 'Ver Almacen',        'Ver Almacen'],
-            ['tenant.inventario.almacen.destroy', 'Almacenes', 'Eliminar Almacenes',  'Eliminar Almacenes'],
+            // Almacen || Sede
+            ['tenant.configuracion.sede.index',   'Sedes', 'Ver Lista Sedes', 'Listar Sedes'],
+            ['tenant.configuracion.sede.create',  'Sedes', 'Crear Sedes',     'Crear Sedes'],
+            ['tenant.configuracion.sede.edit',    'Sedes', 'Editar Sedes',    'Editar Sedes'],
+            ['tenant.configuracion.sede.show',    'Sedes', 'Ver Sede',        'Ver Sede'],
+            ['tenant.configuracion.sede.destroy', 'Sedes', 'Eliminar Sedes',  'Eliminar Sedes'],
             
             // Tipo Gasto
             ['tenant.compras.tipogasto.index',   'TipoGastos', 'Ver Lista TipoGastos', 'Listar TipoGastos'],
@@ -196,11 +196,11 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.inventario.producto.show',
             'tenant.inventario.producto.destroy',
 
-            'tenant.inventario.almacen.index',
-            'tenant.inventario.almacen.create',
-            'tenant.inventario.almacen.edit',
-            'tenant.inventario.almacen.show',
-            'tenant.inventario.almacen.destroy',
+            'tenant.inventario.sede.index',
+            'tenant.inventario.sede.create',
+            'tenant.inventario.sede.edit',
+            'tenant.inventario.sede.show',
+            'tenant.inventario.sede.destroy',
 
             'tenant.compras.tipogasto.index',
             'tenant.compras.tipogasto.create',
@@ -269,11 +269,11 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.inventario.producto.show',
             'tenant.inventario.producto.destroy',
 
-            'tenant.inventario.almacen.index',
-            'tenant.inventario.almacen.create',
-            'tenant.inventario.almacen.edit',
-            'tenant.inventario.almacen.show',
-            'tenant.inventario.almacen.destroy',
+            'tenant.inventario.sede.index',
+            'tenant.inventario.sede.create',
+            'tenant.inventario.sede.edit',
+            'tenant.inventario.sede.show',
+            'tenant.inventario.sede.destroy',
 
             'tenant.compras.tipogasto.index',
             'tenant.compras.tipogasto.create',

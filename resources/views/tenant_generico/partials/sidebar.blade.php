@@ -77,15 +77,6 @@
                         </a>
                     </li>
                     @endcan
-                    @can('tenant.inventario.almacen.index')
-                    <li class="nav-item">
-                        <a href="{{ tenant_url('tenant.inventario.almacen.index') }}"
-                            class="nav-link {{ request()->routeIs('tenant.inventario.almacen*') ? 'active' : '' }}">
-                            <i class="far fa-circle nav-icon"></i>
-                            <p>Almacenes</p>
-                        </a>
-                    </li>
-                    @endcan
                         
                 </ul>
             </li>
@@ -198,6 +189,30 @@
             </li>
             @endcan
 
+            <!-- CONFIGURACIÓN -->
+                
+            @can('tenant.configuracion.sede.index')
+                <li class="nav-item has-treeview 
+                    {{ request()->routeIs('tenant.configuracion.sede*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('tenant.configuracion.sede*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-cogs"></i>
+                        <p>
+                            CONFIGURACIÓN
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <!-- SEDES -->
+                        <li class="nav-item">
+                            <a href="{{ tenant_url('tenant.configuracion.sede.index') }}" 
+                                class="nav-link  {{ request()->routeIs('tenant.configuracion.sede*') ? 'active' : '' }}">
+                                <i class="fas fa-store nav-icon"></i>
+                                <p>Sedes</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>   
+            @endcan
         
           @can('tenant.seguridad.users.index')
             <li class="nav-item has-treeview {{ request()->routeIs('tenant.seguridad.usuario*') || request()->routeIs('tenant.seguridad.permiso*') || request()->routeIs('tenant.seguridad.rol*') ? 'menu-open' : '' }}"
