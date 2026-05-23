@@ -126,15 +126,23 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.configuracion.turno.index',   'Turnos', 'Ver Lista Turnos', 'Listar Turnos'],
             ['tenant.configuracion.turno.create',  'Turnos', 'Crear Turnos',     'Crear Turnos'],
             ['tenant.configuracion.turno.edit',    'Turnos', 'Editar Turnos',    'Editar Turnos'],
-            ['tenant.configuracion.turno.show',    'Turnos', 'Ver Sede',        'Ver Sede'],
+            ['tenant.configuracion.turno.show',    'Turnos', 'Ver Turno',        'Ver Turno'],
             ['tenant.configuracion.turno.destroy', 'Turnos', 'Eliminar Turnos',  'Eliminar Turnos'],
 
             // Bahia
-            ['tenant.configuracion.bahia.index',   'Bahia', 'Ver Lista Bahia', 'Listar Bahia'],
-            ['tenant.configuracion.bahia.create',  'Bahia', 'Crear Bahia',     'Crear Bahia'],
-            ['tenant.configuracion.bahia.edit',    'Bahia', 'Editar Bahia',    'Editar Bahia'],
-            ['tenant.configuracion.bahia.show',    'Bahia', 'Ver Sede',        'Ver Sede'],
-            ['tenant.configuracion.bahia.destroy', 'Bahia', 'Eliminar Bahia',  'Eliminar Bahia'],
+            ['tenant.configuracion.bahia.index',   'Bahias', 'Ver Lista Bahias', 'Listar Bahias'],
+            ['tenant.configuracion.bahia.create',  'Bahias', 'Crear Bahias',     'Crear Bahias'],
+            ['tenant.configuracion.bahia.edit',    'Bahias', 'Editar Bahias',    'Editar Bahias'],
+            ['tenant.configuracion.bahia.show',    'Bahias', 'Ver Bahia',        'Ver Bahia'],
+            ['tenant.configuracion.bahia.destroy', 'Bahias', 'Eliminar Bahias',  'Eliminar Bahias'],
+
+            
+            // Horario
+            ['tenant.configuracion.horario.index',   'Horarios', 'Ver Lista Horarios', 'Listar Horarios'],
+            ['tenant.configuracion.horario.create',  'Horarios', 'Crear Horarios',     'Crear Horarios'],
+            ['tenant.configuracion.horario.edit',    'Horarios', 'Editar Horarios',    'Editar Horarios'],
+            ['tenant.configuracion.horario.show',    'Horarios', 'Ver Horario',        'Ver Horario'],
+            ['tenant.configuracion.horario.destroy', 'Horarios', 'Eliminar Horarios',  'Eliminar Horarios'],
 
             
         ];
@@ -259,6 +267,24 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.ventas.venta.show',
             'tenant.ventas.venta.destroy',
 
+            'tenant.configuracion.turno.index',
+            'tenant.configuracion.turno.create',
+            'tenant.configuracion.turno.edit',
+            'tenant.configuracion.turno.show',
+            'tenant.configuracion.turno.destroy',
+
+            'tenant.configuracion.bahia.index',
+            'tenant.configuracion.bahia.create',
+            'tenant.configuracion.bahia.edit',
+            'tenant.configuracion.bahia.show',
+            'tenant.configuracion.bahia.destroy',
+            
+            'tenant.configuracion.horario.index',
+            'tenant.configuracion.horario.create',
+            'tenant.configuracion.horario.edit',
+            'tenant.configuracion.horario.show',
+            'tenant.configuracion.horario.destroy',
+
         ]);
 
         $gerenteRole->givePermissionTo([
@@ -267,7 +293,7 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.seguridad.users.edit',
             'tenant.seguridad.users.show',
             
-            'tenant.inventario.clase.index',
+            /* 'tenant.inventario.clase.index',
             'tenant.inventario.clase.create',
             'tenant.inventario.clase.edit',
             'tenant.inventario.clase.show',
@@ -282,7 +308,7 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.inventario.producto.create',
             'tenant.inventario.producto.edit',
             'tenant.inventario.producto.show',
-            'tenant.inventario.producto.destroy',
+            'tenant.inventario.producto.destroy', */
 
             'tenant.configuracion.sede.index',
             'tenant.configuracion.sede.create',
@@ -290,7 +316,7 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.configuracion.sede.show',
             'tenant.configuracion.sede.destroy',
 
-            'tenant.compras.tipogasto.index',
+            /* 'tenant.compras.tipogasto.index',
             'tenant.compras.tipogasto.create',
             'tenant.compras.tipogasto.edit',
             'tenant.compras.tipogasto.show',
@@ -330,7 +356,25 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.ventas.venta.create',  
             'tenant.ventas.venta.edit',
             'tenant.ventas.venta.show',
-            'tenant.ventas.venta.destroy',
+            'tenant.ventas.venta.destroy', */
+
+            'tenant.configuracion.turno.index',
+            'tenant.configuracion.turno.create',
+            'tenant.configuracion.turno.edit',
+            'tenant.configuracion.turno.show',
+            'tenant.configuracion.turno.destroy',            
+
+            'tenant.configuracion.bahia.index',
+            'tenant.configuracion.bahia.create',
+            'tenant.configuracion.bahia.edit',
+            'tenant.configuracion.bahia.show',
+            'tenant.configuracion.bahia.destroy',
+            
+            'tenant.configuracion.horario.index',
+            'tenant.configuracion.horario.create',
+            'tenant.configuracion.horario.edit',
+            'tenant.configuracion.horario.show',
+            'tenant.configuracion.horario.destroy',
 
         ]);
 

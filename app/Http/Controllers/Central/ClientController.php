@@ -21,7 +21,9 @@ class ClientController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Client::join('domains', 'clients.domain_id', '=', 'domains.id')->select('clients.*', 'domains.domain as domain')->get();
+            $data = Client::join('domains as d', 'clients.domain_id', '=', 'd.id')
+                ->join('tenants as t', 'd.tenant_id', '=', 't.id')
+                ->select('clients.*', 'd.domain as domain', 't.tipo_negocio', 't.plan', 't.status')->get();
 
             return DataTables::of($data)
                 ->addIndexColumn()
@@ -39,7 +41,76 @@ class ClientController extends Controller
 
                     return $btn;
                 })
-                ->rawColumns(['action1', 'action2', 'action3'])
+                ->addColumn('plan', function ($row) {
+                    $plan = strtoupper($row->plan);
+
+                    $styles = [
+                        'START' => 'background:#9B5DE5;',
+                        'BASIC' => 'background:#3B82F6;',
+                        'PLUS' => 'background:#22C55E;',
+                        'EMPRESARIAL' => 'background:#A855F7;',
+                    ];
+
+                    $style = $styles[$plan] ?? 'background:#F59E0B;';
+
+                    return '
+                        <span style="
+                            ' . $style . '
+                            color:white;
+                            padding:5px 12px;
+                            border-radius:6px;
+                            font-size:12px;
+                            font-weight:600;
+                            letter-spacing:0.5px;
+                            display:inline-block;
+                            text-transform:uppercase;
+                            box-shadow:0 2px 4px rgba(0,0,0,0.15);
+                        ">
+                            ' . $plan . '
+                        </span>
+                    ';
+                })
+                ->addColumn('estado', function ($row) {
+
+                    $estado = strtoupper($row->status);
+
+                    $styles = [
+                        'ACTIVO' => [
+                            'color' => '#22C55E',
+                            'border' => '#86EFAC',
+                            'background' => 'rgba(34, 197, 94, 0.08)',
+                        ],
+
+                        'SUSPENDIDO' => [
+                            'color' => '#F59E0B',
+                            'border' => '#FCD34D',
+                            'background' => 'rgba(245, 158, 11, 0.08)',
+                        ],
+                    ];
+
+                    $style = $styles[$estado] ?? [
+                        'color' => '#6B7280',
+                        'border' => '#D1D5DB',
+                        'background' => 'rgba(107, 114, 128, 0.08)',
+                    ];
+
+                    return '
+                        <span style="
+                            color: ' . $style['color'] . ';
+                            border:1px solid ' . $style['border'] . ';
+                            background: ' . $style['background'] . ';
+                            padding:5px 12px;
+                            border-radius:8px;
+                            font-size:12px;
+                            font-weight:600;
+                            display:inline-block;
+                            text-transform:capitalize;
+                        ">
+                            ' . $estado . '
+                        </span>
+                    ';
+                })
+                ->rawColumns(['action1', 'action2', 'action3', 'plan', 'estado'])
                 ->make(true);
         }
         return view('central.admin.clients.index');
@@ -75,7 +146,7 @@ class ClientController extends Controller
             if (Domain::where('domain', $fullDomain)->exists()) {
                 return back()->withErrors(['domain' => 'El dominio ya existe.']);
             }
-
+            // dd($validated['plan']);
             // 1️Crear TENANT (DB + dominio)
             $tenantId = $validated['tipo_negocio'] . '_' . Str::slug($validated['subdomain']);
             $tenant = Tenant::create([
@@ -91,6 +162,7 @@ class ClientController extends Controller
             ]);
             // Refrescar tenant
             $tenant->refresh();
+            
             $data = $tenant->data ?? [];
             $data['branding'] = ['logo' => null, 'primary_color' => '#0B63CE'];
             $data['modules'] = ['agenda' => true, 'reports' => false];
@@ -126,7 +198,7 @@ class ClientController extends Controller
                     '--class' => "Database\Seeders\Tenant\\" . $validated['tipo_negocio'] . "\DatabaseSeeder",
                     '--force' => true,
                 ]);
-                User::create([
+                $user = User::create([
                     'name'              => 'Admin ' . $validated['razon_social'],
                     'email'             => $validated['email'],
                     'password'          => Hash::make($validated['password']),
@@ -136,6 +208,10 @@ class ClientController extends Controller
                     'avatar'            => '',
                     'PER_Id'            => 1, // Asignar un PER_Id válido según tu lógica
                 ]);
+
+                if ($user) {
+                    $user->assignRole('Gerente');
+                }
             });
 
             return redirect()->route('admin.clients.index')->with('success', 'Cliente y entorno creados correctamente.');

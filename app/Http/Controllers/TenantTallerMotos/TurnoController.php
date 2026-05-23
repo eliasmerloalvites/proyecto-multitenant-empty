@@ -30,31 +30,21 @@ class TurnoController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-
             $data = Turno::orderBy('TUR_Id', 'desc');
-
             return DataTables::of($data)
-
                 ->addIndexColumn()
-
                 ->addColumn('action1', function ($row) {
                     return '<a href="javascript:void(0)" data-id="' . $row->TUR_Id . '" class="btn btn-primary btn-sm editTurno"><i class="fa fa-edit"></i></a>';
                 })
-
                 ->addColumn('action2', function ($row) {
-
                     if ($row->TUR_Estado == 'ACT') {
                         return '<a href="javascript:void(0)" data-id="' . $row->TUR_Id . '" class="btn btn-danger btn-sm deleteTurno"><i class="fa fa-trash"></i></a>';
                     }
-
                     return '<a href="javascript:void(0)" data-id="' . $row->TUR_Id . '" class="btn btn-success btn-sm activarTurno"><i class="fa fa-check"></i></a>';
                 })
-
                 ->rawColumns(['action1', 'action2'])
-
                 ->make(true);
         }
-
         return view('tenant_' . tenant('tipo_negocio') . '.configuracion.turno.index');
     }
 
@@ -69,9 +59,7 @@ class TurnoController extends Controller
         }
 
         $payload = $validator->validated();
-
         $payload['TUR_Estado'] = 'ACT';
-
         Turno::create($payload);
 
         return response()->json(['success' => true, 'message' => 'Turno registrado exitosamente.']);
@@ -79,7 +67,7 @@ class TurnoController extends Controller
 
     // EDITAR
 
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $turno = Turno::find($id);
 
@@ -92,7 +80,7 @@ class TurnoController extends Controller
 
     // ACTUALIZAR
 
-    public function update(Request $request, string $tenant_id, string $id)
+    public function update(Request $request, string $id)
     {
         $validator = $this->validateTurno($request, $id);
 
@@ -113,7 +101,7 @@ class TurnoController extends Controller
 
     // ACTIVAR
 
-    public function activar(string $tenant_id, string $id)
+    public function activar(string $id)
     {
         try {
 
@@ -124,7 +112,6 @@ class TurnoController extends Controller
             }
 
             $turno->TUR_Estado = 'ACT';
-
             $turno->save();
 
             return response()->json(['success' => true, 'message' => 'Turno activado exitosamente.']);
@@ -138,7 +125,7 @@ class TurnoController extends Controller
 
     // ELIMINAR
 
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         try {
 
@@ -149,7 +136,6 @@ class TurnoController extends Controller
             }
 
             $turno->TUR_Estado = 'DESACT';
-
             $turno->save();
 
             return response()->json(['success' => true, 'message' => 'Turno eliminado exitosamente.']);

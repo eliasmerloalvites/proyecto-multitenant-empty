@@ -1,28 +1,43 @@
 @extends('tenant_' . tenant('tipo_negocio') . '.layout.appAdminLte')
-@section('titulo', 'Turno')
+@section('titulo', 'Bahia')
 @section('contenido')
 
-    @can('tenant.configuracion.turno.create')
+    @can('tenant.configuracion.bahia.create')
         <div class="col-5">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">CREAR TURNO</h5>
+                    <h5 class="card-title">CREAR BAHIA</h5>
                     <p class="card-text"></p>
-                    <form method="POST" id="turno_form" action="{{ tenant_url('tenant.configuracion.turno.store') }}">
+                    <form method="POST" id="bahia_form" action="{{ tenant_url('tenant.configuracion.bahia.store') }}">
                         @csrf
-                        <input type="text" id="turno_id_edit" hidden>
-                        <div class="form-group row">
-                            <div class="col-12">
-                                <label class="control-label" style=" text-align: left; display: block;">Turno:</label>
-                                <input type="text" id="TUR_Nombre" name="TUR_Nombre" class="form-control "
-                                    placeholder="Turno" required>
-                            </div>
+                        <input type="text" id="bahia_id_edit" hidden>
+                        <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <label class="control-label"  style=" text-align: left; display: block;">Sede:</label>
+                            <select class="form-control select2 select2-info" id="ALM_Id" name="ALM_Id"
+                                data-dropdown-css-class="select2-info" style="width: 100%;">
+                                <option value="">Seleccionar Sede</option>
+                                @foreach ($sedes as $item)
+                                    <option value="{{ $item->ALM_Id }}"> {{ $item->ALM_NombreAlmacen }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <label class="control-label"  style=" text-align: left; display: block;">Responsable:</label>
+                            <select class="form-control select2 select2-info" id="USU_Id" name="USU_Id"
+                                data-dropdown-css-class="select2-info" style="width: 100%;">
+                                <option value="">Seleccionar Responsable</option>
+                                @foreach ($users as $item)
+                                    <option value="{{ $item->id }}"> {{ $item->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="form-group row">
                             <div class="col-12">
-                                <label class="control-label" style=" text-align: left; display: block;">Descripción:</label>
-                                <input type="text" id="TUR_Descripcion" name="TUR_Descripcion" class="form-control "
-                                    placeholder="Descripción" required>
+                                <label class="control-label" style=" text-align: left; display: block;">Bahia:</label>
+                                <input type="text" id="BAH_Nombre" name="BAH_Nombre" class="form-control "
+                                    placeholder="Bahia" required>
                             </div>
                         </div>
                         <p></p>
@@ -39,19 +54,20 @@
         </div>
     @endcan
 
-    @can('tenant.configuracion.turno.index')
+    @can('tenant.configuracion.bahia.index')
         <div class="col-7">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">LISTA DE TURNO</h5>
+                    <h5 class="card-title">LISTA DE BAHIA</h5>
                     <p class="card-text">
                     <div class="table-responsive" style="background:#FFF;">
-                        <table class="table" id="tabla_turno">
+                        <table class="table" id="tabla_bahia">
                             <thead>
                                 <tr>
                                     <th scope="col">N°</th>
-                                    <th scope="col">Turno</th>
-                                    <th scope="col">Descripcion</th>
+                                    <th scope="col">Bahia</th>
+                                    <th scope="col">Sede</th>
+                                    <th scope="col">Responsable</th>
                                     <th scope="col">Opciones</th>
                                 </tr>
                             </thead>
@@ -72,6 +88,12 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
+
+            $('.select2').select2()
+
+            $('.select2bs4').select2({
+                theme: 'bootstrap4'
+            })
 
             // TOAST
 
@@ -97,8 +119,12 @@
             };
 
             const resetForm = () => {
-                $('#turno_form').trigger('reset');
-                $('#turno_id_edit').val('');
+                $('#bahia_form').trigger('reset');
+                $('#ALM_Id').val('');
+                $('#ALM_Id').change();
+                $('#USU_Id').val('');
+                $('#USU_Id').change();
+                $('#bahia_id_edit').val('');
                 $('#saveBtn').show();
                 $('#updateBtn').hide();
             };
@@ -114,7 +140,7 @@
 
             // DATATABLE
 
-            const table = $('#tabla_turno').DataTable({
+            const table = $('#tabla_bahia').DataTable({
 
                 responsive: true,
                 autoWidth: false,
@@ -139,19 +165,23 @@
                     }
                 },
 
-                ajax: "{{ tenant_url('tenant.configuracion.turno.index') }}",
+                ajax: "{{ tenant_url('tenant.configuracion.bahia.index') }}",
 
                 columns: [{
-                        data: 'TUR_Id',
-                        name: 'TUR_Id'
+                        data: 'BAH_Id',
+                        name: 'BAH_Id'
                     },
                     {
-                        data: 'TUR_Nombre',
-                        name: 'TUR_Nombre'
+                        data: 'ALM_NombreAlmacen',
+                        name: 'ALM_NombreAlmacen'
                     },
                     {
-                        data: 'TUR_Descripcion',
-                        name: 'TUR_Descripcion'
+                        data: 'BAH_Nombre',
+                        name: 'BAH_Nombre'
+                    },
+                    {
+                        data: 'USU_Nombre',
+                        name: 'USU_Nombre'
                     },
                     {
                         data: null,
@@ -172,19 +202,20 @@
 
                 e.preventDefault();
 
-                const turno = $('#TUR_Nombre').val().trim();
-                const descripcion = $('#TUR_Descripcion').val().trim();
+                const bahia = $('#BAH_Nombre').val().trim();
+                const sede = $('#ALM_Id').val();
+                const responsable = $('#USU_Id').val();
 
-                if (!turno || !descripcion) {
+                if (!bahia || !sede || !responsable) {
                     showToast('warning', 'Complete todos los campos');
                     return;
                 }
 
                 $.ajax({
 
-                    url: "{{ tenant_url('tenant.configuracion.turno.store') }}",
+                    url: "{{ tenant_url('tenant.configuracion.bahia.store') }}",
                     type: "POST",
-                    data: $('#turno_form').serialize(),
+                    data: $('#bahia_form').serialize(),
                     dataType: 'json',
 
                     success: function(data) {
@@ -194,7 +225,7 @@
                     },
 
                     error: function(error) {
-                        handleAjaxError('Ya existe un turno registrado con ese nombre.', error);
+                        handleAjaxError('Ya existe un bahia registrado con ese nombre.', error);
                     }
 
                 });
@@ -203,19 +234,22 @@
 
             // EDITAR
 
-            $('body').on('click', '.editTurno', function() {
+            $('body').on('click', '.editBahia', function() {
 
-                const turnoId = $(this).data('id');
+                const bahiaId = $(this).data('id');
 
                 $.get(
-                    '{{ tenant_url('tenant.configuracion.turno.edit', ['turno' => ':turno']) }}'
-                    .replace(':turno', turnoId),
+                    '{{ tenant_url('tenant.configuracion.bahia.edit', ['bahia' => ':bahia']) }}'
+                    .replace(':bahia', bahiaId),
 
                     function(response) {
 
-                        $('#turno_id_edit').val(response.data.TUR_Id);
-                        $('#TUR_Nombre').val(response.data.TUR_Nombre);
-                        $('#TUR_Descripcion').val(response.data.TUR_Descripcion);
+                        $('#bahia_id_edit').val(response.data.BAH_Id);
+                        $('#ALM_Id').val(response.data.ALM_Id);
+                        $('#ALM_Id').change();
+                        $('#USU_Id').val(response.data.USU_Id);
+                        $('#USU_Id').change();
+                        $('#BAH_Nombre').val(response.data.BAH_Nombre);
 
                         $('#saveBtn').hide();
                         $('#updateBtn').show();
@@ -232,14 +266,14 @@
 
                 e.preventDefault();
 
-                const turnoId = $('#turno_id_edit').val();
+                const bahiaId = $('#bahia_id_edit').val();
 
                 $.ajax({
 
-                    url: '{{ tenant_url('tenant.configuracion.turno.update', ['turno' => ':turno']) }}'
-                        .replace(':turno', turnoId),
+                    url: '{{ tenant_url('tenant.configuracion.bahia.update', ['bahia' => ':bahia']) }}'
+                        .replace(':bahia', bahiaId),
                     type: "PUT",
-                    data: $('#turno_form').serialize(),
+                    data: $('#bahia_form').serialize(),
                     dataType: 'json',
 
                     success: function(data) {
@@ -249,7 +283,7 @@
                     },
 
                     error: function(error) {
-                        handleAjaxError('El turno falló al actualizarse.', error);
+                        handleAjaxError('El bahia falló al actualizarse.', error);
                     }
 
                 });
@@ -265,14 +299,14 @@
 
             // ELIMINAR
 
-            $('body').on('click', '.deleteTurno', function() {
+            $('body').on('click', '.deleteBahia', function() {
 
-                const turnoId = $(this).data('id');
+                const bahiaId = $(this).data('id');
 
                 Swal.fire({
 
-                    title: '¿Eliminar turno?',
-                    text: 'El turno será desactivado.',
+                    title: '¿Eliminar bahia?',
+                    text: 'El bahia será desactivado.',
                     icon: 'warning',
 
                     showCancelButton: true,
@@ -293,8 +327,8 @@
 
                     $.ajax({
 
-                        url: '{{ tenant_url('tenant.configuracion.turno.destroy', ['turno' => ':turno']) }}'
-                            .replace(':turno', turnoId),
+                        url: '{{ tenant_url('tenant.configuracion.bahia.destroy', ['bahia' => ':bahia']) }}'
+                            .replace(':bahia', bahiaId),
                         type: "DELETE",
 
                         success: function(data) {
@@ -303,7 +337,7 @@
                         },
 
                         error: function(error) {
-                            handleAjaxError('El turno falló al eliminarse.', error);
+                            handleAjaxError('El bahia falló al eliminarse.', error);
                         }
 
                     });
@@ -314,14 +348,14 @@
 
             // ACTIVAR
 
-            $('body').on('click', '.activarTurno', function() {
+            $('body').on('click', '.activarBahia', function() {
 
-                const turnoId = $(this).data('id');
+                const bahiaId = $(this).data('id');
 
                 Swal.fire({
 
-                    title: '¿Activar turno?',
-                    text: 'El turno volverá a estar disponible.',
+                    title: '¿Activar bahia?',
+                    text: 'El bahia volverá a estar disponible.',
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#198754',
@@ -338,8 +372,8 @@
 
                     $.ajax({
 
-                        url: '{{ tenant_url('tenant.configuracion.turno.activar', ['turno' => ':turno']) }}'
-                            .replace(':turno', turnoId),
+                        url: '{{ tenant_url('tenant.configuracion.bahia.activar', ['bahia' => ':bahia']) }}'
+                            .replace(':bahia', bahiaId),
                         type: "PUT",
 
                         success: function(data) {
@@ -348,7 +382,7 @@
                         },
 
                         error: function(error) {
-                            handleAjaxError('El turno falló al activarse.', error);
+                            handleAjaxError('El bahia falló al activarse.', error);
                         }
 
                     });

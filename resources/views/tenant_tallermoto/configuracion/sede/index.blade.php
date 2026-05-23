@@ -215,7 +215,7 @@
 
             $('body').on('click', '.editAlmacen', function() {
                 var Almacen_id_edit = $(this).data('identificador');
-                $.get('{{ tenant_url('tenant.configuracion.sede.edit', ['sede' => ':sede', 'tenant' => tenant('id')]) }}'.replace(':sede', Almacen_id_edit),
+                $.get('{{ tenant_url('tenant.configuracion.sede.edit', ['sede' => ':sede']) }}'.replace(':sede', Almacen_id_edit),
                     function(result) {
                         console.log(result);
                         $('#almacen_id_edit').val(result.data.ALM_Id);
@@ -237,7 +237,7 @@
                 Almacen_id_update = $('#almacen_id_edit').val();
                 $.ajax({
                     data: $('#almacen_form').serialize(),
-                    url: '{{ tenant_url('tenant.configuracion.sede.update', ['sede' => ':sede', 'tenant' => tenant('id')]) }}'.replace(':sede', Almacen_id_update),
+                    url: '{{ tenant_url('tenant.configuracion.sede.update', ['sede' => ':sede']) }}'.replace(':sede', Almacen_id_update),
                     type: "PUT",
                     dataType: 'json',
                     success: function(data) {
@@ -280,7 +280,7 @@
                     $.ajax({
                         type: "DELETE",
 
-                        url: '{{ tenant_url('tenant.configuracion.sede.destroy', ['sede' => ':sede', 'tenant' => tenant('id')]) }}'.replace(
+                        url: '{{ tenant_url('tenant.configuracion.sede.destroy', ['sede' => ':sede']) }}'.replace(
                             ':sede', Almacen_id_delete),
                         data: {
                             _token: '{{ csrf_token() }}'

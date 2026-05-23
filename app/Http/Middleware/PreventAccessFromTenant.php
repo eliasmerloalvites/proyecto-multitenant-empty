@@ -17,35 +17,32 @@ class PreventAccessFromTenant
      */
     public function handle($request, Closure $next)
     {
+        
         $host = str_replace('www.', '', $request->getHost());
-
         $centralDomains = config('tenancy.central_domains');
-
         // DOMINIO CENTRAL
         if (in_array($host, $centralDomains)) {
             return $next($request);
         }
 
         $tenant = null;
-
+    
         // SUBDOMINIOS
         foreach ($centralDomains as $centralDomain) {
-
             if (str_contains($host, '.' . $centralDomain)) {
-
                 $subdomain = explode('.', $host)[0];
-
                 $tenant = Tenant::find($subdomain);
-
                 break;
             }
         }
-
+        
         // DOMINIOS PERSONALIZADOS
         if (!$tenant) {
+            $domain = \Stancl\Tenancy\Database\Models\Domain::where('domain', $host)->first();
 
-            $tenant = Tenant::where('custom_domain', $host)
-                ->first();
+            if ($domain) {
+                $tenant = $domain->tenant;
+            }
         }
 
         if (!$tenant) {

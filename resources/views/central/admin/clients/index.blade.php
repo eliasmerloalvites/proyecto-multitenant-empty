@@ -2,7 +2,7 @@
 @section('titulo', 'Clientes')
 @section('contenido')
     @can('admin.clients.create')
-        <div class="col-5">
+        <div class="col-4">
             <div class="card shadow-sm border-0">
 
                 <div class="card-header bg-white border-0 pb-0">
@@ -246,7 +246,7 @@
         </div>
     @endcan
     @can('admin.clients.index')
-        <div class="col-7">
+        <div class="col-8">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">LISTA DE CLIENTES</h5>
@@ -259,9 +259,11 @@
                                     <th scope="col">N°</th>
                                     <th scope="col">Ruc</th>
                                     <th scope="col">Razon Social</th>
-                                    <th scope="col">Tipo de Negocio</th>
+                                    <th scope="col">Negocio</th>
+                                    <th scope="col">Plan</th>
                                     <th scope="col">Dominio</th>
-                                    <th scope="col">Día de Facturación</th>
+                                    <th scope="col">Día Fact</th>
+                                    <th scope="col">Estado</th>
                                     <th scope="col">Opciones</th>
                                 </tr>
                             </thead>
@@ -348,6 +350,10 @@
                         name: 'tipo_negocio'
                     },
                     {
+                        data: 'plan',
+                        name: 'plan'
+                    },
+                    {
                         data: 'domain',
                         name: 'domain'
                     },
@@ -356,11 +362,14 @@
                         name: 'billing_day'
                     },
                     {
+                        data: 'estado',
+                        name: 'estado'
+                    },
+                    {
                         data: null,
                         name: 'name',
                         'render': function(data, type, row) {
-                            return
-                                @can('admin.clients.show')
+                            return @can('admin.clients.show')
                                     data.action3 + ' ' +
                                 @endcan
                             ''

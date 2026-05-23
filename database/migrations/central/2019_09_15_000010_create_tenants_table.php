@@ -18,7 +18,7 @@ class CreateTenantsTable extends Migration
         Schema::create('tenants', function (Blueprint $table) {
 
             $table->string('id')->primary();
-            $table->enum('tipo_negocio', ['generico','taller_motos']);
+            $table->enum('tipo_negocio', ['generico','tallermoto','optica','ferreteria','restaurant','hotel']);
             $table->enum('plan', ['start','basic','plus','empresarial',])->default('start');
             $table->enum('status', ['activo','suspendido', 'cancelado',])->default('activo');
             /* | LIMITES |*/

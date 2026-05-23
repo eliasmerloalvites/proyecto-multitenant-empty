@@ -16,11 +16,13 @@ use App\Http\Controllers\Tenant\HomeController;
 use App\Http\Controllers\Tenant\MetodoPagoController;
 use App\Http\Controllers\Tenant\ProductoController;
 use App\Http\Controllers\Tenant\ProveedorController;
-use App\Http\Controllers\TenantTallerMotos\SedeController;
+use App\Http\Controllers\Tenant\SedeController;
 use App\Http\Controllers\Tenant\TestFacturacionController;
 use App\Http\Controllers\Tenant\TipoGastoController;
 use App\Http\Controllers\Tenant\UserController;
 use App\Http\Controllers\Tenant\VentaController;
+use App\Http\Controllers\TenantTallerMotos\BahiaController;
+use App\Http\Controllers\TenantTallerMotos\HorarioController;
 use App\Http\Controllers\TenantTallerMotos\TurnoController;
 use App\Services\Facturacion\GreenterService;
 use Illuminate\Support\Facades\Route;
@@ -65,6 +67,32 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
         Route::get('/tenant/home', [HomeController::class,'index'])->name('tenant.home');
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');
         
+        Route::resource('/tenant/configuracion/horario', HorarioController::class)->names([
+            'index' => 'tenant.configuracion.horario.index',
+            'create' => 'tenant.configuracion.horario.create',
+            'store' => 'tenant.configuracion.horario.store',
+            'edit' => 'tenant.configuracion.horario.edit',
+            'update' => 'tenant.configuracion.horario.update',
+            'destroy' => 'tenant.configuracion.horario.destroy',
+            'show' => 'tenant.configuracion.horario.show'
+        ])->parameters([
+            'horario' => 'horario'
+        ]);
+        Route::put('/tenant/configuracion/horario/{horario}/activar', [HorarioController::class, 'activar'])->name('tenant.configuracion.horario.activar');
+
+        Route::resource('/tenant/configuracion/bahia', BahiaController::class)->names([
+            'index' => 'tenant.configuracion.bahia.index',
+            'create' => 'tenant.configuracion.bahia.create',
+            'store' => 'tenant.configuracion.bahia.store',
+            'edit' => 'tenant.configuracion.bahia.edit',
+            'update' => 'tenant.configuracion.bahia.update',
+            'destroy' => 'tenant.configuracion.bahia.destroy',
+            'show' => 'tenant.configuracion.bahia.show'
+        ])->parameters([
+            'bahia' => 'bahia'
+        ]);
+        Route::put('/tenant/configuracion/bahia/{bahia}/activar', [BahiaController::class, 'activar'])->name('tenant.configuracion.bahia.activar');
+
         Route::resource('/tenant/configuracion/turno', TurnoController::class)->names([
             'index' => 'tenant.configuracion.turno.index',
             'create' => 'tenant.configuracion.turno.create',
@@ -72,13 +100,11 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
             'edit' => 'tenant.configuracion.turno.edit',
             'update' => 'tenant.configuracion.turno.update',
             'destroy' => 'tenant.configuracion.turno.destroy',
-            'activar' => 'tenant.configuracion.turno.activar',
             'show' => 'tenant.configuracion.turno.show'
         ])->parameters([
             'turno' => 'turno'
         ]);
-        Route::put('/tenant/configuracion/turno/{turno}/activar',
-        [TurnoController::class, 'activar'])->name('tenant.configuracion.turno.activar');
+        Route::put('/tenant/configuracion/turno/{turno}/activar', [TurnoController::class, 'activar'])->name('tenant.configuracion.turno.activar');
 
         Route::resource('/tenant/ventas/venta', VentaController::class)->names([
             'index' => 'tenant.ventas.venta.index',

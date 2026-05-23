@@ -357,50 +357,59 @@
                     </li>
                 @endcan
                 <!-- CONFIGURACIÓN -->
-                <li class="nav-item has-treeview 
-                    {{ request()->routeIs('tenant.configuracion.sede*') ||
-                        request()->routeIs('tenant.configuracion.turno*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->routeIs('tenant.configuracion.sede*') ||
-                        request()->routeIs('tenant.configuracion.turno*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-cogs"></i>
-                        <p>
-                            CONFIGURACIÓN
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <!-- SEDES -->
-                        <li class="nav-item">
-                            <a href="{{ tenant_url('tenant.configuracion.sede.index') }}" 
-                                class="nav-link  {{ request()->routeIs('tenant.configuracion.sede*') ? 'active' : '' }}">
-                                <i class="fas fa-store nav-icon"></i>
-                                <p>Sedes</p>
-                            </a>
-                        </li>
-                        <!-- TURNOS -->
-                        <li class="nav-item">
-                            <a href="{{ tenant_url('tenant.configuracion.turno.index') }}" 
-                                class="nav-link  {{ request()->routeIs('tenant.configuracion.turno*') ? 'active' : '' }}">
-                                <i class="fas fa-user-clock nav-icon"></i>
-                                <p>Turnos</p>
-                            </a>
-                        </li>
-                        <!-- BAHÍAS -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="fas fa-warehouse nav-icon"></i>
-                                <p>Bahías</p>
-                            </a>
-                        </li>
-                        <!-- HORARIOS -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="fas fa-clock nav-icon"></i>
-                                <p>Horarios</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                
+                @can('tenant.configuracion.sede.index')
+                    <li class="nav-item has-treeview 
+                        {{ request()->routeIs('tenant.configuracion.sede*') ||
+                            request()->routeIs('tenant.configuracion.turno*') ||
+                            request()->routeIs('tenant.configuracion.bahia*') ||
+                            request()->routeIs('tenant.configuracion.horario*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('tenant.configuracion.sede*') ||
+                            request()->routeIs('tenant.configuracion.turno*') ||
+                            request()->routeIs('tenant.configuracion.bahia*') ||
+                            request()->routeIs('tenant.configuracion.horario*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-cogs"></i>
+                            <p>
+                                CONFIGURACIÓN
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <!-- SEDES -->
+                            <li class="nav-item">
+                                <a href="{{ tenant_url('tenant.configuracion.sede.index') }}" 
+                                    class="nav-link  {{ request()->routeIs('tenant.configuracion.sede*') ? 'active' : '' }}">
+                                    <i class="fas fa-store nav-icon"></i>
+                                    <p>Sedes</p>
+                                </a>
+                            </li>
+                            <!-- TURNOS -->
+                            <li class="nav-item">
+                                <a href="{{ tenant_url('tenant.configuracion.turno.index') }}" 
+                                    class="nav-link  {{ request()->routeIs('tenant.configuracion.turno*') ? 'active' : '' }}">
+                                    <i class="fas fa-user-clock nav-icon"></i>
+                                    <p>Turnos</p>
+                                </a>
+                            </li>
+                            <!-- BAHÍAS -->
+                            <li class="nav-item">
+                                <a href="{{ tenant_url('tenant.configuracion.bahia.index') }}" 
+                                    class="nav-link  {{ request()->routeIs('tenant.configuracion.bahia*') ? 'active' : '' }}">
+                                    <i class="fas fa-warehouse nav-icon"></i>
+                                    <p>Bahías</p>
+                                </a>
+                            </li>
+                            <!-- HORARIOS -->
+                            <li class="nav-item">
+                                <a href="{{ tenant_url('tenant.configuracion.horario.index') }}" 
+                                    class="nav-link  {{ request()->routeIs('tenant.configuracion.horario*') ? 'active' : '' }}">
+                                    <i class="fas fa-clock nav-icon"></i>
+                                    <p>Horarios</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                @endcan
 
                 @can('tenant.seguridad.users.index')
                     <li class="nav-item has-treeview {{ request()->routeIs('tenant.seguridad.usuario*') || request()->routeIs('tenant.seguridad.permiso*') || request()->routeIs('tenant.seguridad.rol*') ? 'menu-open' : '' }}"
