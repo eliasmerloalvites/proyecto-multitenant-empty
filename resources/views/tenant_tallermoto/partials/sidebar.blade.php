@@ -161,16 +161,16 @@
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item">
-                            <a href="{{ tenant_url('tenant.actividaes.mateniemientoactividadvariada.index') }}" 
-                                class="nav-link {{ request()->routeIs('tenant.actividaes.mateniemientoactividadvariada.index') ? 'active' : '' }}">
+                            <a href="{{ tenant_url('tenant.actividades.mateniemientoactividadvariada.index') }}" 
+                                class="nav-link {{ request()->routeIs('tenant.actividades.mateniemientoactividadvariada.index') ? 'active' : '' }}">
                                 <i class="far fa-list-alt nav-icon"></i>
                                 <p>Registros</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="{{ tenant_url('tenant.actividaes.mateniemientoactividadvariada.create') }}" 
-                                class="nav-link {{ request()->routeIs('tenant.actividaes.mateniemientoactividadvariada.create') ? 'active' : '' }}">
+                            <a href="{{ tenant_url('tenant.actividades.mateniemientoactividadvariada.create') }}" 
+                                class="nav-link {{ request()->routeIs('tenant.actividades.mateniemientoactividadvariada.create') ? 'active' : '' }}">
                                 <i class="fas fa-plus-circle nav-icon"></i>
                                 <p>Nueva Actividad</p>
                             </a>

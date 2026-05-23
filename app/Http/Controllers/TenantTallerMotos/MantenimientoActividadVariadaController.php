@@ -52,36 +52,23 @@ class MantenimientoActividadVariadaController extends Controller
         $sedes =  Almacen::get();
         $users =  User::select('id', 'name')->get();
         
-        return view('tenant_' . tenant('tipo_negocio') . '.actividades.variada.index', compact('sedes','users'));
+        return view('tenant_' . tenant('tipo_negocio') . '.actividades.variadas.index', compact('sedes','users'));
     }
 
     // REGISTRAR
     public function create()
 	{
         $idusu = Auth::user()->id;
-        $roles = DB::table('role_user')
-			->select('*')
-			->where('user_id','=',$idusu)
-			->get();
-		$ubicaAdministrador = "FALSE";
-
-        foreach ($roles as $key => $value) {
-            if ($value->role_id==1) {
-                $ubicaAdministrador = "TRUE";
-            }
-            if ($value->role_id==7) {
-                $ubicaAdministrador = "TRUE";
-            }
+        $roles = Auth::user()->getRoleNames();
+        
+        $ubicaAdministrador = false;
+        if ($roles->contains('Admin')) {
+            $ubicaAdministrador = true;
         }
-
-        if($ubicaAdministrador === "TRUE"){
-            $peronsal = User::select('PER_Id','PER_Nombre')->where('PER_EstadoLaboral','ACTIVO')->where('PUE_Id',15)->get();
-        }else {
-            $peronsal =User::select('PER_Id','PER_Nombre')->where('PER_EstadoLaboral','ACTIVO')->where('PER_Id',$idper)->get();
-        }
+        $personal = User::select('id', 'name')->get();
 
 
-		return view('tenant_' . tenant('tipo_negocio') . '.actividades.variada.create',["admin"=>$ubicaAdministrador,"personal"=>$peronsal]);
+		return view('tenant_' . tenant('tipo_negocio') . '.actividades.variadas.create',["admin"=>$ubicaAdministrador,"personal"=>$personal]);
 	}
     public function store(Request $request)
     {

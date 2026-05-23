@@ -69,15 +69,15 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');
         
 
-        Route::put('/tenant/actividaes/mateniemientoactividadvariada/{mateniemientoactividadvariada}/activar', [MantenimientoActividadVariadaController::class, 'activar'])->name('tenant.actividaes.mateniemientoactividadvariada.activar');
-        Route::resource('/tenant/actividaes/mateniemientoactividadvariada', MantenimientoActividadVariadaController::class)->names([
-            'index' => 'tenant.actividaes.mateniemientoactividadvariada.index',
-            'create' => 'tenant.actividaes.mateniemientoactividadvariada.create',
-            'store' => 'tenant.actividaes.mateniemientoactividadvariada.store',
-            'edit' => 'tenant.actividaes.mateniemientoactividadvariada.edit',
-            'update' => 'tenant.actividaes.mateniemientoactividadvariada.update',
-            'destroy' => 'tenant.actividaes.mateniemientoactividadvariada.destroy',
-            'show' => 'tenant.actividaes.mateniemientoactividadvariada.show'
+        Route::put('/tenant/actividades/mateniemientoactividadvariada/{mateniemientoactividadvariada}/activar', [MantenimientoActividadVariadaController::class, 'activar'])->name('tenant.actividades.mateniemientoactividadvariada.activar');
+        Route::resource('/tenant/actividades/mateniemientoactividadvariada', MantenimientoActividadVariadaController::class)->names([
+            'index' => 'tenant.actividades.mateniemientoactividadvariada.index',
+            'create' => 'tenant.actividades.mateniemientoactividadvariada.create',
+            'store' => 'tenant.actividades.mateniemientoactividadvariada.store',
+            'edit' => 'tenant.actividades.mateniemientoactividadvariada.edit',
+            'update' => 'tenant.actividades.mateniemientoactividadvariada.update',
+            'destroy' => 'tenant.actividades.mateniemientoactividadvariada.destroy',
+            'show' => 'tenant.actividades.mateniemientoactividadvariada.show'
         ])->parameters([
             'mateniemientoactividadvariada' => 'mateniemientoactividadvariada'
         ]);

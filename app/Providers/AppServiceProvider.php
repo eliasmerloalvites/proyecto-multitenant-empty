@@ -30,8 +30,8 @@ class AppServiceProvider extends ServiceProvider
             // Si no, llama a los de tenant
             $this->call(\Database\Seeders\Tenant\DatabaseSeeder::class);
         } */
-        if(env('app.env') !== 'local') {
+        /* if(env('app.env') !== 'local') {
         URL::forceScheme('https');
-        }
+        } */
     }
 }

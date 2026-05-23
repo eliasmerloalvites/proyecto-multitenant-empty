@@ -1,82 +1,310 @@
 @extends('tenant_' . tenant('tipo_negocio') . '.layout.appAdminLte')
-@section('titulo', 'Bahia')
+@section('titulo', 'Creacion Actividad Variada')
 @section('contenido')
+    <style>
+        .card-title-custom {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+        }
 
-    @can('tenant.configuracion.bahia.create')
-        <div class="col-5">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">CREAR BAHIA</h5>
-                    <p class="card-text"></p>
-                    <form method="POST" id="bahia_form" action="{{ tenant_url('tenant.configuracion.bahia.store') }}">
-                        @csrf
-                        <input type="text" id="bahia_id_edit" hidden>
-                        <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Sede:</label>
-                            <select class="form-control select2 select2-info" id="ALM_Id" name="ALM_Id"
-                                data-dropdown-css-class="select2-info" style="width: 100%;">
-                                <option value="">Seleccionar Sede</option>
-                                @foreach ($sedes as $item)
-                                    <option value="{{ $item->ALM_Id }}"> {{ $item->ALM_NombreAlmacen }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Responsable:</label>
-                            <select class="form-control select2 select2-info" id="USU_Id" name="USU_Id"
-                                data-dropdown-css-class="select2-info" style="width: 100%;">
-                                <option value="">Seleccionar Responsable</option>
-                                @foreach ($users as $item)
-                                    <option value="{{ $item->id }}"> {{ $item->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="form-group row">
-                            <div class="col-12">
-                                <label class="control-label" style=" text-align: left; display: block;">Bahia:</label>
-                                <input type="text" id="BAH_Nombre" name="BAH_Nombre" class="form-control "
-                                    placeholder="Bahia" required>
+        .form-control,
+        .input-group-text {
+            border-radius: 8px;
+        }
+
+        .form-control {
+            height: 38px;
+        }
+
+        .form-scroll-container {
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 5px;
+        }
+
+        textarea.form-control {
+            height: auto;
+            resize: none;
+        }
+
+        label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #4B5563;
+        }
+
+        .section-card {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .section-card .card-header {
+            padding: 10px 15px;
+        }
+
+        .table thead th {
+            font-size: 12px;
+            font-weight: 700;
+            vertical-align: middle;
+        }
+
+        .table td {
+            vertical-align: middle;
+            font-size: 13px;
+        }
+
+        .btn-action {
+            min-width: 140px;
+        }
+    </style>
+
+
+    <div class="col-12">
+        <div class="form-scroll-container">
+            <form id="MantenimientoActividadVariadasForm" name="MantenimientoActividadVariadasForm"
+                onsubmit="return false;">
+                <div class="row">
+                    <!-- DATOS -->
+                    <div class="col-lg-5">
+                        <div class="card card-outline card-danger shadow-sm section-card h-100">
+                            <div class="card-header">
+                                <h3 class="card-title-custom">
+                                    <i class="fas fa-motorcycle mr-1"></i>
+                                    Datos de la Unidad
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <!-- PLACA -->
+                                <div class="form-group">
+                                    <label>PLACA</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="MAV_Placa" name="MAV_Placa"
+                                            placeholder="78C5-59" maxlength="18" required
+                                            onkeyup="this.value=this.value.toUpperCase();">
+
+                                        <div class="input-group-append">
+
+                                            <button type="button" class="btn btn-info" id="Buscar_Placa"
+                                                onclick="BuscarCliente()">
+
+                                                <i class="fas fa-search"></i>
+
+                                            </button>
+
+                                            <button type="button" class="btn btn-default" id="cargando"
+                                                style="display:none;">
+
+                                                <img width="15px" src="{{ asset_root('images/gif/cargando1.gif') }}">
+
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- ROW -->
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label>PROPIETARIO</label>
+                                        <input type="text" class="form-control" id="MAV_Propietario"
+                                            name="MAV_Propietario" maxlength="50" placeholder="Ingrese Propietario" required
+                                            onkeyup="this.value=this.value.toUpperCase();">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label>CELULAR</label>
+                                        <input type="number" class="form-control" id="MAV_celular" name="MAV_celular"
+                                            maxlength="12" placeholder="999999999">
+                                    </div>
+                                </div>
+
+                                <!-- ROW -->
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label>UNIDAD</label>
+                                        <input type="text" class="form-control" id="MAV_Unidad" name="MAV_Unidad"
+                                            maxlength="40" placeholder="Ingrese Unidad"
+                                            onkeyup="this.value=this.value.toUpperCase();">
+                                    </div>
+                                    <div class="form-group col-md-3">
+                                        <label>KM</label>
+                                        <input type="text" class="form-control" id="MAV_KMEntrada" name="MAV_KMEntrada"
+                                            maxlength="20" placeholder="KM" required>
+                                    </div>
+
+                                    <div class="form-group col-md-12">
+                                        <label>RESPONSABLE</label>
+                                        <select class="form-control select2 select2-danger" id="PER_Id" name="PER_Id"
+                                            style="width:100%;">
+                                            @if ($admin)
+                                                <option value="">Seleccionar</option>
+                                            @endif
+                                            @foreach ($personal as $per)
+                                                <option value="{{ $per->id }}">{{ $per->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <p></p>
-                        <div class="form-group text-right">
-                            <button type="button" id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
-                            <button type="button" id="updateBtn" class="btn btn-info" style="display: none;"><i class="fas fa-save"></i>
-                                Actualizar</button>
-                            <button type="reset" id="btncancelar" class="btn btn-danger"> <i class="fas fa-ban"></i> Cancelar
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    @endcan
+                    </div>
 
-    @can('tenant.configuracion.bahia.index')
-        <div class="col-7">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">LISTA DE BAHIA</h5>
-                    <p class="card-text">
-                    <div class="table-responsive" style="background:#FFF;">
-                        <table class="table" id="tabla_bahia">
-                            <thead>
-                                <tr>
-                                    <th scope="col">N°</th>
-                                    <th scope="col">Bahia</th>
-                                    <th scope="col">Sede</th>
-                                    <th scope="col">Responsable</th>
-                                    <th scope="col">Opciones</th>
-                                </tr>
-                            </thead>
-                        </table>
+                    <!-- DETALLE -->
+                    <div class="col-lg-7">
+                        <div class="card card-outline card-warning shadow-sm section-card h-100">
+                            <div class="card-header">
+                                <h3 class="card-title-custom">
+                                    <i class="fas fa-clipboard-list mr-1"></i>
+                                    Detalle del Mantenimiento
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>INGRESO DE UNIDAD</label>
+                                    <textarea class="form-control" rows="4" name="MAV_DetalleIngreso" id="MAV_DetalleIngreso"
+                                        onkeyup="handleText(this); this.value=this.value.toUpperCase();"></textarea>
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label>OBSERVACIONES</label>
+                                    <textarea class="form-control" rows="4" name="MAV_DetalleObservacion" id="MAV_DetalleObservacion"
+                                        onkeyup="handleText(this); this.value=this.value.toUpperCase();"></textarea>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+
+                <!-- DESCRIPCION -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="card card-outline card-info shadow-sm section-card">
+                            <div class="card-header">
+                                <h3 class="card-title-custom">
+                                    <i class="fas fa-wrench mr-1"></i>
+                                    Descripción del Servicio
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>DETALLE DE LO REALIZADO</label>
+                                    <textarea class="form-control" rows="5" name="MAV_DetalleRealizado" id="MAV_DetalleRealizado"
+                                        onkeyup="handleText(this); this.value=this.value.toUpperCase();"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>CORRECCIÓN DE OBSERVACIONES</label>
+                                    <textarea class="form-control" rows="5" name="MAV_CorrecionObservacion" id="MAV_CorrecionObservacion"
+                                        onkeyup="handleText(this); this.value=this.value.toUpperCase();"></textarea>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label>PRÓXIMO CAMBIO DE ACEITE</label>
+                                        <input type="text" class="form-control" id="MAV_ProximoCambioAceite"
+                                            name="MAV_ProximoCambioAceite" maxlength="50" placeholder="#### KM" required
+                                            onkeyup="this.value=this.value.toUpperCase();">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label>PRÓXIMO SERVICIO</label>
+                                        <input type="text" class="form-control" id="MAV_ProximoServicio"
+                                            name="MAV_ProximoServicio" maxlength="50" placeholder="#### KM" required
+                                            onkeyup="this.value=this.value.toUpperCase();">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- REPUESTOS -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="card card-outline card-success shadow-sm section-card">
+                            <div class="card-header">
+                                <h3 class="card-title-custom">
+                                    <i class="fas fa-cogs mr-1"></i>
+                                    Repuestos a Reemplazar
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <!-- AGREGAR -->
+                                <div class="row align-items-end">
+                                    <div class="col-lg-8">
+                                        <div class="form-group">
+                                            <label>DESCRIPCIÓN</label>
+                                            <input class="form-control" id="MAVD_Descripcion_Aux"
+                                                name="MAVD_Descripcion_Aux" type="text">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <div class="form-group">
+                                            <label>PRECIO</label>
+                                            <input class="form-control" id="MAVD_Precio_Aux" name="MAVD_Precio_Aux"
+                                                type="number">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-1 text-right">
+                                        <button class="btn btn-success btn-block" onclick="agregardetalle()"
+                                            type="button">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- TABLA -->
+                                <div class="table-responsive mt-3" style="max-height: 400px; overflow-y:auto;">
+                                    <table class="table table-bordered table-hover table-sm" id="detalles">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th width="50">N°</th>
+                                                <th>Descripción</th>
+                                                <th width="150">Precio</th>
+                                                <th width="90" class="text-center">Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tfoot class="bg-light">
+                                            <tr>
+                                                <th colspan="2" class="text-right">
+                                                    TOTAL:
+                                                </th>
+                                                <th>
+                                                    <label id="totalCosto" class="mb-0 text-success">0</label>
+                                                </th>
+                                                <th></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- BOTONES -->
+                <div class="row mt-3 mb-4">
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-body text-right">
+                                <button type="button" onclick="Regresar()" class="btn btn-default">
+                                    <i class="fas fa-arrow-left mr-1"></i>
+                                    Regresar
+                                </button>
+                                <button type="button" id="saveBtn" class="btn btn-success">
+                                    <i class="fas fa-save mr-1"></i>
+                                    Guardar Reporte
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
-    @endcan
+    </div>
+
 
 @endsection
 @section('script')
@@ -137,159 +365,15 @@
                 console.error(error);
                 showToast('error', message);
             };
-
-            // DATATABLE
-
-            const table = $('#tabla_bahia').DataTable({
-
-                responsive: true,
-                autoWidth: false,
-                searchDelay: 800,
-                processing: true,
-                serverSide: true,
-
-                order: [
-                    [0, "asc"]
-                ],
-
-                language: {
-                    lengthMenu: "Mostrar _MENU_ registros por página",
-                    zeroRecords: "No se encontraron registros",
-                    info: "Mostrando página _PAGE_ de _PAGES_",
-                    infoEmpty: "No hay registros disponibles",
-                    infoFiltered: "(filtrado de _MAX_ registros totales)",
-                    search: "Buscar:",
-                    paginate: {
-                        next: "Siguiente",
-                        previous: "Anterior"
-                    }
-                },
-
-                ajax: "{{ tenant_url('tenant.configuracion.bahia.index') }}",
-
-                columns: [{
-                        data: 'BAH_Id',
-                        name: 'BAH_Id'
-                    },
-                    {
-                        data: 'ALM_NombreAlmacen',
-                        name: 'ALM_NombreAlmacen'
-                    },
-                    {
-                        data: 'BAH_Nombre',
-                        name: 'BAH_Nombre'
-                    },
-                    {
-                        data: 'USU_Nombre',
-                        name: 'USU_Nombre'
-                    },
-                    {
-                        data: null,
-                        orderable: false,
-                        searchable: false,
-
-                        render: function(data) {
-                            return `${data.action1} ${data.action2}`;
-                        }
-                    }
-                ]
-
-            });
-
             // GUARDAR
 
             $('#saveBtn').on('click', function(e) {
 
                 e.preventDefault();
 
-                const bahia = $('#BAH_Nombre').val().trim();
-                const sede = $('#ALM_Id').val();
-                const responsable = $('#USU_Id').val();
-
-                if (!bahia || !sede || !responsable) {
-                    showToast('warning', 'Complete todos los campos');
-                    return;
-                }
-
-                $.ajax({
-
-                    url: "{{ tenant_url('tenant.configuracion.bahia.store') }}",
-                    type: "POST",
-                    data: $('#bahia_form').serialize(),
-                    dataType: 'json',
-
-                    success: function(data) {
-                        showToast('success', data.message);
-                        resetForm();
-                        reloadTable();
-                    },
-
-                    error: function(error) {
-                        handleAjaxError('Ya existe un bahia registrado con ese nombre.', error);
-                    }
-
-                });
+                AgregarMAV()
 
             });
-
-            // EDITAR
-
-            $('body').on('click', '.editBahia', function() {
-
-                const bahiaId = $(this).data('id');
-
-                $.get(
-                    '{{ tenant_url('tenant.configuracion.bahia.edit', ['bahia' => ':bahia']) }}'
-                    .replace(':bahia', bahiaId),
-
-                    function(response) {
-
-                        $('#bahia_id_edit').val(response.data.BAH_Id);
-                        $('#ALM_Id').val(response.data.ALM_Id);
-                        $('#ALM_Id').change();
-                        $('#USU_Id').val(response.data.USU_Id);
-                        $('#USU_Id').change();
-                        $('#BAH_Nombre').val(response.data.BAH_Nombre);
-
-                        $('#saveBtn').hide();
-                        $('#updateBtn').show();
-
-                    }
-
-                );
-
-            });
-
-            // ACTUALIZAR
-
-            $('#updateBtn').on('click', function(e) {
-
-                e.preventDefault();
-
-                const bahiaId = $('#bahia_id_edit').val();
-
-                $.ajax({
-
-                    url: '{{ tenant_url('tenant.configuracion.bahia.update', ['bahia' => ':bahia']) }}'
-                        .replace(':bahia', bahiaId),
-                    type: "PUT",
-                    data: $('#bahia_form').serialize(),
-                    dataType: 'json',
-
-                    success: function(data) {
-                        showToast('success', data.message);
-                        resetForm();
-                        reloadTable();
-                    },
-
-                    error: function(error) {
-                        handleAjaxError('El bahia falló al actualizarse.', error);
-                    }
-
-                });
-
-            });
-
             // CANCELAR
 
             $('#btncancelar').on('click', function() {
@@ -297,100 +381,164 @@
                 showToast('info', 'Formulario reiniciado correctamente');
             });
 
-            // ELIMINAR
-
-            $('body').on('click', '.deleteBahia', function() {
-
-                const bahiaId = $(this).data('id');
-
-                Swal.fire({
-
-                    title: '¿Eliminar bahia?',
-                    text: 'El bahia será desactivado.',
-                    icon: 'warning',
-
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-
-                    confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar',
-
-                    reverseButtons: true
-
-                }).then((result) => {
-
-                    if (!result.isConfirmed) {
-                        showToast('info', 'Acción cancelada');
-                        return;
-                    }
-
-                    $.ajax({
-
-                        url: '{{ tenant_url('tenant.configuracion.bahia.destroy', ['bahia' => ':bahia']) }}'
-                            .replace(':bahia', bahiaId),
-                        type: "DELETE",
-
-                        success: function(data) {
-                            showToast('success', data.message);
-                            reloadTable();
-                        },
-
-                        error: function(error) {
-                            handleAjaxError('El bahia falló al eliminarse.', error);
-                        }
-
-                    });
-
-                });
-
-            });
-
-            // ACTIVAR
-
-            $('body').on('click', '.activarBahia', function() {
-
-                const bahiaId = $(this).data('id');
-
-                Swal.fire({
-
-                    title: '¿Activar bahia?',
-                    text: 'El bahia volverá a estar disponible.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#198754',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Sí, activar',
-                    cancelButtonText: 'Cancelar',
-                    reverseButtons: true
-
-                }).then((result) => {
-
-                    if (!result.isConfirmed) {
-                        return;
-                    }
-
-                    $.ajax({
-
-                        url: '{{ tenant_url('tenant.configuracion.bahia.activar', ['bahia' => ':bahia']) }}'
-                            .replace(':bahia', bahiaId),
-                        type: "PUT",
-
-                        success: function(data) {
-                            showToast('success', data.message);
-                            reloadTable();
-                        },
-
-                        error: function(error) {
-                            handleAjaxError('El bahia falló al activarse.', error);
-                        }
-
-                    });
-
-                });
-
-            });
-
         });
+
+        function agregardetalle() {
+
+            var descripcion = $('#MAVD_Descripcion_Aux').val();
+            var precio = $('#MAVD_Precio_Aux').val();
+
+            if (descripcion != "" && precio != "") {
+                var fila1 = [descripcion, precio];
+                ListDetVenta.push(fila1);
+                cargarTabla()
+                limpiardetalle();
+
+            }else{
+                if(descripcion == ""){
+                    Swal.fire({
+                            title: "Debe esbribir una descripcion",
+                            icon: 'error',
+                            confirmButtonColor: "#26BA9A",
+                            confirmButtonText: "Ok"
+                        })
+                        .then(resultado => {
+                            if (resultado.value) {} else {}
+                        });
+
+                }
+                if(precio == ""){
+                    Swal.fire({
+                            title: "Debe Añadir el precio",
+                            icon: 'error',
+                            confirmButtonColor: "#26BA9A",
+                            confirmButtonText: "Ok"
+                        })
+                        .then(resultado => {
+                            if (resultado.value) {} else {}
+                        });
+
+                }
+
+            }
+        }
+
+        function handleText(textarea) {
+            textarea.value = textarea.value.toUpperCase(); // Convertir a mayúsculas
+            const maxCharsPerLine = 100;
+            let text = textarea.value;
+            let lines = text.split('\n');
+            
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].length > maxCharsPerLine) {
+                    let currentLine = lines[i];
+                    let newLine = '';
+                    
+                    while (currentLine.length > maxCharsPerLine) {
+                        newLine += currentLine.substring(0, maxCharsPerLine) + '\n';
+                        currentLine = currentLine.substring(maxCharsPerLine);
+                    }
+                    lines[i] = newLine + currentLine;
+                }
+            }
+            
+            textarea.value = lines.join('\n');
+        }
+
+        function cargarTabla(){
+            $("#detalles tbody").remove();
+                var totalCosto = 0
+                for (var i = ListDetVenta.length - 1; i >= 0; i--) {
+                    var col0 = '<tr  onClick="MostrarValores1(' + ListDetVenta[i][0] + ');" id="fila' + i + '">'
+                    var col1 = '<td style="text-align: left;">' + (i + 1) + '</td>'
+                    var col2 = '<td style="text-align: left;"><input id="MAVD_Descripcion' + i + '" type="hidden" name="MAVD_Descripcion[]" value="' + ListDetVenta[i][0] +
+                        '">' + ListDetVenta[i][0] + '</td>'
+                    var col3 = '<td style="text-align: left;"><input id="MAV_Precio' + i + '" type="hidden" name="MAV_Precio[]" value="' + ListDetVenta[i][1] +
+                        '">' + ListDetVenta[i][1] + '</td>'
+                    var col4 =
+                        '<td style="width:80px; height : 24px; text-align: center;"><button  type="button"  class="btn" onclick="eliminar(' +
+                        i +
+                        ');" style="border-radius: 10px; height : 24px; color:red;padding:0px"><i class="fa fa-trash"></button></td></tr>';
+                    var fila = col0 + col1 + col2 + col3 + col4 ;
+                    $("#detalles").append(fila);
+                    totalCosto = parseFloat(totalCosto) + parseFloat(ListDetVenta[i][1])
+                }
+
+                $("#totalCosto").html(totalCosto);
+        }
+
+        function BuscarCliente() {
+            ocultar()
+            var url = "/busquedaplaca/responsable/" + $('#MAV_Placa').val() + '?';
+            $.ajax({
+                type: "GET",
+                url: url,
+                success: function(data) {
+                    if(data.success.validacion == "true"){                                    
+                        $('#MAV_Propietario').val(data.success.mtto[0].Propietario);
+                        $('#MAV_celular').val(data.success.mtto[0].celular);
+                        $('#MAV_Unidad').val(data.success.mtto[0].Unidad);
+                    }
+                    mostrar()
+                },
+                error: function(data) {
+                    console.log('Error:', data);
+                    mostrar()
+                }
+            });
+        }        
+
+        function ocultar() {
+            document.getElementById('Buscar_Placa').style.display = 'none';
+            document.getElementById('cargando').style.display = 'block';
+
+            setInterval('mostrar()', 1000);
+        }
+
+        function mostrar() {
+            document.getElementById('Buscar_Placa').style.display = 'block';
+            document.getElementById('cargando').style.display = 'none';
+        }
+
+        function limpiardetalle(){
+            $('#MAVD_Descripcion_Aux').val('');
+            $('#MAVD_Precio_Aux').val('');
+
+        }
+
+        function eliminar(index) {
+            $('#fila' + index).remove();
+            ListDetVenta.splice(index, 1);
+            cargarTabla()
+        }
+
+
+        function AgregarMAV() {
+            $.ajax({
+                data: $('#MantenimientoActividadVariadasForm').serialize(),
+                url: "{{ route('tenant.actividades.mateniemientoactividadvariada.store') }}",
+                type: "POST",
+                dataType: 'json',
+                success: function(data) {
+                    console.log('Success:', data);
+                    Toast.fire({
+                        type: 'success',
+                        title: data.success
+                    })
+                    document.location.href="{{ route('tenant.actividades.mateniemientoactividadvariada.index') }}/"+data.id+'/edit';
+                },
+                error: function(data) {
+                    console.log('Error:', data);
+                    Toast.fire({
+                        type: 'error',
+                        title: 'Actividades variadas fallo al Registrarse.'
+                    })
+                }
+            });
+        }
+
+        function Regresar(){
+            document.location.href="{{ route('tenant.actividades.mateniemientoactividadvariada.index') }}/"
+        }
     </script>
 @endsection
