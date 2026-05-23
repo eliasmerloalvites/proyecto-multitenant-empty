@@ -23,6 +23,7 @@ use App\Http\Controllers\Tenant\UserController;
 use App\Http\Controllers\Tenant\VentaController;
 use App\Http\Controllers\TenantTallerMotos\BahiaController;
 use App\Http\Controllers\TenantTallerMotos\HorarioController;
+use App\Http\Controllers\TenantTallerMotos\MantenimientoActividadVariadaController;
 use App\Http\Controllers\TenantTallerMotos\TurnoController;
 use App\Services\Facturacion\GreenterService;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +68,20 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
         Route::get('/tenant/home', [HomeController::class,'index'])->name('tenant.home');
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');
         
+
+        Route::put('/tenant/actividaes/mateniemientoactividadvariada/{mateniemientoactividadvariada}/activar', [MantenimientoActividadVariadaController::class, 'activar'])->name('tenant.actividaes.mateniemientoactividadvariada.activar');
+        Route::resource('/tenant/actividaes/mateniemientoactividadvariada', MantenimientoActividadVariadaController::class)->names([
+            'index' => 'tenant.actividaes.mateniemientoactividadvariada.index',
+            'create' => 'tenant.actividaes.mateniemientoactividadvariada.create',
+            'store' => 'tenant.actividaes.mateniemientoactividadvariada.store',
+            'edit' => 'tenant.actividaes.mateniemientoactividadvariada.edit',
+            'update' => 'tenant.actividaes.mateniemientoactividadvariada.update',
+            'destroy' => 'tenant.actividaes.mateniemientoactividadvariada.destroy',
+            'show' => 'tenant.actividaes.mateniemientoactividadvariada.show'
+        ])->parameters([
+            'mateniemientoactividadvariada' => 'mateniemientoactividadvariada'
+        ]);
+
         Route::put('/tenant/configuracion/horario/{horario}/activar', [HorarioController::class, 'activar'])->name('tenant.configuracion.horario.activar');
         Route::resource('/tenant/configuracion/horario', HorarioController::class)->names([
             'index' => 'tenant.configuracion.horario.index',

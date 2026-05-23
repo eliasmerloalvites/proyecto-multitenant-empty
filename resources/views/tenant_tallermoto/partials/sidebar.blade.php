@@ -147,8 +147,10 @@
                 </li>
 
                 <!-- ACTIVIDADES -->
-                <li class="nav-item has-treeview">
-                    <a href="#" class="nav-link">
+                <li
+                    class="nav-item has-treeview 
+                    {{ request()->routeIs('tenant.actividaes.mateniemientoactividadvariada*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('tenant.actividaes.mateniemientoactividadvariada*') ? 'active': '' }}">
                         <i class="nav-icon fas fa-clipboard-list"></i>
                         <p>
                             ACTIVIDADES
@@ -159,14 +161,16 @@
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="{{ tenant_url('tenant.actividaes.mateniemientoactividadvariada.index') }}" 
+                                class="nav-link {{ request()->routeIs('tenant.actividaes.mateniemientoactividadvariada.index') ? 'active' : '' }}">
                                 <i class="far fa-list-alt nav-icon"></i>
                                 <p>Registros</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="{{ tenant_url('tenant.actividaes.mateniemientoactividadvariada.create') }}" 
+                                class="nav-link {{ request()->routeIs('tenant.actividaes.mateniemientoactividadvariada.create') ? 'active' : '' }}">
                                 <i class="fas fa-plus-circle nav-icon"></i>
                                 <p>Nueva Actividad</p>
                             </a>
@@ -307,18 +311,18 @@
                 @can('tenant.ventas.metodopago.index')
                     <li
                         class="nav-item has-treeview 
-                {{ request()->routeIs('tenant.ventas.metodopago*') ||
-                request()->routeIs('tenant.ventas.cliente*') ||
-                request()->routeIs('tenant.ventas.venta*')
-                    ? 'menu-open'
-                    : '' }}">
+                            {{ request()->routeIs('tenant.ventas.metodopago*') ||
+                            request()->routeIs('tenant.ventas.cliente*') ||
+                            request()->routeIs('tenant.ventas.venta*')
+                                ? 'menu-open'
+                                : '' }}">
                         <a href="#"
                             class="nav-link 
-                    {{ request()->routeIs('tenant.ventas.metodopago*') ||
-                    request()->routeIs('tenant.ventas.cliente*') ||
-                    request()->routeIs('tenant.ventas.venta*')
-                        ? 'active'
-                        : '' }}">
+                                {{ request()->routeIs('tenant.ventas.metodopago*') ||
+                                request()->routeIs('tenant.ventas.cliente*') ||
+                                request()->routeIs('tenant.ventas.venta*')
+                                    ? 'active'
+                                    : '' }}">
                             <i class="nav-icon fas fa-cash-register"></i>
                             <p>
                                 VENTAS
