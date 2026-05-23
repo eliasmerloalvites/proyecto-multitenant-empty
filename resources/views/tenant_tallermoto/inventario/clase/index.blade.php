@@ -153,7 +153,7 @@
 
             $('body').on('click', '.editClase', function() {
                 var Clase_id_edit = $(this).data('identificador');
-                $.get('{{ tenant_url('tenant.inventario.clase.edit', ['tenant' => tenant('id'), 'clase' => ':clase']) }}'.replace(':clase', Clase_id_edit),
+                $.get('{{ tenant_url('tenant.inventario.clase.edit', ['clase' => ':clase']) }}'.replace(':clase', Clase_id_edit),
                     function(result) {
                         console.log(result);
                         $('#clase_id_edit').val(result.data.CLA_Id);
@@ -171,7 +171,7 @@
                 Clase_id_update = $('#clase_id_edit').val();
                 $.ajax({
                     data: $('#class_form').serialize(),
-                    url: '{{ tenant_url('tenant.inventario.clase.update', ['tenant' => tenant('id'), 'clase' => ':clase']) }}'.replace(
+                    url: '{{ tenant_url('tenant.inventario.clase.update', ['clase' => ':clase']) }}'.replace(
                         ':clase', Clase_id_update),
                     type: "PUT",
                     dataType: 'json',
@@ -222,7 +222,7 @@
                     $.ajax({
                         type: "DELETE",
 
-                        url: '{{ tenant_url('tenant.inventario.clase.destroy', ['tenant' => tenant('id'), 'clase' => ':clase']) }}'.replace(
+                        url: '{{ tenant_url('tenant.inventario.clase.destroy', ['clase' => ':clase']) }}'.replace(
                             ':clase', Clase_id_delete),
                         data: {
                             _token: '{{ csrf_token() }}'

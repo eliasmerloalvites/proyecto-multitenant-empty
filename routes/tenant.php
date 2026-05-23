@@ -67,6 +67,7 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
         Route::get('/tenant/home', [HomeController::class,'index'])->name('tenant.home');
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');
         
+        Route::put('/tenant/configuracion/horario/{horario}/activar', [HorarioController::class, 'activar'])->name('tenant.configuracion.horario.activar');
         Route::resource('/tenant/configuracion/horario', HorarioController::class)->names([
             'index' => 'tenant.configuracion.horario.index',
             'create' => 'tenant.configuracion.horario.create',
@@ -78,8 +79,8 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
         ])->parameters([
             'horario' => 'horario'
         ]);
-        Route::put('/tenant/configuracion/horario/{horario}/activar', [HorarioController::class, 'activar'])->name('tenant.configuracion.horario.activar');
 
+        Route::put('/tenant/configuracion/bahia/{bahia}/activar', [BahiaController::class, 'activar'])->name('tenant.configuracion.bahia.activar');
         Route::resource('/tenant/configuracion/bahia', BahiaController::class)->names([
             'index' => 'tenant.configuracion.bahia.index',
             'create' => 'tenant.configuracion.bahia.create',
@@ -91,8 +92,8 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
         ])->parameters([
             'bahia' => 'bahia'
         ]);
-        Route::put('/tenant/configuracion/bahia/{bahia}/activar', [BahiaController::class, 'activar'])->name('tenant.configuracion.bahia.activar');
 
+        Route::put('/tenant/configuracion/turno/{turno}/activar', [TurnoController::class, 'activar'])->name('tenant.configuracion.turno.activar');
         Route::resource('/tenant/configuracion/turno', TurnoController::class)->names([
             'index' => 'tenant.configuracion.turno.index',
             'create' => 'tenant.configuracion.turno.create',
@@ -104,8 +105,10 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
         ])->parameters([
             'turno' => 'turno'
         ]);
-        Route::put('/tenant/configuracion/turno/{turno}/activar', [TurnoController::class, 'activar'])->name('tenant.configuracion.turno.activar');
-
+        
+        Route::get('/tenant/ventas/venta/productos',[VentaController::class, 'getProductos'])->name('tenant.ventas.venta.productos');
+        Route::get('/tenant/ventas/venta/searchClientes',[VentaController::class, 'searchClientes'])->name('tenant.ventas.venta.searchClientes');
+        Route::post('/tenant/ventas/venta/createCliente',[VentaController::class, 'createCliente'])->name('tenant.ventas.venta.createCliente');
         Route::resource('/tenant/ventas/venta', VentaController::class)->names([
             'index' => 'tenant.ventas.venta.index',
             'create' => 'tenant.ventas.venta.create',

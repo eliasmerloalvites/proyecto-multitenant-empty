@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             TipoGastoTableSeeder::class,
             ProveedorTableSeeder::class,
             MetodoPagoTableSeeder::class,
+            ClienteTableSeeder::class,
         ]);
     }
 }

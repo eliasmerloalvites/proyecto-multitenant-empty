@@ -85,7 +85,7 @@ class PermisoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $tenant_id, string $id)
+    public function show(string $id)
     {
         $permiso = Permission::find($id);
 
@@ -95,7 +95,7 @@ class PermisoController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $permiso = Permission::find($id);
         
@@ -105,7 +105,7 @@ class PermisoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $tenant_id, string $id)
+    public function update(Request $request, string $id)
     {
         $permiso = Permission::find($id);
         $permiso->group_name = $request->group_name;
@@ -119,7 +119,7 @@ class PermisoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         $permiso = Permission::find($id);
         $permiso->estado = 0;

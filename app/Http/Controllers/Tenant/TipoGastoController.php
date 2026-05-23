@@ -67,7 +67,7 @@ class TipoGastoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $tenant_id, string $id)
+    public function show(string $id)
     {
         //
     }
@@ -75,7 +75,7 @@ class TipoGastoController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $tipogasto = TipoGasto::find($id);
         return response()->json(['data' => $tipogasto]);
@@ -84,7 +84,7 @@ class TipoGastoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $tenant_id, string $id)
+    public function update(Request $request, string $id)
     {
         $tipogasto = TipoGasto::find($id);
         $tipogasto->TG_Descripcion = $request->TG_Descripcion;
@@ -96,7 +96,7 @@ class TipoGastoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         $tipogasto = TipoGasto::find($id);
         $tipogasto->delete();

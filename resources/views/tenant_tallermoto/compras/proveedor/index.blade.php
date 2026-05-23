@@ -300,7 +300,7 @@
 
             $('body').on('click', '.editProveedor', function() {
                 var Proveedor_id_edit = $(this).data('identificador');
-                $.get('{{ tenant_url('tenant.compras.proveedor.edit', ['proveedor' => ':proveedor', 'tenant' => tenant('id')]) }}'.replace(':proveedor',
+                $.get('{{ tenant_url('tenant.compras.proveedor.edit', ['proveedor' => ':proveedor']) }}'.replace(':proveedor',
                         Proveedor_id_edit),
                     function(result) {
                         console.log(result);
@@ -324,7 +324,7 @@
             $('body').on('click', '.eyeProveedor', function() {
                 var Proveedor_id_ver = $(this).data('id');
                 $('#modalVerDetalle').modal('show');
-                $.get('{{ tenant_url('tenant.compras.proveedor.show', ['proveedor' => ':proveedor', 'tenant' => tenant('id')]) }}'.replace(':proveedor',
+                $.get('{{ tenant_url('tenant.compras.proveedor.show', ['proveedor' => ':proveedor']) }}'.replace(':proveedor',
                         Proveedor_id_ver),
                     function(data) {
                         $('#ver_PROV_Id').text(data.data.PROV_Id);
@@ -342,7 +342,7 @@
                 Proveedor_id_update = $('#proveedor_id_edit').val();
                 $.ajax({
                     data: $('#proveedor_form').serialize(),
-                    url: '{{ tenant_url('tenant.compras.proveedor.update', ['proveedor' => ':proveedor', 'tenant' => tenant('id')]) }}'.replace(':proveedor',
+                    url: '{{ tenant_url('tenant.compras.proveedor.update', ['proveedor' => ':proveedor']) }}'.replace(':proveedor',
                         Proveedor_id_update),
                     type: "PUT",
                     dataType: 'json',
@@ -386,7 +386,7 @@
                     $.ajax({
                         type: "DELETE",
 
-                        url: '{{ tenant_url('tenant.compras.proveedor.destroy', ['proveedor' => ':proveedor', 'tenant' => tenant('id')]) }}'.replace(
+                        url: '{{ tenant_url('tenant.compras.proveedor.destroy', ['proveedor' => ':proveedor']) }}'.replace(
                             ':proveedor', Proveedor_id_delete),
                         data: {
                             _token: '{{ csrf_token() }}'

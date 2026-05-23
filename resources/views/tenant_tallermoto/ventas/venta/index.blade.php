@@ -484,7 +484,7 @@
             $('body').on('click', '.eyeVenta', function() {
                 var Venta_id_ver = $(this).data('id');
                 $('#modalVerDetalle').modal('show');
-                $.get('{{ tenant_url('tenant.ventas.venta.show', ['venta' => ':venta', 'tenant' => tenant('id')]) }}'
+                $.get('{{ tenant_url('tenant.ventas.venta.show', ['venta' => ':venta']) }}'
                     .replace(':venta',
                         Venta_id_ver),
                     function(data) {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\EnviarVentaSunatJob;
+use App\Models\Tenant\Cliente;
 use App\Models\Tenant\Venta;
 use App\Models\Tenant\DetalleVenta;
 use App\Models\Tenant\DocumentoVenta;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Browsershot\Browsershot;
 use App\Services\Facturacion\SunatService;
+use Illuminate\Support\Facades\Auth;
 
 class VentaController extends Controller
 {
@@ -27,7 +29,7 @@ class VentaController extends Controller
 
     public function __construct(
         SunatService $sunatService
-    ){
+    ) {
         $this->sunatService = $sunatService;
     }
 
@@ -98,7 +100,7 @@ class VentaController extends Controller
                 ->make(true);
         }
 
-        return view('tenant_'.tenant('tipo_negocio').'.ventas.venta.index');
+        return view('tenant_' . tenant('tipo_negocio') . '.ventas.venta.index');
     }
 
     public function filtro(Request $request, $fecharange)
@@ -171,79 +173,255 @@ class VentaController extends Controller
         $clientes = DB::table('cliente')->orderBy('CLI_NumDocumento', 'asc')->get();
         $metodo_pago = DB::table('metodo_pago')->orderBy('MEP_Pago', 'asc')->get();
 
+        return view('tenant_' . tenant('tipo_negocio') . '.ventas.venta.create', compact('clase', 'categoria', 'clientes', 'metodo_pago'));
+    }
 
-        $lotesuni = DB::table('lote as lt')
+    public function getProductos(Request $request)
+    {
+        $query = DB::table('lote as lt')
             ->join('almacen as a', 'a.ALM_Id', '=', 'lt.ALM_Id')
             ->join('producto as p', 'p.PRO_Id', '=', 'lt.PRO_Id')
             ->join('categoria as cat', 'cat.CAT_Id', '=', 'p.CAT_Id')
             ->join('clase as cl', 'cl.CLA_Id', '=', 'cat.CLA_Id')
-            ->select('a.ALM_Id', 'p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Descripcion', 'p.PRO_Imagen', 'p.CAT_Id as CATEGORIA', 'cl.CLA_Nombre as Clase', 'cat.CAT_Nombre as Clase', DB::raw('sum(lt.LOT_CantidadReal) as PRO_Cantidad'), DB::raw('max(lt.LOT_PrecioVenta) as PRO_PrecioBaseVenta'), DB::raw('max(lt.LOT_PrecioCompra)'), 'a.ALM_Id', 'a.ALM_Nombre', DB::raw('SUM(lt.LOT_CantidadReal) as LOT_CantidadReal'))
+            ->select(
+                'p.PRO_Id',
+                'p.PRO_Nombre',
+                'p.PRO_Descripcion',
+                'p.PRO_Imagen',
+                'p.CAT_Id',
+                DB::raw('SUM(lt.LOT_CantidadReal) as PRO_Cantidad'),
+                DB::raw('MAX(lt.LOT_PrecioVenta) as PRO_PrecioBaseVenta')
+            )
             ->where('lt.LOT_CantidadReal', '>', 0)
-            ->where('p.PRO_Status', '=', 1)
-            ->groupBy('a.ALM_Id', 'p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Descripcion', 'p.PRO_Imagen', 'p.PRO_Marca', 'p.CAT_Id', 'cat.CAT_Nombre', 'cl.CLA_Nombre', 'a.ALM_Id', 'a.ALM_Nombre')
-            ->get();
+            ->where('p.PRO_Status', 1);
 
-        return view('tenant_'.tenant('tipo_negocio').'.ventas.venta.create', compact('clase', 'categoria', 'clientes', 'metodo_pago', 'lotesuni'));
+        // FILTRO CATEGORIA
+        if ($request->categoria != 'all') {
+            $query->where('p.CAT_Id', $request->categoria);
+        }
+
+        // BUSQUEDA
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where(
+                    'p.PRO_Nombre',
+                    'like',
+                    '%' . $request->search . '%'
+                );
+            });
+        }
+        $productos = $query->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Descripcion', 'p.PRO_Imagen', 'p.CAT_Id')
+            ->paginate(20);
+
+        return response()->json($productos);
     }
 
+    public function searchClientes(Request $request)
+    {
+        $search = $request->search;
+        $clientes = DB::table('cliente')
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('CLI_Nombre', 'like', "%{$search}%")
+                        ->orWhere('CLI_NumDocumento', 'like', "%{$search}%")
+                        ->orWhere('CLI_Celular', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('CLI_Nombre', 'asc')
+            ->limit(20)
+            ->get();
+
+        return response()->json($clientes);
+    }
+
+    public function createCliente(Request $request)
+    {
+        $cliente = new Cliente();
+        $cliente->CLI_Nombre = $request->get('CLI_Nombre');
+        $cliente->CLI_TipoDocumento = $request->get('CLI_TipoDocumento');
+        $cliente->CLI_NumDocumento = $request->get('CLI_NumDocumento');
+        $cliente->CLI_Celular = $request->get('CLI_Celular');
+        $cliente->CLI_Direccion = $request->get('CLI_Direccion');
+        $cliente->save();
+
+        return response()->json($cliente);
+    }
+
+    public function storeauxiliar(Request $request)
+    {
+
+        DB::beginTransaction();
+
+        try {
+
+            // ==========================
+            // TOTAL
+            // ==========================
+
+            $total = 0;
+
+            foreach ($request->productos as $item) {
+
+                $total +=
+                    $item['quantity']
+                    *
+                    $item['PRO_PrecioBaseVenta'];
+            }
+
+            // ==========================
+            // VENTA
+            // ==========================
+
+            $ventaId = DB::table('venta')
+                ->insertGetId([
+
+                    'CLI_Id' =>
+                    $request->cliente_id,
+
+                    'VEN_Comprobante' =>
+                    $request->comprobante,
+
+                    'VEN_MetodoPago' =>
+                    $request->metodo_pago,
+
+                    'VEN_Total' =>
+                    $total,
+
+                    'VEN_PagoRecibido' =>
+                    $request->pago_recibido,
+
+                    'VEN_Vuelto' =>
+                    $request->vuelto,
+
+                    'VEN_Observacion' =>
+                    $request->observacion,
+
+                    'created_at' => now(),
+                    'updated_at' => now()
+
+                ]);
+
+            // ==========================
+            // DETALLE
+            // ==========================
+
+            foreach ($request->productos as $item) {
+
+                DB::table('detalle_venta')
+                    ->insert([
+
+                        'VEN_Id' => $ventaId,
+
+                        'PRO_Id' =>
+                        $item['PRO_Id'],
+
+                        'DEV_Cantidad' =>
+                        $item['quantity'],
+
+                        'DEV_Precio' =>
+                        $item['PRO_PrecioBaseVenta'],
+
+                        'DEV_Subtotal' =>
+                        $item['quantity']
+                            *
+                            $item['PRO_PrecioBaseVenta'],
+
+                        'created_at' => now(),
+                        'updated_at' => now()
+
+                    ]);
+
+                // ======================
+                // DESCONTAR STOCK
+                // ======================
+
+                DB::table('lote')
+
+                    ->where(
+                        'PRO_Id',
+                        $item['PRO_Id']
+                    )
+
+                    ->decrement(
+                        'LOT_CantidadReal',
+                        $item['quantity']
+                    );
+            }
+
+            DB::commit();
+
+            return response()->json([
+
+                'success' => true,
+
+                'venta_id' => $ventaId
+
+            ]);
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' => $e->getMessage()
+
+            ], 500);
+        }
+    }
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        // dd($request);
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
 
             $mytime = Carbon::now('America/Lima');
             $fechaactual = $mytime->toDateString();
             $horaactual = $mytime->toTimeString();
 
             $idAlmacen = 1;
-            $idUsuario = $request->get('USU_Id');
-            $idCliente = $request->get('selectedIdCliente');
+            $idUsuario = Auth::user()->id;
+            $idCliente = $request->get('cliente_id') ? $request->get('cliente_id') : 1;
 
             $venta = new Venta;
             $venta->VEN_TipoPago = $request->get('VEN_TipoPago');
-            $venta->VEN_Vuelto = $request->get('VEN_Vuelto');
-            $venta->VEN_Pagado = $request->get('VEN_Pagado');
-            $venta->MEP_Id = $request->get('selectedIdMetodoPago');
+            $venta->VEN_Vuelto = $request->get('vuelto');
+            $venta->VEN_Pagado = $request->get('pago_recibido');
+            $venta->MEP_Id = $request->get('metodo_pago');
             $venta->USU_Id = $idUsuario;
             $venta->CLI_Id = $idCliente;
             $venta->ALM_Id = $idAlmacen;
             $venta->VEN_FechaEnvio = $fechaactual . ' ' . $horaactual;
             $venta->save();
 
-            $VentaTipo = $request->get('VentaTipo');
+            $VentaTipo = $request->get('comprobante');
 
             if ($VentaTipo == "VENTA") {
                 // $folio = self::CrearDocumentoDetalle($CLI_Cod, $venta->VEN_Id, $idEmpleado, $idubicacion->UBI_Id, $idalmacen1, $CLI_Cod, 2, $documentodescuento);
-            } else if ($VentaTipo == "LIBRE") {
+            } else if ($VentaTipo == "NOTA") {
                 $DocumentoVenta = self::CrearDocumentoDetalleVentaLibre($venta->VEN_Id, $idAlmacen);
             }
 
-            $PRO_Id = $request->get('PRO_Id');
-            $DEV_Cantidad = $request->get('DEV_Cantidad');
-            $DEV_PrecioUnitario = $request->get('DEV_PrecioUnitario');
-            $DEV_Descuento = $request->get('DEV_Descuento');
-
             $cont = 0;
-            $item = 0;
-            while ($cont < count($PRO_Id)) {
+            $it = 0;
+            foreach ($request->productos as $item) {
 
-                $rdst = self::ReducirStock($PRO_Id[$cont], $DEV_Cantidad[$cont], $idAlmacen);
+                $rdst = self::ReducirStock($item['PRO_Id'], $item['quantity'], $idAlmacen);
 
                 for ($i = 0; $i < count($rdst); $i = $i + 2) {
                     $detalle = new DetalleVenta();
                     $detalle->VEN_Id = $venta->VEN_Id;
-                    $detalle->DEV_Item = $item + 1;
-                    $detalle->PRO_Id = $PRO_Id[$cont];
+                    $detalle->DEV_Item = $it + 1;
+                    $detalle->PRO_Id = $item['PRO_Id'];
                     $detalle->DEV_Cantidad = $rdst[$i + 1];
-                    $detalle->DEV_PrecioUnitario = $DEV_PrecioUnitario[$cont];
+                    $detalle->DEV_PrecioUnitario = $item['PRO_PrecioBaseVenta'];
                     $detalle->LOT_Id = $rdst[$i];
-                    $detalle->DEV_Descuento = (($DEV_PrecioUnitario[$cont] * $rdst[$i + 1]) / ($DEV_PrecioUnitario[$cont] * $DEV_Cantidad[$cont]) * ($DEV_Descuento[$cont]));
+                    $detalle->DEV_Descuento = 0;
                     $detalle->save();
-                    $item = $item + 1;
+                    $it = $it + 1;
                 }
 
                 $cont = $cont + 1;
@@ -266,11 +444,14 @@ class VentaController extends Controller
                 ->first();
 
             DB::commit();
-            $this->sunatService->enviarVenta( $venta->VEN_Id );
+
+            if($VentaTipo == "BOLETA" || $VentaTipo == "FACTURA"){
+                $this->sunatService->enviarVentaLibre($venta->VEN_Id);
+            }
+            return response()->json(['success' => true, 'venta_id' => $venta->VEN_Id]);
             //EnviarVentaSunatJob::dispatch($venta->VEN_Id,tenant('id'),tenant('tipo_negocio'));
             /* $responseSunat = $this->sunatService->enviarVenta($venta->VEN_Id);
             self::ticketImagen($venta->VEN_Id); */
-
         } catch (Exception $e) {
             DB::rollback();
             $e->getMessage();
@@ -280,7 +461,7 @@ class VentaController extends Controller
         return response()->json(['success' => 'Venta Registrado Exitosamente!', compact('ventagenerado')]);
     }
 
-    function ticket(string $tenant_id, string $idventa)
+    function ticket(string $idventa)
     {
         $ventae = DB::table('detalle_venta as dv')
             ->join('venta as v', 'v.VEN_Id', '=', 'dv.VEN_Id')
@@ -347,10 +528,10 @@ class VentaController extends Controller
 
         $generaimagen = false;
 
-        return view('tenant_'.tenant('tipo_negocio').'/ventas/venta/ticket/ticketventa9cm', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal','generaimagen'));
+        return view('tenant_' . tenant('tipo_negocio') . '/ventas/venta/ticket/ticketventa9cm', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal', 'generaimagen'));
     }
 
-    function pdf(string $tenant_id, string $idventa)
+    function pdf(string $idventa)
     {
         $ventae = DB::table('detalle_venta as dv')
             ->join('venta as v', 'v.VEN_Id', '=', 'dv.VEN_Id')
@@ -417,7 +598,7 @@ class VentaController extends Controller
 
         $generaimagen = false;
 
-        return view('tenant_'.tenant('tipo_negocio').'/ventas/venta/ticket/ticket_A4', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal','generaimagen'));
+        return view('tenant_' . tenant('tipo_negocio') . '/ventas/venta/ticket/ticket_A4', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal', 'generaimagen'));
     }
 
     public static function ticketImagen($idventa)
@@ -513,23 +694,22 @@ class VentaController extends Controller
             $ubicacionNegocio = tenant('tipo_negocio');
         }
 
-        $path = public_path('storage/' .$ubicacionNegocio . '/' .$id . '/archivos/tickets/');
+        $path = public_path('storage/' . $ubicacionNegocio . '/' . $id . '/archivos/tickets/');
         if (!file_exists($path)) {
 
             mkdir($path, 0777, true);
         }
-        $fileName = $ventae->pdf .'.png';
+        $fileName = $ventae->pdf . '.png';
         $rutaCompleta = $path . $fileName;
 
         Browsershot::html($html)
-        ->timeout(120)
-        ->windowSize(900, 1200)
-        ->save($rutaCompleta);
+            ->timeout(120)
+            ->windowSize(900, 1200)
+            ->save($rutaCompleta);
 
         /* Browsershot::html($html)
     ->format('A4')
     ->pdf(); */
-
     }
 
 
@@ -538,7 +718,7 @@ class VentaController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $tenant_id, string $id)
+    public function show(string $id)
     {
         $venta = DB::table('detalle_venta as dv')
             ->join('venta as v', 'v.VEN_Id', '=', 'dv.VEN_Id')
@@ -568,7 +748,7 @@ class VentaController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $Venta = Venta::find($id);
         return response()->json(['data' => $Venta]);
@@ -577,7 +757,7 @@ class VentaController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $tenant_id, string $id)
+    public function update(Request $request, string $id)
     {
         $Venta = Venta::find($id);
         $Venta->PRO_Nombre = $request->PRO_Nombre;
@@ -595,7 +775,7 @@ class VentaController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         $Venta = Venta::find($id);
         $Venta->delete();
@@ -695,7 +875,7 @@ class VentaController extends Controller
         $documento->DOV_TipoOriginal = 'PRO';
         $documento->DOV_Serie = $serPro;
         $documento->DOV_Numero = $numPro;
-        $documento->DOV_Nombre = $serPro.'-'.$numPro;
+        $documento->DOV_Nombre = $serPro . '-' . $numPro;
         $documento->VEN_Id = $idventa;
         $documento->DOV_Estado = 'ACTIVADO';
         $documento->DOV_StateToRes = 0;

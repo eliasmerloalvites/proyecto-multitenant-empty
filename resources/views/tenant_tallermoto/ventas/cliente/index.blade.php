@@ -1,4 +1,4 @@
-@extends('tenant_'.tenant('tipo_negocio').'.layout.appAdminLte')
+@extends('tenant_' . tenant('tipo_negocio') . '.layout.appAdminLte')
 @section('titulo', 'Clientes')
 @section('contenido')
 
@@ -32,15 +32,13 @@
                                 <label for="name" class=" control-label">Numero Documento</label>
                                 <div class="input-group ">
                                     <input type="text" class="form-control sm" id="idCLI_NumDocumento"
-                                        name="CLI_NumDocumento" placeholder="Ingrese Nº Documento" maxlength="8"
-                                        required>
+                                        name="CLI_NumDocumento" placeholder="Ingrese Nº Documento" maxlength="8" required>
                                     <div class="input-group-append">
                                         <div class="input-group-append">
                                             <span class="input-group-text" id="Buscar_Cliente" style="display: block;"
                                                 onclick="buscarCliente()"><i class="fas fa-search"></i></span>
-                                            <span class="input-group-text hide" id="cargando"
-                                                style="display: none;"><img width="15px"
-                                                    src="{{ asset('images/gif/cargando1.gif') }}"></span>
+                                            <span class="input-group-text hide" id="cargando" style="display: none;"><img
+                                                    width="15px" src="{{ asset_root('images/gif/cargando1.gif') }}"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -51,8 +49,7 @@
                                     placeholder="Ingrese Nombre" required>
                             </div>
                             <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                <label class="control-label"
-                                    style="text-align: left; display: block;">Dirección:</label>
+                                <label class="control-label" style="text-align: left; display: block;">Dirección:</label>
                                 <input type="text" id="idCLI_Direccion" name="CLI_Direccion" class="form-control "
                                     placeholder="Ingrese Dirección">
                             </div>
@@ -70,12 +67,12 @@
                         <p></p>
                         <div class="form-group text-right">
                             <button id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
-                            <button id="updateBtn" class="btn btn-info" style="display: none;"><i
-                                    class="fas fa-save"></i> Actualizar</button>
-                            <button type="reset" id="btncancelar" class="btn btn-danger"> <i
-                                    class="fas fa-ban"></i> Cancelar </button>
+                            <button id="updateBtn" class="btn btn-info" style="display: none;"><i class="fas fa-save"></i>
+                                Actualizar</button>
+                            <button type="reset" id="btncancelar" class="btn btn-danger"> <i class="fas fa-ban"></i> Cancelar
+                            </button>
                         </div>
-                        
+
                     </form>
                 </div>
             </div>
@@ -112,54 +109,161 @@
     <!-- Modal Ver detalles-->
     <div class="modal fade" id="modalVerDetalle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content ">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalLabel">Detalles del Proveedor</h5>
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+
+                <!-- HEADER -->
+                <div class="modal-header bg-primary text-white border-0">
+                    <div>
+                        <h5 class="modal-title mb-0">
+                            <i class="fas fa-user-circle me-2"></i>
+                            Detalles del Cliente
+                        </h5>
+                        <small class="opacity-75">
+                            Información general del cliente registrado
+                        </small>
+                    </div>
+
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <p class="col">Id Cliente: </p>
-                        <p id="ver_CLI_Id" class="col"></p>
+
+                <!-- BODY -->
+                <div class="modal-body bg-light">
+
+                    <!-- CARD CLIENTE -->
+                    <div class="card border-0 shadow-sm rounded-4">
+
+                        <div class="card-body">
+
+                            <!-- ID -->
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+
+                                <div>
+                                    <small class="text-muted d-block">
+                                        ID CLIENTE
+                                    </small>
+
+                                    <h4 class="fw-bold text-primary mb-0" id="ver_CLI_Id">
+                                    </h4>
+                                </div>
+
+                                <div>
+                                    <span class="badge bg-success px-3 py-2">
+                                        ACTIVO
+                                    </span>
+                                </div>
+
+                            </div>
+
+                            <!-- GRID -->
+                            <div class="row g-4">
+
+                                <!-- TIPO DOCUMENTO -->
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">
+                                        Tipo Documento
+                                    </small>
+
+                                    <div class="fw-semibold fs-6" id="ver_CLI_TipoDocumento">
+                                    </div>
+                                </div>
+
+                                <!-- NUMERO DOCUMENTO -->
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">
+                                        Número Documento
+                                    </small>
+
+                                    <div class="fw-semibold fs-6" id="ver_CLI_NumDocumento">
+                                    </div>
+                                </div>
+
+                                <!-- NOMBRE -->
+                                <div class="col-md-12">
+                                    <small class="text-muted d-block">
+                                        Nombre Completo
+                                    </small>
+
+                                    <div class="fw-bold fs-5 text-dark" id="ver_CLI_Nombre">
+                                    </div>
+                                </div>
+
+                                <!-- DIRECCION -->
+                                <div class="col-md-12">
+                                    <small class="text-muted d-block">
+                                        Dirección
+                                    </small>
+
+                                    <div class="fw-semibold" id="ver_CLI_Direccion">
+                                    </div>
+                                </div>
+
+                                <!-- CELULAR -->
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">
+                                        Celular
+                                    </small>
+
+                                    <div class="fw-semibold" id="ver_CLI_Celular">
+                                    </div>
+                                </div>
+
+                                <!-- CORREO -->
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">
+                                        Correo Electrónico
+                                    </small>
+
+                                    <div class="fw-semibold text-primary" id="ver_CLI_Correo">
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- FECHAS -->
+                            <hr class="my-4">
+
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">
+                                        Fecha Registro
+                                    </small>
+
+                                    <div class="fw-semibold" id="ver_fecha_registro">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">
+                                        Última Actualización
+                                    </small>
+
+                                    <div class="fw-semibold" id="ver_fecha_update">
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
                     </div>
-                    <div class="row">
-                        <p class="col">Tipo Documento:</p>
-                        <p id="ver_CLI_TipoDocumento" class="col"></p>
-                    </div>
-                    <div class="row">
-                        <p class="col">Numero Documento:</p>
-                        <p id="ver_CLI_NumDocumento" class="col"></p>
-                    </div>
-                    <div class="row">
-                        <p class="col">Nombre: </p>
-                        <p id="ver_CLI_Nombre" class="col"></p>
-                    </div>
-                    <div class="row">
-                        <p class="col">Dirección: </p>
-                        <p id="ver_CLI_Direccion" class="col"></p>
-                    </div>
-                    <div class="row">
-                        <p class="col">Celular: </p>
-                        <p id="ver_CLI_Celular" class="col"></p>
-                    </div>
-                    <div class="row">
-                        <p class="col">Correo: </p>
-                        <p id="ver_CLI_Correo" class="col"></p>
-                    </div>
-                    <div class="row">
-                        <p class="col">Fecha de registro: </p>
-                        <p id="ver_fecha_registro" class="col"></p>
-                    </div>
-                    <div class="row">
-                        <p class="col">Fecha de actualización: </p>
-                        <p id="ver_fecha_update" class="col"></p>
-                    </div>
+
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+                <!-- FOOTER -->
+                <div class="modal-footer bg-white border-0">
+
+                    <button type="button" class="btn btn-light border px-4" data-dismiss="modal">
+
+                        <i class="fas fa-times me-1"></i>
+                        Cerrar
+
+                    </button>
+
                 </div>
+
             </div>
         </div>
     </div>
@@ -226,7 +330,7 @@
                         data: null,
                         name: '',
                         'render': function(data, type, row) {
-                            return  @can('tenant.ventas.cliente.show')
+                            return @can('tenant.ventas.cliente.show')
                                     data.action3 + ' ' +
                                 @endcan
                             ''
@@ -276,7 +380,8 @@
 
             $('body').on('click', '.editCliente', function() {
                 var Cliente_id_edit = $(this).data('identificador');
-                $.get('{{ tenant_url('tenant.ventas.cliente.edit', ['cliente' => ':cliente', 'tenant' => tenant('id')]) }}'.replace(':cliente',
+                $.get('{{ tenant_url('tenant.ventas.cliente.edit', ['cliente' => ':cliente']) }}'.replace(
+                        ':cliente',
                         Cliente_id_edit),
                     function(result) {
                         console.log(result);
@@ -302,7 +407,7 @@
                     Cliente_id_update = $('#cliente_id_edit').val();
                     $.ajax({
                         data: $('#cliente_form').serialize(),
-                        url: '{{ tenant_url('tenant.ventas.cliente.update', ['cliente' => ':cliente', 'tenant' => tenant('id')]) }}'
+                        url: '{{ tenant_url('tenant.ventas.cliente.update', ['cliente' => ':cliente']) }}'
                             .replace(
                                 ':cliente', Cliente_id_update),
                         type: "PUT",
@@ -332,7 +437,8 @@
             $('body').on('click', '.eyeCliente', function() {
                 var Cliente_id_ver = $(this).data('id');
                 $('#modalVerDetalle').modal('show');
-                $.get('{{ tenant_url('tenant.ventas.cliente.show', ['cliente' => ':cliente', 'tenant' => tenant('id')]) }}'.replace(':cliente',
+                $.get('{{ tenant_url('tenant.ventas.cliente.show', ['cliente' => ':cliente']) }}'.replace(
+                        ':cliente',
                         Cliente_id_ver),
                     function(data) {
                         $('#ver_CLI_Id').text(data.data.CLI_Id);
@@ -370,7 +476,7 @@
                     $.ajax({
                         type: "DELETE",
 
-                        url: '{{ tenant_url('tenant.ventas.cliente.destroy', ['cliente' => ':cliente', 'tenant' => tenant('id')]) }}'
+                        url: '{{ tenant_url('tenant.ventas.cliente.destroy', ['cliente' => ':cliente']) }}'
                             .replace(
                                 ':cliente', Cliente_id_delete),
                         data: {

@@ -4,6 +4,55 @@
 
 @section('contenido')
 <style>
+        .modal-content{
+            border-radius: 18px;
+        }
+
+        .card{
+            border-radius: 18px;
+        }
+
+        .modal-header{
+            padding: 18px 24px;
+        }
+
+        .modal-body{
+            padding: 24px;
+        }
+
+        .product-image-container{
+            background: white;
+            border-radius: 18px;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+        }
+
+        .product-image{
+            width: 100%;
+            max-width: 240px;
+            height: 240px;
+            object-fit: cover;
+            background: #f8f9fa;
+        }
+
+        .price-card{
+            transition: .2s ease;
+        }
+
+        .price-card:hover{
+            transform: translateY(-2px);
+        }
+
+        small.text-muted{
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .badge{
+            border-radius: 10px;
+            font-size: 12px;
+        }
     table.dataTable{
         width:100% !important;
     }
@@ -111,83 +160,181 @@
 
     <div class="modal fade" id="modalVerDetalle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content ">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalLabel">Detalles del Producto</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+
+                <!-- HEADER -->
+                <div class="modal-header bg-dark text-white border-0">
+
+                    <div>
+                        <h5 class="modal-title mb-0">
+                            <i class="fas fa-box-open me-2"></i>
+                            Detalles del Producto
+                        </h5>
+
+                        <small class="opacity-75">
+                            Información completa del producto
+                        </small>
+                    </div>
+
+                    <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Close">
                     </button>
+
                 </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p >Id Producto: </p>
+
+                <!-- BODY -->
+                <div class="modal-body bg-light">
+
+                    <div class="card border-0 shadow-sm rounded-4">
+
+                        <div class="card-body">
+
+                            <div class="row g-4">
+
+                                <!-- IMAGEN -->
+                                <div class="col-lg-4 text-center">
+
+                                    <div class="product-image-container">
+
+                                        <img id="ver_Imagen" class="img-fluid rounded-4 border shadow-sm product-image">
+
+                                    </div>
+
+                                    <div class="mt-3">
+
+                                        <span class="badge bg-success px-3 py-2">
+                                            Producto Activo
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- INFORMACION -->
+                                <div class="col-lg-8">
+
+                                    <!-- ID -->
+                                    <div class="mb-4">
+
+                                        <small class="text-muted d-block">
+                                            ID PRODUCTO
+                                        </small>
+
+                                        <h4 class="fw-bold text-primary mb-0" id="ver_PRO_Id">
+                                        </h4>
+
+                                    </div>
+
+                                    <!-- CATEGORIA -->
+                                    <div class="mb-3">
+
+                                        <small class="text-muted d-block">
+                                            Categoría
+                                        </small>
+
+                                        <div class="fw-semibold fs-6" id="ver_CAT_Nombre">
+                                        </div>
+
+                                    </div>
+
+                                    <!-- NOMBRE -->
+                                    <div class="mb-3">
+
+                                        <small class="text-muted d-block">
+                                            Nombre Producto
+                                        </small>
+
+                                        <div class="fw-bold fs-4 text-dark" id="ver_PRO_Nombre">
+                                        </div>
+
+                                    </div>
+
+                                    <!-- DESCRIPCION -->
+                                    <div class="mb-4">
+
+                                        <small class="text-muted d-block">
+                                            Descripción
+                                        </small>
+
+                                        <div class="text-secondary" id="ver_PRO_Descripcion">
+                                        </div>
+
+                                    </div>
+
+                                    <!-- MARCA -->
+                                    <div class="mb-4">
+
+                                        <small class="text-muted d-block">
+                                            Marca
+                                        </small>
+
+                                        <div class="fw-semibold" id="ver_PRO_Marca">
+                                        </div>
+
+                                    </div>
+
+                                    <!-- PRECIOS -->
+                                    <div class="row">
+
+                                        <!-- PRECIO COMPRA -->
+                                        <div class="col-md-6">
+
+                                            <div class="price-card bg-white border rounded-4 p-3 shadow-sm">
+
+                                                <small class="text-muted d-block">
+                                                    Precio Compra
+                                                </small>
+
+                                                <h4 class="mb-0 text-danger fw-bold">
+                                                    S/
+                                                    <span id="ver_PRO_PrecioCompra"></span>
+                                                </h4>
+
+                                            </div>
+
+                                        </div>
+
+                                        <!-- PRECIO VENTA -->
+                                        <div class="col-md-6">
+
+                                            <div class="price-card bg-white border rounded-4 p-3 shadow-sm">
+
+                                                <small class="text-muted d-block">
+                                                    Precio Venta
+                                                </small>
+
+                                                <h4 class="mb-0 text-success fw-bold">
+                                                    S/
+                                                    <span id="ver_PRO_PrecioVenta"></span>
+                                                </h4>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
                         </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_PRO_Id"></p>
-                        </div>                        
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Categoria:</p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_CAT_Nombre"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Nombre Producto:</p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_PRO_Nombre"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Descripcion:</p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_PRO_Descripcion"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Marca:</p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_PRO_Marca"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Precio Compra:</p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_PRO_PrecioCompra"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Precio Venta:</p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_PRO_PrecioVenta"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Imagen: </p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <img id="ver_Imagen"  style="width: 120px; height: 120px; margin-right: 10px;" />
-                        </div>
+
                     </div>
 
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+                <!-- FOOTER -->
+                <div class="modal-footer bg-white border-0">
+
+                    <button type="button" class="btn btn-light border px-4" data-dismiss="modal">
+
+                        <i class="fas fa-times me-1"></i>
+                        Cerrar
+
+                    </button>
+
                 </div>
+
             </div>
         </div>
     </div>
@@ -449,74 +596,10 @@
                 ],
             });
 
-            $('#productosave').click(function(e) {
-                e.preventDefault();
-                nombre = $("#PRO_Nombre").val();
-                descripcion = $("#PRO_Descripcion").val();
-                precioCompra = $("#PRO_PrecioCompra").val();
-                precioVenta = $("#PRO_PrecioVenta").val();
-                marca = $("#PRO_Marca").val();
-                catId = $("#CAT_Id").val();
-
-                if (nombre == ''||descripcion == ''||precioCompra == ''||precioVenta == ''||marca == ''||catId == '') {
-                    Toast.fire({
-                        type: 'error',
-                        title: 'Complete todos los campos por favor'
-                    })
-                    return false;
-                }
-                let formData = new FormData($('#product_form')[0]);
-                $.ajax({
-                    url: "{{ tenant_url('tenant.inventario.producto.store') }}",
-                    type: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(data) {
-                        console.log('Success:', data);
-                        Toast.fire({
-                            type: 'success',
-                            title: data.success
-                        })
-                        cancelarUpdate();
-                        table.draw();
-                    },
-                    error: function(data) {
-                        console.log('Error:', data);
-                        Toast.fire({
-                            type: 'error',
-                            title: 'producto fallo al Registrarse.'
-                        })
-                    }
-                });
-            });
-
-            $('body').on('click', '.editProducto', function() {
-                var Producto_id_edit = $(this).data('id');
-                $.get('{{ tenant_url('tenant.inventario.producto.edit', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'.replace(':producto', Producto_id_edit),
-                    function(result) {
-                        console.log(result);
-                        $('#producto_id_edit').val(result.data.PRO_Id);
-                        $('#PRO_Nombre').val(result.data.PRO_Nombre);
-                        $('#PRO_Descripcion').val(result.data.PRO_Descripcion);
-                        $('#PRO_PrecioCompra').val(result.data.PRO_PrecioCompra);
-                        $('#PRO_PrecioVenta').val(result.data.PRO_PrecioVenta);
-                        $('#PRO_Marca').val(result.data.PRO_Marca);
-                        $('#CAT_Id').val(result.data.CAT_Id);
-                        $('#CAT_Id').change();
-
-
-                        // Mostrar botón Actualizar y ocultar botón Guardar
-                        $('#_method').val('PUT').show();
-                        $("#productosave").hide();
-                        $("#updateBtn").show();
-                    })
-            });
-
             $('body').on('click', '.eyeProducto', function() {
                 var Producto_id_ver = $(this).data('id');
                 $('#modalVerDetalle').modal('show');
-                $.get('{{ tenant_url('tenant.inventario.producto.show', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'.replace(':producto', Producto_id_ver),
+                $.get('{{ tenant_url('tenant.inventario.producto.show', ['producto' => ':producto']) }}'.replace(':producto', Producto_id_ver),
                     function(data) {
                         console.log(data)
                         $('#ver_PRO_Id').text(data.data.PRO_Id);
@@ -532,7 +615,7 @@
             $('body').on('click', '.lotesProducto', function() {
                 var Producto_id_ver = $(this).data('id');
                 $('#modalVerLotes').modal('show');
-                $.get('{{ tenant_url('tenant.inventario.controlinventario.lotes', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'.replace(':producto', Producto_id_ver),
+                $.get('{{ tenant_url('tenant.inventario.controlinventario.lotes', ['producto' => ':producto']) }}'.replace(':producto', Producto_id_ver),
                     function(data) {
                         console.log(data)
                         $('#lote_producto').text(data.producto.PRO_Nombre);
@@ -605,38 +688,6 @@
                 cargarKardex(producto, fecha_inicio, fecha_fin, tipo);
             });
             
-
-            $('#updateBtn').click(function(e) {
-                e.preventDefault();
-                Producto_id_update = $('#producto_id_edit').val();
-                let formData = new FormData($('#product_form')[0]);
-                $.ajax({
-                    data: $('#product_form').serialize(),
-                    url: '{{ tenant_url('tenant.inventario.producto.update', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'.replace(
-                        ':producto', Producto_id_update),
-                    type: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(data) {
-                        console.log('Success:', data);
-                        Toast.fire({
-                            type: 'success',
-                            title: data.success
-                        });
-                        cancelarUpdate();
-                        table.draw();
-                    },
-                    error: function(data) {
-                        console.log('Error:', data);
-                        Toast.fire({
-                            type: 'error',
-                            title: 'Producto fallo al actualizarse.'
-                        })
-                    }
-                });
-            });
-
             $('#btncancelar').click(function(e) {
                 cancelarUpdate();
                 Swal.fire({
@@ -670,7 +721,7 @@
                     $.ajax({
                         type: "DELETE",
 
-                        url: '{{ tenant_url('tenant.inventario.producto.destroy', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'.replace(
+                        url: '{{ tenant_url('tenant.inventario.producto.destroy', ['producto' => ':producto']) }}'.replace(
                             ':producto', Producto_id_delete),
                         data: {
                             _token: '{{ csrf_token() }}'
@@ -707,7 +758,7 @@
         function cargarKardex(producto, fecha_inicio = '', fecha_fin = '', tipo = '') {
 
             $.get(
-                '{{ tenant_url('tenant.inventario.controlinventario.kardex', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'
+                '{{ tenant_url('tenant.inventario.controlinventario.kardex', ['producto' => ':producto']) }}'
                 .replace(':producto', producto),
 
                 {
