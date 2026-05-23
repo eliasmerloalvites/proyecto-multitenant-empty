@@ -66,7 +66,7 @@ class ClaseController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $tenant_id, string $id)
+    public function show(string $id)
     {
         //
     }
@@ -74,7 +74,7 @@ class ClaseController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $clase = Clase::find($id);
         return response()->json(['data' => $clase]);
@@ -83,7 +83,7 @@ class ClaseController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $tenant_id,  string $id)
+    public function update(Request $request,  string $id)
     {
         $clase = Clase::find($id);
         $clase->CLA_Nombre = $request->CLA_Nombre;
@@ -95,7 +95,7 @@ class ClaseController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         $clase = Clase::find($id);
         $clase->delete();

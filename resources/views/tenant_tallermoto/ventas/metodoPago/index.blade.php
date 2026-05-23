@@ -152,7 +152,7 @@
 
             $('body').on('click', '.editMetodoPago', function() {
                 var MetodoPago_id_edit = $(this).data('identificador');
-                $.get('{{ tenant_url('tenant.ventas.metodopago.edit',['metodopago' => ':metodopago', 'tenant' => tenant('id')]) }}'.replace(':metodopago', MetodoPago_id_edit),
+                $.get('{{ tenant_url('tenant.ventas.metodopago.edit',['metodopago' => ':metodopago']) }}'.replace(':metodopago', MetodoPago_id_edit),
                     function(result) {
                         console.log(result);
                         $('#metodoPago_id_edit').val(result.data.MEP_Id);
@@ -170,7 +170,7 @@
                 MetodoPago_id_update = $('#metodoPago_id_edit').val();
                 $.ajax({
                     data: $('#metodoPago_form').serialize(),
-                    url: '{{ tenant_url('tenant.ventas.metodopago.update', ['metodopago' => ':metodopago', 'tenant' => tenant('id')]) }}'.replace(
+                    url: '{{ tenant_url('tenant.ventas.metodopago.update', ['metodopago' => ':metodopago']) }}'.replace(
                         ':metodopago', MetodoPago_id_update),
                     type: "PUT",
                     dataType: 'json',
@@ -221,7 +221,7 @@
                     $.ajax({
                         type: "DELETE",
 
-                        url: '{{ tenant_url('tenant.ventas.metodopago.destroy',  ['metodopago' => ':metodopago', 'tenant' => tenant('id')]) }}'.replace(
+                        url: '{{ tenant_url('tenant.ventas.metodopago.destroy',  ['metodopago' => ':metodopago']) }}'.replace(
                             ':metodopago', MetodoPago_id_delete),
                         data: {
                             _token: '{{ csrf_token() }}'

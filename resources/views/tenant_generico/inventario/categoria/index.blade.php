@@ -258,7 +258,7 @@
 
             $('body').on('click', '.editCategoria', function() {
                 var Categoria_id_edit = $(this).data('id');
-                $.get('{{ tenant_url('tenant.inventario.categoria.edit', ['categoria' => ':categoria', 'tenant' => tenant('id')]) }}'.replace(':categoria', Categoria_id_edit),
+                $.get('{{ tenant_url('tenant.inventario.categoria.edit', ['categoria' => ':categoria']) }}'.replace(':categoria', Categoria_id_edit),
                     function(result) {
                         console.log(result);
                         $('#categoria_id_edit').val(result.data.CAT_Id);
@@ -277,7 +277,7 @@
             $('body').on('click', '.eyeCategoria', function() {
                 var Categoria_id_ver = $(this).data('id');
                 $('#modalVerDetalle').modal('show');
-                $.get('{{ tenant_url('tenant.inventario.categoria.show', ['tenant' => tenant('id'), 'categoria' => ':categoria']) }}'.replace(':categoria',Categoria_id_ver),
+                $.get('{{ tenant_url('tenant.inventario.categoria.show', ['categoria' => ':categoria']) }}'.replace(':categoria',Categoria_id_ver),
                     function(data) {
                         $('#ver_CAT_Id').text(data.data.CAT_Id);
                         $('#ver_CLA_Nombre').text(data.data.CLA_Nombre);
@@ -291,7 +291,7 @@
                 Categoria_id_update = $('#categoria_id_edit').val();
                 let formData = new FormData($('#cat_form')[0]);
                 $.ajax({
-                    url: '{{ tenant_url('tenant.inventario.categoria.update', ['tenant' => tenant('id'), 'categoria' => ':categoria']) }}'.replace(':categoria',
+                    url: '{{ tenant_url('tenant.inventario.categoria.update', ['categoria' => ':categoria']) }}'.replace(':categoria',
                         Categoria_id_update),
                     type: "POST",
                     data: formData,
@@ -349,7 +349,7 @@
                     $.ajax({
                         type: "DELETE",
 
-                        url: '{{ tenant_url('tenant.inventario.categoria.destroy', ['tenant' => tenant('id'), 'categoria' => ':categoria']) }}'.replace(
+                        url: '{{ tenant_url('tenant.inventario.categoria.destroy', ['categoria' => ':categoria']) }}'.replace(
                             ':categoria', Categoria_id_delete),
                         data: {
                             _token: '{{ csrf_token() }}'

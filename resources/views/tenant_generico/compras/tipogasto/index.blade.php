@@ -158,7 +158,7 @@
 
             $('body').on('click', '.editTipoGasto', function() {
                 var TipoGasto_id_edit = $(this).data('identificador');
-                $.get('{{ tenant_url('tenant.compras.tipogasto.edit', ['tipogasto' => ':tipogasto', 'tenant' => tenant('id')]) }}'.replace(':tipogasto', TipoGasto_id_edit),
+                $.get('{{ tenant_url('tenant.compras.tipogasto.edit', ['tipogasto' => ':tipogasto']) }}'.replace(':tipogasto', TipoGasto_id_edit),
                     function(result) {
                         console.log(result);
                         $('#tipogasto_id_edit').val(result.data.TG_Id);
@@ -176,7 +176,7 @@
                 TipoGasto_id_update = $('#tipogasto_id_edit').val();
                 $.ajax({
                     data: $('#class_form').serialize(),
-                    url: '{{ tenant_url('tenant.compras.tipogasto.update', ['tipogasto' => ':tipogasto', 'tenant' => tenant('id')]) }}'.replace(
+                    url: '{{ tenant_url('tenant.compras.tipogasto.update', ['tipogasto' => ':tipogasto']) }}'.replace(
                         ':tipogasto', TipoGasto_id_update),
                     type: "PUT",
                     dataType: 'json',
@@ -227,7 +227,7 @@
                     $.ajax({
                         type: "DELETE",
 
-                        url: '{{ tenant_url('tenant.compras.tipogasto.destroy', ['tipogasto' => ':tipogasto', 'tenant' => tenant('id')]) }}'.replace(
+                        url: '{{ tenant_url('tenant.compras.tipogasto.destroy', ['tipogasto' => ':tipogasto']) }}'.replace(
                             ':tipogasto', TipoGasto_id_delete),
                         data: {
                             _token: '{{ csrf_token() }}'

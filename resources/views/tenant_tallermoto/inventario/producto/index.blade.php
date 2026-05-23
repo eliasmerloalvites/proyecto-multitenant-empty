@@ -1,201 +1,344 @@
-@extends('tenant_'.tenant('tipo_negocio').'.layout.appAdminLte')
+@extends('tenant_' . tenant('tipo_negocio') . '.layout.appAdminLte')
 
 @section('titulo', 'Productos')
 
 @section('contenido')
+    <style>
+        .modal-content{
+            border-radius: 18px;
+        }
 
+        .card{
+            border-radius: 18px;
+        }
+
+        .modal-header{
+            padding: 18px 24px;
+        }
+
+        .modal-body{
+            padding: 24px;
+        }
+
+        .product-image-container{
+            background: white;
+            border-radius: 18px;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+        }
+
+        .product-image{
+            width: 100%;
+            max-width: 240px;
+            height: 240px;
+            object-fit: cover;
+            background: #f8f9fa;
+        }
+
+        .price-card{
+            transition: .2s ease;
+        }
+
+        .price-card:hover{
+            transform: translateY(-2px);
+        }
+
+        small.text-muted{
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .badge{
+            border-radius: 10px;
+            font-size: 12px;
+        }
+    </style>
     @can('tenant.inventario.producto.create')
-    <div class="col-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">CREAR PRODUCTO</h5>
-                <p class="card-text"></p>
-                <form method="POST" id="product_form" action="{{tenant_url('tenant.inventario.producto.store')}}" enctype="multipart/form-data">
-                    @csrf
-                    <input type="text" id="producto_id_edit" hidden>
-                    <input type="hidden" id="_method" name="_method" value="" style="display: none;">
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label" style=" text-align: left; display: block;">Categoria:</label>
-                            <select class="form-control select2 select2-info" id="CAT_Id" name="CAT_Id"
-                                data-dropdown-css-class="select2-info"  style="width: 100%; ">
-                                <option value="">Seleccionar ...</option>
-                                @foreach ($categorias as $itemCategoria)
-                                    <option value="{{ $itemCategoria->CAT_Id }}">{{ $itemCategoria->CAT_Nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
+        <div class="col-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">CREAR PRODUCTO</h5>
+                    <p class="card-text"></p>
+                    <form method="POST" id="product_form" action="{{ tenant_url('tenant.inventario.producto.store') }}"
+                        enctype="multipart/form-data">
+                        @csrf
+                        <input type="text" id="producto_id_edit" hidden>
+                        <input type="hidden" id="_method" name="_method" value="" style="display: none;">
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <label class="control-label" style=" text-align: left; display: block;">Categoria:</label>
+                                <select class="form-control select2 select2-info" id="CAT_Id" name="CAT_Id"
+                                    data-dropdown-css-class="select2-info" style="width: 100%; ">
+                                    <option value="">Seleccionar ...</option>
+                                    @foreach ($categorias as $itemCategoria)
+                                        <option value="{{ $itemCategoria->CAT_Id }}">{{ $itemCategoria->CAT_Nombre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Nombre:</label>
-                            <input type="text" id="PRO_Nombre" name="PRO_Nombre"
-                                class="form-control input_user "
-                                placeholder="Nombre" required>
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <label class="control-label" style=" text-align: left; display: block;">Nombre:</label>
+                                <input type="text" id="PRO_Nombre" name="PRO_Nombre" class="form-control input_user "
+                                    placeholder="Nombre" required>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Descripción:</label>
-                            <input type="text" id="PRO_Descripcion" name="PRO_Descripcion"
-                                class="form-control input_user "
-                                placeholder="Descripción" required>
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <label class="control-label" style=" text-align: left; display: block;">Descripción:</label>
+                                <input type="text" id="PRO_Descripcion" name="PRO_Descripcion"
+                                    class="form-control input_user " placeholder="Descripción" required>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Precio de Compra:</label>
-                            <input type="number" id="PRO_PrecioCompra" name="PRO_PrecioCompra"
-                                class="form-control input_user "
-                                placeholder="Precio de Compra" required>
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <label class="control-label" style=" text-align: left; display: block;">Precio de
+                                    Compra:</label>
+                                <input type="number" id="PRO_PrecioCompra" name="PRO_PrecioCompra"
+                                    class="form-control input_user " placeholder="Precio de Compra" required>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Precio de Venta:</label>
-                            <input type="number" id="PRO_PrecioVenta" name="PRO_PrecioVenta"
-                                class="form-control input_user "
-                                placeholder="Precio de Venta" required>
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <label class="control-label" style=" text-align: left; display: block;">Precio de Venta:</label>
+                                <input type="number" id="PRO_PrecioVenta" name="PRO_PrecioVenta"
+                                    class="form-control input_user " placeholder="Precio de Venta" required>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Marca:</label>
-                            <input type="text" id="PRO_Marca" name="PRO_Marca"
-                                class="form-control input_user "
-                                placeholder="Marca" required>
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <label class="control-label" style=" text-align: left; display: block;">Marca:</label>
+                                <input type="text" id="PRO_Marca" name="PRO_Marca" class="form-control input_user "
+                                    placeholder="Marca" required>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12" style="text-align: left;">
-                        <label>Añadir Imagen </label>
-                        <div class="custom-file center">
-                            <input type="file" class="custom-file-input"
-                                accept="image/*"
-                                name="file" id="fileImagen">
-                            <label class="custom-file-label" id="idFileImagen">Añadir Imagen</label>
+                        <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12" style="text-align: left;">
+                            <label>Añadir Imagen </label>
+                            <div class="custom-file center">
+                                <input type="file" class="custom-file-input" accept="image/*" name="file" id="fileImagen">
+                                <label class="custom-file-label" id="idFileImagen">Añadir Imagen</label>
+                            </div>
                         </div>
-                    </div>
-                    <p></p>
-                    
-                    <div class="form-group text-right">
-                        <button id="productosave" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
-                        <button id="updateBtn" class="btn btn-info" style="display: none;"><i
-                            class="fas fa-save"></i> Actualizar</button>
-                        <button type="reset" id="btncancelar" class="btn btn-danger"> <i
-                            class="fas fa-ban"></i> Cancelar </button>
-                    </div>
-                    
-                </form>
-            </div>
-        </div>
-    </div>
-    @endcan
-    @can('tenant.inventario.producto.index')
-    <div class="col-8">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">LISTA DE PRODUCTOS</h5>
-                <p class="card-text">
-                <div class="table-responsive" style="background:#FFF;" >
-                    <table class="table" id="lista_productos">
-                        <thead>
-                            <tr>
-                                <th scope="col">Id</th>
-                                <th scope="col">Nombre</th>
-                                <th scope="col">Categoria</th>
-                                <th scope="col">P. Venta</th>
-                                <th scope="col">P. Compra</th>
-                                <th scope="col">Opciones</th>
-                            </tr>
-                        </thead>
-                    </table>
+                        <p></p>
+
+                        <div class="form-group text-right">
+                            <button id="productosave" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                            <button id="updateBtn" class="btn btn-info" style="display: none;"><i class="fas fa-save"></i>
+                                Actualizar</button>
+                            <button type="reset" id="btncancelar" class="btn btn-danger"> <i class="fas fa-ban"></i> Cancelar
+                            </button>
+                        </div>
+
+                    </form>
                 </div>
             </div>
         </div>
-    </div>
     @endcan
-    
+    @can('tenant.inventario.producto.index')
+        <div class="col-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">LISTA DE PRODUCTOS</h5>
+                    <p class="card-text">
+                    <div class="table-responsive" style="background:#FFF;">
+                        <table class="table" id="lista_productos">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Id</th>
+                                    <th scope="col">Nombre</th>
+                                    <th scope="col">Categoria</th>
+                                    <th scope="col">P. Venta</th>
+                                    <th scope="col">P. Compra</th>
+                                    <th scope="col">Opciones</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endcan
+
 
     <div class="modal fade" id="modalVerDetalle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content ">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalLabel">Detalles del Producto</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+
+                <!-- HEADER -->
+                <div class="modal-header bg-dark text-white border-0">
+
+                    <div>
+                        <h5 class="modal-title mb-0">
+                            <i class="fas fa-box-open me-2"></i>
+                            Detalles del Producto
+                        </h5>
+
+                        <small class="opacity-75">
+                            Información completa del producto
+                        </small>
+                    </div>
+
+                    <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Close">
                     </button>
+
                 </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p >Id Producto: </p>
+
+                <!-- BODY -->
+                <div class="modal-body bg-light">
+
+                    <div class="card border-0 shadow-sm rounded-4">
+
+                        <div class="card-body">
+
+                            <div class="row g-4">
+
+                                <!-- IMAGEN -->
+                                <div class="col-lg-4 text-center">
+
+                                    <div class="product-image-container">
+
+                                        <img id="ver_Imagen" class="img-fluid rounded-4 border shadow-sm product-image">
+
+                                    </div>
+
+                                    <div class="mt-3">
+
+                                        <span class="badge bg-success px-3 py-2">
+                                            Producto Activo
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- INFORMACION -->
+                                <div class="col-lg-8">
+
+                                    <!-- ID -->
+                                    <div class="mb-4">
+
+                                        <small class="text-muted d-block">
+                                            ID PRODUCTO
+                                        </small>
+
+                                        <h4 class="fw-bold text-primary mb-0" id="ver_PRO_Id">
+                                        </h4>
+
+                                    </div>
+
+                                    <!-- CATEGORIA -->
+                                    <div class="mb-3">
+
+                                        <small class="text-muted d-block">
+                                            Categoría
+                                        </small>
+
+                                        <div class="fw-semibold fs-6" id="ver_CAT_Nombre">
+                                        </div>
+
+                                    </div>
+
+                                    <!-- NOMBRE -->
+                                    <div class="mb-3">
+
+                                        <small class="text-muted d-block">
+                                            Nombre Producto
+                                        </small>
+
+                                        <div class="fw-bold fs-4 text-dark" id="ver_PRO_Nombre">
+                                        </div>
+
+                                    </div>
+
+                                    <!-- DESCRIPCION -->
+                                    <div class="mb-4">
+
+                                        <small class="text-muted d-block">
+                                            Descripción
+                                        </small>
+
+                                        <div class="text-secondary" id="ver_PRO_Descripcion">
+                                        </div>
+
+                                    </div>
+
+                                    <!-- MARCA -->
+                                    <div class="mb-4">
+
+                                        <small class="text-muted d-block">
+                                            Marca
+                                        </small>
+
+                                        <div class="fw-semibold" id="ver_PRO_Marca">
+                                        </div>
+
+                                    </div>
+
+                                    <!-- PRECIOS -->
+                                    <div class="row">
+
+                                        <!-- PRECIO COMPRA -->
+                                        <div class="col-md-6">
+
+                                            <div class="price-card bg-white border rounded-4 p-3 shadow-sm">
+
+                                                <small class="text-muted d-block">
+                                                    Precio Compra
+                                                </small>
+
+                                                <h4 class="mb-0 text-danger fw-bold">
+                                                    S/
+                                                    <span id="ver_PRO_PrecioCompra"></span>
+                                                </h4>
+
+                                            </div>
+
+                                        </div>
+
+                                        <!-- PRECIO VENTA -->
+                                        <div class="col-md-6">
+
+                                            <div class="price-card bg-white border rounded-4 p-3 shadow-sm">
+
+                                                <small class="text-muted d-block">
+                                                    Precio Venta
+                                                </small>
+
+                                                <h4 class="mb-0 text-success fw-bold">
+                                                    S/
+                                                    <span id="ver_PRO_PrecioVenta"></span>
+                                                </h4>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
                         </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_PRO_Id"></p>
-                        </div>                        
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Categoria:</p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_CAT_Nombre"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Nombre Producto:</p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_PRO_Nombre"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Descripcion:</p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_PRO_Descripcion"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Marca:</p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_PRO_Marca"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Precio Compra:</p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_PRO_PrecioCompra"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Precio Venta:</p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <p id="ver_PRO_PrecioVenta"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4" style="text-align: left;" >
-                            <p>Imagen: </p>
-                        </div>
-                        <div class="col-8" style="text-align: left;" >
-                            <img id="ver_Imagen"  style="width: 120px; height: 120px; margin-right: 10px;" />
-                        </div>
+
                     </div>
 
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+                <!-- FOOTER -->
+                <div class="modal-footer bg-white border-0">
+
+                    <button type="button" class="btn btn-light border px-4" data-dismiss="modal">
+
+                        <i class="fas fa-times me-1"></i>
+                        Cerrar
+
+                    </button>
+
                 </div>
+
             </div>
         </div>
     </div>
@@ -210,11 +353,11 @@
                 showConfirmButton: false,
                 timer: 3000
             });
-            
+
             $('.select2').select2();
 
             $('.select2bs4').select2({
-              theme: 'bootstrap4'
+                theme: 'bootstrap4'
             })
 
             $("#fileImagen").change(function() {
@@ -264,7 +407,7 @@
                         data: 'PRO_PrecioVenta',
                         name: 'PRO_PrecioVenta',
                         className: 'text-start'
-                    }, 
+                    },
                     {
                         data: 'PRO_PrecioCompra',
                         name: 'PRO_PrecioCompra',
@@ -277,9 +420,9 @@
                             return @can('tenant.inventario.producto.show')
                                     data.action3 + ' ' +
                                 @endcan
-                            '' 
+                            ''
                             @can('tenant.inventario.producto.edit')
-                                + data.action1 + ' ' +
+                                +data.action1 + ' ' +
                             @endcan
                             ''
                             @can('tenant.inventario.producto.destroy')
@@ -299,7 +442,8 @@
                 marca = $("#PRO_Marca").val();
                 catId = $("#CAT_Id").val();
 
-                if (nombre == ''||descripcion == ''||precioCompra == ''||precioVenta == ''||marca == ''||catId == '') {
+                if (nombre == '' || descripcion == '' || precioCompra == '' || precioVenta == '' || marca ==
+                    '' || catId == '') {
                     Toast.fire({
                         type: 'error',
                         title: 'Complete todos los campos por favor'
@@ -334,7 +478,8 @@
 
             $('body').on('click', '.editProducto', function() {
                 var Producto_id_edit = $(this).data('id');
-                $.get('{{ tenant_url('tenant.inventario.producto.edit', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'.replace(':producto', Producto_id_edit),
+                $.get('{{ tenant_url('tenant.inventario.producto.edit', ['producto' => ':producto']) }}'
+                    .replace(':producto', Producto_id_edit),
                     function(result) {
                         console.log(result);
                         $('#producto_id_edit').val(result.data.PRO_Id);
@@ -357,11 +502,13 @@
             $('body').on('click', '.eyeProducto', function() {
                 var Producto_id_ver = $(this).data('id');
                 $('#modalVerDetalle').modal('show');
-                $.get('{{ tenant_url('tenant.inventario.producto.show', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'.replace(':producto', Producto_id_ver),
+                $.get('{{ tenant_url('tenant.inventario.producto.show', ['producto' => ':producto']) }}'
+                    .replace(':producto', Producto_id_ver),
                     function(data) {
                         console.log(data)
                         $('#ver_PRO_Id').text(data.data.PRO_Id);
                         $('#ver_CAT_Nombre').text(data.data.CAT_Nombre);
+                        $('#ver_PRO_Nombre').text(data.data.PRO_Nombre);
                         $('#ver_PRO_Descripcion').text(data.data.PRO_Descripcion);
                         $('#ver_PRO_Marca').text(data.data.PRO_Marca);
                         $('#ver_PRO_PrecioCompra').text(data.data.PRO_PrecioCompra);
@@ -376,8 +523,9 @@
                 let formData = new FormData($('#product_form')[0]);
                 $.ajax({
                     data: $('#product_form').serialize(),
-                    url: '{{ tenant_url('tenant.inventario.producto.update', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'.replace(
-                        ':producto', Producto_id_update),
+                    url: '{{ tenant_url('tenant.inventario.producto.update', ['producto' => ':producto']) }}'
+                        .replace(
+                            ':producto', Producto_id_update),
                     type: "POST",
                     data: formData,
                     processData: false,
@@ -434,8 +582,9 @@
                     $.ajax({
                         type: "DELETE",
 
-                        url: '{{ tenant_url('tenant.inventario.producto.destroy', ['producto' => ':producto', 'tenant' => tenant('id')]) }}'.replace(
-                            ':producto', Producto_id_delete),
+                        url: '{{ tenant_url('tenant.inventario.producto.destroy', ['producto' => ':producto']) }}'
+                            .replace(
+                                ':producto', Producto_id_delete),
                         data: {
                             _token: '{{ csrf_token() }}'
                         },
@@ -458,13 +607,13 @@
                             })
                         }
                     });
-                }else{
+                } else {
                     Toast.fire({
                         title: 'Acción cancelada',
                         text: 'El producto no ha sido eliminado.',
                         icon: 'info'
                     });
-                 }
+                }
             });
         })
     </script>

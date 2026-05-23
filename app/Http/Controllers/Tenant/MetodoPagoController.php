@@ -75,7 +75,7 @@ class MetodoPagoController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $MetodoPago = MetodoPago::find($id);
         return response()->json(['data' => $MetodoPago]);
@@ -84,7 +84,7 @@ class MetodoPagoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $tenant_id, string $id)
+    public function update(Request $request, string $id)
     {
         $MetodoPago = MetodoPago::find($id);
         $MetodoPago->MEP_Pago = $request->MEP_Pago;
@@ -96,7 +96,7 @@ class MetodoPagoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         $MetodoPago = MetodoPago::find($id);
         $MetodoPago->delete();

@@ -56,7 +56,7 @@ class CategoriaController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request,string $tenant_id)
+    public function store(Request $request)
     {
         try {
             DB::beginTransaction();
@@ -115,14 +115,14 @@ class CategoriaController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $tenant_id, string $id)
+    public function show(string $id)
     {
         $categoria = DB::table('categoria as ct')
 			->join('clase as cl','ct.CLA_Id','=','cl.CLA_Id')
             ->select('ct.*','cl.CLA_Nombre')
             ->where('CAT_Id',$id)
             ->first();
-        $imagen="";
+        $imagen="/images/imagen_default.png";
         if($categoria->CAT_Imagen){
             $id = tenant('id');
             $ubicacionNegocio = tenant('tipo_negocio') ;
@@ -134,7 +134,7 @@ class CategoriaController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $categoria = Categoria::find($id);
         return response()->json(['data' => $categoria]);
@@ -143,7 +143,7 @@ class CategoriaController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $tenant_id, string $id)
+    public function update(Request $request, string $id)
     {
         try {
             DB::beginTransaction();
@@ -189,7 +189,7 @@ class CategoriaController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         $categoria = Categoria::find($id);
         $categoria->delete();

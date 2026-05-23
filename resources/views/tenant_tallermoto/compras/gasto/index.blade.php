@@ -593,7 +593,7 @@
 
             $('body').on('click', '.editGasto', function() {
                 var Gasto_id_edit = $(this).data('identificador');
-                $.get('{{ tenant_url('tenant.compras.gasto.edit', ['gasto' => ':gasto', 'tenant' => tenant('id')]) }}'.replace(':gasto', Gasto_id_edit),
+                $.get('{{ tenant_url('tenant.compras.gasto.edit', ['gasto' => ':gasto']) }}'.replace(':gasto', Gasto_id_edit),
                     function(result) {
                         console.log(result);
                         const fechaString = result.data.GAS_Fecha.split(" ");
@@ -622,7 +622,7 @@
             $('body').on('click', '.eyeGasto', function() {
                 var Gasto_id_ver = $(this).data('id');
                 $('#modalVerGasto').modal('show');
-                $.get('{{ tenant_url('tenant.compras.gasto.show', ['gasto' => ':gasto', 'tenant' => tenant('id')]) }}'.replace(':gasto',
+                $.get('{{ tenant_url('tenant.compras.gasto.show', ['gasto' => ':gasto']) }}'.replace(':gasto',
                         Gasto_id_ver),
                     function(data) {
                         console.log(data)
@@ -654,7 +654,7 @@
                 Gasto_id_update = $('#gasto_id_edit').val();
                 $.ajax({
                     data: $('#gasto_form').serialize(),
-                    url: '{{ tenant_url('tenant.compras.gasto.update', ['gasto' => ':gasto', 'tenant' => tenant('id')]) }}'.replace(
+                    url: '{{ tenant_url('tenant.compras.gasto.update', ['gasto' => ':gasto']) }}'.replace(
                         ':gasto', Gasto_id_update),
                     type: "PUT",
                     dataType: 'json',
@@ -705,7 +705,7 @@
                     $.ajax({
                         type: "DELETE",
 
-                        url: '{{ tenant_url('tenant.compras.gasto.destroy', ['gasto' => ':gasto', 'tenant' => tenant('id')]) }}'.replace(
+                        url: '{{ tenant_url('tenant.compras.gasto.destroy', ['gasto' => ':gasto']) }}'.replace(
                             ':gasto', Gasto_id_delete),
                         data: {
                             _token: '{{ csrf_token() }}'

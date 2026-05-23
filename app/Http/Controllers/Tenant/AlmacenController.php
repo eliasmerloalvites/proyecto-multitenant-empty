@@ -74,7 +74,7 @@ class AlmacenController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $tenant_id, string $id)
+    public function show(string $id)
     {
         //
     }
@@ -82,7 +82,7 @@ class AlmacenController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $almacen = Almacen::find($id);
         return response()->json(['data' => $almacen]);
@@ -91,7 +91,7 @@ class AlmacenController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $tenant_id, string $id)
+    public function update(Request $request, string $id)
     {
         $almacen = Almacen::find($id);
         /* $almacen->ALM_Nombre=$request->ALM_Nombre;
@@ -107,7 +107,7 @@ class AlmacenController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         $almacen = Almacen::find($id);
         $almacen->delete();
