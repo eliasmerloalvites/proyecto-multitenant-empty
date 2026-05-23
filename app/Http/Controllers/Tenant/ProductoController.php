@@ -41,7 +41,7 @@ class ProductoController extends Controller
         }
 
         $categorias = DB::table('categoria')->get();
-        return view('tenant_generico.inventario.producto.index', compact('categorias'));
+        return view('tenant_'.tenant('tipo_negocio').'.inventario.producto.index', compact('categorias'));
     }
 
     /**
@@ -111,14 +111,14 @@ class ProductoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $tenant_id, string $id)
+    public function show(string $id)
     {
         $producto = DB::table('producto as p')
 			->join('categoria as c','p.CAT_Id','=','c.CAT_Id')
             ->select('p.*','c.CAT_Nombre')
             ->where('PRO_Id',$id)
             ->first();
-        $imagen="";
+        $imagen="/images/imagen_default.png";
         if($producto->PRO_Imagen){
             $id = tenant('id');
             $ubicacionNegocio = tenant('tipo_negocio') ;
@@ -127,7 +127,7 @@ class ProductoController extends Controller
         return response()->json(['data' => $producto,'imagen'=> $imagen]);
     }
     
-    public function controlinventario(Request $request, string $id)
+    public function controlinventario(Request $request)
     {
         if ($request->ajax()) {
             $data = DB::table('producto as pd')
@@ -158,10 +158,10 @@ class ProductoController extends Controller
         }
 
         $categorias = DB::table('categoria')->get();
-        return view('tenant_generico.inventario.producto.controlinventario', compact('categorias'));
+        return view('tenant_'.tenant('tipo_negocio').'.inventario.producto.controlinventario', compact('categorias'));
     }
 
-    public function lotes(Request $request,string $tenant_id, string $id)
+    public function lotes(Request $request,string $id)
     {
         $producto = DB::table('producto as p')
             ->join('categoria as c','p.CAT_Id','=','c.CAT_Id')
@@ -182,7 +182,7 @@ class ProductoController extends Controller
     }
 
 
-    public function kardex(Request $request, string $tenant_id, string $id)
+    public function kardex(Request $request, string $id)
     {
         $fecha_inicio = $request->fecha_inicio;
         $fecha_fin = $request->fecha_fin;
@@ -344,7 +344,7 @@ class ProductoController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $producto = Producto::find($id);
         return response()->json(['data' => $producto]);
@@ -353,7 +353,7 @@ class ProductoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $tenant_id, string $id)
+    public function update(Request $request, string $id)
     {
         try {
             DB::beginTransaction();
@@ -404,7 +404,7 @@ class ProductoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         $producto = Producto::find($id);
         $producto->delete();

@@ -16,18 +16,21 @@ class CreateTenantsTable extends Migration
     public function up(): void
     {
         Schema::create('tenants', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->enum('tipo_negocio', [
-                'generico',
-                'optica',
-                'ferreteria',
-                'restaurant',
-                'hotel'
-            ]);
-            // your custom columns may go here
 
-            $table->timestamps();
+            $table->string('id')->primary();
+            $table->enum('tipo_negocio', ['generico','tallermoto','optica','ferreteria','restaurant','hotel']);
+            $table->enum('plan', ['start','basic','plus','empresarial',])->default('start');
+            $table->enum('status', ['activo','suspendido', 'cancelado',])->default('activo');
+            /* | LIMITES |*/
+            $table->integer('max_users')->default(3);
+            $table->integer('max_images')->default(4);
+            $table->integer('storage_limit_mb')->default(500);
+            /* | FEATURES |*/
+            $table->boolean('custom_domain_enabled')->default(false);
+            $table->boolean('custom_branding')->default(false);
+            /* | CONFIGURACION DINAMICA | */
             $table->json('data')->nullable();
+            $table->timestamps();
         });
     }
 

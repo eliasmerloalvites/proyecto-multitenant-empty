@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Tenant;
+
 if (! function_exists('asset_root')) {
     function asset_root(string $path): string
     {
@@ -8,13 +10,13 @@ if (! function_exists('asset_root')) {
 }
 
 if (! function_exists('tenant_url')) {
+
     function tenant_url(string $name, array $params = [])
     {
-        if (function_exists('tenant') && tenant()) {
-            return route($name, ['tenant' => tenant()->id] + $params);
+        if (tenant()) {
+            return route($name, $params);
         }
 
-        // fallback a central login
         return route('central.login');
     }
 }

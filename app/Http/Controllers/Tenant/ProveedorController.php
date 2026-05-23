@@ -39,7 +39,7 @@ class ProveedorController extends Controller
                 ->rawColumns(['action1', 'action2', 'action3'])
                 ->make(true);
         }
-        return view('tenant_generico.compras.proveedor.index');
+        return view('tenant_'.tenant('tipo_negocio').'.compras.proveedor.index');
     }
 
     /**
@@ -69,7 +69,7 @@ class ProveedorController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $tenant_id, string $id)
+    public function show(string $id)
     {
         $Proveedor = Proveedor::find($id);
 
@@ -79,7 +79,7 @@ class ProveedorController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $Proveedor = Proveedor::find($id);
         return response()->json(['data' => $Proveedor]);
@@ -88,7 +88,7 @@ class ProveedorController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $tenant_id, string $id)
+    public function update(Request $request, string $id)
     {
         $Proveedor = Proveedor::findOrFail($id);
         $Proveedor->update($request->all());
@@ -99,7 +99,7 @@ class ProveedorController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         $Proveedor = Proveedor::find($id);
         $Proveedor->PROV_Status = 0;

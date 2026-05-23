@@ -46,7 +46,7 @@ class GastoController extends Controller
         $metodo_pago = DB::table('metodo_pago')->orderBy('MEP_Pago', 'asc')->get();
         $tipo_gasto = DB::table('tipo_gasto')->orderBy('TG_Descripcion', 'asc')->get();
         $proveedor = Proveedor::all();
-        return view('tenant_generico.compras.gasto.index',compact('metodo_pago','tipo_gasto','proveedor'));
+        return view('tenant_'.tenant('tipo_negocio').'.compras.gasto.index',compact('metodo_pago','tipo_gasto','proveedor'));
     }
 
     /**
@@ -117,7 +117,7 @@ class GastoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $tenant_id, string $id)
+    public function show(string $id)
     {
         $gasto = DB::table('gasto as g')
             ->join('tipo_gasto as tg', 'tg.TG_Id', '=', 'g.TG_Id')
@@ -137,7 +137,7 @@ class GastoController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $gasto = Gasto::find($id);
         return response()->json(['data' => $gasto]);
@@ -146,7 +146,7 @@ class GastoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $tenant_id, string $id)
+    public function update(Request $request, string $id)
     {
         try {
             DB::beginTransaction();
@@ -196,7 +196,7 @@ class GastoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         $gasto = Gasto::find($id);
         $gasto->delete();

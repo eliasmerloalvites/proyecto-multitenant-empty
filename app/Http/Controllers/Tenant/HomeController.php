@@ -11,7 +11,10 @@ class HomeController extends Controller
 {
     public function index()
     {
-        return view('tenant_generico.menu.home');
+        
+        $tenantid = tenant('id');
+        $tiponegocio = tenant('tipo_negocio');
+        return view('tenant_'.$tiponegocio.'.menu.home');
     }
 
     
@@ -19,7 +22,8 @@ class HomeController extends Controller
     {
         if(tenant() !== null){
             $tenantid = tenant('id');
-            return view('tenant_generico.welcome', compact('tenantid'));
+            $tiponegocio = tenant('tipo_negocio');
+            return view('tenant_'.$tiponegocio.'.welcome',compact('tenantid'));
         } else {
             $tenantid = null;
             return view('welcome', compact('tenantid'));
@@ -28,6 +32,7 @@ class HomeController extends Controller
     public function salir()
     {
         Auth::guard('tenant')->logout();
-        return redirect()->route('tenant_generico.login');
+        $tenantName = str_replace(tenant()->tipo_negocio . '_','',tenant()->id);
+        return redirect()->route('tenant.login',['tenant' => $tenantName]);
     }
 }

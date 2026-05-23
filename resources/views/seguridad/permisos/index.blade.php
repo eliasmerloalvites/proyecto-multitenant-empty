@@ -3,7 +3,7 @@
 @section('titulo','Permisos')
 
 @section('contenido')
-        @can('seguridad.permiso.create')
+    @can('seguridad.permiso.create')
         <div class="col-5">
             <div class="card">
                 <div class="card-body">
@@ -34,23 +34,26 @@
                                 
                             </div>
                         
-                            <button type="reset" id="btncancelar" class="btn btn-danger"> <i
-                                class="fas fa-ban"></i>Cancelar </button>
-                            <button id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i>Guardar</button>
-                            <button id="updateBtn" class="btn btn-primary" style="display: none;"><i
-                                    class="fas fa-save"></i>Actualizar</button>
+                            <div class="form-group text-right">
+                                <button type="reset" id="btncancelar" class="btn btn-danger"> <i
+                                    class="fas fa-ban"></i>Cancelar </button>
+                                <button id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i>Guardar</button>
+                                <button id="updateBtn" class="btn btn-primary" style="display: none;"><i
+                                        class="fas fa-save"></i>Actualizar</button>
+                            </div>
                     </form>
                 </div>
             </div>
         </div>
-        @endcan
+    @endcan
+    @can('seguridad.permiso.index')
         <div class="col-7">
             <div class="card">
                 <div class="card-body">
                   <h5 class="card-title">LISTA DE PERMISOS</h5>               
                     <div class="table-responsive" style="background:#FFF;">
                         <table class="table" id="table-permisos">
-                            <thead style="background-color:#FF5F67;color: #fff;">
+                            <thead >
                             <tr>
                             <th scope="col">Id</th>
                             <th scope="col">Grupo</th>
@@ -77,6 +80,7 @@
                 </div>
             </div>
         </div>
+    @endcan
         
 
     <!-- Modal Ver detalles-->

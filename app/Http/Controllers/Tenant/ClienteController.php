@@ -36,7 +36,7 @@ class ClienteController extends Controller
                 ->rawColumns(['action1','action2','action3'])
                 ->make(true);
         }
-        return view('tenant_generico.ventas.cliente.index');
+        return view('tenant_'.tenant('tipo_negocio').'.ventas.cliente.index');
     }
 
     /**
@@ -66,7 +66,7 @@ class ClienteController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $tenant_id, string $id)
+    public function show(string $id)
     {
         $cliente = Cliente::find($id);
 
@@ -76,7 +76,7 @@ class ClienteController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $cliente = Cliente::find($id);
         return response()->json(['data' => $cliente]);
@@ -85,7 +85,7 @@ class ClienteController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $tenant_id, string $id)
+    public function update(Request $request, string $id)
     {
         $cliente=Cliente::findOrFail($id);
 		$cliente->update($request->all());
@@ -96,7 +96,7 @@ class ClienteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         $cliente = Cliente::find($id);
         $cliente->CLI_Status = 0;

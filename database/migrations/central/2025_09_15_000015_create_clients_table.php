@@ -13,27 +13,25 @@ return new class extends Migration
     {
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
-            $table->string('tenant_id')->nullable(); // se asigna luego
+
+            /* RELACION TENANT */
+            $table->string('tenant_id');
+
+            /* INFORMACION COMERCIAL */
             $table->string('razon_social');
             $table->string('ruc')->nullable();
-            $table->enum('tipo_negocio', [
-                'generico',
-                'optica',
-                'ferreteria',
-                'restaurant',
-                'hotel'
-            ]);
-            $table->unsignedTinyInteger('billing_day'); // día de facturación
-            $table->enum('status', ['activo', 'suspendido'])->default('activo');
-            $table->unsignedInteger('domain_id');
+            /* FACTURACION */
+            $table->unsignedTinyInteger('billing_day');
+            $table->date('next_payment_date')->nullable();
+            /* ESTADO COMERCIAL */
+            $table->enum('status', ['activo','suspendido','cancelado'])->default('activo');
             $table->timestamps();
 
-            $table->foreign('domain_id')
-                ->references('id')
-                ->on('domains')
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
-            });
+            /*  FORENG KEYS */
+            $table->foreignId('domain_id')
+            ->constrained('domains')
+            ->cascadeOnDelete();
+        });
     }
 
     /**

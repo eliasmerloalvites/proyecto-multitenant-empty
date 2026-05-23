@@ -22,7 +22,7 @@ class UserController extends Controller
     public function showlogin()
     {
 
-        return view('tenant_generico.login');
+        return view('tenant_'.tenant('tipo_negocio').'.login');
     }
 
     public function login(Request $request)
@@ -62,10 +62,12 @@ class UserController extends Controller
             'user'    => $user->only(['id', 'name', 'email']),
         ]);
     }
-    public function salir()
+    public function logout()
     {
         Auth::guard('tenant')->logout();
-        return redirect()->route('tenant1.login',tenant('id'));
+        $tenantName = str_replace(tenant()->tipo_negocio . '_','',tenant()->id);
+
+        return redirect()->route('tenant.login',['tenant' => $tenantName]);
     }
 
     const PAGINATION = 10;
@@ -77,7 +79,7 @@ class UserController extends Controller
         // ->where('users.name','like','%'.$buscarpor.'%')
         // ->orderby('id')->paginate($this::PAGINATION);
 
-        // return view('tenant_generico.seguridad.users.index', compact('usuarios','buscarpor'));
+        // return view('tenant_'.tenant('tipo_negocio').'.seguridad.users.index', compact('usuarios','buscarpor'));
 
         if ($request->ajax()) {
             $data = DB::table('users as u')
@@ -104,7 +106,7 @@ class UserController extends Controller
                 ->make(true);
         }
 
-        return view('tenant_generico.seguridad.users.index');
+        return view('tenant_'.tenant('tipo_negocio').'.seguridad.users.index');
     }
 
     /**
@@ -142,7 +144,6 @@ class UserController extends Controller
                 $usuario->PER_Id = 1;
                 $usuario->save();
 
-                // return redirect()->route('usuario.index')->with('datos','Usuario agregado ...!');
                 return response()->json(['success' => 'Usuario Registrado Exitosamente!', compact('usuario')]);
             } else {
                 //     return back()->withErrors(['password'=>'Las contraseñas no coinciden','confipassword'=>'Las contraseñas no coinciden'])
@@ -155,7 +156,7 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $tenant_id, string $id)
+    public function show(string $id)
     {
         $usuario = User::find($id);
         return response()->json(['data' => $usuario]);
@@ -164,19 +165,19 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $roles = Role::all();
         $usuario = User::find($id);
         $rolesAsignados = $usuario->roles;
 
-        return view('tenant_generico.seguridad.users.edit', compact('usuario', 'rolesAsignados', 'roles'));
+        return view('tenant_'.tenant('tipo_negocio').'.seguridad.users.edit', compact('usuario', 'rolesAsignados', 'roles'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request,string $tenant_id,  string $id)
+    public function update(Request $request, string $id)
     {
         $data = request()->validate(
             [
@@ -199,18 +200,21 @@ class UserController extends Controller
 
         $usuario->save();
 
-        return redirect()->route('tenant.seguridad.usuario.index',tenant('id'))->with('datos', 'Usuario actualizado y roles asignados correctamente ...!');
+        $tenantName = str_replace(tenant()->tipo_negocio . '_','',tenant()->id);
+        return redirect()->route('tenant.seguridad.usuario.index',[
+            'tenant' => $tenantName
+        ])->with('datos', 'Usuario actualizado y roles asignados correctamente ...!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         $usuario = User::find($id);
         $usuario->estadousuario = 0;
         $usuario->save();
-        //return redirect()->route('usuario.index')->with('datos','Usuario eliminado ...!');
+
         return response()->json(['success' => 'Usuario Eliminado Exitosamente.']);
     }
 }

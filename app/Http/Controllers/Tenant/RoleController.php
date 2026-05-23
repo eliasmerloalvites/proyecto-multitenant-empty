@@ -42,7 +42,7 @@ class RoleController extends Controller
                 ->rawColumns(['action1','action2','action3'])
                 ->make(true);
         }
-        return view('tenant_generico.seguridad.roles.index',compact('permissionsGrouped'));
+        return view('tenant_'.tenant('tipo_negocio').'.seguridad.roles.index',compact('permissionsGrouped'));
     }
 
     /**
@@ -137,7 +137,7 @@ class RoleController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $tenant_id, string $id)
+    public function show(string $id)
     {
         $role = Role::find($id);
 
@@ -147,7 +147,7 @@ class RoleController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $tenant_id, string $id)
+    public function edit(string $id)
     {
         $role = Role::find($id);
         $permisos = $role->permissions;
@@ -157,7 +157,7 @@ class RoleController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $tenant_id, string $id)
+    public function update(Request $request, string $id)
     {
 
         if ($request->has('accesototal') && $request->has('accesocero')) {
@@ -207,7 +207,7 @@ class RoleController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $tenant_id, string $id)
+    public function destroy(string $id)
     {
         $role = Role::find($id);
         $role->estadorol = 0;

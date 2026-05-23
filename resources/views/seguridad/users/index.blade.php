@@ -1,12 +1,7 @@
 @extends('central.layout.appAdminLte')
-
 @section('titulo','Usuario')
-
-
 @section('contenido')
 
-<div class="container ">
-    {{-- Mensaje de alerta --}}
     <div id="mensaje">
         @if (session('datos'))
             <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
@@ -17,7 +12,7 @@
             </div>
         @endif
     </div>
-    <div class="row ">
+        @can('seguridad.users.create')
         <div class="col-5">
           <div class="card">
             <div class="card-body">
@@ -65,16 +60,18 @@
                         </div>
                     </div>
                     
-                    @can('seguridad.users.create')
-                    <button  id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i>Guardar</button>
-                    @endcan
-
-                    <button type="reset" class="btn btn-danger"> <i class="fas fa-ban"></i>Cancelar </button>
+                    <div class="form-group text-right">
+                        <button  id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i>Guardar</button>
+                        <button type="reset" class="btn btn-danger"> <i class="fas fa-ban"></i>Cancelar </button>
+                    </div>
                     
                 </form>
             </div>
           </div>
         </div>
+        @endcan
+        
+        @can('seguridad.users.index')
         <div class="col-7">
           <div class="card">
             <div class="card-body">
@@ -82,7 +79,7 @@
               <p class="card-text">
                 
                 <table class="table table-striped nowrap" id="table-users" name="table-users">
-                <thead style="background-color:#FF5F67;color: #fff;">
+                <thead>
                     <tr>
                       <th scope="col">N°</th>
                       <th scope="col">Nombre</th>
@@ -97,6 +94,7 @@
             </div>
           </div>
         </div>
+        @endcan
         
       </div>
     
@@ -139,7 +137,6 @@
         </div>
     </div>
     
-</div>
 @endsection
 
 @section('script')

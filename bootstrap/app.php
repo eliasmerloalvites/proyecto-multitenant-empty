@@ -3,14 +3,16 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use App\Http\Middleware\ForceCentralGuard;
+use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\PreventAccessFromTenant;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        // web: __DIR__.'/../routes/web.php',
+        web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: function () {
+        }
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
@@ -19,7 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->redirectGuestsTo(function () {
         if (tenant()) {
-            return route('tenant.login', tenant('id'));
+            $tenantName = str_replace(tenant()->tipo_negocio . '_','',tenant()->id);
+            return route('tenant.login', ['tenant' => $tenantName]);
         }
 
         return route('central.login');
