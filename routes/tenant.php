@@ -47,7 +47,7 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
     
-    Route::get('/', [HomeController::class, 'inicio'])->name('tenant.inicio');
+    //Route::get('/', [HomeController::class, 'inicio'])->name('tenant.inicio');
     
     
     Route::get('/tenant/login', [UserController::class, 'showlogin'])->name('tenant.login');
