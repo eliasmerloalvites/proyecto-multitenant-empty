@@ -3,7 +3,7 @@
 @section('contenido')
 
     @can('tenant.configuracion.horario.create')
-        <div class="col-5">
+        <div class="col-12 col-md-5">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">CREAR HORARIO</h5>
@@ -69,7 +69,7 @@
     @endcan
 
     @can('tenant.configuracion.horario.index')
-        <div class="col-7">
+        <div class="col-12 col-md-7">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">LISTA DE HORARIO</h5>

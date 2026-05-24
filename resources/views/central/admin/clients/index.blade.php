@@ -2,7 +2,7 @@
 @section('titulo', 'Clientes')
 @section('contenido')
     @can('admin.clients.create')
-        <div class="col-4">
+        <div class="col-12 col-md-4">
             <div class="card shadow-sm border-0">
 
                 <div class="card-header bg-white border-0 pb-0">
@@ -246,7 +246,7 @@
         </div>
     @endcan
     @can('admin.clients.index')
-        <div class="col-8">
+        <div class="col-12 col-md-8">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">LISTA DE CLIENTES</h5>

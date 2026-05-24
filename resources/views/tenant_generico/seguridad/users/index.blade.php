@@ -21,84 +21,87 @@
     
         
     @can('tenant.seguridad.users.create')
-    <div class="col-5">
+    <div class="col-12 col-md-5">
         <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">CREAR USUARIO</h5>
-            <p class="card-text"></p>
-            <form id="UsuarioForm" name="UsuarioForm"  >
-            @csrf
-    
-                <div class="form-group row">
-                    <div class="col-12">
-                        <label class="control-label">Nombre:</label>
-                        <input type="text" name="name" id="name" class="form-control input_user @error('name') is-invalid @enderror"  placeholder="Nombre" required>
-                        @error('name') 
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{$message}}</strong>
-                            </span>
-                        @enderror
+            <div class="card-body">
+                <h5 class="card-title">CREAR USUARIO</h5>
+                <p class="card-text"></p>
+                <form id="UsuarioForm" name="UsuarioForm"  >
+                @csrf
+        
+                    <div class="form-group row">
+                        <div class="col-12">
+                            <label class="control-label">Nombre:</label>
+                            <input type="text" name="name" id="name" class="form-control input_user @error('name') is-invalid @enderror"  placeholder="Nombre" required>
+                            @error('name') 
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{$message}}</strong>
+                                </span>
+                            @enderror
+                        </div>
+                        <div class="col-12">
+                            <label class="control-label">Email:</label>
+                            <input type="email" name="email" id="email" class="form-control input_user @error('email') is-invalid @enderror"  placeholder="email" required>
+                            @error('email') 
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{$message}}</strong>
+                                </span>
+                            @enderror
+                        </div>
+                        <div class="col-12">
+                            <label class="control-label">Contraseña:</label>
+                            <input type="password" name="password" id="password" class="form-control input_pass @error('password') is-invalid @enderror"  placeholder="contraseña" required>
+                            @error('password') 
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{$message}}</strong>
+                                </span>
+                            @enderror
+                        </div>
+                        <div class="col-12">
+                            <label class="control-label">Confirmar contraseña:</label>
+                            <input type="password" name="confipassword" id="confipassword" class="form-control input_pass @error('confipassword') is-invalid @enderror" placeholder="contraseña" required>
+                            @error('confipassword') 
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{$message}}</strong>
+                                </span>
+                            @enderror
+                        </div>
                     </div>
-                    <div class="col-12">
-                        <label class="control-label">Email:</label>
-                        <input type="email" name="email" id="email" class="form-control input_user @error('email') is-invalid @enderror"  placeholder="email" required>
-                        @error('email') 
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{$message}}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                    <div class="col-12">
-                        <label class="control-label">Contraseña:</label>
-                        <input type="password" name="password" id="password" class="form-control input_pass @error('password') is-invalid @enderror"  placeholder="contraseña" required>
-                        @error('password') 
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{$message}}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                    <div class="col-12">
-                        <label class="control-label">Confirmar contraseña:</label>
-                        <input type="password" name="confipassword" id="confipassword" class="form-control input_pass @error('confipassword') is-invalid @enderror" placeholder="contraseña" required>
-                        @error('confipassword') 
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{$message}}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                </div>
-                
-                <div class="form-group text-right">
-                    <button  id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
                     
+                    <div class="form-group text-right">
+                        <button  id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                        
 
-                    <button type="reset" class="btn btn-danger"> <i class="fas fa-ban"></i> Cancelar </button>
-                </div>
-                
-            </form>
-        </div>
+                        <button type="reset" class="btn btn-danger"> <i class="fas fa-ban"></i> Cancelar </button>
+                    </div>
+                    
+                </form>
+            </div>
         </div>
     </div>
     @endcan
-    <div class="col-7">
+    <div class="col-12 col-md-7">
         <div class="card">
         <div class="card-body">
             <h5 class="card-title">LISTA DE USUARIOS</h5>
             <p class="card-text">
             
-            <table class="table table-striped nowrap" id="table-users" name="table-users">
-            <thead>
-                <tr>
-                    <th scope="col">N°</th>
-                    <th scope="col">Nombre</th>
-                    <th scope="col">Opciones</th>
-                </tr>
-                </thead>
-            <tbody>
+            <div class="table-responsive" style="background:#FFF;">
+                <table class="table table-striped nowrap" id="table-users" name="table-users">
+                    <thead>
+                        <tr>
+                            <th scope="col">N°</th>
+                            <th scope="col">Nombre</th>
+                            <th scope="col">Opciones</th>
+                        </tr>
+                        </thead>
+                    <tbody>
 
-            </tbody>
+                    </tbody>
+                    
+                </table>
+            </div>
             
-        </table>
         </div>
         </div>
     </div>

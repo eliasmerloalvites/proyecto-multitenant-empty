@@ -21,6 +21,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         'storage_limit_mb',
         'custom_domain_enabled',
         'custom_branding',
+        'data',
     ];
 
     public static function getCustomColumns(): array
@@ -35,6 +36,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'storage_limit_mb',
             'custom_domain_enabled',
             'custom_branding',
+            'data',
         ];
     }
 

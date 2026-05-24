@@ -4,7 +4,7 @@
 
 <form class="row" method="POST" id="compra_form" action="{{ tenant_url('tenant.compras.compra.store') }}">
     @csrf
-    <div class="col-4">
+    <div class="col-12 col-md-4">
         <div class="card">
             <div class="card-body" >
                 <h5 class="card-title">COMPRA REALIZADA</h5>
@@ -96,7 +96,7 @@
             </div>
         </div>
     </div>
-    <div class="col-8">
+    <div class="col-12 col-md-8">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">INFORMACIÓN DEL PRODUCTO</h5>

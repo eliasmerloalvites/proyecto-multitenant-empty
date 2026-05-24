@@ -3,7 +3,7 @@
 @section('contenido')
 
     @can('tenant.ventas.metodopago.create') 
-        <div class="col-5">
+        <div class="col-12 col-md-5">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">CREAR MÉTODO DE PAGO</h5>
@@ -35,7 +35,7 @@
     @endcan
 
     @can('tenant.ventas.metodopago.index')
-        <div class="col-7">
+        <div class="col-12 col-md-7">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">LISTA DE METODOS DE PAGO</h5>

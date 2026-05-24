@@ -3,7 +3,7 @@
 @section('contenido')
 
     @can('tenant.configuracion.turno.create')
-        <div class="col-5">
+        <div class="col-12 col-md-5">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">CREAR TURNO</h5>
@@ -40,7 +40,7 @@
     @endcan
 
     @can('tenant.configuracion.turno.index')
-        <div class="col-7">
+        <div class="col-12 col-md-7">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">LISTA DE TURNO</h5>
