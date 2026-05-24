@@ -23,6 +23,7 @@ use App\Http\Controllers\Tenant\UserController;
 use App\Http\Controllers\Tenant\VentaController;
 use App\Http\Controllers\TenantTallerMotos\BahiaController;
 use App\Http\Controllers\TenantTallerMotos\HorarioController;
+use App\Http\Controllers\TenantTallerMotos\MantenimientoActividadVariadaController;
 use App\Http\Controllers\TenantTallerMotos\TurnoController;
 use App\Services\Facturacion\GreenterService;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +68,22 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
         Route::get('/tenant/home', [HomeController::class,'index'])->name('tenant.home');
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');
         
+        
+        Route::post('/tenant/actividades/mantenimientoactividadvariada/{mantenimientoactividadvariada}/crop',[MantenimientoActividadVariadaController::class, 'crop'])->name('tenant.actividades.mantenimientoactividadvariada.crop');
+        Route::delete('/tenant/actividades/mantenimientoactividadvariada//crop{mantenimientoactividadvariada}/{item}',[MantenimientoActividadVariadaController::class, 'destroyimagen'])->name('tenant.actividades.mantenimientoactividadvariada.destroyimagen');
+        Route::put('/tenant/actividades/mantenimientoactividadvariada/{mantenimientoactividadvariada}/activar', [MantenimientoActividadVariadaController::class, 'activar'])->name('tenant.actividades.mantenimientoactividadvariada.activar');
+        Route::resource('/tenant/actividades/mantenimientoactividadvariada', MantenimientoActividadVariadaController::class)->names([
+            'index' => 'tenant.actividades.mantenimientoactividadvariada.index',
+            'create' => 'tenant.actividades.mantenimientoactividadvariada.create',
+            'store' => 'tenant.actividades.mantenimientoactividadvariada.store',
+            'edit' => 'tenant.actividades.mantenimientoactividadvariada.edit',
+            'update' => 'tenant.actividades.mantenimientoactividadvariada.update',
+            'destroy' => 'tenant.actividades.mantenimientoactividadvariada.destroy',
+            'show' => 'tenant.actividades.mantenimientoactividadvariada.show'
+        ])->parameters([
+            'mantenimientoactividadvariada' => 'mantenimientoactividadvariada'
+        ]);
+
         Route::put('/tenant/configuracion/horario/{horario}/activar', [HorarioController::class, 'activar'])->name('tenant.configuracion.horario.activar');
         Route::resource('/tenant/configuracion/horario', HorarioController::class)->names([
             'index' => 'tenant.configuracion.horario.index',
