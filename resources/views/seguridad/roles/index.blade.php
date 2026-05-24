@@ -5,7 +5,7 @@
 @section('contenido')
 
 @can('seguridad.roles.create')
-    <div class="col-5">
+    <div class="col-12 col-md-5">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">CREAR ROL</h5>
@@ -127,7 +127,7 @@
     @endcan
     
     @can('seguridad.roles.index')
-    <div class="col-7">
+    <div class="col-12 col-md-7">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">LISTA DE ROLES</h5>

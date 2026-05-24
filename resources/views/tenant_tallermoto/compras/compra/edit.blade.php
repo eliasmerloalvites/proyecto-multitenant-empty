@@ -21,7 +21,7 @@
                     <form method="POST" id="compra_form" action="{{ route('compra.store') }}">
                         @csrf
                         <div class="row">
-                            <div class="col-4">
+                            <div class="col-12 col-md-4">
                                 <div class="card">
                                     <div class="card-body">
                                         <p class="card-text"></p>
@@ -127,7 +127,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-8">
+                            <div class="col-12 col-md-8">
                                 <div class="card">
                                     <div class="card-body">
                                         <p class="card-text"></p>

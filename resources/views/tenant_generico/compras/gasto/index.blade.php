@@ -3,7 +3,7 @@
 @section('contenido')
 
     @can('tenant.compras.gasto.create')
-        <div class="col-4">
+        <div class="col-12 col-md-4">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">CREAR GASTO</h5>
@@ -159,7 +159,7 @@
     @endcan
 
     @can('tenant.compras.gasto.index')
-        <div class="col-8">
+        <div class="col-12 col-md-8">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">LISTA DE GASTOS</h5>

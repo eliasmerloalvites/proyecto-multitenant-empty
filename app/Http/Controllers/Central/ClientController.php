@@ -154,21 +154,23 @@ class ClientController extends Controller
                 'tipo_negocio' => $validated['tipo_negocio'],
                 'plan' => $validated['plan'],
                 'status' => 'activo',
+
                 'max_users' => $planConfig['max_users'],
                 'max_images' => $planConfig['max_images'],
                 'storage_limit_mb' => $planConfig['storage_limit_mb'],
+
                 'custom_domain_enabled' => $planConfig['custom_domain_enabled'],
                 'custom_branding' => $planConfig['custom_branding'],
             ]);
             // Refrescar tenant
             $tenant->refresh();
+
+            foreach ($planConfig['data'] as $key => $value) {
+                $tenant->{$key} = $value;
+            }
+            $tenant->save();
+
             
-            $data = $tenant->data ?? [];
-            $data['branding'] = ['logo' => null, 'primary_color' => '#0B63CE'];
-            $data['modules'] = ['agenda' => true, 'reports' => false];
-            $tenant->update(['data' => $data]);
-
-
 
             $domain = $tenant->domains()->create(['domain' => $fullDomain]);
 

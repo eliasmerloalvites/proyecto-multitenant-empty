@@ -9,7 +9,7 @@
     </head>
 
     @can('tenant.ventas.cliente.create')
-        <div class="col-4">
+        <div class="col-12 col-md-4">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">CREAR CLIENTE</h5>
@@ -80,7 +80,7 @@
     @endcan
 
     @can('tenant.ventas.cliente.index')
-        <div class="col-8">
+        <div class="col-12 col-md-8">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">LISTA DE CLIENTES</h5>

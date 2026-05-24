@@ -55,7 +55,7 @@
         }
     </style>
     @can('tenant.inventario.producto.create')
-        <div class="col-4">
+        <div class="col-12 col-md-4">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">CREAR PRODUCTO</h5>
@@ -137,7 +137,7 @@
         </div>
     @endcan
     @can('tenant.inventario.producto.index')
-        <div class="col-8">
+        <div class="col-12 col-md-8">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">LISTA DE PRODUCTOS</h5>
