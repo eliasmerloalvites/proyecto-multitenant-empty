@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('mav_imagen', function (Blueprint $table) {
             $table->unsignedBigInteger('MAV_Id');
             $table->unsignedBigInteger('MAVI_Item');
-            $table->string('MAVI_url', 100);
+            $table->text('MAVI_url')->nullable();
             $table->string('MAVI_Nombre', 100)->nullable();
             $table->string('MAVI_Peso', 20)->nullable();
-            
+            $table->text('MAVI_Thumb')->nullable();
+
             $table->primary(['MAV_Id', 'MAVI_Item']);
 
             $table->foreign('MAV_Id', 'RMAVI_1')

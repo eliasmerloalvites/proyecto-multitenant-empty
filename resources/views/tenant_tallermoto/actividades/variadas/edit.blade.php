@@ -1,5 +1,5 @@
 @extends('tenant_' . tenant('tipo_negocio') . '.layout.appAdminLte')
-@section('titulo', 'Creacion Actividad Variada')
+@section('titulo', 'Actualizar Actividad Variada')
 @section('contenido')
     <style>
         .card-title-custom {
@@ -59,6 +59,201 @@
         .btn-action {
             min-width: 140px;
         }
+
+
+
+
+        .image-gallery{
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+            gap:20px;
+            margin-top:20px;
+        }
+
+        .image-card{
+            position:relative;
+            border-radius:14px;
+            overflow:hidden;
+            background:#fff;
+            box-shadow:0 3px 10px rgba(0,0,0,.08);
+            transition:.3s;
+        }
+
+        .image-card:hover{
+
+            transform:translateY(-5px);
+
+            box-shadow:0 8px 20px rgba(0,0,0,.15);
+        }
+        .image-card:hover img{
+            transform:scale(1.05);
+        }
+
+        .image-card img{
+
+            width:100%;
+            height:180px;
+
+            object-fit:cover;
+
+            cursor:pointer;
+        }
+
+        .image-overlay{
+
+            position:absolute;
+
+            inset:0;
+
+            background:rgba(0,0,0,.45);
+
+            opacity:0;
+
+            transition:.25s;
+
+            display:flex;
+
+            align-items:center;
+            justify-content:center;
+            gap:10px;
+        }
+
+        .image-card:hover .image-overlay{
+
+            opacity:1;
+        }
+
+        .image-btn{
+
+            width:42px;
+            height:42px;
+
+            border:none;
+
+            border-radius:50%;
+
+            color:white;
+
+            display:flex;
+
+            align-items:center;
+            justify-content:center;
+
+            cursor:pointer;
+
+            transition:.2s;
+        }
+
+        .image-btn:hover{
+            transform:scale(1.1);
+        }
+
+        .btn-view{
+            background:#17a2b8;
+        }
+
+        .btn-delete{
+            background:#dc3545;
+        }
+
+        .image-footer{
+
+            padding:10px;
+
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+
+        .image-size{
+
+            font-size:12px;
+            color:#6c757d;
+            font-weight:600;
+        }
+
+        .upload-container{
+            margin-bottom:25px;
+        }
+
+        .upload-box{
+
+            width:100%;
+
+            min-height:180px;
+
+            border:2px dashed #ced4da;
+
+            border-radius:18px;
+
+            background:#fafafa;
+
+            cursor:pointer;
+
+            transition:.25s;
+
+            display:flex;
+
+            align-items:center;
+            justify-content:center;
+
+            text-align:center;
+
+            padding:30px;
+        }
+
+        .upload-box:hover{
+
+            border-color:#28a745;
+
+            background:#f8fff9;
+        }
+
+        .upload-content i{
+
+            font-size:48px;
+
+            color:#28a745;
+
+            margin-bottom:15px;
+        }
+
+        .upload-content h5{
+
+            font-weight:700;
+
+            margin-bottom:10px;
+        }
+
+        .upload-content p{
+
+            color:#6c757d;
+
+            margin-bottom:20px;
+        }
+
+        .upload-btn{
+
+            display:inline-block;
+
+            background:#28a745;
+
+            color:white;
+
+            padding:10px 20px;
+
+            border-radius:10px;
+
+            font-weight:600;
+
+            transition:.25s;
+        }
+
+        .upload-box:hover .upload-btn{
+
+            background:#218838;
+        }
+
     </style>
 
     <div class="col-12">
@@ -66,7 +261,7 @@
             <form id="MantenimientoActividadVariadasForm" name="MantenimientoActividadVariadasForm" onsubmit="return false;">
                 <div class="d-flex justify-content-between align-items-center ">
                     <div>
-                        <h4>CREAR MANTENIMIENTO DE ACTIVIDAD VARIADA</h4>
+                        <h4>ACTUALIZAR MANTENIMIENTO DE ACTIVIDAD VARIADA</h4>
                     </div>
                 </div>
                 <div class="row">
@@ -87,9 +282,7 @@
                                         <input type="text" class="form-control" id="MAV_Placa" name="MAV_Placa"
                                             placeholder="78C5-59" maxlength="18" required
                                             onkeyup="this.value=this.value.toUpperCase();">
-
                                         <div class="input-group-append">
-
                                             <button type="button" class="btn btn-info" id="Buscar_Placa"
                                                 onclick="BuscarCliente()">
                                                 <i class="fas fa-search"></i>
@@ -283,6 +476,24 @@
                     </div>
                 </div>
 
+                <div class="row mt-3">
+                    <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="card card-outline card-danger">
+                            <div class="card-header">
+                                <h3 class="card-title-custom">
+                                    <i class="fas fa-camera-retro mr-1"></i>
+                                    Galería de Evidencias
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12 fileforImagen"> </div>
+                                <div class="image-gallery imagenesadjuntas">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
 
                 <!-- BOTONES -->
                 <div class="row mt-3 mb-4">
@@ -293,10 +504,20 @@
                                     <i class="fas fa-arrow-left mr-1"></i>
                                     Regresar
                                 </button>
-                                <button type="button" id="saveBtn" class="btn btn-success">
+                                @if($admin && $userAprobador)
+                                    @if($datos->MAV_Estado == "APROBADO")
+                                        <button type="button" id="activarBtn" class="btn btn-info">Activar</button>
+                                    @endif                    
+                                        <button type="button" id="updateBtn" class="btn btn-success">Aprobar</button>
+                                        <button type="button" id="updateNotificarBtn" class="btn btn-info">Aprobar y notificar</button>
+                                    @elseif($datos->MAV_Estado != "APROBADO")
+                                        <button type="button" id="updateBtn" class="btn btn-success">Actualizar</button>                    
+                                @endif
+
+                                {{-- <button type="button" id="updateBtn" class="btn btn-success">
                                     <i class="fas fa-save mr-1"></i>
                                     Guardar Reporte
-                                </button>
+                                </button> --}}
                             </div>
                         </div>
                     </div>
@@ -310,7 +531,12 @@
 @section('script')
     <script>
         
-        var ListDetVenta = [];
+        var ListDet = [];
+        var images = []
+        var isImgProcessing = false;
+        var table;
+        var id_mpi = <?php echo $id; ?>;
+        var contador = 1;
         // TOAST
         const Toast = Swal.mixin({
             toast: true,
@@ -348,13 +574,282 @@
                 showToast('error', message);
             };
 
+            
+            cargarData();
+            cargarFileForImagen();
+
+            $('body').on('click', '.eliminarImagen', function() {
+                var item = $(this).data("id");
+                $confirm = confirm("¿Estás seguro de que quieres eliminarlo?");
+                if ($confirm == true) {
+                    $.ajax({
+                        type: "DELETE",
+                        url: "{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}" + '/crop/'+id_mpi+'/'+ item,
+                        success: function(data) {
+
+                            images = []
+                            for(var i = 0; i< data.data.length; i++){
+                                var obj = {
+                                    id: data.data[i].MAVI_Item,
+                                    src: data.data[i].MAVI_url,
+                                    name: data.data[i].MAVI_Nombre,
+                                    size: data.data[i].MAVI_Peso
+                                }
+                                images.push(obj);
+                            }
+
+                            cargarImagenes()
+
+                            Toast.fire({
+                                type: 'success',
+                                title: String(data.success)
+                            });
+
+                        },
+                        error: function(data) {
+                            console.log('Error:', data);
+                            Toast.fire({
+                                type: 'error',
+                                title: 'Imagen fallo al Eliminarlo.'
+                            })
+                        }
+                    });
+                }
+            });
+
+
+            $('body').on('click', '.cargarImagenCrop', function() {
+                if (!isImgProcessing) {
+                    isImgProcessing = true;
+                    var id = $(this).data("id");
+                    var cont = $(this).data("cont");
+                    AñadirImagen(id)
+                }
+
+            });
+
             // GUARDAR
-            $('#saveBtn').on('click', function(e) {
+            $('#updateBtn').on('click', function(e) {
                 e.preventDefault();
-                AgregarMAV()
+                ActualizarMPI()
             });
 
         });
+
+        function cargarFileForImagen(){
+
+            var container = document.querySelector('.fileforImagen');
+
+            container.innerHTML = '';
+
+            /*
+            |--------------------------------------------------------------------------
+            | WRAPPER
+            |--------------------------------------------------------------------------
+            */
+
+            var wrapper = document.createElement('div');
+
+            wrapper.classList.add('upload-container');
+
+            /*
+            |--------------------------------------------------------------------------
+            | LABEL BONITO
+            |--------------------------------------------------------------------------
+            */
+
+            var label = document.createElement('label');
+
+            label.setAttribute('for', 'file');
+
+            label.classList.add('upload-box');
+
+            label.innerHTML = `
+
+                <div class="upload-content">
+
+                    <i class="fas fa-cloud-upload-alt"></i>
+
+                    <h5>
+                        Subir Imágenes
+                    </h5>
+
+                    <p>
+                        Arrastra imágenes aquí o haz click
+                    </p>
+
+                    <span class="upload-btn">
+                        Seleccionar Imagen
+                    </span>
+
+                </div>
+
+            `;
+
+            /*
+            |--------------------------------------------------------------------------
+            | INPUT REAL OCULTO
+            |--------------------------------------------------------------------------
+            */
+
+            var inputFile = document.createElement('input');
+
+            inputFile.setAttribute('type', 'file');
+
+            inputFile.setAttribute('name', 'file');
+
+            inputFile.setAttribute('id', 'file');
+
+            inputFile.setAttribute('hidden', true);
+
+            inputFile.setAttribute('accept', 'image/*');
+
+            inputFile.setAttribute('data-id', id_mpi);
+
+            inputFile.setAttribute('data-cont', contador);
+
+            inputFile.classList.add('cargarImagenCrop');
+
+            /*
+            |--------------------------------------------------------------------------
+            | APPEND
+            |--------------------------------------------------------------------------
+            */
+
+            wrapper.appendChild(label);
+
+            wrapper.appendChild(inputFile);
+
+            container.appendChild(wrapper);
+
+        }
+        function cargarImagenes(){
+            const container = document.querySelector('.imagenesadjuntas');
+            container.innerHTML = '';
+            images.forEach(function(image){
+                const card = document.createElement('div');
+                card.classList.add('image-card');
+                card.innerHTML = `
+                    <img src="${image.src}" onclick="verImagen('${image.src}')">
+                    <div class="image-overlay">
+                        <button class="image-btn btn-view" onclick="verImagen('${image.src}')">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button class="image-btn btn-delete eliminarImagen"
+                                data-id="${image.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="image-footer">
+                        <span class="image-size">${image.size}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function verImagen(src){
+            Swal.fire({
+                imageUrl: src,
+                imageWidth: '100%',
+                imageAlt: 'Imagen',
+                showConfirmButton:false,
+                background:'#000',
+                width:'900px'
+            });
+        }
+
+        function createAttachmentLi(image) {
+            var li = createElement('li');
+            li.style.marginTop = '20px';
+            li.style.marginBottom = '20px';
+            var spanIcon = createElement('span', ['mailbox-attachment-icon', 'has-img']);
+            var img = createElement('img');
+            img.style.height = '250px'
+            var divInfo = createElement('div', ['mailbox-attachment-info']);
+            var aName = createElement('a', ['mailbox-attachment-name']);
+            var spanSize = createElement('span', ['mailbox-attachment-size', 'clearfix', 'mt-1', 'ml-4']);
+            // var aDownload = createElement('a', ['btn', 'btn-info', 'float-right']);
+            var aDelete = createElement('a', ['btn', 'btn-danger', 'float-right','eliminarImagen']);
+            aDelete.setAttribute('data-id', image.id);
+
+            img.src = image.src;
+            img.alt = "Attachment";
+            aName.innerHTML = '<i class="fas fa-camera"></i> ' ;
+            spanSize.innerHTML = '<span>' + image.size + '</span>';
+            // aDownload.innerHTML = '<i class="fas fa-cloud-download-alt" style="position: absolute; color: white;"></i>';
+            aDelete.innerHTML = '<i class="fas fa-times-circle" style="position: absolute; color: white;"></i>';
+
+            spanIcon.appendChild(img);
+            appendChildren(divInfo, [aName, spanSize]);
+            spanSize.appendChild(aDelete);
+            // spanSize.appendChild(aDownload);
+            appendChildren(li, [spanIcon, divInfo]);
+
+            return li;
+        }
+
+        function createNewUl() {
+            var ul = document.createElement('ul');
+            ul.classList.add('mailbox-attachments', 'd-flex', 'align-items-stretch', 'clearfix');
+            ul.style.marginTop = '20px';
+            ul.style.marginBottom = '20px';
+            return ul;
+        }
+
+        function createElement(tagName, classNames) {
+            var element = document.createElement(tagName);
+            if (classNames && Array.isArray(classNames)) {
+                element.classList.add(...classNames);
+            }
+            return element;
+        }
+
+        function appendChildren(parent, children) {
+            if (!Array.isArray(children)) {
+                children = [children];
+            }
+            children.forEach(function(child) {
+                parent.appendChild(child);
+            });
+        }
+
+
+        function cargarData(){
+            $('#MAV_Placa').val(`<?php echo $datos->MAV_Placa; ?>`);
+            $('#MAV_Propietario').val(`<?php echo $datos->MAV_Propietario; ?>`);
+            $('#MAV_celular').val(`<?php echo $datos->MAV_celular; ?>`);
+            $('#MAV_Unidad').val(`<?php echo $datos->MAV_Unidad; ?>`);
+            $('#MAV_KMEntrada').val(`<?php echo $datos->MAV_KMEntrada; ?>`);
+            $('#USU_Id').val(`<?php echo $datos->PER_Id; ?>`).change();
+            $('#MAV_DetalleIngreso').val(`<?php echo $datos->MAV_DetalleIngreso; ?>`);
+            $('#MAV_DetalleObservacion').val(`<?php echo $datos->MAV_DetalleObservacion; ?>`);
+            $('#MAV_DetalleRealizado').val(`<?php echo $datos->MAV_DetalleRealizado; ?>`);
+            $('#MAV_CorrecionObservacion').val(`<?php echo $datos->MAV_CorrecionObservacion; ?>`);
+            $('#MAV_ProximoCambioAceite').val(`<?php echo $datos->MAV_ProximoCambioAceite; ?>`);
+            $('#MAV_ProximoServicio').val(`<?php echo $datos->MAV_ProximoServicio; ?>`);
+
+            <?php foreach ($detalle as $dev): ?>
+                var descripcion = `<?php echo $dev->MAVD_Descripcion; ?>`;
+                var precio = `<?php echo $dev->MAV_Precio; ?>`;
+
+                var fila1 = [descripcion, precio];
+                ListDet.push(fila1);
+            <?php endforeach ?>
+
+            <?php foreach ($imagenes as $img): ?>
+                var obj = {
+                    id: `<?php echo $img->MAVI_Item ?>`,
+                    src: `<?php echo $img->MAVI_url ?>`,
+                    name: `<?php echo $img->MAVI_Nombre ?>`,
+                    size: `<?php echo $img->MAVI_Peso ?>`
+                }
+                images.push(obj);
+            <?php endforeach ?>
+            cargarTabla()
+            cargarImagenes()
+            limpiardetalle();
+        }
 
         function agregardetalle() {
 
@@ -418,23 +913,77 @@
             textarea.value = lines.join('\n');
         }
 
+        
+        function AñadirImagen($id) {
+
+            const Toast2 = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            var cropToolInstance;
+                console.log("hola2")
+
+            cropToolInstance = $('#file').ijaboCropTool({
+                preview: '.image-previewer',
+                setRatio: 1,
+                allowedExtensions: ['jpg', 'jpeg', 'png', 'heic'],
+                buttonsText: ['ACEPTAR', 'SALIR'],
+                buttonsColor: ['#30bf7d', '#ee5155', -15],
+                processUrl: "{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}"+"/"+$id+'/crop',
+                withCSRF: ['_token', '{{ csrf_token() }}'],
+                onSuccess: function(message, element, status, ) {
+                    Toast2.fire({
+                        type: 'success',
+                        title: message.mensaje
+                    })
+                    images = []
+                    for(var i = 0; i< message.data.length; i++){
+                        var obj = {
+                            id: message.data[i].MAVI_Item,
+                            src: message.data[i].MAVI_url,
+                            name: message.data[i].MAVI_Nombre,
+                            size: message.data[i].MAVI_Peso
+                        }
+                        images.push(obj);
+                    }
+
+                    cargarImagenes()
+                    isImgProcessing = false;
+
+                },
+                onError: function(message, element, status) {
+                    alert(message);
+                    isImgProcessing = false;
+                }
+            });
+
+
+            contador++
+            cargarFileForImagen()
+
+
+        }
+
+
         function cargarTabla(){
-            $("#detalles tbody").html('');
+            $("#detalles tbody").remove();
                 var totalCosto = 0
-                for (var i = ListDetVenta.length - 1; i >= 0; i--) {
-                    var col0 = '<tr  onClick="MostrarValores1(' + ListDetVenta[i][0] + ');" id="fila' + i + '">'
+                for (var i = ListDet.length - 1; i >= 0; i--) {
+                    var col0 = '<tr  onClick="MostrarValores1(' + ListDet[i][0] + ');" id="fila' + i + '">'
                     var col1 = '<td style="text-align: left;">' + (i + 1) + '</td>'
-                    var col2 = '<td style="text-align: left;"><input id="MAVD_Descripcion' + i + '" type="hidden" name="MAVD_Descripcion[]" value="' + ListDetVenta[i][0] +
-                        '">' + ListDetVenta[i][0] + '</td>'
-                    var col3 = '<td style="text-align: left;"><input id="MAV_Precio' + i + '" type="hidden" name="MAV_Precio[]" value="' + ListDetVenta[i][1] +
-                        '">' + ListDetVenta[i][1] + '</td>'
+                    var col2 = '<td style="text-align: left;"><input id="MAVD_Descripcion' + i + '" type="hidden" name="MAVD_Descripcion[]" value="' + ListDet[i][0] +
+                        '">' + ListDet[i][0] + '</td>'
+                    var col3 = '<td style="text-align: left;"><input id="MAV_Precio' + i + '" type="hidden" name="MAV_Precio[]" value="' + ListDet[i][1] +
+                        '">' + ListDet[i][1] + '</td>'
                     var col4 =
                         '<td style="width:80px; height : 24px; text-align: center;"><button  type="button"  class="btn" onclick="eliminar(' +
                         i +
                         ');" style="border-radius: 10px; height : 24px; color:red;padding:0px"><i class="fa fa-trash"></button></td></tr>';
                     var fila = col0 + col1 + col2 + col3 + col4 ;
                     $("#detalles").append(fila);
-                    totalCosto = parseFloat(totalCosto) + parseFloat(ListDetVenta[i][1])
+                    totalCosto = parseFloat(totalCosto) + parseFloat(ListDet[i][1])
                 }
 
                 $("#totalCosto").html(totalCosto);
@@ -486,30 +1035,30 @@
         }
 
 
-        function AgregarMAV() {
+        function ActualizarMPI() {
+            var new_id_mpi = id_mpi
             $.ajax({
                 data: $('#MantenimientoActividadVariadasForm').serialize(),
-                url: "{{ route('tenant.actividades.mantenimientoactividadvariada.store') }}",
-                type: "POST",
+                url: "{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}/" +new_id_mpi,
+                type: "PUT",
                 dataType: 'json',
-                success: function(data) {
+                success: function (data) {
                     console.log('Success:', data);
                     Toast.fire({
                         type: 'success',
                         title: data.success
-                    })
-                    document.location.href =
-                        "{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}/" + data.id +
-                        '/edit';
+                    });
+                    document.location.href="{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}";
                 },
-                error: function(data) {
+                error: function (data) {
                     console.log('Error:', data);
                     Toast.fire({
                         type: 'error',
-                        title: 'Actividades variadas fallo al Registrarse.'
+                        title: 'Mantenimiento Preventivo fallo al Registrarse.'
                     })
                 }
             });
+
         }
 
         function Regresar() {

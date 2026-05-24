@@ -1,82 +1,85 @@
 @extends('tenant_' . tenant('tipo_negocio') . '.layout.appAdminLte')
-@section('titulo', 'Bahia')
+@section('titulo', 'Actividades Variadas')
 @section('contenido')
 
-    @can('tenant.configuracion.bahia.create')
-        <div class="col-5">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">CREAR BAHIA</h5>
-                    <p class="card-text"></p>
-                    <form method="POST" id="bahia_form" action="{{ tenant_url('tenant.configuracion.bahia.store') }}">
-                        @csrf
-                        <input type="text" id="bahia_id_edit" hidden>
-                        <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Sede:</label>
-                            <select class="form-control select2 select2-info" id="ALM_Id" name="ALM_Id"
-                                data-dropdown-css-class="select2-info" style="width: 100%;">
-                                <option value="">Seleccionar Sede</option>
-                                @foreach ($sedes as $item)
-                                    <option value="{{ $item->ALM_Id }}"> {{ $item->ALM_NombreAlmacen }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <label class="control-label"  style=" text-align: left; display: block;">Responsable:</label>
-                            <select class="form-control select2 select2-info" id="USU_Id" name="USU_Id"
-                                data-dropdown-css-class="select2-info" style="width: 100%;">
-                                <option value="">Seleccionar Responsable</option>
-                                @foreach ($users as $item)
-                                    <option value="{{ $item->id }}"> {{ $item->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="form-group row">
-                            <div class="col-12">
-                                <label class="control-label" style=" text-align: left; display: block;">Bahia:</label>
-                                <input type="text" id="BAH_Nombre" name="BAH_Nombre" class="form-control "
-                                    placeholder="Bahia" required>
-                            </div>
-                        </div>
-                        <p></p>
-                        <div class="form-group text-right">
-                            <button type="button" id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
-                            <button type="button" id="updateBtn" class="btn btn-info" style="display: none;"><i class="fas fa-save"></i>
-                                Actualizar</button>
-                            <button type="reset" id="btncancelar" class="btn btn-danger"> <i class="fas fa-ban"></i> Cancelar
-                            </button>
-                        </div>
-                    </form>
+    @can('tenant.configuracion.bahia.index')
+    <div class="col-12">
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <!-- HEADER -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 class="mb-1">LISTA DE ACTIVIDADES VARIADAS</h4>
+                    <small class="text-muted">Gestión y seguimiento de actividades</small>
+                </div>
+                <!-- NUEVO -->
+                <div>
+                    <a href="{{ tenant_url('tenant.actividades.mantenimientoactividadvariada.create') }}"
+                       class="btn btn-success">
+                        <i class="fas fa-plus mr-1"></i>
+                        Nuevo Registro
+                    </a>
                 </div>
             </div>
-        </div>
-    @endcan
-
-    @can('tenant.configuracion.bahia.index')
-        <div class="col-7">
-            <div class="card">
+            <!-- FILTROS -->
+            <div class="card shadow-sm border-0 mb-4 bg-light">
                 <div class="card-body">
-                    <h5 class="card-title">LISTA DE BAHIA</h5>
-                    <p class="card-text">
-                    <div class="table-responsive" style="background:#FFF;">
-                        <table class="table" id="tabla_bahia">
-                            <thead>
-                                <tr>
-                                    <th scope="col">N°</th>
-                                    <th scope="col">Bahia</th>
-                                    <th scope="col">Sede</th>
-                                    <th scope="col">Responsable</th>
-                                    <th scope="col">Opciones</th>
-                                </tr>
-                            </thead>
-                        </table>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label>Fecha Inicio</label>
+                            <input type="date" class="form-control" id="fecha_inicio">
+                        </div>
+                        <!-- FECHA FIN -->
+                        <div class="col-md-3">
+                            <label>Fecha Fin</label>
+                            <input type="date" class="form-control" id="fecha_fin">
+                        </div>
+
+                        <!-- ESTADO -->
+                        <div class="col-md-3">
+                            <label>Estado</label>
+                            <select class="form-control" id="estado">
+                                <option value="">Todos</option>
+                                <option value="PENDIENTE">PENDIENTE</option>
+                                <option value="APROBADO">APROBADO</option>
+                            </select>
+                        </div>
+
+                        <!-- BOTON -->
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button class="btn btn-primary btn-block" id="btnFiltrar">
+                                <i class="fas fa-search mr-1"></i>
+                                Filtrar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- TABLA -->
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered table-striped" id="tabla_mantenimientoactividadvariada">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>N°</th>
+                            <th>Placa</th>
+                            <th>Propietario</th>
+                            <th>Celular</th>
+                            <th>Unidad</th>
+                            <th>KM Entrada</th>
+                            <th>Responsable</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th width="180">Opciones</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
         </div>
-    @endcan
+    </div>
+</div>
+@endcan
 
 @endsection
 @section('script')
@@ -118,16 +121,7 @@
                 });
             };
 
-            const resetForm = () => {
-                $('#bahia_form').trigger('reset');
-                $('#ALM_Id').val('');
-                $('#ALM_Id').change();
-                $('#USU_Id').val('');
-                $('#USU_Id').change();
-                $('#bahia_id_edit').val('');
-                $('#saveBtn').show();
-                $('#updateBtn').hide();
-            };
+
 
             const reloadTable = () => {
                 table.ajax.reload(null, false);
@@ -140,18 +134,15 @@
 
             // DATATABLE
 
-            const table = $('#tabla_bahia').DataTable({
-
+            const table = $('#tabla_mantenimientoactividadvariada').DataTable({
                 responsive: true,
                 autoWidth: false,
                 searchDelay: 800,
                 processing: true,
                 serverSide: true,
-
                 order: [
-                    [0, "asc"]
+                    [0, "desc"]
                 ],
-
                 language: {
                     lengthMenu: "Mostrar _MENU_ registros por página",
                     zeroRecords: "No se encontraron registros",
@@ -164,24 +155,50 @@
                         previous: "Anterior"
                     }
                 },
-
-                ajax: "{{ tenant_url('tenant.configuracion.bahia.index') }}",
-
-                columns: [{
-                        data: 'BAH_Id',
-                        name: 'BAH_Id'
+                 ajax: {
+                    url: "{{ tenant_url('tenant.actividades.mantenimientoactividadvariada.index') }}",
+                    data: function(d) {
+                        d.fecha_inicio = $('#fecha_inicio').val();
+                        d.fecha_fin    = $('#fecha_fin').val();
+                        d.estado       = $('#estado').val();
+                    }
+                },
+                columns: [
+                    {
+                        data: 'MAV_Id',
+                        name: 'MAV_Id'
                     },
                     {
-                        data: 'ALM_NombreAlmacen',
-                        name: 'ALM_NombreAlmacen'
+                        data: 'MAV_Placa',
+                        name: 'MAV_Placa'
                     },
                     {
-                        data: 'BAH_Nombre',
-                        name: 'BAH_Nombre'
+                        data: 'MAV_Propietario',
+                        name: 'MAV_Propietario'
                     },
                     {
-                        data: 'USU_Nombre',
-                        name: 'USU_Nombre'
+                        data: 'celular',
+                        name: 'celular'
+                    },
+                    {
+                        data: 'MAV_Unidad',
+                        name: 'MAV_Unidad'
+                    },
+                    {
+                        data: 'MAV_KMEntrada',
+                        name: 'MAV_KMEntrada'
+                    },
+                    {
+                        data: 'personal',
+                        name: 'personal'
+                    },
+                    {
+                        data: 'MAV_FechaCreacion',
+                        name: 'MAV_FechaCreacion'
+                    },
+                    {
+                        data: 'estado',
+                        name: 'estado'
                     },
                     {
                         data: null,
@@ -196,110 +213,13 @@
 
             });
 
-            // GUARDAR
 
-            $('#saveBtn').on('click', function(e) {
-
-                e.preventDefault();
-
-                const bahia = $('#BAH_Nombre').val().trim();
-                const sede = $('#ALM_Id').val();
-                const responsable = $('#USU_Id').val();
-
-                if (!bahia || !sede || !responsable) {
-                    showToast('warning', 'Complete todos los campos');
-                    return;
-                }
-
-                $.ajax({
-
-                    url: "{{ tenant_url('tenant.configuracion.bahia.store') }}",
-                    type: "POST",
-                    data: $('#bahia_form').serialize(),
-                    dataType: 'json',
-
-                    success: function(data) {
-                        showToast('success', data.message);
-                        resetForm();
-                        reloadTable();
-                    },
-
-                    error: function(error) {
-                        handleAjaxError('Ya existe un bahia registrado con ese nombre.', error);
-                    }
-
-                });
-
+            $('#btnFiltrar').on('click', function () {
+                table.ajax.reload();
             });
-
-            // EDITAR
-
-            $('body').on('click', '.editBahia', function() {
-
-                const bahiaId = $(this).data('id');
-
-                $.get(
-                    '{{ tenant_url('tenant.configuracion.bahia.edit', ['bahia' => ':bahia']) }}'
-                    .replace(':bahia', bahiaId),
-
-                    function(response) {
-
-                        $('#bahia_id_edit').val(response.data.BAH_Id);
-                        $('#ALM_Id').val(response.data.ALM_Id);
-                        $('#ALM_Id').change();
-                        $('#USU_Id').val(response.data.USU_Id);
-                        $('#USU_Id').change();
-                        $('#BAH_Nombre').val(response.data.BAH_Nombre);
-
-                        $('#saveBtn').hide();
-                        $('#updateBtn').show();
-
-                    }
-
-                );
-
-            });
-
-            // ACTUALIZAR
-
-            $('#updateBtn').on('click', function(e) {
-
-                e.preventDefault();
-
-                const bahiaId = $('#bahia_id_edit').val();
-
-                $.ajax({
-
-                    url: '{{ tenant_url('tenant.configuracion.bahia.update', ['bahia' => ':bahia']) }}'
-                        .replace(':bahia', bahiaId),
-                    type: "PUT",
-                    data: $('#bahia_form').serialize(),
-                    dataType: 'json',
-
-                    success: function(data) {
-                        showToast('success', data.message);
-                        resetForm();
-                        reloadTable();
-                    },
-
-                    error: function(error) {
-                        handleAjaxError('El bahia falló al actualizarse.', error);
-                    }
-
-                });
-
-            });
-
-            // CANCELAR
-
-            $('#btncancelar').on('click', function() {
-                resetForm();
-                showToast('info', 'Formulario reiniciado correctamente');
-            });
-
             // ELIMINAR
 
-            $('body').on('click', '.deleteBahia', function() {
+            $('body').on('click', '.deleteActividades Variadas', function() {
 
                 const bahiaId = $(this).data('id');
 
@@ -348,7 +268,7 @@
 
             // ACTIVAR
 
-            $('body').on('click', '.activarBahia', function() {
+            $('body').on('click', '.activarActividades Variadas', function() {
 
                 const bahiaId = $(this).data('id');
 

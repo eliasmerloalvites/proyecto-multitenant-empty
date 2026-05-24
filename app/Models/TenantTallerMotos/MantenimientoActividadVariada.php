@@ -32,7 +32,7 @@ class MantenimientoActividadVariada extends Model
 
         'MAV_Estado',
 
-        'USU_Id',
+        'PER_Id',
 
         'statevalidate',
         'notificar',

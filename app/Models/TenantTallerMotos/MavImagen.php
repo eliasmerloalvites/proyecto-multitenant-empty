@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MavImagen extends Model
 {
-    protected $table = 'mav_imagenes';
+    protected $table = 'mav_imagen';
     public $incrementing = false;
     public $timestamps = false;
     protected $primaryKey = null;
@@ -16,6 +16,7 @@ class MavImagen extends Model
         'MAVI_url',
         'MAVI_Nombre',
         'MAVI_Peso',
+        'MAVI_Thumb'
     ];
 
     public function mantenimiento()

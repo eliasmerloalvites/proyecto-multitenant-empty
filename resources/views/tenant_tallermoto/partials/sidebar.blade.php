@@ -149,8 +149,8 @@
                 <!-- ACTIVIDADES -->
                 <li
                     class="nav-item has-treeview 
-                    {{ request()->routeIs('tenant.actividaes.mateniemientoactividadvariada*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->routeIs('tenant.actividaes.mateniemientoactividadvariada*') ? 'active': '' }}">
+                    {{ request()->routeIs('tenant.actividades.mantenimientoactividadvariada*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('tenant.actividades.mantenimientoactividadvariada*') ? 'active': '' }}">
                         <i class="nav-icon fas fa-clipboard-list"></i>
                         <p>
                             ACTIVIDADES
@@ -161,16 +161,16 @@
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item">
-                            <a href="{{ tenant_url('tenant.actividades.mateniemientoactividadvariada.index') }}" 
-                                class="nav-link {{ request()->routeIs('tenant.actividades.mateniemientoactividadvariada.index') ? 'active' : '' }}">
+                            <a href="{{ tenant_url('tenant.actividades.mantenimientoactividadvariada.index') }}" 
+                                class="nav-link {{ request()->routeIs('tenant.actividades.mantenimientoactividadvariada.index') ? 'active' : '' }}">
                                 <i class="far fa-list-alt nav-icon"></i>
                                 <p>Registros</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="{{ tenant_url('tenant.actividades.mateniemientoactividadvariada.create') }}" 
-                                class="nav-link {{ request()->routeIs('tenant.actividades.mateniemientoactividadvariada.create') ? 'active' : '' }}">
+                            <a href="{{ tenant_url('tenant.actividades.mantenimientoactividadvariada.create') }}" 
+                                class="nav-link {{ request()->routeIs('tenant.actividades.mantenimientoactividadvariada.create') ? 'active' : '' }}">
                                 <i class="fas fa-plus-circle nav-icon"></i>
                                 <p>Nueva Actividad</p>
                             </a>
