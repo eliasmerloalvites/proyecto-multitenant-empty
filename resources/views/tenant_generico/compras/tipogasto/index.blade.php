@@ -3,7 +3,7 @@
 @section('contenido')
 
     @can('tenant.compras.tipogasto.create')
-        <div class="col-5">
+        <div class="col-12 col-md-5">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">CREAR TIPO GASTO</h5>
@@ -35,7 +35,7 @@
     @endcan
 
     @can('tenant.compras.tipogasto.index')
-        <div class="col-7">
+        <div class="col-12 col-md-7">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">LISTA DE TIPO GASTOS</h5>

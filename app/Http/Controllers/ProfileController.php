@@ -42,8 +42,9 @@ class ProfileController extends Controller
 			$id = tenant('id');
 			$ubicacionNegocio = tenant('tipo_negocio') ;
 		}
+		$ruta = '/images/usuario.png?' . uniqid();
 		$personal = Personal::findOrFail($user->PER_Id);
-		if($id){
+		/* if($id){
 				if($personal->PER_Foto == ""){
 					$ruta = '/storage/'.$ubicacionNegocio .'/usuario.png?' . uniqid();
 				}else{
@@ -55,7 +56,7 @@ class ProfileController extends Controller
 			}else{
 				$ruta = '/storage/'.$ubicacionNegocio .'/archivos/personal/foto/'.$personal->PER_Foto.'?'. uniqid();
 			}
-		}
+		} */
 
 		return response()->json(['ruta'=>$ruta]);
 	}

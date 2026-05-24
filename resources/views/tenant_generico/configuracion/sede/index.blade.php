@@ -1,5 +1,5 @@
 @extends('tenant_'.tenant('tipo_negocio').'.layout.appAdminLte')
-@section('titulo', 'Sede')
+@section('titulo', 'Almacen')
 @section('contenido')
 
     @can('tenant.configuracion.sede.create')
