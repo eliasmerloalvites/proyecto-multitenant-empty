@@ -14,17 +14,17 @@ class MavImagen extends Model
         'MAV_Id',
         'MAVI_Item',
         'MAVI_url',
+        'MAVI_Thumb',
         'MAVI_Nombre',
-        'MAVI_Peso',
-        'MAVI_Thumb'
+        'MAVI_Peso'
     ];
 
     public function mantenimiento()
     {
         return $this->belongsTo(
-            MantenimientoActividadVariada::class,
-            'MAV_Id',
-            'MAV_Id'
+            MantenimientoGeneralInyectada::class,
+            'MGI_Id',
+            'MGI_Id'
         );
     }
 }

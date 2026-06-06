@@ -109,7 +109,7 @@ class RoleController extends Controller
 
                 // Asignar todos los permisos al rol
             // $role->syncPermissions($permisosIds);
-                $role->permissions()->sync($permisosIds);
+                $role->syncPermissions($permisosIds);
                 
                 //return redirect()->route('role.index')->with('datos','Rol agregado con todos los permisos ...!');
                 return response()->json(['success' => 'Rol agregado con todos los permisos ...!',compact('role')]);
@@ -122,7 +122,7 @@ class RoleController extends Controller
 
             }
 
-            $role->permissions()->sync($request->permisos);
+            $role->syncPermissions($request->permisos);
 
             //$role->permisos()->sync($request->input('permisos'));
             
@@ -186,7 +186,7 @@ class RoleController extends Controller
 
             // Asignar todos los permisos al rol
         // $role->syncPermissions($permisosIds);
-            $role->permissions()->sync($permisosIds);
+            $role->syncPermissions($permisosIds);
             
             //return redirect()->route('role.index')->with('datos','Rol agregado con todos los permisos ...!');
             return response()->json(['success' => 'Rol editado Exitosamente con todos los permisos.',compact('role')]);
@@ -196,10 +196,9 @@ class RoleController extends Controller
         {
             //return redirect()->route('role.index')->with('datos','Rol agregado sin permisos ...!');
             return response()->json(['success' => 'Rol Editado Exitosamente sin permisos.',compact('role')]);
-
         }
 
-        $role->permissions()->sync($request->permisos);
+        $role->syncPermissions($request->permisos);
 
 		return response()->json(['success' => 'Rol Editado Exitosamente.',compact('role')]);
     }

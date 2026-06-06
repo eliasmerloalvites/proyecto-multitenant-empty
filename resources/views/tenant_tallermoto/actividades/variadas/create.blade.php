@@ -513,7 +513,7 @@
         }
 
         function Regresar() {
-            document.location.href = "{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}/"
+            document.location.href = "{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}"
         }
     </script>
 @endsection

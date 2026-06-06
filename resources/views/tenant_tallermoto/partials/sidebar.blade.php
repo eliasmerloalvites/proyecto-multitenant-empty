@@ -25,33 +25,30 @@
                 </li>
 
                 <!-- RESERVAS -->
-                <li class="nav-item has-treeview">
-                    <a href="#" class="nav-link">
+                
+                <li class="nav-item has-treeview
+                    {{ request()->routeIs('tenant.reservaciones.administracion*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('tenant.reservaciones.administracion*') ? 'active': '' }}">
                         <i class="nav-icon fas fa-calendar-check"></i>
                         <p>
                             RESERVAS
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
-
+                    
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="{{ route('tenant.reservaciones.administracion.create') }}" class="nav-link
+                            {{ request()->routeIs('tenant.reservaciones.administracion.create') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
-                                <p>Semanal Chepén</p>
+                                <p>Reservaciones</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Semanal Pacasmayo</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="{{ route('tenant.reservaciones.administracion.index') }}" class="nav-link
+                            {{ request()->routeIs('tenant.reservaciones.administracion.index') ? 'active' : '' }}">
                                 <i class="far fa-list-alt nav-icon"></i>
                                 <p>Todas las Reservas</p>
                             </a>
@@ -61,8 +58,10 @@
                 </li>
 
                 <!-- REPORTES -->
-                <li class="nav-item has-treeview">
-                    <a href="#" class="nav-link">
+                @can('tenant.reportes.listageneral')
+                <li class="nav-item has-treeview
+                    {{ request()->routeIs('tenant.reportes*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('tenant.reportes*') ? 'active': '' }}">
                         <i class="nav-icon fas fa-chart-bar"></i>
                         <p>
                             REPORTES
@@ -73,18 +72,27 @@
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="{{ route('tenant.reportes.listageneral') }}" class="nav-link 
+                            {{ request()->routeIs('tenant.reportes.listageneral') ? 'active' : '' }}">
                                 <i class="far fa-file-alt nav-icon"></i>
-                                <p>Reporte General</p>
+                                <p>Lista General</p>
                             </a>
                         </li>
 
                     </ul>
                 </li>
+                @endcan
 
+                @canany([
+                    'tenant.mantenimientos.generalinyectada.index',
+                    'tenant.mantenimientos.generalcarburada.index',
+                    'tenant.mantenimientos.preventivoinyectada.index',
+                    'tenant.mantenimientos.preventivocarburada.index'
+                ])
                 <!-- MANTENIMIENTOS -->
-                <li class="nav-item has-treeview">
-                    <a href="#" class="nav-link">
+                <li class="nav-item has-treeview
+                    {{ request()->routeIs('tenant.mantenimientos*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('tenant.mantenimientos*') ? 'active': '' }}">
                         <i class="nav-icon fas fa-tools"></i>
                         <p>
                             MANTENIMIENTOS
@@ -94,8 +102,11 @@
 
                     <ul class="nav nav-treeview">
                         <!-- GENERAL -->
-                        <li class="nav-item has-treeview">
-                            <a href="#" class="nav-link">
+                        <li class="nav-item has-treeview
+                        {{ request()->routeIs('tenant.mantenimientos.generalinyectada*') ||
+                            request()->routeIs('tenant.mantenimientos.generalcarburada*') ? 'menu-open' : '' }}">
+                            <a href="#" class="nav-link {{ request()->routeIs('tenant.mantenimientos.generalinyectada*') ||
+                                request()->routeIs('tenant.mantenimientos.generalcarburada*') ? 'active': '' }}">
                                 <i class="nav-icon fas fa-wrench text-primary"></i>
                                 <p>
                                     General
@@ -104,13 +115,15 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="{{ tenant_url('tenant.mantenimientos.generalinyectada.index') }}" 
+                                        class="nav-link {{ request()->routeIs('tenant.mantenimientos.generalinyectada*') ? 'active' : '' }}">
                                         <i class="fas fa-motorcycle nav-icon text-danger"></i>
                                         <p>Inyectadas</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="{{ tenant_url('tenant.mantenimientos.generalcarburada.index') }}" 
+                                        class="nav-link {{ request()->routeIs('tenant.mantenimientos.generalcarburada*') ? 'active' : '' }}">
                                         <i class="fas fa-motorcycle nav-icon text-secondary"></i>
                                         <p>Carburadas</p>
                                     </a>
@@ -119,8 +132,11 @@
                         </li>
 
                         <!-- PREVENTIVO -->
-                        <li class="nav-item has-treeview">
-                            <a href="#" class="nav-link">
+                        <li class="nav-item has-treeview
+                        {{ request()->routeIs('tenant.mantenimientos.preventivoinyectada*') ||
+                            request()->routeIs('tenant.mantenimientos.preventivocarburada*') ? 'menu-open' : '' }}">
+                            <a href="#" class="nav-link {{ request()->routeIs('tenant.mantenimientos.preventivoinyectada*') ||
+                                request()->routeIs('tenant.mantenimientos.preventivocarburada*') ? 'active': '' }}">
                                 <i class="nav-icon fas fa-shield-alt text-success"></i>
                                 <p>
                                     Preventivo
@@ -129,13 +145,15 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="{{ tenant_url('tenant.mantenimientos.preventivoinyectada.index') }}" 
+                                        class="nav-link {{ request()->routeIs('tenant.mantenimientos.preventivoinyectada*') ? 'active' : '' }}">
                                         <i class="fas fa-motorcycle nav-icon text-danger"></i>
                                         <p>Inyectadas</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="{{ tenant_url('tenant.mantenimientos.preventivocarburada.index') }}" 
+                                        class="nav-link {{ request()->routeIs('tenant.mantenimientos.preventivocarburada*') ? 'active' : '' }}">
                                         <i class="fas fa-motorcycle nav-icon text-secondary"></i>
                                         <p>Carburadas</p>
                                     </a>
@@ -145,8 +163,10 @@
 
                     </ul>
                 </li>
+                @endcanany
 
                 <!-- ACTIVIDADES -->
+                @can('tenant.actividades.mantenimientoactividadvariada.index')
                 <li
                     class="nav-item has-treeview 
                     {{ request()->routeIs('tenant.actividades.mantenimientoactividadvariada*') ? 'menu-open' : '' }}">
@@ -178,8 +198,14 @@
 
                     </ul>
                 </li>
+                @endcan
 
-                @can('tenant.inventario.clase.index')
+                @canany([
+                    'tenant.inventario.clase.index',
+                    'tenant.inventario.categoria.index',
+                    'tenant.inventario.almacen.index',
+                    'tenant.inventario.producto.index'
+                ])
                     <li
                         class="nav-item has-treeview 
                 {{ request()->routeIs('tenant.inventario.clase*') ||
@@ -242,8 +268,13 @@
 
                         </ul>
                     </li>
-                @endcan
-                @can('tenant.compras.tipogasto.index')
+                @endcanany
+                @canany([
+                    'tenant.compras.compra.index',
+                    'tenant.compras.proveedor.index',
+                    'tenant.compras.gasto.index',
+                    'tenant.compras.tipogasto.index'
+                ])
                     <li
                         class="nav-item has-treeview 
                 {{ request()->routeIs('tenant.compras.compra*') ||
@@ -306,9 +337,13 @@
 
                         </ul>
                     </li>
-                @endcan
+                @endcanany
 
-                @can('tenant.ventas.metodopago.index')
+                @canany([
+                    'tenant.ventas.metodopago.index',
+                    'tenant.ventas.cliente.index',
+                    'tenant.ventas.venta.index'
+                ])
                     <li
                         class="nav-item has-treeview 
                             {{ request()->routeIs('tenant.ventas.metodopago*') ||
@@ -359,16 +394,24 @@
                             @endcan
                         </ul>
                     </li>
-                @endcan
+                @endcanany
                 <!-- CONFIGURACIÓN -->
                 
-                @can('tenant.configuracion.sede.index')
+                @canany([
+                    'tenant.configuracion.empresa.index',
+                    'tenant.configuracion.sede.index',
+                    'tenant.configuracion.turno.index',
+                    'tenant.configuracion.bahia.index',
+                    'tenant.configuracion.horario.index'
+                ])
                     <li class="nav-item has-treeview 
-                        {{ request()->routeIs('tenant.configuracion.sede*') ||
+                        {{ request()->routeIs('tenant.configuracion.empresa*') ||
+                            request()->routeIs('tenant.configuracion.sede*') ||
                             request()->routeIs('tenant.configuracion.turno*') ||
                             request()->routeIs('tenant.configuracion.bahia*') ||
                             request()->routeIs('tenant.configuracion.horario*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->routeIs('tenant.configuracion.sede*') ||
+                        <a href="#" class="nav-link {{ request()->routeIs('tenant.configuracion.empresa*') ||
+                            request()->routeIs('tenant.configuracion.sede*') ||
                             request()->routeIs('tenant.configuracion.turno*') ||
                             request()->routeIs('tenant.configuracion.bahia*') ||
                             request()->routeIs('tenant.configuracion.horario*') ? 'active' : '' }}">
@@ -379,6 +422,14 @@
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
+                            <!-- EMPRESA -->
+                            <li class="nav-item">
+                                <a href="{{ tenant_url('tenant.configuracion.empresa.index') }}" 
+                                    class="nav-link  {{ request()->routeIs('tenant.configuracion.empresa*') ? 'active' : '' }}">
+                                    <i class="fas fa-building nav-icon"></i>
+                                    <p>Empresa</p>
+                                </a>
+                            </li>
                             <!-- SEDES -->
                             <li class="nav-item">
                                 <a href="{{ tenant_url('tenant.configuracion.sede.index') }}" 
@@ -413,13 +464,17 @@
                             </li>
                         </ul>
                     </li>
-                @endcan
+                @endcanany
 
-                @can('tenant.seguridad.users.index')
-                    <li class="nav-item has-treeview {{ request()->routeIs('tenant.seguridad.usuario*') || request()->routeIs('tenant.seguridad.permiso*') || request()->routeIs('tenant.seguridad.rol*') ? 'menu-open' : '' }}"
+                @canany([
+                    'tenant.seguridad.permiso.index',
+                    'tenant.seguridad.role.index',
+                    'tenant.seguridad.usuario.index'
+                ])
+                    <li class="nav-item has-treeview {{ request()->routeIs('tenant.seguridad*') || request()->routeIs('tenant.seguridad.permiso*') || request()->routeIs('tenant.seguridad.rol*') ? 'menu-open' : '' }}"
                         id="idCabSeguridad">
                         <a href="#"
-                            class="nav-link {{ request()->routeIs('tenant.seguridad.usuario*') || request()->routeIs('tenant.seguridad.permiso*') || request()->routeIs('tenant.seguridad.rol*') ? 'active' : '' }}"
+                            class="nav-link {{ request()->routeIs('tenant.seguridad*') || request()->routeIs('tenant.seguridad.permiso*') || request()->routeIs('tenant.seguridad.rol*') ? 'active' : '' }}"
                             id="idSeguridad">
                             <i class="nav-icon fas fa-lock"></i>
                             <p>
@@ -468,7 +523,7 @@
                             @endcan
                         </ul>
                     </li>
-                @endcan
+                @endcanany
             </ul>
         </nav>
         <!-- /.sidebar-menu -->

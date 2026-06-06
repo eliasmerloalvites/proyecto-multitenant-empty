@@ -10,6 +10,7 @@ use Yajra\DataTables\Facades\DataTables;
 use App\Models\Client;
 use App\Models\Tenant;
 use App\Models\Tenant\User;
+use App\Models\Tenant\EmpresaFacturacion;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -184,8 +185,10 @@ class ClientController extends Controller
                 'status'       => 'activo',
             ]);
 
+            $tenantid = $tenant->id;
+
             // 3️⃣ Crear USUARIO ADMIN dentro del TENANT
-            $tenant->run(function () use ($validated) {
+            $tenant->run(function () use ($validated, $tenantid) {
                 // Ejecutamos las migraciones EXTRA (ej: database/migrations/tenant/optica)
                 $extraPath = "database/migrations/tenant/" . $validated['tipo_negocio'];
                 if (is_dir(base_path($extraPath))) {
@@ -214,6 +217,12 @@ class ClientController extends Controller
                 if ($user) {
                     $user->assignRole('Gerente');
                 }
+
+                $empresa = EmpresaFacturacion::create([
+                    'tenant_id'         => $tenantid,
+                    'ruc'               => $validated['ruc'],
+                    'razon_social'      => $validated['razon_social']
+                ]);
             });
 
             return redirect()->route('admin.clients.index')->with('success', 'Cliente y entorno creados correctamente.');

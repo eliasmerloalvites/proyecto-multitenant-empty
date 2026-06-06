@@ -1,5 +1,5 @@
 @extends('tenant_'.tenant('tipo_negocio').'.layout.appAdminLte')
-@section('titulo', 'Almacen')
+@section('titulo', 'Sede')
 @section('contenido')
 
     @can('tenant.configuracion.sede.create')
@@ -11,30 +11,12 @@
                 <form method="POST" id="almacen_form" action="{{ tenant_url('tenant.configuracion.sede.store') }}">
                     @csrf
                     <input type="text" id="almacen_id_edit" hidden>
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label" style=" text-align: left; display: block;">RUC:</label>
-                            <div class="input-group ">
-                                <input type="number" id="ALM_Ruc" name="ALM_Ruc"
-                                    class="form-control "maxlength="11" placeholder="Ruc" required>
-                                <div class="input-group-append">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text" id="Buscar_Cliente" style="display: block;"
-                                            onclick="buscarCliente()"><i class="fas fa-search"></i></span>
-                                        <span class="input-group-text hide" id="cargando"
-                                            style="display: none;"><img width="15px"
-                                                src="{{ asset_root('images/gif/cargando1.gif') }}"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <label class="control-label" style=" text-align: left; display: block;">Nombre Empresa:</label>
-                            <input type="text" id="ALM_Nombre" name="ALM_Nombre" class="form-control "
-                                placeholder="Nombre" required>
-                        </div>
+                    <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <label class="control-label"  style=" text-align: left; display: block;">Empresa:</label>
+                        <select class="form-control select2 select2-info" id="EMP_Id" name="EMP_Id"
+                            data-dropdown-css-class="select2-info" style="width: 100%;">
+                            <option value="{{ $empresa->id }}">{{ $empresa->ruc}} - {{ $empresa->razon_social }}</option>
+                        </select>
                     </div>
                     <div class="form-group row">
                         <div class="col-12">
@@ -117,26 +99,19 @@
             });
 
             var table = $('#tabla_almacen').DataTable({
-                responsive: true, // Habilitar la opción responsive
+                responsive: true,
                 autoWidth: false,
-                searchDelay: 2000,
+                searchDelay : 800,
                 processing: true,
                 serverSide: true,
-                "language": {
-                    "lengthMenu": "Mostrar _MENU_ registros por página",
-                    "zeroRecords": "Nada encontrado - disculpa",
-                    "info": "Mostrando la página _PAGE_ de _PAGES_",
-                    "infoEmpty": "No hay registros disponibles",
-                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
-                    "search": "Buscar:",
-                    "paginate": {
-                        "next": "Siguiente",
-                        "previous": "Anterior"
-                    }
-                },
-
                 order: [
-                    [0, "asc"]
+                    [0, "desc"]
+                ],
+                dom: 'Blfrtip',
+                buttons: [
+                    'copyHtml5',
+                    'excelHtml5',
+                    'pdfHtml5'
                 ],
                 ajax: "{{ tenant_url('tenant.configuracion.sede.index') }}",
                 columns: [{

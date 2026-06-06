@@ -485,7 +485,7 @@
 
             <div class="company-name">
 
-                {{ $datosalmacen->ALM_Nombre ?? 'EMPRESA X20' }}
+                {{ $datosalmacen->razon_social ?? 'EMPRESA X20' }}
 
             </div>
 
@@ -501,7 +501,7 @@
 
                     <strong>RUC:</strong>
 
-                    {{ $datosalmacen->ALM_Ruc ?? '12345678901' }}
+                    {{ $datosalmacen->ruc ?? '12345678901' }}
 
                 </div>
 
@@ -558,7 +558,7 @@
                 <div class="document-ruc">
 
                     RUC:
-                    {{ $datosalmacen->ALM_Ruc ?? '12345678901' }}
+                    {{ $datosalmacen->ruc ?? '12345678901' }}
 
                 </div>
 
@@ -923,7 +923,7 @@
             <div>
 
                 {!! QrCode::size(130)->generate(
-                    'RUC: '.$datosalmacen->ALM_Ruc.
+                    'RUC: '.$datosalmacen->ruc.
                     ' | DOC: '.$UbiDoc.'-'.$NumDoc.
                     ' | TOTAL: S/'.$ventae->total_venta
                 ) !!}
