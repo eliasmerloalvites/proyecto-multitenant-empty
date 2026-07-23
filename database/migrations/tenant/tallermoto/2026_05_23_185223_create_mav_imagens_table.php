@@ -15,9 +15,9 @@ return new class extends Migration
             $table->unsignedBigInteger('MAV_Id');
             $table->unsignedBigInteger('MAVI_Item');
             $table->text('MAVI_url')->nullable();
+            $table->text('MAVI_Thumb')->nullable();
             $table->string('MAVI_Nombre', 100)->nullable();
             $table->string('MAVI_Peso', 20)->nullable();
-            $table->text('MAVI_Thumb')->nullable();
 
             $table->primary(['MAV_Id', 'MAVI_Item']);
 

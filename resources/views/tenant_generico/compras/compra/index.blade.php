@@ -37,7 +37,7 @@
     <div class="modal fade" id="modalVerDetalle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content ">
-                <div class="modal-header bg-primary text-white border-0">
+                <div class="modal-header bg-primary {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} border-0">
                     <div>
                         <h5 class="modal-title mb-0">
                             <i class="fas fa-user-circle me-2"></i>
@@ -192,26 +192,19 @@
             });
 
             var table = $('#tabla_compra').DataTable({
-                responsive: true, // Habilitar la opción responsive
+                responsive: true,
                 autoWidth: false,
-                searchDelay: 2000,
+                searchDelay : 800,
                 processing: true,
                 serverSide: true,
-                "language": {
-                    "lengthMenu": "Mostrar _MENU_ registros por página",
-                    "zeroRecords": "Nada encontrado - disculpa",
-                    "info": "Mostrando la página _PAGE_ de _PAGES_",
-                    "infoEmpty": "No hay registros disponibles",
-                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
-                    "search": "Buscar:",
-                    "paginate": {
-                        "next": "Siguiente",
-                        "previous": "Anterior"
-                    }
-                },
-
                 order: [
-                    [0, "asc"]
+                    [0, "desc"]
+                ],
+                dom: 'Blfrtip',
+                buttons: [
+                    'copyHtml5',
+                    'excelHtml5',
+                    'pdfHtml5'
                 ],
                 ajax: {
                     url: "{{ tenant_url('tenant.compras.compra.index') }}",

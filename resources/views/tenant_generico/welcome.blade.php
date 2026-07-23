@@ -79,7 +79,7 @@
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
             <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-slate-900 flex items-center justify-center text-white font-bold text-xl shadow-lg overflow-hidden">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-600 to-slate-900 flex items-center justify-center {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} font-bold text-xl shadow-lg overflow-hidden">
 
                     @if(!empty($empresa->logo))
                         <img src="{{ asset($empresa->logo) }}" class="w-full h-full object-cover">
@@ -100,23 +100,23 @@
             </div>
 
             <nav class="hidden lg:flex items-center gap-8 font-medium text-[15px]">
-                <a href="#inicio" class="text-blue-600 border-b-2 border-blue-600 pb-1">
+                <a href="#inicio" class="text-brand-600 border-b-2 border-brand-600 pb-1">
                     Inicio
                 </a>
 
-                <a href="#productos" class="hover:text-blue-600 transition">
+                <a href="#productos" class="hover:text-brand-600 transition">
                     Productos
                 </a>
 
-                <a href="#servicios" class="hover:text-blue-600 transition">
+                <a href="#servicios" class="hover:text-brand-600 transition">
                     Servicios
                 </a>
 
-                <a href="#nosotros" class="hover:text-blue-600 transition">
+                <a href="#nosotros" class="hover:text-brand-600 transition">
                     Nosotros
                 </a>
 
-                <a href="#contacto" class="hover:text-blue-600 transition">
+                <a href="#contacto" class="hover:text-brand-600 transition">
                     Contacto
                 </a>
             </nav>
@@ -124,13 +124,13 @@
             <div class="flex items-center gap-3">
 
                 <a href="{{ tenant_url('tenant.login') }}"
-                    class="hidden md:flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition">
+                    class="hidden md:flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-brand-600 transition">
                     👤 Acceso empleados
                 </a>
 
                 <a href="https://wa.me/{{ $empresa->whatsapp ?? '51999999999' }}"
                     target="_blank"
-                    class="bg-green-500 hover:bg-green-600 transition text-white font-semibold px-5 py-3 rounded-2xl shadow-lg">
+                    class="bg-green-500 hover:bg-green-600 transition {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} font-semibold px-5 py-3 rounded-2xl shadow-lg">
                     WhatsApp
                 </a>
             </div>
@@ -141,7 +141,7 @@
     <section id="inicio" class="max-w-7xl mx-auto px-6 py-16 grid lg:grid-cols-2 gap-12 items-center">
 
         <div>
-            <div class="inline-flex items-center bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
+            <div class="inline-flex items-center bg-blue-100 text-brand-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
                 ⭐ Empresa destacada
             </div>
 
@@ -151,7 +151,7 @@
                 confianza
                 <br>
                 y el mejor
-                <span class="text-blue-600"> servicio.</span>
+                <span class="text-brand-600"> servicio.</span>
             </h2>
 
             <p class="text-slate-600 text-lg leading-relaxed max-w-xl mb-8">
@@ -161,12 +161,12 @@
             <div class="flex flex-wrap gap-4">
 
                 <a href="#productos"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-semibold shadow-xl transition">
+                    class="bg-blue-600 hover:bg-blue-700 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} px-8 py-4 rounded-2xl font-semibold shadow-xl transition">
                     Ver productos / servicios
                 </a>
 
                 <a href="#contacto"
-                    class="bg-white border border-slate-300 hover:border-blue-600 hover:text-blue-600 px-8 py-4 rounded-2xl font-semibold transition">
+                    class="bg-white border border-slate-300 hover:border-brand-600 hover:text-brand-600 px-8 py-4 rounded-2xl font-semibold transition">
                     Contáctanos
                 </a>
             </div>
@@ -194,7 +194,7 @@
                             </p>
                         </div>
 
-                        <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-2xl font-bold shadow-lg overflow-hidden">
+                        <div class="w-14 h-14 rounded-2xl bg-blue-600 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} flex items-center justify-center text-2xl font-bold shadow-lg overflow-hidden">
 
                             @if(!empty($empresa->logo))
                                 <img src="{{ asset($empresa->logo) }}" class="w-full h-full object-cover">
@@ -298,7 +298,7 @@
                         </p>
 
                         @if(!empty($producto->precio))
-                            <div class="text-3xl font-black text-blue-600 mb-5">
+                            <div class="text-3xl font-black text-brand-600 mb-5">
                                 S/ {{ number_format($producto->precio, 2) }}
                             </div>
                         @endif
@@ -306,7 +306,7 @@
                         <a
                             href="https://wa.me/{{ $empresa->whatsapp ?? '51999999999' }}?text=Hola,%20quiero%20consultar%20sobre%20{{ urlencode($producto->nombre) }}"
                             target="_blank"
-                            class="block w-full text-center bg-green-500 hover:bg-green-600 text-white py-3 rounded-2xl font-semibold transition">
+                            class="block w-full text-center bg-green-500 hover:bg-green-600 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} py-3 rounded-2xl font-semibold transition">
                             Consultar
                         </a>
                     </div>
@@ -323,7 +323,7 @@
         <div class="grid lg:grid-cols-2 gap-10 bg-white rounded-[36px] p-10 shadow-xl border border-slate-100 items-center">
 
             <div>
-                <div class="inline-flex bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-semibold text-sm mb-6">
+                <div class="inline-flex bg-blue-100 text-brand-700 px-4 py-2 rounded-full font-semibold text-sm mb-6">
                     Sobre nosotros
                 </div>
 
@@ -340,17 +340,17 @@
                 <div class="grid grid-cols-3 gap-6 mb-10">
 
                     <div>
-                        <h3 class="text-4xl font-black text-blue-600 mb-1">+5</h3>
+                        <h3 class="text-4xl font-black text-brand-600 mb-1">+5</h3>
                         <p class="text-slate-500 text-sm">Años de experiencia</p>
                     </div>
 
                     <div>
-                        <h3 class="text-4xl font-black text-blue-600 mb-1">+1000</h3>
+                        <h3 class="text-4xl font-black text-brand-600 mb-1">+1000</h3>
                         <p class="text-slate-500 text-sm">Clientes satisfechos</p>
                     </div>
 
                     <div>
-                        <h3 class="text-4xl font-black text-blue-600 mb-1">100%</h3>
+                        <h3 class="text-4xl font-black text-brand-600 mb-1">100%</h3>
                         <p class="text-slate-500 text-sm">Compromiso total</p>
                     </div>
                 </div>
@@ -404,7 +404,7 @@
     </section>
 
     <!-- FOOTER -->
-    <footer class="bg-[#081120] text-white py-16 mt-10">
+    <footer class="bg-[#081120] {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} py-16 mt-10">
 
         <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 lg:grid-cols-4 gap-10">
 
@@ -451,7 +451,7 @@
                     </p>
 
                     <a href="{{ tenant_url('tenant.login', [tenant('id')]) }}"
-                        class="block text-center w-full bg-blue-600 hover:bg-blue-700 transition text-white font-semibold py-4 rounded-2xl shadow-lg">
+                        class="block text-center w-full bg-blue-600 hover:bg-blue-700 transition {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} font-semibold py-4 rounded-2xl shadow-lg">
                         Ir al sistema →
                     </a>
                 </div>

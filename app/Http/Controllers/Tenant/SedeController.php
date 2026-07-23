@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant\Almacen;
+use App\Models\Tenant\EmpresaFacturacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +17,9 @@ class SedeController extends Controller
     {
         if ($request->ajax()) {
 			$data = DB::table('almacen as al')
-			->select('al.*')
+            ->join('empresa_facturacion as emp', 'al.EMP_Id', '=', 'emp.id')
+            ->where('emp.tenant_id', tenant('id'))
+			->select('al.*','emp.ruc as ALM_Ruc','emp.razon_social as ALM_Nombre')
 			->get();
             return datatables()::of($data)
                 ->addIndexColumn()
@@ -33,7 +36,8 @@ class SedeController extends Controller
                 ->rawColumns(['action1','action2'])
                 ->make(true);
         }
-        return view('tenant_'.tenant('tipo_negocio').'.configuracion.sede.index');
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+        return view('tenant_'.tenant('tipo_negocio').'.configuracion.sede.index', compact('empresa'));
     }
 
     /**
@@ -49,9 +53,8 @@ class SedeController extends Controller
      */
     public function store(Request $request)
     {
-        $query=Almacen::where('ALM_Ruc','=',$request->get('ALM_Ruc'))
-        ->where('ALM_NombreAlmacen', $request->get('ALM_NombreAlmacen'))
-        ->where('ALM_Nombre', $request->get('ALM_Nombre'))
+        $query=Almacen::where('ALM_NombreAlmacen','=',$request->get('ALM_NombreAlmacen'))
+        ->where('EMP_Id', $request->get('EMP_Id'))
         ->first();
 
         if($query) //si lo encuentra, osea si no esta vacia
@@ -60,10 +63,9 @@ class SedeController extends Controller
         }
         else{
             $Almacen= new Almacen();
-            $Almacen->ALM_Nombre=$request->ALM_Nombre;
+            $Almacen->EMP_Id=$request->EMP_Id;
             $Almacen->ALM_NombreAlmacen=$request->ALM_NombreAlmacen;
             $Almacen->ALM_Direccion=$request->ALM_Direccion;
-            $Almacen->ALM_Ruc=$request->ALM_Ruc;
             $Almacen->ALM_Celular=$request->ALM_Celular;
             $Almacen->ALM_Status=$request->ALM_Status ?? 1 ;
             $Almacen->save();
@@ -94,8 +96,6 @@ class SedeController extends Controller
     public function update(Request $request, string $id)
     {
         $almacen = Almacen::find($id);
-        /* $almacen->ALM_Nombre=$request->ALM_Nombre;
-        $almacen->ALM_Ruc=$request->ALM_Ruc; */
         $almacen->ALM_NombreAlmacen=$request->ALM_NombreAlmacen;
         $almacen->ALM_Direccion=$request->ALM_Direccion;
         $almacen->ALM_Celular=$request->ALM_Celular;

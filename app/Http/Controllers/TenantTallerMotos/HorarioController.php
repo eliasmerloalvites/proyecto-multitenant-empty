@@ -50,7 +50,7 @@ class HorarioController extends Controller
                 ->make(true);
         }
         $sedes =  Almacen::get();
-        $turnos = Turno::select('TUR_Id as id', 'TUR_Nombre as name')->get();
+        $turnos = Turno::select('TUR_Id as id', 'TUR_Nombre as name' , 'TUR_Descripcion as descripcion')->get();
         
         return view('tenant_' . tenant('tipo_negocio') . '.configuracion.horario.index', compact('sedes','turnos'));
     }
