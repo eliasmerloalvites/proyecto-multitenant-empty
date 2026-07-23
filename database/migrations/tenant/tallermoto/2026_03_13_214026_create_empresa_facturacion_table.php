@@ -84,6 +84,16 @@ return new class extends Migration
             // ESTADO
             $table->boolean('activo')->default(true);
 
+
+            // El núcleo: ¿la web es oscura o clara?
+            $table->enum('tipo_tema', ['dark', 'light'])->default('dark');
+            
+            // Colores únicos de la marca
+            $table->string('color_main', 7)->default('#3b82f6');   // Color corporativo (ej: Azul o Rojo)
+            $table->string('color_light', 7)->default('#60a5fa');  // Versión más clara/hover del corporativo
+            $table->string('color_bg', 7)->default('#030712');     // Fondo general de la web
+            $table->string('color_card', 7)->default('#070b17');
+
             $table->timestamps();
 
         });

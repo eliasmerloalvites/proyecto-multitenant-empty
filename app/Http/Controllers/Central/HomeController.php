@@ -26,9 +26,12 @@ class HomeController extends Controller
             
 		    $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
             if($plan == 'start'){
-                return view('tenant_'.$tiponegocio.'.welcome',compact('tenantid', 'plan','empresa'));
+                $colorview = $empresa->tipo_tema;
+                return view('tenant_'.$tiponegocio.'.welcome',compact('tenantid', 'plan','empresa', 'colorview'));
             }else if($plan == 'basic'){
-                return view('tenant_'.$tiponegocio.'.landing.index',compact('tenantid', 'plan'));
+                $colorview = $empresa->tipo_tema;
+                //dd($empresa->color_bg);
+                return view('tenant_'.$tiponegocio.'.landing.index',compact('tenantid','empresa', 'plan', 'colorview'));
             }
         } else {
             $tenantid = null;

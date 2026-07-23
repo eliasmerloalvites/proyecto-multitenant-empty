@@ -58,6 +58,12 @@ Route::middleware([
     //Route::get('/', [HomeController::class, 'inicio'])->name('tenant.inicio');
     
     
+    Route::get('/servicios', [HomeController::class, 'servicios'])->name('web.servicios');
+    Route::get('/reservar', [HomeController::class, 'reservar'])->name('web.reservar');
+    Route::get('/historial', [HomeController::class, 'historial'])->name('web.historial');
+    Route::get('/catalogo', [HomeController::class, 'catalogo'])->name('web.catalogo');
+    Route::get('/nosotros', [HomeController::class, 'nosotros'])->name('web.nosotros');
+    Route::get('/contacto', [HomeController::class, 'contacto'])->name('web.contacto');
     Route::get('/tenant/login', [UserController::class, 'showlogin'])->name('tenant.login');
     Route::post('/tenant/login', [UserController::class, 'login'])->name('tenant.login.post');
     Route::get('/tenant/seguridad/cancelarusuario',   function () {

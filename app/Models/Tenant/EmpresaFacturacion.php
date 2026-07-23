@@ -60,6 +60,8 @@ class EmpresaFacturacion extends Model
 
         // BRANDING
         'color_principal',
+        'tipo_tema',
+        'color_main', 'color_light', 'color_bg', 'color_card',
 
         // ESTADO
         'activo',
@@ -81,6 +83,23 @@ class EmpresaFacturacion extends Model
     | ACCESSORS
     |--------------------------------------------------------------------------
     */
+
+    public function hexToRgb($hex)
+    {
+        $hex = str_replace("#", "", $hex);
+
+        if (strlen($hex) == 3) {
+            $r = hexdec(substr($hex, 0, 1) . substr($hex, 0, 1));
+            $g = hexdec(substr($hex, 1, 1) . substr($hex, 1, 1));
+            $b = hexdec(substr($hex, 2, 1) . substr($hex, 2, 1));
+        } else {
+            $r = hexdec(substr($hex, 0, 2));
+            $g = hexdec(substr($hex, 2, 2));
+            $b = hexdec(substr($hex, 4, 2));
+        }
+
+        return "$r, $g, $b";
+    }
 
     public function getLogoUrlAttribute()
     {

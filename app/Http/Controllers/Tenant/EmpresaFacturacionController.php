@@ -27,7 +27,7 @@ class EmpresaFacturacionController extends Controller
         DB::beginTransaction();
 
         try {
-
+            
             $empresa = EmpresaFacturacion::updateOrCreate(
                 [
                     'tenant_id' => tenant('id')
@@ -78,12 +78,22 @@ class EmpresaFacturacionController extends Controller
 
                     // BRANDING
                     // 'color_principal' => $request->color_principal,
+                    // SERIES
+                    'logo_portada1' => $request->logo_portada1,
+                    'logo_portada2' => $request->logo_portada2,
+
+                    // SERIES
+                    'tipo_tema' => $request->tipo_tema,
+                    'color_main' => $request->color_main,
+                    'color_light' => $request->color_light,
+                    'color_bg' => $request->color_bg,
+                    'color_card' => $request->color_card,
 
                     // ESTADO
                     'activo' => $request->activo ?? true,
                 ]
             );
-
+            
             /*
             |--------------------------------------------------------------------------
             | LOGO EMPRESA

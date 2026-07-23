@@ -112,7 +112,7 @@
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
 
                 <!-- HEADER -->
-                <div class="modal-header bg-primary text-white border-0">
+                <div class="modal-header bg-primary {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} border-0">
                     <div>
                         <h5 class="modal-title mb-0">
                             <i class="fas fa-user-circle me-2"></i>

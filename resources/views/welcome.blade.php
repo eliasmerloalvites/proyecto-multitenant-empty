@@ -81,7 +81,7 @@
 
             <div class="flex items-center gap-3">
                 <div
-                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-black text-2xl shadow-xl">
+                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-600 to-indigo-700 flex items-center justify-center text-white font-black text-2xl shadow-xl">
                     K
                 </div>
 
@@ -92,21 +92,21 @@
             </div>
 
             <nav class="hidden lg:flex items-center gap-8 font-medium text-[15px]">
-                <a href="#inicio" class="text-blue-600">Inicio</a>
-                <a href="#soluciones" class="hover:text-blue-600 transition">Soluciones</a>
-                <a href="#planes" class="hover:text-blue-600 transition">Planes</a>
-                <a href="#clientes" class="hover:text-blue-600 transition">Clientes</a>
-                <a href="#contacto" class="hover:text-blue-600 transition">Contacto</a>
+                <a href="#inicio" class="text-brand-600">Inicio</a>
+                <a href="#soluciones" class="hover:text-brand-600 transition">Soluciones</a>
+                <a href="#planes" class="hover:text-brand-600 transition">Planes</a>
+                <a href="#clientes" class="hover:text-brand-600 transition">Clientes</a>
+                <a href="#contacto" class="hover:text-brand-600 transition">Contacto</a>
             </nav>
 
             <div class="flex items-center gap-3">
                 <a href="/login"
-                    class="hidden md:flex px-5 py-3 rounded-2xl border border-slate-300 hover:border-blue-600 hover:text-blue-600 transition font-semibold">
+                    class="hidden md:flex px-5 py-3 rounded-2xl border border-slate-300 hover:border-brand-600 hover:text-brand-600 transition font-semibold">
                     Iniciar sesión
                 </a>
 
                 <a href="#planes"
-                    class="bg-blue-600 hover:bg-blue-700 transition text-white font-semibold px-5 py-3 rounded-2xl shadow-xl">
+                    class="bg-brand-600 hover:bg-brand-700 transition text-white font-semibold px-5 py-3 rounded-2xl shadow-xl">
                     Crear empresa
                 </a>
             </div>
@@ -123,7 +123,7 @@
         <!-- EFECTOS -->
         <div class="absolute inset-0 overflow-hidden">
 
-            <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-600/20 blur-[120px] rounded-full"></div>
+            <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-brand-600/20 blur-[120px] rounded-full"></div>
 
             <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-indigo-600/20 blur-[120px] rounded-full"></div>
 
@@ -147,7 +147,7 @@
                     <div
                         class="inline-flex items-center gap-2 bg-white/10 border border-white/10 text-white px-5 py-2 rounded-full text-sm font-medium backdrop-blur-md mb-8">
 
-                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <span class="w-2 h-2 rounded-full bg-brand-500"></span>
 
                         Plataforma #1 para la gestión de negocios
 
@@ -161,7 +161,7 @@
 
                         tu negocio
 
-                        <span class="text-blue-500">
+                        <span class="text-brand-500">
                             en minutos
                         </span>
 
@@ -181,7 +181,7 @@
 
                         <!-- BTN -->
                         <a href="#planes"
-                            class="group bg-blue-600 hover:bg-blue-700 text-white px-7 py-4 rounded-2xl font-bold text-base shadow-2xl transition-all duration-300 hover:scale-105 whitespace-nowrap">
+                            class="group bg-brand-600 hover:bg-brand-700 text-white px-7 py-4 rounded-2xl font-bold text-base shadow-2xl transition-all duration-300 hover:scale-105 whitespace-nowrap">
 
                             <span class="flex items-center gap-3">
 
@@ -222,7 +222,7 @@
                         <div class="flex items-center gap-3 text-slate-300 font-medium">
 
                             <div
-                                class="w-6 h-6 rounded-full border border-blue-500/30 bg-blue-500/10 flex items-center justify-center text-blue-400 text-sm">
+                                class="w-6 h-6 rounded-full border border-brand-500/30 bg-brand-500/10 flex items-center justify-center text-brand-400 text-sm">
 
                                 ✓
 
@@ -235,7 +235,7 @@
                         <div class="flex items-center gap-3 text-slate-300 font-medium">
 
                             <div
-                                class="w-6 h-6 rounded-full border border-blue-500/30 bg-blue-500/10 flex items-center justify-center text-blue-400 text-sm">
+                                class="w-6 h-6 rounded-full border border-brand-500/30 bg-brand-500/10 flex items-center justify-center text-brand-400 text-sm">
 
                                 ☁
 
@@ -248,7 +248,7 @@
                         <div class="flex items-center gap-3 text-slate-300 font-medium">
 
                             <div
-                                class="w-6 h-6 rounded-full border border-blue-500/30 bg-blue-500/10 flex items-center justify-center text-blue-400 text-sm">
+                                class="w-6 h-6 rounded-full border border-brand-500/30 bg-brand-500/10 flex items-center justify-center text-brand-400 text-sm">
 
                                 🛡
 
@@ -324,7 +324,7 @@
             <div class="text-center mb-16">
 
                 <span
-                    class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-blue-50 text-blue-600 text-sm font-semibold mb-5">
+                    class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-brand-50 text-brand-600 text-sm font-semibold mb-5">
 
                     NUESTRAS SOLUCIONES
 
@@ -333,7 +333,7 @@
                 <h2 class="text-4xl md:text-5xl font-black text-slate-900 mb-5">
 
                     Dos soluciones,
-                    <span class="text-blue-600">
+                    <span class="text-brand-600">
                         un mismo objetivo
                     </span>
 
@@ -366,7 +366,7 @@
                             <div class="flex items-start gap-4 mb-6">
 
                                 <div
-                                    class="w-16 h-16 rounded-2xl bg-blue-600 shadow-lg flex items-center justify-center shrink-0">
+                                    class="w-16 h-16 rounded-2xl bg-brand-600 shadow-lg flex items-center justify-center shrink-0">
 
                                     <i class="fa-solid fa-cart-shopping text-white text-2xl"></i>
 
@@ -377,7 +377,7 @@
                                     <h3 class="text-[20px] font-black leading-tight text-slate-900">
 
                                         KAELTECH
-                                        <span class="text-blue-600">
+                                        <span class="text-brand-600">
                                             POS
                                         </span>
 
@@ -405,9 +405,9 @@
 
                                 <div class="flex items-center gap-3 text-[15px] text-slate-700">
 
-                                    <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <div class="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center">
 
-                                        <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+                                        <i class="fa-solid fa-check text-[10px] text-brand-600"></i>
 
                                     </div>
 
@@ -417,9 +417,9 @@
 
                                 <div class="flex items-center gap-3 text-[15px] text-slate-700">
 
-                                    <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <div class="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center">
 
-                                        <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+                                        <i class="fa-solid fa-check text-[10px] text-brand-600"></i>
 
                                     </div>
 
@@ -429,9 +429,9 @@
 
                                 <div class="flex items-center gap-3 text-[15px] text-slate-700">
 
-                                    <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <div class="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center">
 
-                                        <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+                                        <i class="fa-solid fa-check text-[10px] text-brand-600"></i>
 
                                     </div>
 
@@ -441,9 +441,9 @@
 
                                 <div class="flex items-center gap-3 text-[15px] text-slate-700">
 
-                                    <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <div class="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center">
 
-                                        <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+                                        <i class="fa-solid fa-check text-[10px] text-brand-600"></i>
 
                                     </div>
 
@@ -455,7 +455,7 @@
 
                             {{-- BUTTON --}}
                             <a href="#planes-pos"
-                                class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 transition text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg">
+                                class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 transition text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg">
 
                                 Conocer más
 
@@ -622,7 +622,7 @@
 
                 <div class="inline-flex items-center gap-3 mb-4">
 
-                    <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-600 flex items-center justify-center shadow-lg">
 
                         <i class="fa-solid fa-cart-shopping text-white"></i>
 
@@ -633,7 +633,7 @@
                         <h2 class="text-3xl font-black text-slate-900">
 
                             PLANES KAELTECH
-                            <span class="text-blue-600">
+                            <span class="text-brand-600">
                                 POS
                             </span>
 
@@ -659,7 +659,7 @@
                     <div class="text-center mb-8">
 
                         <span
-                            class="inline-flex px-4 py-2 rounded-full bg-blue-50 text-blue-600 text-xs font-bold mb-5">
+                            class="inline-flex px-4 py-2 rounded-full bg-brand-50 text-brand-600 text-xs font-bold mb-5">
 
                             PLAN BÁSICO
 
@@ -692,9 +692,9 @@
 
                         <div class="flex items-center gap-3 text-slate-700 text-[15px]">
 
-                            <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                            <div class="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
 
-                                <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+                                <i class="fa-solid fa-check text-[10px] text-brand-600"></i>
 
                             </div>
 
@@ -704,9 +704,9 @@
 
                         <div class="flex items-center gap-3 text-slate-700 text-[15px]">
 
-                            <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                            <div class="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
 
-                                <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+                                <i class="fa-solid fa-check text-[10px] text-brand-600"></i>
 
                             </div>
 
@@ -716,9 +716,9 @@
 
                         <div class="flex items-center gap-3 text-slate-700 text-[15px]">
 
-                            <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                            <div class="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
 
-                                <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+                                <i class="fa-solid fa-check text-[10px] text-brand-600"></i>
 
                             </div>
 
@@ -728,9 +728,9 @@
 
                         <div class="flex items-center gap-3 text-slate-700 text-[15px]">
 
-                            <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                            <div class="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
 
-                                <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+                                <i class="fa-solid fa-check text-[10px] text-brand-600"></i>
 
                             </div>
 
@@ -742,7 +742,7 @@
 
                     {{-- BUTTON --}}
                     <button
-                        class="w-full bg-blue-600 hover:bg-blue-700 transition text-white py-4 rounded-xl font-bold text-sm shadow-lg">
+                        class="w-full bg-brand-600 hover:bg-brand-700 transition text-white py-4 rounded-xl font-bold text-sm shadow-lg">
 
                         Probar gratis 14 días
 
@@ -752,7 +752,7 @@
 
                 {{-- PLAN FACTURACION --}}
                 <div
-                    class="bg-gradient-to-b from-blue-600 to-blue-700 rounded-[28px] p-8 text-white shadow-2xl relative overflow-hidden">
+                    class="bg-gradient-to-b from-brand-600 to-blue-700 rounded-[28px] p-8 text-white shadow-2xl relative overflow-hidden">
 
                     {{-- GLOW --}}
                     <div class="absolute top-0 right-0 w-52 h-52 bg-white/10 rounded-full blur-3xl">
@@ -760,7 +760,7 @@
 
                     {{-- BADGE --}}
                     <div
-                        class="absolute top-5 right-5 bg-white text-blue-700 px-4 py-2 rounded-full text-xs font-black shadow-lg">
+                        class="absolute top-5 right-5 bg-white text-brand-700 px-4 py-2 rounded-full text-xs font-black shadow-lg">
 
                         MÁS POPULAR
 
@@ -777,13 +777,13 @@
 
                             </span>
 
-                            <p class="text-blue-100 text-sm mb-4">
+                            <p class="text-brand-100 text-sm mb-4">
                                 Para crecer tu negocio
                             </p>
 
                             <div class="flex items-end justify-center gap-1">
 
-                                <span class="text-2xl font-semibold text-blue-100">
+                                <span class="text-2xl font-semibold text-brand-100">
                                     S/
                                 </span>
 
@@ -791,7 +791,7 @@
                                     69
                                 </span>
 
-                                <span class="text-blue-100 mb-1">
+                                <span class="text-brand-100 mb-1">
                                     /mes
                                 </span>
 
@@ -858,7 +858,7 @@
 
                         {{-- BUTTON --}}
                         <button
-                            class="w-full bg-white hover:bg-slate-100 transition text-blue-700 py-4 rounded-xl font-black text-sm shadow-xl">
+                            class="w-full bg-white hover:bg-slate-100 transition text-brand-700 py-4 rounded-xl font-black text-sm shadow-xl">
 
                             Probar gratis 14 días
 
@@ -873,7 +873,7 @@
             {{-- FOOT --}}
             <div class="flex items-center justify-center gap-2 mt-8 text-slate-500 text-sm">
 
-                <i class="fa-regular fa-circle-check text-blue-600"></i>
+                <i class="fa-regular fa-circle-check text-brand-600"></i>
 
                 Sin permanencias. Cancela cuando quieras.
 
@@ -900,7 +900,7 @@
 
             {{-- EFFECTS --}}
             <div
-                class="absolute top-0 left-0 w-[350px] h-[350px] bg-blue-600/20 blur-[120px] rounded-full">
+                class="absolute top-0 left-0 w-[350px] h-[350px] bg-brand-600/20 blur-[120px] rounded-full">
             </div>
 
             <div
@@ -994,10 +994,10 @@
                         <div class="flex items-start gap-3">
 
                             <div
-                                class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+                                class="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center shrink-0">
 
                                 <i
-                                    class="fa-solid fa-shield-halved text-blue-400"></i>
+                                    class="fa-solid fa-shield-halved text-brand-400"></i>
 
                             </div>
 
@@ -1044,10 +1044,10 @@
                         <div class="flex items-start gap-3">
 
                             <div
-                                class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+                                class="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center shrink-0">
 
                                 <i
-                                    class="fa-regular fa-star text-blue-400"></i>
+                                    class="fa-regular fa-star text-brand-400"></i>
 
                             </div>
 
@@ -1242,7 +1242,7 @@
 
                 {{-- BADGE --}}
                 <div
-                    class="absolute top-5 right-5 bg-white text-blue-700 px-5 py-2 rounded-full font-black text-xs shadow-xl">
+                    class="absolute top-5 right-5 bg-white text-brand-700 px-5 py-2 rounded-full font-black text-xs shadow-xl">
 
                     MÁS VENDIDO
 
@@ -1257,13 +1257,13 @@
                             PLAN
                             <br>
 
-                            <span class="text-blue-300">
+                            <span class="text-brand-300">
                                 PROFESIONAL
                             </span>
 
                         </h3>
 
-                        <p class="text-blue-100 mt-3 text-sm">
+                        <p class="text-brand-100 mt-3 text-sm">
                             Para talleres que buscan crecer
                         </p>
 
@@ -1271,7 +1271,7 @@
 
                     {{-- PRICE --}}
                     <div
-                        class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-[22px] p-5 mb-6 shadow-xl">
+                        class="bg-gradient-to-r from-brand-500 to-blue-600 rounded-[22px] p-5 mb-6 shadow-xl">
 
                         <div class="text-center">
 
@@ -1291,7 +1291,7 @@
                             </div>
 
                             <div
-                                class="uppercase text-blue-100 font-bold tracking-widest text-sm mt-2">
+                                class="uppercase text-brand-100 font-bold tracking-widest text-sm mt-2">
 
                                 POR MES
 
@@ -1305,27 +1305,27 @@
                     <div class="space-y-4 mb-6 text-[15px]">
 
                         <div class="flex items-center gap-3">
-                            <i class="fa-solid fa-circle-check text-blue-200"></i>
+                            <i class="fa-solid fa-circle-check text-brand-200"></i>
                             Todo lo del plan Starter
                         </div>
 
                         <div class="flex items-center gap-3">
-                            <i class="fa-solid fa-circle-check text-blue-200"></i>
+                            <i class="fa-solid fa-circle-check text-brand-200"></i>
                             Página web profesional
                         </div>
 
                         <div class="flex items-center gap-3">
-                            <i class="fa-solid fa-circle-check text-blue-200"></i>
+                            <i class="fa-solid fa-circle-check text-brand-200"></i>
                             Historial completo por placa
                         </div>
 
                         <div class="flex items-center gap-3">
-                            <i class="fa-solid fa-circle-check text-blue-200"></i>
+                            <i class="fa-solid fa-circle-check text-brand-200"></i>
                             Reportes PDF profesionales
                         </div>
 
                         <div class="flex items-center gap-3">
-                            <i class="fa-solid fa-circle-check text-blue-200"></i>
+                            <i class="fa-solid fa-circle-check text-brand-200"></i>
                             Integración con WhatsApp
                         </div>
 
@@ -1333,7 +1333,7 @@
 
                     {{-- BUTTON --}}
                     <button
-                        class="w-full bg-white hover:bg-slate-100 transition text-blue-700 py-4 rounded-2xl text-sm font-black shadow-xl">
+                        class="w-full bg-white hover:bg-slate-100 transition text-brand-700 py-4 rounded-2xl text-sm font-black shadow-xl">
 
                         Agendar demo
 
@@ -1471,7 +1471,7 @@
 
                 <div class="flex items-center gap-3 mb-6">
                     <div
-                        class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-black text-3xl shadow-2xl">
+                        class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-700 flex items-center justify-center text-white font-black text-3xl shadow-2xl">
                         K
                     </div>
 

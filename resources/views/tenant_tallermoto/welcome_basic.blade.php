@@ -30,15 +30,15 @@
     <header class="bg-white shadow sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
 
-            <h1 class="text-2xl font-bold text-blue-700">
+            <h1 class="text-2xl font-bold text-brand-700">
                 KAEL TECH
             </h1>
 
             <nav class="hidden md:flex gap-6">
-                <a href="#servicios" class="hover:text-blue-600">Servicios</a>
-                <a href="#reserva" class="hover:text-blue-600">Reservar</a>
-                <a href="#productos" class="hover:text-blue-600">Productos</a>
-                <a href="#contacto" class="hover:text-blue-600">Contacto</a>
+                <a href="#servicios" class="hover:text-brand-600">Servicios</a>
+                <a href="#reserva" class="hover:text-brand-600">Reservar</a>
+                <a href="#productos" class="hover:text-brand-600">Productos</a>
+                <a href="#contacto" class="hover:text-brand-600">Contacto</a>
             </nav>
 
         </div>
@@ -61,7 +61,7 @@
             <div class="flex flex-wrap justify-center gap-4">
 
                 <a href="#reserva"
-                    class="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-lg font-semibold">
+                    class="bg-brand-600 hover:bg-brand-700 px-8 py-4 rounded-lg font-semibold">
                     Reservar Cita
                 </a>
 
@@ -101,7 +101,7 @@
                     class="w-full border rounded-lg p-4">
 
                 <button
-                    class="bg-blue-600 text-white px-6 rounded-lg">
+                    class="bg-brand-600 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} px-6 rounded-lg">
                     Buscar
                 </button>
 
@@ -147,7 +147,7 @@
                 </div>
 
                 <button
-                    class="w-full mt-6 bg-blue-600 text-white py-4 rounded-lg">
+                    class="w-full mt-6 bg-brand-600 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} py-4 rounded-lg">
                     Reservar Ahora
                 </button>
 
@@ -325,7 +325,7 @@
             </p>
 
             <a href="https://wa.me/51929386665"
-                class="bg-green-500 text-white px-8 py-4 rounded-lg">
+                class="bg-green-500 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} px-8 py-4 rounded-lg">
                 Escribir por WhatsApp
             </a>
 
@@ -334,7 +334,7 @@
     </section>
 
     <!-- FOOTER -->
-    <footer class="bg-gray-900 text-white py-10">
+    <footer class="bg-gray-900 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} py-10">
 
         <div class="container mx-auto px-6 text-center">
 

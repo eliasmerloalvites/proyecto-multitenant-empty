@@ -44,7 +44,7 @@
             <div class="flex items-center gap-3">
 
                 <div
-                    class="w-12 h-12 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-lg overflow-hidden">
+                    class="w-12 h-12 rounded-lg bg-slate-900 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} flex items-center justify-center font-bold text-lg overflow-hidden">
 
                     @if(!empty($empresa->logo))
                         <img src="{{ asset($empresa->logo) }}"
@@ -78,7 +78,7 @@
 
                 <a href="https://wa.me/{{ $empresa->whatsapp }}"
                     target="_blank"
-                    class="bg-green-500 hover:bg-green-600 text-white px-5 py-2.5 rounded-lg font-semibold transition">
+                    class="bg-green-500 hover:bg-green-600 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} px-5 py-2.5 rounded-lg font-semibold transition">
                     WhatsApp
                 </a>
 
@@ -112,7 +112,7 @@
 
                     <a href="https://wa.me/{{ $empresa->whatsapp }}"
                         target="_blank"
-                        class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-lg font-semibold transition">
+                        class="bg-slate-900 hover:bg-slate-800 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} px-6 py-3 rounded-lg font-semibold transition">
                         Solicitar atención
                     </a>
 
@@ -273,7 +273,7 @@
 
                     <a href="https://wa.me/{{ $empresa->whatsapp }}"
                         target="_blank"
-                        class="inline-block bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-xl font-bold transition">
+                        class="inline-block bg-green-500 hover:bg-green-600 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} px-8 py-4 rounded-xl font-bold transition">
                         Contactar por WhatsApp
                     </a>
 
