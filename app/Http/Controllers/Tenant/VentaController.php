@@ -476,8 +476,10 @@ class VentaController extends Controller
             ->distinct()
             ->first();
 
-        $datosalmacen = DB::table('almacen')
-            ->where('ALM_Id', '=', $ventae->ALM_Id)
+        $datosalmacen = DB::table('almacen as al')
+            ->join('empresa_facturacion as emp', 'al.EMP_Id', '=', 'emp.id')
+            ->where('emp.tenant_id', tenant('id'))
+            ->where('al.ALM_Id', '=', $ventae->ALM_Id)
             ->first();
 
         $Subtotal = 0.00;
@@ -491,7 +493,7 @@ class VentaController extends Controller
             $igv = round($igv, 2);
             $Subtotal = round($Subtotal, 2);
 
-            $codi = $ventae->fechaVenta . "| " . $datosalmacen->ALM_Ruc . " | " . $datosalmacen->ALM_Celular . " " . $ventae->numDoc . "|" . $ventae->total_venta;
+            $codi = $ventae->fechaVenta . "| " . $datosalmacen->ruc . " | " . $datosalmacen->ALM_Celular . " " . $ventae->numDoc . "|" . $ventae->total_venta;
             $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
 
             $UbiDoc = $ventae->serDoc;
@@ -546,8 +548,10 @@ class VentaController extends Controller
             ->distinct()
             ->first();
 
-        $datosalmacen = DB::table('almacen')
-            ->where('ALM_Id', '=', $ventae->ALM_Id)
+        $datosalmacen = DB::table('almacen as al')
+            ->join('empresa_facturacion as emp', 'al.EMP_Id', '=', 'emp.id')
+            ->where('emp.tenant_id', tenant('id'))
+            ->where('al.ALM_Id', '=', $ventae->ALM_Id)
             ->first();
 
         $Subtotal = 0.00;
@@ -561,7 +565,7 @@ class VentaController extends Controller
             $igv = round($igv, 2);
             $Subtotal = round($Subtotal, 2);
 
-            $codi = $ventae->fechaVenta . "| " . $datosalmacen->ALM_Ruc . " | " . $datosalmacen->ALM_Celular . " " . $ventae->numDoc . "|" . $ventae->total_venta;
+            $codi = $ventae->fechaVenta . "| " . $datosalmacen->ruc . " | " . $datosalmacen->ALM_Celular . " " . $ventae->numDoc . "|" . $ventae->total_venta;
             $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
 
             $UbiDoc = $ventae->serDoc;
@@ -631,7 +635,7 @@ class VentaController extends Controller
             $igv = round($igv, 2);
             $Subtotal = round($Subtotal, 2);
 
-            $codi = $ventae->fechaVenta . "| " . $datosalmacen->ALM_Ruc . " | " . $datosalmacen->ALM_Celular . " " . $ventae->numDoc . "|" . $ventae->total_venta;
+            $codi = $ventae->fechaVenta . "| " . $datosalmacen->ruc . " | " . $datosalmacen->ALM_Celular . " " . $ventae->numDoc . "|" . $ventae->total_venta;
             $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
 
             $UbiDoc = $ventae->serDoc;

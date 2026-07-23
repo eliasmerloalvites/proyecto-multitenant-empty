@@ -174,11 +174,11 @@ body{
             @endif
 
             <div class="empresa">
-                {{ $datosalmacen->ALM_Nombre }}
+                {{ $datosalmacen->razon_social }}
             </div>
 
             <div class="ruc">
-                RUC: {{ $datosalmacen->ALM_Ruc }}
+                RUC: {{ $datosalmacen->ruc }}
             </div>
 
             <div class="direccion">
@@ -356,7 +356,7 @@ body{
         <div class="qr-section">
 
             {!! QrCode::size(120)->generate(
-                'RUC: '.$datosalmacen->ALM_Ruc.
+                'RUC: '.$datosalmacen->ruc.
                 ' | DOC: '.$UbiDoc.'-'.$NumDoc.
                 ' | TOTAL: S/'.$ventae->total_venta
             ) !!}

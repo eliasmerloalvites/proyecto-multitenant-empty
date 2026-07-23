@@ -17,6 +17,7 @@ use App\Http\Controllers\Tenant\MetodoPagoController;
 use App\Http\Controllers\Tenant\ProductoController;
 use App\Http\Controllers\Tenant\ProveedorController;
 use App\Http\Controllers\Tenant\SedeController;
+use App\Http\Controllers\Tenant\EmpresaFacturacionController;
 use App\Http\Controllers\Tenant\TestFacturacionController;
 use App\Http\Controllers\Tenant\TipoGastoController;
 use App\Http\Controllers\Tenant\UserController;
@@ -24,6 +25,12 @@ use App\Http\Controllers\Tenant\VentaController;
 use App\Http\Controllers\TenantTallerMotos\BahiaController;
 use App\Http\Controllers\TenantTallerMotos\HorarioController;
 use App\Http\Controllers\TenantTallerMotos\MantenimientoActividadVariadaController;
+use App\Http\Controllers\TenantTallerMotos\MantenimientoGeneralInyectadaController;
+use App\Http\Controllers\TenantTallerMotos\MantenimientoGeneralCarburadaController;
+use App\Http\Controllers\TenantTallerMotos\MantenimientoPreventivoInyectadaController;
+use App\Http\Controllers\TenantTallerMotos\MantenimientoPreventivoCarburadaController;
+use App\Http\Controllers\TenantTallerMotos\ReportesController;
+use App\Http\Controllers\TenantTallerMotos\ReservacionController;
 use App\Http\Controllers\TenantTallerMotos\TurnoController;
 use App\Services\Facturacion\GreenterService;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +58,12 @@ Route::middleware([
     //Route::get('/', [HomeController::class, 'inicio'])->name('tenant.inicio');
     
     
+    Route::get('/servicios', [HomeController::class, 'servicios'])->name('web.servicios');
+    Route::get('/reservar', [HomeController::class, 'reservar'])->name('web.reservar');
+    Route::get('/historial', [HomeController::class, 'historial'])->name('web.historial');
+    Route::get('/catalogo', [HomeController::class, 'catalogo'])->name('web.catalogo');
+    Route::get('/nosotros', [HomeController::class, 'nosotros'])->name('web.nosotros');
+    Route::get('/contacto', [HomeController::class, 'contacto'])->name('web.contacto');
     Route::get('/tenant/login', [UserController::class, 'showlogin'])->name('tenant.login');
     Route::post('/tenant/login', [UserController::class, 'login'])->name('tenant.login.post');
     Route::get('/tenant/seguridad/cancelarusuario',   function () {
@@ -59,19 +72,104 @@ Route::middleware([
     Route::post('/tenant/logout', [UserController::class, 'logout'])->name('tenant.logout');
 
     
-Route::get('/consulta', [ConsultaDocumentoController::class,'index'])->name('consulta');
-Route::get('/consultardni/{id}', [ConsultaDocumentoController::class,'buscarDni'] )->name('consultar.reniec');
-Route::get('/consultasunat', [ConsultaDocumentoController::class,'indexsunsat'] )->name('consultarsunat');
-Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'] )->name('consultar.sunat');
+    Route::get('/consulta', [ConsultaDocumentoController::class,'index'])->name('consulta');
+    Route::get('/consultardni/{id}', [ConsultaDocumentoController::class,'buscarDni'] )->name('consultar.reniec');
+    Route::get('/consultasunat', [ConsultaDocumentoController::class,'indexsunsat'] )->name('consultarsunat');
+    Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'] )->name('consultar.sunat');
+
+    // PDF
+    Route::get('/tenant/actividades/mantenimientoactividadvariada/{id}/pdf',[MantenimientoActividadVariadaController::class, 'pdf'])->name('tenant.actividades.mantenimientoactividadvariada.pdf');
+    Route::get('/tenant/mantenimientos/generalinyectada/{id}/pdf',[MantenimientoGeneralInyectadaController::class, 'pdf'])->name('tenant.mantenimientos.generalinyectada.pdf');
+    Route::get('/tenant/mantenimientos/generalcarburada/{id}/pdf',[MantenimientoGeneralCarburadaController::class, 'pdf'])->name('tenant.mantenimientos.generalcarburada.pdf');
+    Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/pdf',[MantenimientoPreventivoInyectadaController::class, 'pdf'])->name('tenant.mantenimientos.preventivoinyectada.pdf');
+    Route::get('/tenant/mantenimientos/preventivocarburada/{id}/pdf',[MantenimientoPreventivoCarburadaController::class, 'pdf'])->name('tenant.mantenimientos.preventivocarburada.pdf');
 
     Route::middleware(['auth:tenant'])->group(function(){  
         Route::get('/tenant/home', [HomeController::class,'index'])->name('tenant.home');
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');
         
+        // RESERVACIONES ADMINISTRACION
+        Route::resource('/tenant/reservaciones/administracion', ReservacionController::class)->names([
+            'index' => 'tenant.reservaciones.administracion.index',
+            'create' => 'tenant.reservaciones.administracion.create',
+            'store' => 'tenant.reservaciones.administracion.store',
+            'edit' => 'tenant.reservaciones.administracion.edit',
+            'update' => 'tenant.reservaciones.administracion.update',
+            'destroy' => 'tenant.reservaciones.administracion.destroy',
+            'show' => 'tenant.reservaciones.administracion.show'
+        ])->parameters([
+            'reservacion' => 'reservacion'
+        ]);
+          
+        //REPORTES
+        Route::get('/tenant/reportes/listageneral',[ReportesController::class, 'listageneral'])->name('tenant.reportes.listageneral');
+        Route::post('/tenant/reportes/listageneral1',[ReportesController::class, 'listageneral1'])->name('tenant.reportes.listageneral1');
+
+        Route::post('/tenant/mantenimientos/preventivocarburada/{preventivocarburada}/crop',[MantenimientoPreventivoCarburadaController::class, 'crop'])->name('tenant.mantenimientos.preventivocarburada.crop');
+        Route::delete('/tenant/mantenimientos/preventivocarburada/crop/{preventivocarburada}/{item}',[MantenimientoPreventivoCarburadaController::class, 'destroyimagen'])->name('tenant.mantenimientos.preventivocarburada.destroyimagen');
+        Route::put('/tenant/mantenimientos/preventivocarburada/{preventivocarburada}/actualizarestado', [MantenimientoPreventivoCarburadaController::class, 'actualizarestado'])->name('tenant.mantenimientos.preventivocarburada.actualizarestado');
+        Route::resource('/tenant/mantenimientos/preventivocarburada', MantenimientoPreventivoCarburadaController::class)->names([
+            'index' => 'tenant.mantenimientos.preventivocarburada.index',
+            'create' => 'tenant.mantenimientos.preventivocarburada.create',
+            'store' => 'tenant.mantenimientos.preventivocarburada.store',
+            'edit' => 'tenant.mantenimientos.preventivocarburada.edit',
+            'update' => 'tenant.mantenimientos.preventivocarburada.update',
+            'destroy' => 'tenant.mantenimientos.preventivocarburada.destroy',
+            'show' => 'tenant.mantenimientos.preventivocarburada.show'
+        ])->parameters([
+            'preventivocarburada' => 'preventivocarburada'
+        ]);
+
+        Route::post('/tenant/mantenimientos/preventivoinyectada/{preventivoinyectada}/crop',[MantenimientoPreventivoInyectadaController::class, 'crop'])->name('tenant.mantenimientos.preventivoinyectada.crop');
+        Route::delete('/tenant/mantenimientos/preventivoinyectada/crop/{preventivoinyectada}/{item}',[MantenimientoPreventivoInyectadaController::class, 'destroyimagen'])->name('tenant.mantenimientos.preventivoinyectada.destroyimagen');
+        Route::put('/tenant/mantenimientos/preventivoinyectada/{preventivoinyectada}/actualizarestado', [MantenimientoPreventivoInyectadaController::class, 'actualizarestado'])->name('tenant.mantenimientos.preventivoinyectada.actualizarestado');
+        Route::resource('/tenant/mantenimientos/preventivoinyectada', MantenimientoPreventivoInyectadaController::class)->names([
+            'index' => 'tenant.mantenimientos.preventivoinyectada.index',
+            'create' => 'tenant.mantenimientos.preventivoinyectada.create',
+            'store' => 'tenant.mantenimientos.preventivoinyectada.store',
+            'edit' => 'tenant.mantenimientos.preventivoinyectada.edit',
+            'update' => 'tenant.mantenimientos.preventivoinyectada.update',
+            'destroy' => 'tenant.mantenimientos.preventivoinyectada.destroy',
+            'show' => 'tenant.mantenimientos.preventivoinyectada.show'
+        ])->parameters([
+            'preventivoinyectada' => 'preventivoinyectada'
+        ]);
         
+        Route::post('/tenant/mantenimientos/generalcarburada/{generalcarburada}/crop',[MantenimientoGeneralCarburadaController::class, 'crop'])->name('tenant.mantenimientos.generalcarburada.crop');
+        Route::delete('/tenant/mantenimientos/generalcarburada/crop/{generalcarburada}/{item}',[MantenimientoGeneralCarburadaController::class, 'destroyimagen'])->name('tenant.mantenimientos.generalcarburada.destroyimagen');
+        Route::put('/tenant/mantenimientos/generalcarburada/{generalcarburada}/actualizarestado', [MantenimientoGeneralCarburadaController::class, 'actualizarestado'])->name('tenant.mantenimientos.generalcarburada.actualizarestado');
+        Route::resource('/tenant/mantenimientos/generalcarburada', MantenimientoGeneralCarburadaController::class)->names([
+            'index' => 'tenant.mantenimientos.generalcarburada.index',
+            'create' => 'tenant.mantenimientos.generalcarburada.create',
+            'store' => 'tenant.mantenimientos.generalcarburada.store',
+            'edit' => 'tenant.mantenimientos.generalcarburada.edit',
+            'update' => 'tenant.mantenimientos.generalcarburada.update',
+            'destroy' => 'tenant.mantenimientos.generalcarburada.destroy',
+            'show' => 'tenant.mantenimientos.generalcarburada.show'
+        ])->parameters([
+            'generalcarburada' => 'generalcarburada'
+        ]);
+
+
+        Route::post('/tenant/mantenimientos/generalinyectada/{generalinyectada}/crop',[MantenimientoGeneralInyectadaController::class, 'crop'])->name('tenant.mantenimientos.generalinyectada.crop');
+        Route::delete('/tenant/mantenimientos/generalinyectada/crop/{generalinyectada}/{item}',[MantenimientoGeneralInyectadaController::class, 'destroyimagen'])->name('tenant.mantenimientos.generalinyectada.destroyimagen');
+        Route::put('/tenant/mantenimientos/generalinyectada/{generalinyectada}/actualizarestado', [MantenimientoGeneralInyectadaController::class, 'actualizarestado'])->name('tenant.mantenimientos.generalinyectada.actualizarestado');
+        Route::resource('/tenant/mantenimientos/generalinyectada', MantenimientoGeneralInyectadaController::class)->names([
+            'index' => 'tenant.mantenimientos.generalinyectada.index',
+            'create' => 'tenant.mantenimientos.generalinyectada.create',
+            'store' => 'tenant.mantenimientos.generalinyectada.store',
+            'edit' => 'tenant.mantenimientos.generalinyectada.edit',
+            'update' => 'tenant.mantenimientos.generalinyectada.update',
+            'destroy' => 'tenant.mantenimientos.generalinyectada.destroy',
+            'show' => 'tenant.mantenimientos.generalinyectada.show'
+        ])->parameters([
+            'generalinyectada' => 'generalinyectada'
+        ]);
+
+            
         Route::post('/tenant/actividades/mantenimientoactividadvariada/{mantenimientoactividadvariada}/crop',[MantenimientoActividadVariadaController::class, 'crop'])->name('tenant.actividades.mantenimientoactividadvariada.crop');
-        Route::delete('/tenant/actividades/mantenimientoactividadvariada//crop{mantenimientoactividadvariada}/{item}',[MantenimientoActividadVariadaController::class, 'destroyimagen'])->name('tenant.actividades.mantenimientoactividadvariada.destroyimagen');
-        Route::put('/tenant/actividades/mantenimientoactividadvariada/{mantenimientoactividadvariada}/activar', [MantenimientoActividadVariadaController::class, 'activar'])->name('tenant.actividades.mantenimientoactividadvariada.activar');
+        Route::delete('/tenant/actividades/mantenimientoactividadvariada/crop/{mantenimientoactividadvariada}/{item}',[MantenimientoActividadVariadaController::class, 'destroyimagen'])->name('tenant.actividades.mantenimientoactividadvariada.destroyimagen');
+        Route::put('/tenant/actividades/mantenimientoactividadvariada/{mantenimientoactividadvariada}/actualizarestado', [MantenimientoActividadVariadaController::class, 'actualizarestado'])->name('tenant.actividades.mantenimientoactividadvariada.actualizarestado');
         Route::resource('/tenant/actividades/mantenimientoactividadvariada', MantenimientoActividadVariadaController::class)->names([
             'index' => 'tenant.actividades.mantenimientoactividadvariada.index',
             'create' => 'tenant.actividades.mantenimientoactividadvariada.create',
@@ -252,6 +350,18 @@ Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'
             'update' => 'tenant.inventario.clase.update',
             'destroy' => 'tenant.inventario.clase.destroy',
             'show' => 'tenant.inventario.clase.show'
+        ]);
+
+        Route::resource('/tenant/configuracion/empresa', EmpresaFacturacionController::class)->names([
+            'index' => 'tenant.configuracion.empresa.index',
+            'create' => 'tenant.configuracion.empresa.create',
+            'store' => 'tenant.configuracion.empresa.store',
+            'edit' => 'tenant.configuracion.empresa.edit',
+            'update' => 'tenant.configuracion.empresa.update',
+            'destroy' => 'tenant.configuracion.empresa.destroy',
+            'show' => 'tenant.configuracion.empresa.show'
+        ])->parameters([
+            'empresa' => 'empresa'
         ]);
 
         Route::resource('/tenant/configuracion/sede', SedeController::class)->names([

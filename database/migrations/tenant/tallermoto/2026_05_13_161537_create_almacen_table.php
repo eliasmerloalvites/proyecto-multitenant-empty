@@ -15,11 +15,10 @@ return new class extends Migration
             /* PRIMARY KEY */
             $table->increments('ALM_Id');
             /* CAMPOS */
-            $table->string('ALM_Nombre', 50);
-            $table->string('ALM_NombreAlmacen', 50);
-            $table->string('ALM_Direccion', 50)->nullable();
-            $table->string('ALM_Ruc', 12);
-            $table->string('ALM_Celular', 9)->nullable();
+            $table->unsignedBigInteger('EMP_Id');
+            $table->string('ALM_NombreAlmacen', 200)->nullable();
+            $table->string('ALM_Direccion', 200)->nullable();
+            $table->string('ALM_Celular', 20)->nullable();
             $table->boolean('ALM_Status')->default(1);
             /* TIMESTAMPS */
             $table->timestamps();

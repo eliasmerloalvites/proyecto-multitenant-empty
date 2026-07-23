@@ -4,6 +4,7 @@ namespace App\Http\Controllers\TenantTallerMotos;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant\Almacen;
+use App\Models\Tenant\EmpresaFacturacion;
 use App\Models\Tenant\User;
 use App\Models\TenantTallerMotos\MantenimientoActividadVariada;
 use App\Models\TenantTallerMotos\MavDetalleReemplazo;
@@ -15,8 +16,10 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Intervention\Image\Laravel\Facades\Image;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\URL;
 
 class MantenimientoActividadVariadaController extends Controller
 {
@@ -90,15 +93,15 @@ class MantenimientoActividadVariadaController extends Controller
                         if ($row->MAV_Estado == 'APROBADO') {
                             $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->MAV_Id . '" title="Activar" class="btn btn-info btn-sm activarMantenimientoActividadVariadas"><i class="fa fa-check"></i></a>';
                         } else if ($row->MAV_Estado == 'PENDIENTE') {
-                            $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->MAV_Id . '" title="Aprobar" class="btn btn-success btn-sm aprobarMantenimientoActividadVariadas"><i class="fa fa-check"></i></a>';
+                            $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->MAV_Id . '" title="Aprobar y Notificar" class="btn btn-success btn-sm aprobarMantenimientoActividadVariadas"><i class="fa fa-check"></i></a>';
                         }
                         return $btn;
                     })
                     ->addColumn('celular', function ($row) {
                         if ($row->notificar == 1) {
-                            $btn = $row->MAV_celular . ' <a target="_blank" href="https://wa.me/51' . $row->MAV_celular . '?text=Hola%20quiero%20informarte" data-toggle="tooltip"  data-id="' . $row->MAV_Id . '" title="Activar" class="btn btn-success btn-sm"><i class="fab fa-whatsapp"></i></a>';
+                            $btn = $row->MAV_celular . ' <a target="_blank" href="https://wa.me/51' . $row->MAV_celular . '?text=Hola%20quiero%20informarte" data-toggle="tooltip"  data-id="' . $row->MAV_Id . '" title="Notificar" class="btn btn-success btn-sm"><i class="fab fa-whatsapp"></i></a>';
                         } else {
-                            $btn = $row->MAV_celular . ' <a target="_blank" href="https://wa.me/51' . $row->MAV_celular . '?text=Hola%20quiero%20informarte"  data-toggle="tooltip"  data-id="' . $row->MAV_Id . '" title="Aprobar" class="btn btn-danger btn-sm "><i class="fab fa-whatsapp"></i></a>';
+                            $btn = $row->MAV_celular . ' <a target="_blank" href="https://wa.me/51' . $row->MAV_celular . '?text=Hola%20quiero%20informarte"  data-toggle="tooltip"  data-id="' . $row->MAV_Id . '" title="No Notificar" class="btn btn-danger btn-sm "><i class="fab fa-whatsapp"></i></a>';
                         }
                         return $btn;
                     })
@@ -210,8 +213,8 @@ class MantenimientoActividadVariadaController extends Controller
     public function edit(string $id)
     {
         $datos = DB::table('mantenimiento_actividad_variadas as mav')
-            ->join('personal as p', 'p.PER_Id', '=', 'mav.PER_Id')
-            ->select('mav.*', DB::raw('CONCAT(p.PER_Nombre," ",p.PER_Apellido) as personal'))
+            ->join('users as u', 'u.id', '=', 'mav.PER_Id')
+            ->select('mav.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MAV_Id', '=', $id)
             ->first();
         $detalle = DB::table('mav_detalle_reemplazo')
@@ -257,174 +260,109 @@ class MantenimientoActividadVariadaController extends Controller
     public function crop(Request $request, $id)
     {
 
-        $request->validate([
-            'file' => 'required|image|max:5120'
-        ]);
-
-        /*
-    |--------------------------------------------------------------------------
-    | IDS
-    |--------------------------------------------------------------------------
-    */
+        $request->validate([ 'file' => 'required|image|max:5120']);
 
         $mantenimientoId = $id;
-
         $tenantId = tenant('id') ?? 'central';
-
         $tipoNegocio = tenant('tipo_negocio') ?? 'central';
 
-        /*
-    |--------------------------------------------------------------------------
-    | ITEM
-    |--------------------------------------------------------------------------
-    */
-
-        $ultimoItem = MavImagen::where(
-            'MAV_Id',
-            $mantenimientoId
-        )->max('MAVI_Item');
-
+        $totalImagenes = MavImagen::where('MAV_Id', $mantenimientoId)->count();
+        if ($totalImagenes >= tenant('max_images')) {
+            return response()->json([
+                'status' => 0,
+                'msg' => 'Tu plan alcanzó el límite de imágenes.'
+            ], 422);
+        }
+        $ultimoItem = MavImagen::where('MAV_Id',$mantenimientoId)->max('MAVI_Item');
         $item = $ultimoItem ? $ultimoItem + 1 : 1;
 
-        /*
-    |--------------------------------------------------------------------------
-    | ARCHIVO
-    |--------------------------------------------------------------------------
-    */
-
         $file = $request->file('file');
-
-        /*
-    |--------------------------------------------------------------------------
-    | NOMBRE UNICO
-    |--------------------------------------------------------------------------
-    */
-
         $nombreArchivo = Str::uuid() . '.webp';
-
-        /*
-    |--------------------------------------------------------------------------
-    | DIRECTORIOS
-    |--------------------------------------------------------------------------
-    */
 
         $basePath = $tipoNegocio . '/' . $tenantId . '/mantenimiento/actividad_variada/' . $mantenimientoId;
 
         $pathOriginal = $basePath . '/original/';
         $pathThumb = $basePath . '/thumb/';
 
-        /*
-    |--------------------------------------------------------------------------
-    | IMAGEN ORIGINAL
-    |--------------------------------------------------------------------------
-    */
-
+        /* ORIGINAL */
         $imageOriginal = Image::read($file);
-        $imageOriginal->scaleDown(
-            width: 1200
-        );
-
-        /*
-    |--------------------------------------------------------------------------
-    | GUARDAR ORIGINAL
-    |--------------------------------------------------------------------------
-    */
+        $imageOriginal->scaleDown(width: 1200);
 
         Storage::disk('public')->put(
-
             $pathOriginal . $nombreArchivo,
-
             (string) $imageOriginal->toWebp(70)
+        );
 
-        );
-        $pesoFinal = Storage::disk('public')->size(
-            $pathOriginal.$nombreArchivo
-        );
+        $pesoFinal = Storage::disk('public')->size($pathOriginal.$nombreArchivo);
         $tamañoFormateado = $this->formatBytes($pesoFinal);
-
-        /*
-    |--------------------------------------------------------------------------
-    | THUMBNAIL
-    |--------------------------------------------------------------------------
-    */
-
+        
+        /* THUMBNAIL */
         $imageThumb = Image::read($file);
-        $imageThumb->scaleDown(
-            width: 300
-        );
-
-        /*
-    |--------------------------------------------------------------------------
-    | GUARDAR THUMB
-    |--------------------------------------------------------------------------
-    */
-
+        $imageThumb->scaleDown(width: 300);
         Storage::disk('public')->put(
             $pathThumb . $nombreArchivo,
             (string) $imageThumb->toWebp(60)
-
         );
 
-        /*
-    |--------------------------------------------------------------------------
-    | URLS
-    |--------------------------------------------------------------------------
-    */
-
-        $rutaOriginal = Storage::url(
-            $pathOriginal . $nombreArchivo
-        );
-
-        $rutaThumb = Storage::url(
-            $pathThumb . $nombreArchivo
-        );
-
-        /*
-    |--------------------------------------------------------------------------
-    | GUARDAR BD
-    |--------------------------------------------------------------------------
-    */
+        $rutaOriginal = Storage::url($pathOriginal . $nombreArchivo);
+        $rutaThumb = Storage::url($pathThumb . $nombreArchivo);
 
         $mavImagen = new MavImagen();
-
         $mavImagen->MAV_Id = $mantenimientoId;
         $mavImagen->MAVI_Item = $item;
-
         $mavImagen->MAVI_url = $rutaOriginal;
-
-        // OPCIONAL
         $mavImagen->MAVI_Thumb = $rutaThumb;
-
         $mavImagen->MAVI_Nombre = $nombreArchivo;
         $mavImagen->MAVI_Peso = $tamañoFormateado;
-
         $mavImagen->save();
 
-        /*
-    |--------------------------------------------------------------------------
-    | RESPONSE
-    |--------------------------------------------------------------------------
-    */
-
-        $datos = MavImagen::where(
-            'MAV_Id',
-            $mantenimientoId
-        )->get();
+        $datos = MavImagen::where('MAV_Id',$mantenimientoId)->get();
 
         return response()->json([
-
             'status' => 1,
-
             'msg' => [
-
                 'data' => $datos,
-
                 'mensaje' => 'Se cargó correctamente.'
-
             ]
-
         ]);
     }
+
+    public function pdf($id)
+	{
+		$datos = DB::table('mantenimiento_actividad_variadas as mav')
+				->join('users as u','u.id','=','mav.PER_Id')
+				->select('mav.*',DB::raw('CONCAT(u.name) as personal'))
+				->where('MAV_Id','=',$id)
+				->first();
+
+        $detalle_reemplazo = DB::table('mav_detalle_reemplazo')
+				->where('MAV_Id','=',$id)
+				->get();
+
+        $total_detalle = 0;
+        foreach ($detalle_reemplazo as $dr) {
+            $total_detalle =round($total_detalle + $dr->MAV_Precio, 2) ; 
+        }
+
+        $imagenes = DB::table('mav_imagen')
+                ->where('MAV_Id','=',$id)
+                ->get();
+
+        $url = URL::to('');
+		$empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+        
+		$pdf   = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/actividades/variadas/pdf', [
+			"mttoPreventivo"=>$datos,
+			"detalle"=>$detalle_reemplazo,
+			"imagenes"=>$imagenes,
+			"url"=>$url,
+            "total_detalle"=>$total_detalle,
+            "empresa"=>$empresa
+		])->setOptions(['defaultFont' => 'sans-serif',
+        'chroot'  => public_path('dist/img'), 'isRemoteEnabled' => true]);
+
+		return $pdf->stream('mantenimiento-actividad-variada-' . tenant('id') . '.pdf');
+	}
 
     // ACTUALIZAR
 
@@ -458,6 +396,9 @@ class MantenimientoActividadVariadaController extends Controller
             if ($rolAdmin) {
                 $mtto_act_variadas->MAV_Estado = 'APROBADO';
             }
+            if($request->notificar){
+                $mtto_act_variadas->notificar = 1;
+            }
             $mtto_act_variadas->update();
 
 
@@ -486,50 +427,178 @@ class MantenimientoActividadVariadaController extends Controller
             DB::rollback();
         }
 
-        return response()->json(['success' => 'Actividades Variadas Editado Exitosamente.']);
+        return response()->json(['success' => true, "message" => 'Actividades Variadas Editado Exitosamente.']);
     }
 
-    // ACTIVAR
+    public function actualizarestado(Request $request,$id)
+	{
+        try {
+            DB::beginTransaction();
+            $mtto_act_variadas=MantenimientoActividadVariada::findOrFail($id);
+            if($request->notificar == 1){
+                $mtto_act_variadas->MAV_Estado="PENDIENTE";
+                $mtto_act_variadas->notificar=0;
+            }
+            if($request->estado == "APROBADO"){
+                $mtto_act_variadas->MAV_Estado="APROBADO";
+                if($request->notificar == 2){
+                    $mtto_act_variadas->notificar=0;
+                }else{
+                    $mtto_act_variadas->notificar=1;
+                }
+            }
+            if($request->observacion){
+                $mtto_act_variadas->observacion=$request->observacion ;
+            }
+
+            if($request->respuesta){
+                $mtto_act_variadas->respuesta=$request->respuesta ;
+            }
+            $mtto_act_variadas->update();
+
+            DB::commit();
+
+        } catch (Exception $e)
+        {
+        DB::rollback();
+        }
+
+        if($request->notificar == 1){
+            return response()->json(['success' => true, 'message' => 'Mantenimiento Se Desactivo Correctamente.']);
+        }
+        if($request->estado == "APROBADO"){
+            return response()->json(['success' => true, 'message' => 'Mantenimiento Se Aprobó Correctamente.']);
+        }
+        if($request->observacion){
+            return response()->json(['success' => true, 'message' => 'Observación Registrada Correctamente.']);
+        }
+        if($request->respuesta){
+            return response()->json(['success' => true, 'message' => 'Respuesta Registrada Correctamente.']);
+        }
+
+	}
+
+    public function destroyimagen($id, $item)
+    {
+        try {
+            $imagenDelete = MavImagen::where('MAV_Id', $id)
+                ->where('MAVI_Item', $item)
+                ->first();
+
+            if (!$imagenDelete) {
+                return response()->json([
+                    'status' => 0,
+                    'msg' => [
+                        'mensaje' => 'Imagen no encontrada.'
+                    ]
+                ]);
+            }
+
+            /* ELIMINAR ORIGINAL */
+            $rutaOriginal = str_replace('/storage/', '', $imagenDelete->MAVI_url);
+            if (Storage::disk('public')->exists($rutaOriginal)) {
+                Storage::disk('public')->delete($rutaOriginal);
+            }
+            /* ELIMINAR THUMB */
+
+            $rutaThumb = str_replace('/storage/', '', $imagenDelete->MAVI_Thumb);
+            if (Storage::disk('public')->exists($rutaThumb)) {
+                Storage::disk('public')->delete($rutaThumb);
+            }
+
+            /* ELIMINAR REGISTRO */
+            MavImagen::where('MAV_Id', $id)
+            ->where('MAVI_Item', $item)
+            ->delete();
+
+            /* RECARGAR IMAGENES */
+            $datos = MavImagen::where('MAV_Id', $id)->get();
+
+            return response()->json(['success' => true,'message' => 'Eliminado Correctamente', 'data'=> $datos]);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
 
     public function activar(string $id)
     {
         try {
 
-            $bahia = MantenimientoActividadVariada::find($id);
+            $mtto_act_variadas = MantenimientoActividadVariada::find($id);
 
-            if (!$bahia) {
+            if (!$mtto_act_variadas) {
                 return response()->json(['success' => false, 'message' => 'MantenimientoActividadVariada no encontrado.'], 404);
             }
 
-            $bahia->BAH_Estado = 'ACT';
-            $bahia->save();
+            $mtto_act_variadas->MAV_Estado="PENDIENTE";
+            $mtto_act_variadas->notificar=0;
+            $mtto_act_variadas->save();
 
             return response()->json(['success' => true, 'message' => 'MantenimientoActividadVariada activado exitosamente.']);
         } catch (\Exception $e) {
 
-            return response()->json(['success' => false, 'message' => 'El bahia falló al activarse.'], 500);
+            return response()->json(['success' => false, 'message' => 'El mantenimiento activdad variada falló al activarse.'], 500);
         }
     }
 
     // ELIMINAR
 
-    public function destroy(string $id)
+    public function destroy($id)
     {
+        DB::beginTransaction();
         try {
 
-            $bahia = MantenimientoActividadVariada::find($id);
-
-            if (!$bahia) {
-                return response()->json(['success' => false, 'message' => 'MantenimientoActividadVariada no encontrado.'], 404);
+            $imagenes = MavImagen::where('MAV_Id', $id)->get();
+            foreach ($imagenes as $img) {
+                /* ORIGINAL */
+                if (!empty($img->MAVI_url)) {
+                    $rutaOriginal = str_replace('/storage/', '', $img->MAVI_url);
+                    if (Storage::disk('public')->exists($rutaOriginal)) {
+                        Storage::disk('public')->delete($rutaOriginal);
+                    }
+                }
+                /* THUMB */
+                if (!empty($img->MAVI_Thumb)) {
+                    $rutaThumb = str_replace('/storage/', '', $img->MAVI_Thumb);
+                    if (Storage::disk('public')->exists($rutaThumb)) {
+                        Storage::disk('public')->delete($rutaThumb);
+                    }
+                }
             }
 
-            $bahia->BAH_Estado = 'DESACT';
-            $bahia->save();
+            /*  ELIMINAR DETALLES */
 
-            return response()->json(['success' => true, 'message' => 'MantenimientoActividadVariada eliminado exitosamente.']);
+            DB::table('mav_detalle_reemplazo')
+                ->where('MAV_Id', $id)
+                ->delete();
+
+            /* ELIMINAR IMAGENES */
+            DB::table('mav_imagen')
+                ->where('MAV_Id', $id)
+                ->delete();
+
+            /*  ELIMINAR PRINCIPAL */
+
+            DB::table('mantenimiento_actividad_variadas')
+                ->where('MAV_Id', $id)
+                ->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Registro eliminado correctamente'
+            ]);
+
         } catch (\Exception $e) {
 
-            return response()->json(['success' => false, 'message' => 'El bahia falló al eliminarse.'], 500);
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
         }
     }
 }

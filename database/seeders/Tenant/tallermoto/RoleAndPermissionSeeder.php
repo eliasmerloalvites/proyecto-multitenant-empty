@@ -145,6 +145,64 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.configuracion.horario.destroy', 'Horarios', 'Eliminar Horarios',  'Eliminar Horarios'],
 
             
+            
+            // Mtto Preventivo Carburada
+            ['tenant.actividades.mantenimientoactividadvariada.index',   'Actividad Variadas', 'Ver Lista Actividad Variadas', 'Listar Actividad Variadas'],
+            ['tenant.actividades.mantenimientoactividadvariada.create',  'Actividad Variadas', 'Crear Actividad Variadas',     'Crear Actividad Variadas'],
+            ['tenant.actividades.mantenimientoactividadvariada.edit',    'Actividad Variadas', 'Editar Actividad Variadas',    'Editar Actividad Variadas'],
+            ['tenant.actividades.mantenimientoactividadvariada.show',    'Actividad Variadas', 'Ver Actividad Variada',        'Ver Actividad Variada'],
+            ['tenant.actividades.mantenimientoactividadvariada.destroy', 'Actividad Variadas', 'Eliminar Actividad Variadas',  'Eliminar Actividad Variadas'],
+            ['tenant.actividades.mantenimientoactividadvariada.aprobar', 'Actividad Variadas', 'Aprobar Actividad Variadas',  'Aprobar Actividad Variadas'],
+            ['tenant.actividades.mantenimientoactividadvariada.notificar', 'Actividad Variadas', 'Notificar Actividad Variadas',  'Notificar Actividad Variadas'],
+
+            // Mantenimiento Preventivo Carburada
+            ['tenant.mantenimientos.preventivocarburada.index',   'Mtto Preventivo Carburadas', 'Ver Lista Mtto Preventivo Carburadas', 'Listar Mtto Preventivo Carburadas'],
+            ['tenant.mantenimientos.preventivocarburada.create',  'Mtto Preventivo Carburadas', 'Crear Mtto Preventivo Carburadas',     'Crear Mtto Preventivo Carburadas'],
+            ['tenant.mantenimientos.preventivocarburada.edit',    'Mtto Preventivo Carburadas', 'Editar Mtto Preventivo Carburadas',    'Editar Mtto Preventivo Carburadas'],
+            ['tenant.mantenimientos.preventivocarburada.show',    'Mtto Preventivo Carburadas', 'Ver Mtto Preventivo Carburada',        'Ver Mtto Preventivo Carburada'],
+            ['tenant.mantenimientos.preventivocarburada.destroy', 'Mtto Preventivo Carburadas', 'Eliminar Mtto Preventivo Carburadas',  'Eliminar Mtto Preventivo Carburadas'],
+            ['tenant.mantenimientos.preventivocarburada.aprobar', 'Mtto Preventivo Carburadas', 'Aprobar Mtto Preventivo Carburadas',  'Aprobar Mtto Preventivo Carburadas'],
+            ['tenant.mantenimientos.preventivocarburada.notificar', 'Mtto Preventivo Carburadas', 'Notificar Mtto Preventivo Carburadas',  'Notificar Mtto Preventivo Carburadas'],
+
+            // Mantenimiento Preventivo Inyectada
+            ['tenant.mantenimientos.preventivoinyectada.index',   'Mtto Preventivo Inyectadas', 'Ver Lista Mtto Preventivo Inyectadas', 'Listar Mtto Preventivo Inyectadas'],
+            ['tenant.mantenimientos.preventivoinyectada.create',  'Mtto Preventivo Inyectadas', 'Crear Mtto Preventivo Inyectadas',     'Crear Mtto Preventivo Inyectadas'],
+            ['tenant.mantenimientos.preventivoinyectada.edit',    'Mtto Preventivo Inyectadas', 'Editar Mtto Preventivo Inyectadas',    'Editar Mtto Preventivo Inyectadas'],
+            ['tenant.mantenimientos.preventivoinyectada.show',    'Mtto Preventivo Inyectadas', 'Ver Mtto Preventivo Inyectada',        'Ver Mtto Preventivo Inyectada'],
+            ['tenant.mantenimientos.preventivoinyectada.destroy', 'Mtto Preventivo Inyectadas', 'Eliminar Mtto Preventivo Inyectadas',  'Eliminar Mtto Preventivo Inyectadas'],
+            ['tenant.mantenimientos.preventivoinyectada.aprobar', 'Mtto Preventivo Inyectadas', 'Aprobar Mtto Preventivo Inyectadas',  'Aprobar Mtto Preventivo Inyectadas'],
+            ['tenant.mantenimientos.preventivoinyectada.notificar', 'Mtto Preventivo Inyectadas', 'Notificar Mtto Preventivo Inyectadas',  'Notificar Mtto Preventivo Inyectadas'],
+            
+            // Mantenimiento General Carburada
+            ['tenant.mantenimientos.generalcarburada.index',   'Mtto General Carburadas', 'Ver Lista Mtto General Carburadas', 'Listar Mtto General Carburadas'],
+            ['tenant.mantenimientos.generalcarburada.create',  'Mtto General Carburadas', 'Crear Mtto General Carburadas',     'Crear Mtto General Carburadas'],
+            ['tenant.mantenimientos.generalcarburada.edit',    'Mtto General Carburadas', 'Editar Mtto General Carburadas',    'Editar Mtto General Carburadas'],
+            ['tenant.mantenimientos.generalcarburada.show',    'Mtto General Carburadas', 'Ver Mtto General Carburada',        'Ver Mtto General Carburada'],
+            ['tenant.mantenimientos.generalcarburada.destroy', 'Mtto General Carburadas', 'Eliminar Mtto General Carburadas',  'Eliminar Mtto General Carburadas'],
+            ['tenant.mantenimientos.generalcarburada.aprobar', 'Mtto General Carburadas', 'Aprobar Mtto General Carburadas',  'Aprobar Mtto General Carburadas'],
+            ['tenant.mantenimientos.generalcarburada.notificar', 'Mtto General Carburadas', 'Notificar Mtto General Carburadas',  'Notificar Mtto General Carburadas'],
+
+            // Mantenimiento General Inyectada
+            ['tenant.mantenimientos.generalinyectada.index',   'Mtto General Inyectadas', 'Ver Lista Mtto General Inyectadas', 'Listar Mtto General Inyectadas'],
+            ['tenant.mantenimientos.generalinyectada.create',  'Mtto General Inyectadas', 'Crear Mtto General Inyectadas',     'Crear Mtto General Inyectadas'],
+            ['tenant.mantenimientos.generalinyectada.edit',    'Mtto General Inyectadas', 'Editar Mtto General Inyectadas',    'Editar Mtto General Inyectadas'],
+            ['tenant.mantenimientos.generalinyectada.show',    'Mtto General Inyectadas', 'Ver Mtto General Inyectada',        'Ver Mtto General Inyectada'],
+            ['tenant.mantenimientos.generalinyectada.destroy', 'Mtto General Inyectadas', 'Eliminar Mtto General Inyectadas',  'Eliminar Mtto General Inyectadas'],
+            ['tenant.mantenimientos.generalinyectada.aprobar', 'Mtto General Inyectadas', 'Aprobar Mtto General Inyectadas',  'Aprobar Mtto General Inyectadas'],
+            ['tenant.mantenimientos.generalinyectada.notificar', 'Mtto General Inyectadas', 'Notificar Mtto General Inyectadas',  'Notificar Mtto General Inyectadas'],
+            
+            // Reportes
+            ['tenant.reportes.listageneral',   'Reportes', 'Ver Lista de General', 'Lista General de Mantenimientos'],
+
+            // Reservaciones
+            ['tenant.reservaciones.administracion.index',   'Mtto General Inyectadas', 'Ver Lista Mtto General Inyectadas', 'Listar Mtto General Inyectadas'],
+            ['tenant.reservaciones.administracion.create',  'Mtto General Inyectadas', 'Crear Mtto General Inyectadas',     'Crear Mtto General Inyectadas'],
+            ['tenant.reservaciones.administracion.edit',    'Mtto General Inyectadas', 'Editar Mtto General Inyectadas',    'Editar Mtto General Inyectadas'],
+            ['tenant.reservaciones.administracion.show',    'Mtto General Inyectadas', 'Ver Mtto General Inyectada',        'Ver Mtto General Inyectada'],
+            ['tenant.reservaciones.administracion.destroy', 'Mtto General Inyectadas', 'Eliminar Mtto General Inyectadas',  'Eliminar Mtto General Inyectadas'],
+            ['tenant.reservaciones.administracion.aprobar', 'Mtto General Inyectadas', 'Aprobar Mtto General Inyectadas',  'Aprobar Mtto General Inyectadas'],
+            ['tenant.reservaciones.administracion.notificar', 'Mtto General Inyectadas', 'Notificar Mtto General Inyectadas',  'Notificar Mtto General Inyectadas'],
+            
         ];
 
         foreach ($permissions as [$name, $group, $nombre, $description]) {
@@ -285,6 +343,54 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.configuracion.horario.show',
             'tenant.configuracion.horario.destroy',
 
+            'tenant.actividades.mantenimientoactividadvariada.index',
+            'tenant.actividades.mantenimientoactividadvariada.create',
+            'tenant.actividades.mantenimientoactividadvariada.edit',
+            'tenant.actividades.mantenimientoactividadvariada.show',
+            'tenant.actividades.mantenimientoactividadvariada.destroy',
+            'tenant.actividades.mantenimientoactividadvariada.aprobar',
+            'tenant.actividades.mantenimientoactividadvariada.notificar',
+
+            'tenant.mantenimientos.preventivocarburada.index',
+            'tenant.mantenimientos.preventivocarburada.create',
+            'tenant.mantenimientos.preventivocarburada.edit',
+            'tenant.mantenimientos.preventivocarburada.show',
+            'tenant.mantenimientos.preventivocarburada.destroy',
+            'tenant.mantenimientos.preventivocarburada.aprobar',
+            'tenant.mantenimientos.preventivocarburada.notificar',
+
+            'tenant.mantenimientos.preventivoinyectada.index',
+            'tenant.mantenimientos.preventivoinyectada.create',
+            'tenant.mantenimientos.preventivoinyectada.edit',
+            'tenant.mantenimientos.preventivoinyectada.show',
+            'tenant.mantenimientos.preventivoinyectada.destroy',
+            'tenant.mantenimientos.preventivoinyectada.aprobar',
+            'tenant.mantenimientos.preventivoinyectada.notificar',
+
+            'tenant.mantenimientos.generalcarburada.index',
+            'tenant.mantenimientos.generalcarburada.create',
+            'tenant.mantenimientos.generalcarburada.edit',
+            'tenant.mantenimientos.generalcarburada.show',
+            'tenant.mantenimientos.generalcarburada.destroy',
+            'tenant.mantenimientos.generalcarburada.aprobar',
+            'tenant.mantenimientos.generalcarburada.notificar',
+
+            'tenant.mantenimientos.generalinyectada.index',
+            'tenant.mantenimientos.generalinyectada.create',
+            'tenant.mantenimientos.generalinyectada.edit',
+            'tenant.mantenimientos.generalinyectada.show',
+            'tenant.mantenimientos.generalinyectada.destroy',
+            'tenant.mantenimientos.generalinyectada.aprobar',
+            'tenant.mantenimientos.generalinyectada.notificar',
+
+            'tenant.reportes.listageneral',
+
+            'tenant.reservaciones.administracion.index',
+            'tenant.reservaciones.administracion.create',
+            'tenant.reservaciones.administracion.edit',
+            'tenant.reservaciones.administracion.show',
+            'tenant.reservaciones.administracion.destroy'
+            
         ]);
 
         $gerenteRole->givePermissionTo([
@@ -376,6 +482,54 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.configuracion.horario.show',
             'tenant.configuracion.horario.destroy',
 
+
+            'tenant.actividades.mantenimientoactividadvariada.index',
+            'tenant.actividades.mantenimientoactividadvariada.create',
+            'tenant.actividades.mantenimientoactividadvariada.edit',
+            'tenant.actividades.mantenimientoactividadvariada.show',
+            'tenant.actividades.mantenimientoactividadvariada.destroy',
+            'tenant.actividades.mantenimientoactividadvariada.aprobar',
+            'tenant.actividades.mantenimientoactividadvariada.notificar',
+            
+            'tenant.mantenimientos.preventivocarburada.index',
+            'tenant.mantenimientos.preventivocarburada.create',
+            'tenant.mantenimientos.preventivocarburada.edit',
+            'tenant.mantenimientos.preventivocarburada.show',
+            'tenant.mantenimientos.preventivocarburada.destroy',
+            'tenant.mantenimientos.preventivocarburada.aprobar',
+            'tenant.mantenimientos.preventivocarburada.notificar',
+            
+            'tenant.mantenimientos.preventivoinyectada.index',
+            'tenant.mantenimientos.preventivoinyectada.create',
+            'tenant.mantenimientos.preventivoinyectada.edit',
+            'tenant.mantenimientos.preventivoinyectada.show',
+            'tenant.mantenimientos.preventivoinyectada.destroy',
+            'tenant.mantenimientos.preventivoinyectada.aprobar',
+            'tenant.mantenimientos.preventivoinyectada.notificar',
+            
+            'tenant.mantenimientos.generalcarburada.index',
+            'tenant.mantenimientos.generalcarburada.create',
+            'tenant.mantenimientos.generalcarburada.edit',
+            'tenant.mantenimientos.generalcarburada.show',
+            'tenant.mantenimientos.generalcarburada.destroy',
+            'tenant.mantenimientos.generalcarburada.aprobar',
+            'tenant.mantenimientos.generalcarburada.notificar',
+            
+            'tenant.mantenimientos.generalinyectada.index',
+            'tenant.mantenimientos.generalinyectada.create',
+            'tenant.mantenimientos.generalinyectada.edit',
+            'tenant.mantenimientos.generalinyectada.show',
+            'tenant.mantenimientos.generalinyectada.destroy',
+            'tenant.mantenimientos.generalinyectada.aprobar',
+            'tenant.mantenimientos.generalinyectada.notificar',
+
+            'tenant.reportes.listageneral',
+            
+            'tenant.reservaciones.administracion.index',
+            'tenant.reservaciones.administracion.create',
+            'tenant.reservaciones.administracion.edit',
+            'tenant.reservaciones.administracion.show',
+            'tenant.reservaciones.administracion.destroy'
         ]);
 
         /*

@@ -11,10 +11,9 @@ class Almacen extends Model
     protected $primaryKey='ALM_Id';
     public $timestamps=false;
     protected $fillable=[
-        'ALM_Nombre',
+        'EMP_Id',
         'ALM_NombreAlmacen',
         'ALM_Direccion',
-        'ALM_Ruc',
         'ALM_Celular',
         'ALM_Status'
     ];

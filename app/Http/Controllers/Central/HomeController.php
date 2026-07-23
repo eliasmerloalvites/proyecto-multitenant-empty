@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Central;
 
 use App\Http\Controllers\Controller;
+use App\Models\Tenant\EmpresaFacturacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Permission;
@@ -21,7 +22,17 @@ class HomeController extends Controller
         if(tenant() !== null){
             $tenantid = tenant('id');
             $tiponegocio = tenant('tipo_negocio');
-            return view('tenant_'.$tiponegocio.'.welcome',compact('tenantid'));
+            $plan = tenant('plan');
+            
+		    $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+            if($plan == 'start'){
+                $colorview = $empresa->tipo_tema;
+                return view('tenant_'.$tiponegocio.'.welcome',compact('tenantid', 'plan','empresa', 'colorview'));
+            }else if($plan == 'basic'){
+                $colorview = $empresa->tipo_tema;
+                //dd($empresa->color_bg);
+                return view('tenant_'.$tiponegocio.'.landing.index',compact('tenantid','empresa', 'plan', 'colorview'));
+            }
         } else {
             $tenantid = null;
             return view('welcome',compact('tenantid'));

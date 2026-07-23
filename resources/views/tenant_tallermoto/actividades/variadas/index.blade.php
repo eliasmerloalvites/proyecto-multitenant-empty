@@ -137,24 +137,18 @@
             const table = $('#tabla_mantenimientoactividadvariada').DataTable({
                 responsive: true,
                 autoWidth: false,
-                searchDelay: 800,
+                searchDelay : 800,
                 processing: true,
                 serverSide: true,
                 order: [
                     [0, "desc"]
                 ],
-                language: {
-                    lengthMenu: "Mostrar _MENU_ registros por página",
-                    zeroRecords: "No se encontraron registros",
-                    info: "Mostrando página _PAGE_ de _PAGES_",
-                    infoEmpty: "No hay registros disponibles",
-                    infoFiltered: "(filtrado de _MAX_ registros totales)",
-                    search: "Buscar:",
-                    paginate: {
-                        next: "Siguiente",
-                        previous: "Anterior"
-                    }
-                },
+                dom: 'Blfrtip',
+                buttons: [
+                    'copyHtml5',
+                    'excelHtml5',
+                    'pdfHtml5'
+                ],
                  ajax: {
                     url: "{{ tenant_url('tenant.actividades.mantenimientoactividadvariada.index') }}",
                     data: function(d) {
@@ -205,8 +199,11 @@
                         orderable: false,
                         searchable: false,
 
-                        render: function(data) {
-                            return `${data.action1} ${data.action2}`;
+                        render: function(data, type, row) {
+                            return @can('tenant.actividades.mantenimientoactividadvariada.show') data.action3 +' '+ @endcan ''
+                            @can('tenant.actividades.mantenimientoactividadvariada.edit') +data.action1 +' '+ @endcan ''
+                            @can('tenant.actividades.mantenimientoactividadvariada.aprobar') +data.action4 +' '+ @endcan ''
+                            @can('tenant.actividades.mantenimientoactividadvariada.destroy') +data.action2 @endcan;
                         }
                     }
                 ]
@@ -219,45 +216,34 @@
             });
             // ELIMINAR
 
-            $('body').on('click', '.deleteActividades Variadas', function() {
-
-                const bahiaId = $(this).data('id');
-
+            $('body').on('click', '.deleteMantenimientoActividadVariadas', function() {
+                const actividadesVariadadsId = $(this).data('id');
                 Swal.fire({
-
-                    title: '¿Eliminar bahia?',
-                    text: 'El bahia será desactivado.',
+                    title: '¿Eliminar Actividad Variada?',
+                    text: 'La actividad variada será eliminada.',
                     icon: 'warning',
-
                     showCancelButton: true,
                     confirmButtonColor: '#dc3545',
                     cancelButtonColor: '#6c757d',
-
                     confirmButtonText: 'Sí, eliminar',
                     cancelButtonText: 'Cancelar',
-
                     reverseButtons: true
-
                 }).then((result) => {
-
                     if (!result.isConfirmed) {
                         showToast('info', 'Acción cancelada');
                         return;
                     }
 
                     $.ajax({
-
-                        url: '{{ tenant_url('tenant.configuracion.bahia.destroy', ['bahia' => ':bahia']) }}'
-                            .replace(':bahia', bahiaId),
+                        url: '{{ tenant_url('tenant.actividades.mantenimientoactividadvariada.destroy', ['mantenimientoactividadvariada' => ':mantenimientoactividadvariada']) }}'
+                            .replace(':mantenimientoactividadvariada', actividadesVariadadsId),
                         type: "DELETE",
-
                         success: function(data) {
                             showToast('success', data.message);
                             reloadTable();
                         },
-
                         error: function(error) {
-                            handleAjaxError('El bahia falló al eliminarse.', error);
+                            handleAjaxError('El mantenimiento de actividades variadas falló al eliminarse.', error);
                         }
 
                     });
@@ -268,14 +254,11 @@
 
             // ACTIVAR
 
-            $('body').on('click', '.activarActividades Variadas', function() {
-
-                const bahiaId = $(this).data('id');
-
+            $('body').on('click', '.activarMantenimientoActividadVariadas', function() {
+                const actividadesVariadadsId = $(this).data('id');
                 Swal.fire({
-
-                    title: '¿Activar bahia?',
-                    text: 'El bahia volverá a estar disponible.',
+                    title: '¿Activar Actividad Variada?',
+                    text: 'La actividad variada volverá a estar disponible.',
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#198754',
@@ -283,17 +266,14 @@
                     confirmButtonText: 'Sí, activar',
                     cancelButtonText: 'Cancelar',
                     reverseButtons: true
-
                 }).then((result) => {
-
                     if (!result.isConfirmed) {
                         return;
                     }
-
                     $.ajax({
-
-                        url: '{{ tenant_url('tenant.configuracion.bahia.activar', ['bahia' => ':bahia']) }}'
-                            .replace(':bahia', bahiaId),
+                        data:'&notificar=1',
+                        url: '{{ tenant_url('tenant.actividades.mantenimientoactividadvariada.actualizarestado', ['mantenimientoactividadvariada' => ':mantenimientoactividadvariada']) }}'
+                            .replace(':mantenimientoactividadvariada', actividadesVariadadsId),
                         type: "PUT",
 
                         success: function(data) {
@@ -302,7 +282,7 @@
                         },
 
                         error: function(error) {
-                            handleAjaxError('El bahia falló al activarse.', error);
+                            handleAjaxError('El mantenimiento de actividades variadas falló al activarse.', error);
                         }
 
                     });
@@ -310,6 +290,45 @@
                 });
 
             });
+
+            //APROBAR
+             $('body').on('click', '.aprobarMantenimientoActividadVariadas', function() {
+                const actividadesVariadadsId = $(this).data('id');
+                Swal.fire({
+                    title: '¿Aprobar Actividad Variada?',
+                    text: 'La actividad variada será aprobada.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#198754',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, aprobar',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
+                    $.ajax({
+                        data:'&estado=APROBADO',
+                        url: '{{ tenant_url('tenant.actividades.mantenimientoactividadvariada.actualizarestado', ['mantenimientoactividadvariada' => ':mantenimientoactividadvariada']) }}'
+                            .replace(':mantenimientoactividadvariada', actividadesVariadadsId),
+                        type: "PUT",
+
+                        success: function(data) {
+                            showToast('success', data.message);
+                            reloadTable();
+                        },
+
+                        error: function(error) {
+                            handleAjaxError('El mantenimiento de actividades variadas falló al aprobarse.', error);
+                        }
+
+                    });
+
+                });
+
+            });
+            
 
         });
     </script>

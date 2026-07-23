@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Stringable;
 use Yajra\DataTables\Facades\DataTables;
+use Spatie\Permission\PermissionRegistrar;
 
 class UserController extends Controller
 {
@@ -185,7 +186,6 @@ class UserController extends Controller
             ],
             [
                 'name.required' => 'Ingrese nombre',
-
             ]
         );
         $usuario =  User::find($id);
@@ -195,8 +195,9 @@ class UserController extends Controller
         $rolesSeleccionados = $request->input('roles');
 
         // Asigna los roles seleccionados al usuario
-        $usuario->roles()->sync($rolesSeleccionados);
         //$usuario->roles()->sync($rolesSeleccionados); hace lo mismo q el de arriba
+        $usuario->syncRoles($rolesSeleccionados);
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $usuario->save();
 

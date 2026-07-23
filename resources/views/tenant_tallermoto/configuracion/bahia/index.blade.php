@@ -141,29 +141,20 @@
             // DATATABLE
 
             const table = $('#tabla_bahia').DataTable({
-
-                responsive: true,
+responsive: true,
                 autoWidth: false,
-                searchDelay: 800,
+                searchDelay : 800,
                 processing: true,
                 serverSide: true,
-
                 order: [
-                    [0, "asc"]
+                    [0, "desc"]
                 ],
-
-                language: {
-                    lengthMenu: "Mostrar _MENU_ registros por página",
-                    zeroRecords: "No se encontraron registros",
-                    info: "Mostrando página _PAGE_ de _PAGES_",
-                    infoEmpty: "No hay registros disponibles",
-                    infoFiltered: "(filtrado de _MAX_ registros totales)",
-                    search: "Buscar:",
-                    paginate: {
-                        next: "Siguiente",
-                        previous: "Anterior"
-                    }
-                },
+                dom: 'Blfrtip',
+                buttons: [
+                    'copyHtml5',
+                    'excelHtml5',
+                    'pdfHtml5'
+                ],
 
                 ajax: "{{ tenant_url('tenant.configuracion.bahia.index') }}",
 

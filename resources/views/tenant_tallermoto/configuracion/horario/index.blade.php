@@ -27,30 +27,30 @@
                             <select class="form-control select2 select2-info" id="HOR_Dia" name="HOR_Dia"
                                 data-dropdown-css-class="select2-info" style="width: 100%;">
                                 <option value="">Seleccionar Día</option>
-                                <option value="Lunes">Lunes</option>
-                                <option value="Martes">Martes</option>
-                                <option value="Miércoles">Miércoles</option>
-                                <option value="Jueves">Jueves</option>  
-                                <option value="Viernes">Viernes</option>
-                                <option value="Sábado">Sábado</option>
-                                <option value="Domingo">Domingo</option>
+                                <option value="LUNES">LUNES</option>
+                                <option value="MARTES">MARTES</option>
+                                <option value="MIERCOLES">MIERCOLES</option>
+                                <option value="JUEVES">JUEVES</option>  
+                                <option value="VIERNES">VIERNES</option>
+                                <option value="SABADO">SABADO</option>
+                                <option value="DOMINGO">DOMINGO</option>
                             </select>
                         </div>
                         <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
                             <label class="control-label"  style=" text-align: left; display: block;">Turno:</label>
                             <select class="form-control select2 select2-info" id="TUR_Id" name="TUR_Id"
-                                data-dropdown-css-class="select2-info" style="width: 100%;">
+                                data-dropdown-css-class="select2-info" style="width: 100%;" onchange="CargarDetalle()" >
                                 <option value="">Seleccionar Turno</option>
                                 @foreach ($turnos as $item)
-                                    <option value="{{ $item->id }}"> {{ $item->name }}
+                                    <option value="{{ $item->id }}"> {{ $item->name }} - {{ $item->descripcion }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="form-group row">
                             <div class="col-12">
-                                <label class="control-label" style=" text-align: left; display: block;">Horario:</label>
-                                <input type="text" id="HOR_Detalle" name="HOR_Detalle" class="form-control "
+                                <label class="control-label"  style=" text-align: left; display: block;">Horario:</label>
+                                <input type="text" id="HOR_Detalle" readonly name="HOR_Detalle" class="form-control "
                                     placeholder="Horario" required>
                             </div>
                         </div>
@@ -158,29 +158,20 @@
             // DATATABLE
 
             const table = $('#tabla_horario').DataTable({
-
                 responsive: true,
                 autoWidth: false,
-                searchDelay: 800,
+                searchDelay : 800,
                 processing: true,
                 serverSide: true,
-
                 order: [
-                    [0, "asc"]
+                    [0, "desc"]
                 ],
-
-                language: {
-                    lengthMenu: "Mostrar _MENU_ registros por página",
-                    zeroRecords: "No se encontraron registros",
-                    info: "Mostrando página _PAGE_ de _PAGES_",
-                    infoEmpty: "No hay registros disponibles",
-                    infoFiltered: "(filtrado de _MAX_ registros totales)",
-                    search: "Buscar:",
-                    paginate: {
-                        next: "Siguiente",
-                        previous: "Anterior"
-                    }
-                },
+                dom: 'Blfrtip',
+                buttons: [
+                    'copyHtml5',
+                    'excelHtml5',
+                    'pdfHtml5'
+                ],
 
                 ajax: "{{ tenant_url('tenant.configuracion.horario.index') }}",
 
@@ -416,5 +407,12 @@
             });
 
         });
+
+        function CargarDetalle() {
+            var turnoId = $('#TUR_Id').val();
+            var detalle = $('#TUR_Id option:selected').text();
+            var descripcion = detalle.split(' - ')[1] || '';
+            $('#HOR_Detalle').val(descripcion);
+        }
     </script>
 @endsection

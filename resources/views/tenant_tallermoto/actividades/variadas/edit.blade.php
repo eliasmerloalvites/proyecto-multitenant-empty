@@ -537,6 +537,8 @@
         var table;
         var id_mpi = <?php echo $id; ?>;
         var contador = 1;
+        const MAX_IMAGES = {{ tenant()->max_images }};
+
         // TOAST
         const Toast = Swal.mixin({
             toast: true,
@@ -573,20 +575,23 @@
                 console.error(error);
                 showToast('error', message);
             };
-
             
             cargarData();
             cargarFileForImagen();
 
             $('body').on('click', '.eliminarImagen', function() {
+   
                 var item = $(this).data("id");
                 $confirm = confirm("¿Estás seguro de que quieres eliminarlo?");
                 if ($confirm == true) {
                     $.ajax({
                         type: "DELETE",
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
                         url: "{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}" + '/crop/'+id_mpi+'/'+ item,
                         success: function(data) {
-
+                            console.log(data+"data");
                             images = []
                             for(var i = 0; i< data.data.length; i++){
                                 var obj = {
@@ -602,15 +607,16 @@
 
                             Toast.fire({
                                 type: 'success',
-                                title: String(data.success)
+                                title: String(data.message)
                             });
 
                         },
                         error: function(data) {
+                            console.log(data+"data");
                             console.log('Error:', data);
                             Toast.fire({
                                 type: 'error',
-                                title: 'Imagen fallo al Eliminarlo.'
+                                title: String(data.message)
                             })
                         }
                     });
@@ -634,96 +640,65 @@
                 ActualizarMPI()
             });
 
+            $('#updateNotificarBtn').click(function(e) {
+                e.preventDefault();
+                ActualizarNotificar();
+            });
+
+            $('#activarBtn').click(function(e) {
+                e.preventDefault();
+                ActivarMPI();
+            });
+
         });
 
         function cargarFileForImagen(){
-
             var container = document.querySelector('.fileforImagen');
-
             container.innerHTML = '';
 
-            /*
-            |--------------------------------------------------------------------------
-            | WRAPPER
-            |--------------------------------------------------------------------------
-            */
-
             var wrapper = document.createElement('div');
-
             wrapper.classList.add('upload-container');
 
-            /*
-            |--------------------------------------------------------------------------
-            | LABEL BONITO
-            |--------------------------------------------------------------------------
-            */
-
             var label = document.createElement('label');
-
             label.setAttribute('for', 'file');
-
             label.classList.add('upload-box');
-
             label.innerHTML = `
-
                 <div class="upload-content">
-
                     <i class="fas fa-cloud-upload-alt"></i>
-
-                    <h5>
-                        Subir Imágenes
-                    </h5>
-
-                    <p>
-                        Arrastra imágenes aquí o haz click
-                    </p>
-
+                    <h5>Subir Imágenes</h5>
+                    <p>Arrastra imágenes aquí o haz click</p>
                     <span class="upload-btn">
                         Seleccionar Imagen
                     </span>
-
                 </div>
-
             `;
 
-            /*
-            |--------------------------------------------------------------------------
-            | INPUT REAL OCULTO
-            |--------------------------------------------------------------------------
-            */
-
+            /* INPUT REAL OCULTO */
             var inputFile = document.createElement('input');
-
             inputFile.setAttribute('type', 'file');
-
             inputFile.setAttribute('name', 'file');
-
             inputFile.setAttribute('id', 'file');
-
             inputFile.setAttribute('hidden', true);
-
             inputFile.setAttribute('accept', 'image/*');
-
             inputFile.setAttribute('data-id', id_mpi);
-
             inputFile.setAttribute('data-cont', contador);
-
             inputFile.classList.add('cargarImagenCrop');
-
-            /*
-            |--------------------------------------------------------------------------
-            | APPEND
-            |--------------------------------------------------------------------------
-            */
-
+            
+            /* APPEND */
             wrapper.appendChild(label);
-
             wrapper.appendChild(inputFile);
 
             container.appendChild(wrapper);
 
         }
+
         function cargarImagenes(){
+            if(images.length >= MAX_IMAGES){
+                $('.fileforImagen').hide();
+            }else{
+                $('.fileforImagen').show();
+            }
+
             const container = document.querySelector('.imagenesadjuntas');
             container.innerHTML = '';
             images.forEach(function(image){
@@ -858,7 +833,7 @@
 
             if (descripcion != "" && precio != "") {
                 var fila1 = [descripcion, precio];
-                ListDetVenta.push(fila1);
+                ListDet.push(fila1);
                 cargarTabla()
                 limpiardetalle();
 
@@ -916,6 +891,16 @@
         
         function AñadirImagen($id) {
 
+            if (images.length >= MAX_IMAGES) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Límite alcanzado',
+                    text: 'Tu plan permite máximo ' + MAX_IMAGES + ' imágenes.'
+                });
+
+                return;
+            }
+
             const Toast2 = Swal.mixin({
                 toast: true,
                 position: 'top-end',
@@ -923,7 +908,6 @@
                 timer: 3000
             });
             var cropToolInstance;
-                console.log("hola2")
 
             cropToolInstance = $('#file').ijaboCropTool({
                 preview: '.image-previewer',
@@ -933,7 +917,10 @@
                 buttonsColor: ['#30bf7d', '#ee5155', -15],
                 processUrl: "{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}"+"/"+$id+'/crop',
                 withCSRF: ['_token', '{{ csrf_token() }}'],
-                onSuccess: function(message, element, status, ) {
+                onSuccess: function(message, element, status ) {
+                    console.log("message", message);
+                    console.log("element", element);
+                    console.log("status", status);
                     Toast2.fire({
                         type: 'success',
                         title: message.mensaje
@@ -954,21 +941,20 @@
 
                 },
                 onError: function(message, element, status) {
-                    alert(message);
                     isImgProcessing = false;
+                    console.log(message);
+                    alert(message);
                 }
             });
 
-
             contador++
             cargarFileForImagen()
-
 
         }
 
 
         function cargarTabla(){
-            $("#detalles tbody").remove();
+            $("#detalles tbody").html('');
                 var totalCosto = 0
                 for (var i = ListDet.length - 1; i >= 0; i--) {
                     var col0 = '<tr  onClick="MostrarValores1(' + ListDet[i][0] + ');" id="fila' + i + '">'
@@ -1030,7 +1016,7 @@
 
         function eliminar(index) {
             $('#fila' + index).remove();
-            ListDetVenta.splice(index, 1);
+            ListDet.splice(index, 1);
             cargarTabla()
         }
 
@@ -1046,7 +1032,7 @@
                     console.log('Success:', data);
                     Toast.fire({
                         type: 'success',
-                        title: data.success
+                        title: data.message
                     });
                     document.location.href="{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}";
                 },
@@ -1061,8 +1047,60 @@
 
         }
 
+        function ActualizarNotificar() {
+            var new_id_mpi = id_mpi
+            $.ajax({
+                data: $('#MantenimientoActividadVariadasForm').serialize() + '&notificar=1',
+                url: "{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}/" +new_id_mpi,
+                type: "PUT",
+                dataType: 'json',
+                success: function (data) {
+                    console.log('Success:', data);
+                    Toast.fire({
+                        type: 'success',
+                        title: data.message
+                    });
+                    document.location.href="{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}";
+                },
+                error: function (data) {
+                    console.log('Error:', data);
+                    Toast.fire({
+                        type: 'error',
+                        title: 'Mantenimiento Preventivo fallo al Registrarse.'
+                    })
+                }
+            });
+
+        }
+
+        function ActivarMPI() {
+            var new_id_mpi = id_mpi
+            $.ajax({
+                url: "{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}/" +new_id_mpi + "/activar",
+                type: "PUT",
+                dataType: 'json',
+                success: function (data) {
+                    console.log('Success:', data);
+                    Toast.fire({
+                        type: 'success',
+                        title: data.message
+                    });
+                    document.location.href="{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}";
+                },
+                error: function (data) {
+                    console.log('Error:', data);
+                    Toast.fire({
+                        type: 'error',
+                        title: 'Mantenimiento Preventivo fallo al Activarse.'
+                    })
+                }
+            });
+
+        }
+
+       
         function Regresar() {
-            document.location.href = "{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}/"
+            document.location.href = "{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}"
         }
     </script>
 @endsection
