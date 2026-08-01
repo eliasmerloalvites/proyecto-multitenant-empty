@@ -329,8 +329,6 @@ class ReservacionController extends Controller
             $reservas[$fecha][$turno][$bahia][] = $cliente;
         }
 
-        // return view('rrhh.reservacion.semanal',compact('local','localFirst','turnos','totalBahias','semana','bahias', 'reservas','horarioprogramado','fechaInicial','fechaFinal'));
-        
         return view('tenant_' . tenant('tipo_negocio') . '.reservaciones.administracion.create',compact('local','localFirst','turnos','totalBahias','semana','bahias', 'reservas','horarioprogramado','fechaInicial','fechaFinal'));
 	}
 

@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8">
     <meta charset="utf-8">
-    <title>Acceso al Sistema :: MTC</title>
+    <title>Acceso al Sistema :: SAAS KAEL</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -59,7 +59,7 @@
         </div>
         <div class="login-container bg-white">
             <div class="p-l-50 m-l-20 p-r-50 m-r-20 p-t-50 m-t-30 sm-p-l-15 sm-p-r-15 sm-p-t-40">
-                <img style="margin-left: 0" src="/images/login/logo.png" alt="logo" width="" height="70" />
+                <img style="margin-left: 0" src="/images/login/logo_kael.png" alt="logo" width="" height="70" />
 
                 <style>
                     .zocial-link {

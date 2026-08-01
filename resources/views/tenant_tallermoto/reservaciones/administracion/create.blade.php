@@ -223,7 +223,7 @@
         }
 
         .bahia-box {
-            width: 150px;
+            width: 200px;
             min-height: 80px;
             border-radius: 12px;
             padding: 8px;
