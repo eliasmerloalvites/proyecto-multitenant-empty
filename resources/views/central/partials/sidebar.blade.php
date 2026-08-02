@@ -26,7 +26,7 @@
                 <a href="#"
                     class="nav-link {{ request()->routeIs('admin.clients*')  ? 'active' : '' }}"
                     id="idSeguridad">
-                    <i class="nav-icon fas fa-lock"></i>
+                    <i class="nav-icon fas fa-cogs"></i>
                     <p>
                         ADMINISTRACIÓN
                         <i class="right fas fa-angle-left"></i>

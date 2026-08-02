@@ -949,6 +949,18 @@
 
                             <hr>
 
+                            {{-- PLACA --}}
+                            <div class="form-group" style="margin-bottom:2px">
+
+                                <label style="font-size: 13px;">
+                                    Placa *
+                                </label>
+
+                                <input type="text" name="RES_Placa" onkeyup="this.value=this.value.toUpperCase();"
+                                    class="form-control reservation-input" placeholder="ABC-123">
+
+                            </div>
+
                             {{-- MOTO --}}
                             <div class="form-group" style="margin-bottom:2px">
 
@@ -1159,6 +1171,17 @@
 
                             <hr>
 
+                            {{-- PLACA --}}
+                            <div class="form-group" style="margin-bottom:2px">
+
+                                <label style="font-size:13px;">
+                                    Placa *
+                                </label>
+
+                                <input type="text" id="idRES_Placa" name="RES_Placa"
+                                    onkeyup="this.value=this.value.toUpperCase();" class="form-control reservation-input">
+
+                            </div>
                             {{-- MOTO --}}
                             <div class="form-group" style="margin-bottom:2px">
 
@@ -1293,6 +1316,7 @@
                     $.get("{{ route('tenant.reservaciones.administracion.index') }}" + '/' +
                         Reservacion_id_ver + '/edit',
                         function(data) {
+                            $('#idRES_Placa').val(data.RES_Placa);
                             $('#idRES_Moto').val(data.RES_Moto);
                             $('#idRES_Cliente').val(data.RES_Cliente);
                             $('#idRES_Celular').val(data.RES_Celular);
@@ -1332,6 +1356,7 @@
                 $('#btnInahibilitarReservacion').on('click', function(e) {
                     e.preventDefault();
 
+                    $('#reservacion_form input[name="RES_Placa"]').val('SIN PLACA');
                     $('#reservacion_form input[name="RES_Moto"]').val('SIN MOTOCICLETA');
                     $('#reservacion_form input[name="RES_Cliente"]').val('INHABILITADO');
                     $('#reservacion_form input[name="RES_Celular"]').val('-');

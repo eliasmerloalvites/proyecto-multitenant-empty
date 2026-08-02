@@ -395,20 +395,96 @@ class HomeController extends Controller
         return redirect()->back();
     }
 
-    public function catalogo()
+    public function catalogo(Request $request)
     {
         if (tenant() !== null) {
             $tenantid = tenant('id');
             $tiponegocio = tenant('tipo_negocio');
             $plan = tenant('plan');
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
-            if ($plan == 'start') {
-                $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'empresa', 'colorview'));
-            } else if ($plan == 'basic') {
-                $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.landing.page.catalogo', compact('tenantid', 'empresa', 'plan', 'colorview'));
+
+            // 1. Query Base para Productos con Lotes acumulados
+            $queryProductos = DB::table('producto as pd')
+                ->join('categoria as ct', 'pd.CAT_Id', '=', 'ct.CAT_Id')
+                ->join('lote as lt', 'pd.PRO_Id', '=', 'lt.PRO_Id')
+                ->select(
+                    'pd.PRO_Id',
+                    'pd.PRO_Nombre',
+                    'pd.PRO_Descripcion',
+                    'pd.PRO_Marca',
+                    'pd.PRO_PrecioVenta',
+                    'pd.PRO_Imagen',
+                    'ct.CAT_Id',
+                    'ct.CAT_Nombre',
+                    DB::raw('SUM(lt.LOT_CantidadReal) as cantidad_total')
+                )
+                ->groupBy(
+                    'pd.PRO_Id',
+                    'pd.PRO_Nombre',
+                    'pd.PRO_Descripcion',
+                    'pd.PRO_Marca',
+                    'pd.PRO_PrecioVenta',
+                    'pd.PRO_Imagen',
+                    'ct.CAT_Id',
+                    'ct.CAT_Nombre'
+                );
+
+            // Filtro 1: Por Categoría
+            if ($request->filled('cat_id') && $request->cat_id !== 'all') {
+                $queryProductos->where('ct.CAT_Id', $request->cat_id);
             }
+
+            // Filtro 2: Por Buscador
+            if ($request->filled('search')) {
+                $queryProductos->where('pd.PRO_Nombre', 'LIKE', '%' . $request->search . '%');
+            }
+
+            // Paginación de 12 en 12 productos (Mantiene la query con string del buscador si aplica)
+            $dataProductos = $queryProductos->paginate(12)->withQueryString();
+
+            $colorview = $empresa->tipo_tema ?? 'dark';
+
+            // 2. Si la petición es AJAX (Botón "Cargar Más" o cambio de Filtros)
+            if ($request->ajax()) {
+                return response()->json([
+                    'html' => view('tenant_tallermoto.landing.sections.partials.product-cards', compact('dataProductos', 'colorview', 'tiponegocio', 'tenantid'))->render(),
+                    'next_page' => $dataProductos->nextPageUrl(),
+                    'has_more' => $dataProductos->hasMorePages()
+                ]);
+            }
+
+            // 3. Cargar Categorías (Solo con lotes asociados)
+            $dataCategoria = DB::table('categoria as ct')
+                ->select('ct.CAT_Id', 'ct.CAT_Nombre', 'ct.CLA_Id')
+                ->whereExists(function ($query) {
+                    $query->select(DB::raw(1))
+                        ->from('producto as pd')
+                        ->join('lote as lt', 'pd.PRO_Id', '=', 'lt.PRO_Id')
+                        ->whereColumn('pd.CAT_Id', 'ct.CAT_Id');
+                })
+                ->get();
+
+            // 4. Cargar Clases (Solo con lotes asociados)
+            $dataClase = DB::table('clase as c')
+                ->select('c.CLA_Id', 'c.CLA_Nombre')
+                ->whereExists(function ($query) {
+                    $query->select(DB::raw(1))
+                        ->from('categoria as ct')
+                        ->join('producto as pd', 'ct.CAT_Id', '=', 'pd.CAT_Id')
+                        ->join('lote as lt', 'pd.PRO_Id', '=', 'lt.PRO_Id')
+                        ->whereColumn('ct.CLA_Id', 'c.CLA_Id');
+                })
+                ->get();
+
+            // 5. Retorno según el plan del Tenant
+            if ($plan == 'start') {
+                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'tiponegocio', 'plan', 'empresa', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
+            } else if ($plan == 'basic') {
+                return view('tenant_' . $tiponegocio . '.landing.page.catalogo', compact('tenantid', 'tiponegocio', 'empresa', 'plan', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
+            }
+
+            // Fallback por si hay otro plan configurado
+            return view('tenant_' . $tiponegocio . '.landing.page.catalogo', compact('tenantid', 'tiponegocio', 'empresa', 'plan', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
         } else {
             $tenantid = null;
             return view('welcome', compact('tenantid'));

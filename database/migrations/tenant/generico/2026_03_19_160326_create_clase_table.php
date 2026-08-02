@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('clase', function (Blueprint $table) {
             $table->increments('CLA_Id'); // PRIMARY KEY AUTO_INCREMENT
-            $table->string('CLA_Nombre', 20)->nullable();
+            $table->string('CLA_Nombre', 40)->nullable();
             $table->timestamps(); // created_at y updated_at
         });
     }

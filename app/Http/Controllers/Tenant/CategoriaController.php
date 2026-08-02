@@ -64,7 +64,6 @@ class CategoriaController extends Controller
             $query=Categoria::where('CAT_Nombre','=',$request->get('CAT_Nombre'))->get();
             if($query->count()!=0) //si lo encuentra, osea si no esta vacia
             {
-                
                 return response()->json(['error' => 'Categoria ya registrado'], 401);                   
             }
             else{
@@ -152,7 +151,7 @@ class CategoriaController extends Controller
             $categoria->CAT_Nombre = $request->CAT_Nombre;
             $categoria->CLA_Id = $request->CLA_Id;
             $categoria->update();
-
+            
             $ubicacionNegocio = "";
             $id = null;
             if (tenant()) {
@@ -180,7 +179,9 @@ class CategoriaController extends Controller
             DB::commit();
         } catch (Exception $e)
         {
+            dd($e);
             DB::rollback();
+            return response()->json(['success' => $e->getMessage()]);
         }
 
         return response()->json(['success' => 'Categoria Editado Exitosamente.',compact('categoria')]);
