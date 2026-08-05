@@ -19,6 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('TUR_Id');
             $table->unsignedBigInteger('BAH_Id');
 
+            $table->string('RES_Placa', 20);
             $table->string('RES_Moto', 150);
             $table->string('RES_Cliente', 120);
             $table->string('RES_Celular', 12);

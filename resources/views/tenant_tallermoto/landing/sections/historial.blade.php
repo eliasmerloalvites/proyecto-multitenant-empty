@@ -1,12 +1,5 @@
-<!-- Oscurecer fondo
-    <div class="absolute inset-0 z-10 "></div>-->
-
 <!-- Gradiente lateral -->
-<main class="relative  overflow-hidden">
-    {{-- <div class="absolute inset-0 z-20
-        bg-gradient-to-l
-        from-slate-700 v ">
-    </div> --}}
+<main class="relative overflow-hidden">
 
     <div class="relative z-30 max-w-7xl mx-auto px-6 py-12">
 
@@ -38,7 +31,7 @@
                 </div>
 
                 <div class="max-w-md mx-auto mb-16">
-                    <div @class([
+                    <form action="{{ url()->current() }}" method="GET" @class([
                         'backdrop-blur-md p-4 rounded-3xl border shadow-2xl relative group',
                         'bg-slate-950/60 border-white/10' => $colorview == 'dark',
                         'bg-white border-gray-200' => $colorview !== 'dark',
@@ -55,268 +48,172 @@
                                     class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-400">
                                     <i data-lucide="search" class="w-4 h-4"></i>
                                 </div>
-                                <input type="text" placeholder="EJEM: 1234-5X" @class([
-                                    'w-full border focus:border-brand-500/50 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-mono font-bold uppercase placeholder-gray-500 focus:outline-none focus:ring-0 transition-all',
-                                    'bg-slate-900 border-white/5 text-white' => $colorview == 'dark',
-                                    'bg-gray-50 border-gray-200 text-gray-900' => $colorview !== 'dark',
-                                ])>
+                                <!-- 1. Atributo name="Placa" asignado -->
+                                <!-- 2. Mantener el valor ingresado mediante value="{{ request('Placa') }}" -->
+                                <input type="text" name="Placa" value="{{ request('Placa') }}"
+                                    placeholder="EJEM: 1234-5X" required @class([
+                                        'w-full border focus:border-brand-500/50 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-mono font-bold uppercase placeholder-gray-500 focus:outline-none focus:ring-0 transition-all',
+                                        'bg-slate-900 border-white/5 text-white' => $colorview == 'dark',
+                                        'bg-gray-50 border-gray-200 text-gray-900' => $colorview !== 'dark',
+                                    ])>
                             </div>
-                            <button
+                            <button type="submit"
                                 class="bg-brand-500 hover:bg-brand-400 text-white px-5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-brand-500/20 flex items-center gap-1.5 shrink-0">
                                 Consultar <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                             </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                @if (isset($data['resumen']))
+                    @php $res = $data['resumen']; @endphp
 
-                    <div class="lg:col-span-7 space-y-6">
+                    <div class="max-w-3xl mx-auto space-y-6">
 
-                        <div @class([
-                            'backdrop-blur-md border rounded-3xl p-6 shadow-xl relative overflow-hidden',
-                            'bg-slate-950/40 border-white/5' => $colorview == 'dark',
-                            'bg-white border-gray-200' => $colorview !== 'dark',
-                        ])>
-                            <div class="absolute top-0 right-0 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl"></div>
-
-                            <div @class([
-                                'flex flex-wrap items-center justify-between gap-4 border-b pb-4 mb-6',
-                                'border-white/5' => $colorview == 'dark',
-                                'border-gray-100' => $colorview !== 'dark',
-                            ])>
-                                <div class="flex items-center gap-3">
-                                    <div @class([
-                                        'w-12 h-12 border text-brand-400 rounded-2xl flex items-center justify-center',
-                                        'bg-brand-500/10 border-brand-500/30' => $colorview == 'dark',
-                                        'bg-brand-500/5 border-brand-500/20' => $colorview !== 'dark',
-                                    ])>
-                                        <i data-lucide="check-square" class="w-6 h-6"></i>
-                                    </div>
-                                    <div>
-                                        <span
-                                            class="text-[9px] text-emerald-500 font-bold uppercase bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
-                                            Servicio Completado
-                                        </span>
-                                        <h3
-                                            class="{{ $colorview == 'dark' ? 'text-white' : 'text-gray-900' }} text-sm font-black uppercase tracking-wide mt-1">
-                                            Mantenimiento Preventivo Full
-                                        </h3>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <span class="block text-[9px] text-gray-400 font-bold uppercase">Código de
-                                        Orden</span>
+                        <!-- CARD PRINCIPAL: DATOS GENERALES -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+                            <!-- Header con Tipo de Mantenimiento y Botón PDF -->
+                            <div
+                                class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-white/10">
+                                <div>
                                     <span
-                                        class="{{ $colorview == 'dark' ? 'text-gray-300' : 'text-gray-900' }} text-xs font-mono font-bold">#OR-2026-894</span>
+                                        class="inline-block px-3 py-1 text-xs font-black tracking-wider uppercase bg-brand-500/20 text-brand-400 border border-brand-500/30 rounded-full mb-2">
+                                        {{ $res['cabecera']['tipo'] }}
+                                    </span>
+                                    <h3 class="text-xl font-bold text-white">Último Mantenimiento</h3>
+                                    <p class="text-xs text-gray-400">Atendido por: <span
+                                            class="text-gray-200 font-semibold">{{ $res['cabecera']['mecanico'] }}</span>
+                                        el {{ $res['cabecera']['fecha'] }}</p>
                                 </div>
-                            </div>
 
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-                                <div @class([
-                                    'p-3 rounded-2xl border',
-                                    'bg-slate-900/50 border-white/5' => $colorview == 'dark',
-                                    'bg-gray-50 border-gray-100' => $colorview !== 'dark',
-                                ])>
-                                    <span class="block text-[9px] text-gray-400 font-bold uppercase">Fecha de
-                                        Salida</span>
-                                    <span
-                                        class="{{ $colorview == 'dark' ? 'text-gray-300' : 'text-gray-800' }} text-xs font-mono font-medium">14/05/2026</span>
-                                </div>
-                                <div @class([
-                                    'p-3 rounded-2xl border',
-                                    'bg-slate-900/50 border-white/5' => $colorview == 'dark',
-                                    'bg-gray-50 border-gray-100' => $colorview !== 'dark',
-                                ])>
-                                    <span class="block text-[9px] text-gray-400 font-bold uppercase">Kilometraje</span>
-                                    <span class="text-xs text-brand-500 font-mono font-black">12,450 Km</span>
-                                </div>
-                                <div @class([
-                                    'p-3 rounded-2xl border col-span-2 sm:col-span-1',
-                                    'bg-slate-900/50 border-white/5' => $colorview == 'dark',
-                                    'bg-gray-50 border-gray-100' => $colorview !== 'dark',
-                                ])>
-                                    <span class="block text-[9px] text-gray-400 font-bold uppercase">Técnico
-                                        Asignado</span>
-                                    <span
-                                        class="{{ $colorview == 'dark' ? 'text-gray-300' : 'text-gray-800' }} text-xs font-medium">Mec.
-                                        Carlos R.</span>
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <h4
-                                    class="{{ $colorview == 'dark' ? 'text-gray-300' : 'text-gray-700' }} text-xs font-bold uppercase tracking-wider">
-                                    Operaciones Ejecutadas:
-                                </h4>
-                                <div @class([
-                                    'grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]',
-                                    'text-gray-400' => $colorview == 'dark',
-                                    'text-gray-600' => $colorview !== 'dark',
-                                ])>
-                                    @php
-                                        $operaciones = [
-                                            'Cambio de Aceite 10W40 Sintético',
-                                            'Limpieza de Inyectores con Ultrasonido',
-                                            'Calibración y Tensión de Cadena',
-                                            'Diagnóstico OBD (Cero Errores)',
-                                        ];
-                                    @endphp
-                                    @foreach ($operaciones as $op)
-                                        <div @class([
-                                            'flex items-center gap-2 px-3 py-2 rounded-xl',
-                                            'bg-slate-900/30' => $colorview == 'dark',
-                                            'bg-gray-50' => $colorview !== 'dark',
-                                        ])>
-                                            <i data-lucide="check" class="w-3.5 h-3.5 text-brand-500"></i>
-                                            {{ $op }}
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-
-                            <div @class([
-                                'mt-6 pt-5 border-t flex flex-col sm:flex-row items-center justify-between gap-4',
-                                'border-white/5' => $colorview == 'dark',
-                                'border-gray-100' => $colorview !== 'dark',
-                            ])>
-                                <div class="text-center sm:text-left">
-                                    <span class="text-[10px] text-gray-400 font-medium block">¿Necesitas el informe
-                                        físico de la inspección?</span>
-                                </div>
-                                <a href="#" @class([
-                                    'w-full sm:w-auto inline-flex items-center justify-center gap-2 border px-5 py-3 rounded-xl text-xs font-bold transition-all group',
-                                    'bg-slate-900 hover:bg-slate-800 border-white/10 text-gray-300 hover:text-white' =>
-                                        $colorview == 'dark',
-                                    'bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-700 hover:text-gray-900' =>
-                                        $colorview !== 'dark',
-                                ])>
-                                    <i data-lucide="file-text"
-                                        class="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform"></i>
-                                    Descargar Reporte Técnico .PDF
+                                <!-- Botón para descargar/ver PDF completo -->
+                                <a href="{{ $res['cabecera']['url_pdf'] }}/{{ $res['cabecera']['id'] }}" target="_blank"
+                                    class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2">
+                                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                                    Descargar Ficha PDF
                                 </a>
                             </div>
+
+                            <!-- Grid de datos rápidos del vehículo -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                                <div class="bg-slate-950/50 p-3 rounded-2xl border border-white/5">
+                                    <span
+                                        class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">PLACA</span>
+                                    <span
+                                        class="text-base font-black text-white font-mono">{{ $res['cabecera']['placa'] }}</span>
+                                </div>
+                                <div class="bg-slate-950/50 p-3 rounded-2xl border border-white/5">
+                                    <span
+                                        class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">VEHÍCULO</span>
+                                    <span
+                                        class="text-sm font-bold text-white truncate block">{{ $res['cabecera']['unidad'] }}</span>
+                                </div>
+                                <div class="bg-slate-950/50 p-3 rounded-2xl border border-white/5">
+                                    <span
+                                        class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">KILOMETRAJE</span>
+                                    <span class="text-sm font-bold text-emerald-400">{{ $res['cabecera']['km'] }}
+                                        KM</span>
+                                </div>
+                                <div class="bg-slate-950/50 p-3 rounded-2xl border border-white/5">
+                                    <span
+                                        class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">CLIENTE</span>
+                                    <span
+                                        class="text-sm font-bold text-white truncate block">{{ $res['cabecera']['propietario'] }}</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div @class([
-                            'border rounded-3xl p-5 flex items-center gap-4',
-                            'bg-brand-950/20 border-brand-500/20' => $colorview == 'dark',
-                            'bg-brand-500/5 border-brand-500/20' => $colorview !== 'dark',
-                        ])>
-                            <div
-                                class="w-10 h-10 bg-brand-500/10 text-brand-500 rounded-xl flex items-center justify-center shrink-0">
-                                <i data-lucide="bell" class="w-5 h-5 animate-bounce"></i>
-                            </div>
-                            <div>
-                                <h5
-                                    class="{{ $colorview == 'dark' ? 'text-white' : 'text-gray-900' }} text-xs font-bold uppercase">
-                                    Próximo Escaneo Sugerido
-                                </h5>
-                                <p
-                                    class="{{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} text-[11px] mt-0.5">
-                                    Se proyecta tu siguiente revisión preventiva a los <span
-                                        class="text-brand-500 font-mono font-bold">15,000 Km</span> o el <span
-                                        class="text-brand-500 font-mono font-bold">14/08/2026</span>.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                        <!-- CARD DE MÉTRICAS CLAVE (PUNTOS IMPORTANTES) -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+                            <h4
+                                class="text-xs font-black uppercase tracking-wider text-gray-400 border-b border-white/5 pb-3">
+                                Resumen Diagnóstico & Mediciones
+                            </h4>
 
-                    <div class="lg:col-span-5 space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                        <div @class([
-                            'backdrop-blur-md border rounded-3xl p-6 shadow-xl space-y-6',
-                            'bg-slate-950/40 border-white/5' => $colorview == 'dark',
-                            'bg-white border-gray-200' => $colorview !== 'dark',
-                        ])>
-                            <div @class([
-                                'border-b pb-3',
-                                'border-white/5' => $colorview == 'dark',
-                                'border-gray-100' => $colorview !== 'dark',
-                            ])>
-                                <h3
-                                    class="{{ $colorview == 'dark' ? 'text-white' : 'text-gray-900' }} text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                                    <i data-lucide="activity" class="w-4 h-4 text-brand-500"></i> Estado General del
-                                    Vehículo
-                                </h3>
-                                <p class="text-[10px] text-gray-400 font-bold uppercase mt-0.5">Yamaha R3 • Placa:
-                                    1234-5X</p>
-                            </div>
-
-                            <div class="space-y-4">
-                                @php
-                                    $componentes = [
-                                        [
-                                            'name' => 'Sistema de Frenado (Pastillas/Líquido)',
-                                            'pct' => 90,
-                                            'status' => 'Óptimo',
-                                            'color' => 'bg-emerald-500',
-                                            'text' => 'text-emerald-500',
-                                        ],
-                                        [
-                                            'name' => 'Compresión y Lubricación de Motor',
-                                            'pct' => 95,
-                                            'status' => 'Excelente',
-                                            'color' => 'bg-emerald-500',
-                                            'text' => 'text-emerald-500',
-                                        ],
-                                        [
-                                            'name' => 'Kit de Arrastre (Cadena/Catalina)',
-                                            'pct' => 45,
-                                            'status' => 'Desgaste Medio',
-                                            'color' => 'bg-amber-500',
-                                            'text' => 'text-amber-500',
-                                        ],
-                                        [
-                                            'name' => 'Batería y Sistema Eléctrico Alterno',
-                                            'pct' => 85,
-                                            'status' => 'Estable',
-                                            'color' => 'bg-emerald-500',
-                                            'text' => 'text-emerald-500',
-                                        ],
-                                    ];
-                                @endphp
-
-                                @foreach ($componentes as $comp)
-                                    <div class="space-y-1.5">
-                                        <div class="flex justify-between text-[11px] font-bold">
-                                            <span
-                                                class="{{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }}">{{ $comp['name'] }}</span>
-                                            <span class="{{ $comp['text'] }}">{{ $comp['pct'] }}%
-                                                ({{ $comp['status'] }})</span>
-                                        </div>
-                                        <div @class([
-                                            'w-full h-2 rounded-full overflow-hidden p-0.5 border',
-                                            'bg-slate-900 border-white/5' => $colorview == 'dark',
-                                            'bg-gray-100 border-gray-200/60' => $colorview !== 'dark',
-                                        ])>
-                                            <div class="h-full {{ $comp['color'] }} rounded-full"
-                                                style="width: {{ $comp['pct'] }}%"></div>
-                                        </div>
+                                <!-- 1. Motor & Aceite -->
+                                <div class="p-4 rounded-2xl bg-slate-950/40 border border-white/5 space-y-2">
+                                    <div class="flex items-center gap-2 text-brand-400 text-xs font-bold uppercase">
+                                        <i data-lucide="gauge" class="w-4 h-4"></i> Motor
                                     </div>
-                                @endforeach
+                                    <div class="text-xs space-y-1 text-gray-300">
+                                        <p class="flex justify-between"><span>Aceite:</span> <strong
+                                                class="text-white">{{ $res['metricas']['aceite'] }}</strong></p>
+                                        @if ($res['metricas']['valvula_adm'])
+                                            <p class="flex justify-between"><span>Válv. Adm / Esc:</span> <strong
+                                                    class="text-white">{{ $res['metricas']['valvula_adm'] }} /
+                                                    {{ $res['metricas']['valvula_esc'] }}</strong></p>
+                                        @endif
+                                        @if ($res['metricas']['bujia_medida'])
+                                            <p class="flex justify-between"><span>Bujía Calibre:</span> <strong
+                                                    class="text-white">{{ $res['metricas']['bujia_medida'] }}</strong>
+                                            </p>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <!-- 2. Neumáticos & Presión -->
+                                <div class="p-4 rounded-2xl bg-slate-950/40 border border-white/5 space-y-2">
+                                    <div class="flex items-center gap-2 text-blue-400 text-xs font-bold uppercase">
+                                        <i data-lucide="disc" class="w-4 h-4"></i> Neumáticos
+                                    </div>
+                                    <div class="text-xs space-y-1 text-gray-300">
+                                        <p class="flex justify-between"><span>Presión Del:</span> <strong
+                                                class="text-white">{{ $res['metricas']['psi_delantero'] ?? 'N/A' }}</strong>
+                                        </p>
+                                        <p class="flex justify-between"><span>Presión Post:</span> <strong
+                                                class="text-white">{{ $res['metricas']['psi_trasero'] ?? 'N/A' }}</strong>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- 3. Batería / Carga -->
+                                <div class="p-4 rounded-2xl bg-slate-950/40 border border-white/5 space-y-2">
+                                    <div class="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase">
+                                        <i data-lucide="zap" class="w-4 h-4"></i> Sistema Eléctrico
+                                    </div>
+                                    <div class="text-xs space-y-1 text-gray-300">
+                                        <p class="flex justify-between"><span>Voltaje Carga:</span> <strong
+                                                class="text-white">{{ $res['metricas']['v_carga'] ?? 'N/A' }}</strong>
+                                        </p>
+                                        <p class="flex justify-between"><span>Voltaje Arranque:</span> <strong
+                                                class="text-white">{{ $res['metricas']['v_arranque'] ?? 'N/A' }}</strong>
+                                        </p>
+                                    </div>
+                                </div>
+
                             </div>
 
-                            <div @class([
-                                'border p-4 rounded-2xl text-[11px] leading-relaxed',
-                                'bg-slate-900/60 border-white/5 text-gray-400' => $colorview == 'dark',
-                                'bg-amber-500/5 border-amber-500/20 text-gray-600' => $colorview !== 'dark',
-                            ])>
-                                <span class="block font-black uppercase text-[9px] text-amber-500 mb-1 tracking-wider">
-                                    Observación del Taller:
-                                </span>
-                                Se detectó que la cadena del kit de arrastre se encuentra cerca del límite de su vida
-                                útil operativa. Se recomienda programar un cambio de kit en la próxima visita para
-                                evitar pérdidas de potencia en alta velocidad.
-                            </div>
+                            <!-- EXTRAS DINÁMICOS SEGÚN EL TIPO -->
+                            @if (!empty($res['extras']))
+                                <div class="pt-4 border-t border-white/5">
+                                    @if (isset($res['extras']['escaneo']))
+                                        <div
+                                            class="p-3 bg-brand-500/10 border border-brand-500/20 rounded-xl text-xs text-brand-300 flex justify-between">
+                                            <span>Resultado Escaneo / Vida Útil:</span>
+                                            <span class="font-bold">{{ $res['extras']['escaneo'] }}</span>
+                                        </div>
+                                    @endif
+
+                                    @if (isset($res['extras']['detalle_trabajo']))
+                                        <div
+                                            class="p-3 bg-slate-950/60 border border-white/5 rounded-xl text-xs text-gray-300">
+                                            <span class="block text-gray-400 font-bold mb-1 uppercase">Trabajos
+                                                Realizados:</span>
+                                            <p>{{ $res['extras']['detalle_trabajo'] }}</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
+
                         </div>
 
                     </div>
-                </div>
+                @endif
 
             </div>
         </section>
-
 
     </div>
 </main>

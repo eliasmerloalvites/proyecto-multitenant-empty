@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('categoria', function (Blueprint $table) {
             $table->increments('CAT_Id');
-            $table->string('CAT_Nombre', 20)->nullable();
+            $table->string('CAT_Nombre', 50)->nullable();
             $table->string('CAT_Imagen', 10)->nullable();
             $table->unsignedInteger('CLA_Id');
             $table->timestamps();

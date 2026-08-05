@@ -103,7 +103,9 @@ class ProductoController extends Controller
             DB::commit();
         } catch (Exception $e)
         {
+            dd($e);
             DB::rollback();
+            return response()->json(['success' => $e->getMessage()]);
         }
         return response()->json(['success' => 'Producto Registrado Exitosamente!', compact('producto')]);
     }

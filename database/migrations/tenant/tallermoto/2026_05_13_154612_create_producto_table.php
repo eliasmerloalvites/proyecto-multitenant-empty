@@ -15,8 +15,8 @@ return new class extends Migration
             /* PRIMARY KEY */
             $table->increments('PRO_Id');
             /* CAMPOS */
-            $table->string('PRO_Nombre', 50);
-            $table->string('PRO_Descripcion', 250)->nullable();
+            $table->string('PRO_Nombre', 150);
+            $table->text('PRO_Descripcion')->nullable();
             $table->decimal('PRO_PrecioCompra', 10, 2);
             $table->decimal('PRO_PrecioVenta', 10, 2);
             $table->string('PRO_Marca', 50)->nullable();

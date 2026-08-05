@@ -60,6 +60,7 @@ Route::middleware([
     
     Route::get('/servicios', [HomeController::class, 'servicios'])->name('web.servicios');
     Route::get('/reservar', [HomeController::class, 'reservar'])->name('web.reservar');
+    Route::post('/reservar/store', [HomeController::class, 'reservar_store'])->name('web.reservar.store');
     Route::get('/historial', [HomeController::class, 'historial'])->name('web.historial');
     Route::get('/catalogo', [HomeController::class, 'catalogo'])->name('web.catalogo');
     Route::get('/nosotros', [HomeController::class, 'nosotros'])->name('web.nosotros');

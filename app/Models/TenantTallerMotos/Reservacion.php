@@ -15,6 +15,7 @@ class Reservacion extends Model
     	'TUR_Id',
     	'ALM_Id',
     	'BAH_Id',
+    	'RES_Placa',
     	'RES_Moto',
     	'RES_Cliente',
     	'RES_Celular',
