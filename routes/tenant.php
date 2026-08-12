@@ -85,6 +85,16 @@ Route::middleware([
     Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/pdf',[MantenimientoPreventivoInyectadaController::class, 'pdf'])->name('tenant.mantenimientos.preventivoinyectada.pdf');
     Route::get('/tenant/mantenimientos/preventivocarburada/{id}/pdf',[MantenimientoPreventivoCarburadaController::class, 'pdf'])->name('tenant.mantenimientos.preventivocarburada.pdf');
 
+
+    // PDF
+    Route::get('/tenant/actividades/mantenimientoactividadvariada/{id}/descargarpdf',[MantenimientoActividadVariadaController::class, 'descargarpdf'])->name('tenant.actividades.mantenimientoactividadvariada.descargarpdf');
+    Route::get('/tenant/mantenimientos/generalinyectada/{id}/descargarpdf',[MantenimientoGeneralInyectadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.generalinyectada.descargarpdf');
+    Route::get('/tenant/mantenimientos/generalcarburada/{id}/descargarpdf',[MantenimientoGeneralCarburadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.generalcarburada.descargarpdf');
+    Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/descargarpdf',[MantenimientoPreventivoInyectadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.preventivoinyectada.descargarpdf');
+    Route::get('/tenant/mantenimientos/preventivocarburada/{id}/descargarpdf',[MantenimientoPreventivoCarburadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.preventivocarburada.descargarpdf');
+
+
+
     Route::middleware(['auth:tenant'])->group(function(){  
         Route::get('/tenant/home', [HomeController::class,'index'])->name('tenant.home');
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');

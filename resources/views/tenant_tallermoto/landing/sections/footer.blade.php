@@ -108,11 +108,12 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 md:grid-cols-12 gap-8">
 
         <div class="md:col-span-5 space-y-5">
-            <div class="flex items-center gap-2">
-                <span
-                    class="{{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-800' }} text-xl font-black tracking-wider flex items-center">
-                    <span class="text-brand-500 font-extrabold mr-0.5">K</span>KAEL
-                </span>
+            <div class="flex items-center gap-4">
+                <a href="{{ url('/') }}" class="flex items-center py-2">
+                    <img src="{{ !empty($empresa->logo_pdf) ? asset_root($empresa->logo_pdf) : asset('images/icono.jpg') }}"
+                        alt="{{ $empresa->razon_social ?? 'Logo Empresa' }}"
+                        class="h-10 sm:h-12 w-auto max-w-[220px] object-contain transition-transform duration-200 hover:scale-105">
+                </a>
             </div>
 
             <p class="{{ $colorview == 'dark' ? 'text-gray-500' : 'text-gray-600' }} text-xs max-w-sm leading-relaxed">
@@ -226,13 +227,13 @@
                 <li><a href="#"
                         class="{{ $colorview == 'dark' ? 'hover:text-white' : 'hover:text-gray-900' }} transition">Inicio
                         del Sistema</a></li>
-                <li><a href="#servicios"
+                <li><a href="/servicios"
                         class="{{ $colorview == 'dark' ? 'hover:text-white' : 'hover:text-gray-900' }} transition">Servicios
                         de Taller</a></li>
-                <li><a href="#info-reservas"
+                <li><a href="/reservar"
                         class="{{ $colorview == 'dark' ? 'hover:text-white' : 'hover:text-gray-900' }} transition">Estación
                         de Reservas</a></li>
-                <li><a href="#catalogo"
+                <li><a href="/catalogo"
                         class="{{ $colorview == 'dark' ? 'hover:text-white' : 'hover:text-gray-900' }} transition">Catálogo
                         de Repuestos</a></li>
             </ul>
@@ -247,7 +248,7 @@
                 'text-gray-500' => $colorview == 'dark',
                 'text-gray-600' => $colorview !== 'dark',
             ])>
-                <li><a href="#buscar-placa"
+                <li><a href="/historial"
                         class="{{ $colorview == 'dark' ? 'hover:text-white' : 'hover:text-gray-900' }} transition flex items-center gap-1.5"><span
                             class="w-1 h-1 bg-brand-500 rounded-full"></span> Consultar Historial Clínico</a></li>
                 <li><a href="#"

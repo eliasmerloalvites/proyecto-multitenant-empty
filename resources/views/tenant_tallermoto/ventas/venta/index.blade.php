@@ -691,13 +691,12 @@
                         data: null,
                         name: '',
                         'render': function(data, type, row) {
-                            return
-                            @can('tenant.ventas.venta.show')
+                            return @can('tenant.ventas.venta.show')
                                 data.action3 + ' ' +
                             @endcan
                             ''
                             @can('tenant.ventas.venta.show')
-                                +data.ticket
+                                +data.ticket + ' '+ data.pdf + ' ' + data.whatsapp
                             @endcan
                         }
                     }

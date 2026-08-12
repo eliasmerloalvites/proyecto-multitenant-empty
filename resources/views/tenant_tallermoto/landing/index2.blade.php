@@ -126,7 +126,7 @@
                 <div class="glass-panel p-5 rounded-2xl w-full max-w-sm shadow-[0_25px_60px_rgba(0,0,0,0.5)] space-y-4">
                     <div class="flex items-center justify-between border-b border-white/5 pb-2.5">
                         <div class="flex items-center gap-1.5 text-xs font-bold {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} tracking-wide">
-                            <i data-lucide="activity" class="w-4 h-4 text-brand-500"></i> Sistema Kael
+                            <i data-lucide="activity" class="w-4 h-4 text-brand-500"></i> Sistema {{ $empresa->nombre_comercial }}
                         </div>
                         <span class="flex items-center gap-1 text-[9px] bg-green-950/60 text-green-400 px-2.5 py-0.5 rounded-full font-bold border border-green-900/50">
                             <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span> En tiempo real

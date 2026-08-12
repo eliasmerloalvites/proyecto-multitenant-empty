@@ -2,8 +2,8 @@
     @php
         $fondo =
             $colorview == 'dark'
-                ? 'landing_tallermoto/images/hero-moto.png'
-                : 'landing_tallermoto/images/hero-moto-light.png';
+                ? (!empty($empresa->logo_portada1) ? $empresa->logo_portada1 : 'landing_tallermoto/images/hero-moto.png') 
+                : (!empty($empresa->logo_portada1) ? $empresa->logo_portada1 : 'landing_tallermoto/images/hero-moto-light.png');
     @endphp
     <!-- Imagen de fondo -->
     <div class="absolute inset-0 z-0">
@@ -85,12 +85,12 @@
                 </div>
 
                 <div class="flex flex-wrap gap-4 pt-4">
-                    <a href="#"
+                    <a href="/reservar"
                         class="bg-brand-500 hover:bg-brand-400 text-white px-8 py-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition shadow-lg shadow-brand-500/20">
                         <i data-lucide="calendar" class="w-4 h-4"></i> Reservar Ahora
                     </a>
 
-                    <a href="#buscar-placa" @class([
+                    <a href="/historial" @class([
                         'neon-border px-8 py-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition backdrop-blur-sm',
                         // 🌙 Modo Oscuro: Fondo de cristal tecnológico oscuro y texto claro
                         'bg-slate-950/40 text-gray-300 hover:text-white' => $colorview == 'dark',
@@ -150,7 +150,7 @@
                     <div class="flex items-center justify-between border-b border-white/5 pb-2.5">
                         <div
                             class="flex items-center gap-1.5 text-xs font-bold {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} tracking-wide">
-                            <i data-lucide="activity" class="w-4 h-4 text-brand-500"></i> Sistema Kael
+                            <i data-lucide="activity" class="w-4 h-4 text-brand-500"></i> Sistema {{ $empresa->nombre_comercial }}
                         </div>
                         <span
                             class="flex items-center gap-1 text-[9px] bg-green-950/60 text-green-400 px-2.5 py-0.5 rounded-full font-bold border border-green-900/50">
@@ -207,12 +207,12 @@
                 </div>
             </div>
 
-            <form action="#" method="GET" class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-12 gap-4 w-full">
+            <form action="/historial" method="GET" class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-12 gap-4 w-full">
                 <div class="sm:col-span-9 relative">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
                         <i data-lucide="bike" class="w-4 h-4"></i>
                     </div>
-                    <input type="text" name="placa" placeholder="Ej: ABC123, BCD456"
+                    <input type="text" name="Placa" placeholder="Ej: ABC123, BCD456"
                         @class([
                             'w-full pl-11 pr-4 py-3.5 border rounded-xl focus:outline-none focus:border-brand-500 transition font-mono uppercase tracking-wider text-xs',
                             // 🌙 Estilos Input Modo Oscuro

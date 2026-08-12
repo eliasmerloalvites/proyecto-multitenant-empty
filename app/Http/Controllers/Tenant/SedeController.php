@@ -7,6 +7,7 @@ use App\Models\Tenant\Almacen;
 use App\Models\Tenant\EmpresaFacturacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class SedeController extends Controller
 {
@@ -16,11 +17,11 @@ class SedeController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-			$data = DB::table('almacen as al')
-            ->join('empresa_facturacion as emp', 'al.EMP_Id', '=', 'emp.id')
-            ->where('emp.tenant_id', tenant('id'))
-			->select('al.*','emp.ruc as ALM_Ruc','emp.razon_social as ALM_Nombre')
-			->get();
+            $data = DB::table('almacen as al')
+                ->join('empresa_facturacion as emp', 'al.EMP_Id', '=', 'emp.id')
+                ->where('emp.tenant_id', tenant('id'))
+                ->select('al.*', 'emp.ruc as ALM_Ruc', 'emp.razon_social as ALM_Nombre')
+                ->get();
             return datatables()::of($data)
                 ->addIndexColumn()
                 ->addColumn('action1', function ($row) {
@@ -32,12 +33,12 @@ class SedeController extends Controller
 
                     return $btn;
                 })
-               
-                ->rawColumns(['action1','action2'])
+
+                ->rawColumns(['action1', 'action2'])
                 ->make(true);
         }
         $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
-        return view('tenant_'.tenant('tipo_negocio').'.configuracion.sede.index', compact('empresa'));
+        return view('tenant_' . tenant('tipo_negocio') . '.configuracion.sede.index', compact('empresa'));
     }
 
     /**
@@ -53,23 +54,96 @@ class SedeController extends Controller
      */
     public function store(Request $request)
     {
-        $query=Almacen::where('ALM_NombreAlmacen','=',$request->get('ALM_NombreAlmacen'))
-        ->where('EMP_Id', $request->get('EMP_Id'))
-        ->first();
+        // 1. Validaciones de entrada
+        $validated = $request->validate([
+            'EMP_Id' => ['required', 'exists:empresa_facturacion,id'],
+            'ALM_NombreAlmacen' => [
+                'required',
+                'string',
+                'max:255',
+                // Valida duplicado por nombre dentro de la misma empresa
+                Rule::unique('almacen', 'ALM_NombreAlmacen')->where(function ($query) use ($request) {
+                    return $query->where('EMP_Id', $request->EMP_Id);
+                }),
+            ],
+            'ALM_Direccion'           => ['nullable', 'string', 'max:255'],
+            'ALM_Referencia'          => ['nullable', 'string', 'max:255'],
+            'ALM_Latitud'             => ['nullable', 'numeric', 'between:-90,90'],
+            'ALM_Longitud'            => ['nullable', 'numeric', 'between:-180,180'],
+            'ALM_Departamento'        => ['nullable', 'string', 'max:100'],
+            'ALM_Provincia'           => ['nullable', 'string', 'max:100'],
+            'ALM_Distrito'            => ['nullable', 'string', 'max:100'],
+            'ALM_Ubigeo'              => ['nullable', 'string', 'max:6'],
+            'ALM_Telefono'            => ['nullable', 'string', 'max:20'],
+            'ALM_Celular'             => ['nullable', 'string', 'max:20'],
+            'ALM_Email'               => ['nullable', 'email', 'max:150'],
+            'ALM_CodigoSunat'         => ['nullable', 'string', 'max:10'],
+            'ALM_SerieFactura'        => ['nullable', 'string', 'max:4'],
+            'ALM_SerieBoleta'         => ['nullable', 'string', 'max:4'],
+            'ALM_SerieNotaCredito'    => ['nullable', 'string', 'max:4'],
+            'ALM_SerieNotaDebito'     => ['nullable', 'string', 'max:4'],
+            'ALM_SerieGuiaRemision'   => ['nullable', 'string', 'max:4'],
+            'ALM_SerieNotaVenta'      => ['nullable', 'string', 'max:4'],
+            'ALM_EsPrincipal'         => ['nullable', 'boolean'],
+            'ALM_PermitirVentaSinStock' => ['nullable', 'boolean'],
+            'ALM_Status'              => ['nullable', 'in:0,1,true,false'],
+        ], [
+            'ALM_NombreAlmacen.unique' => 'Ya se encuentra registrada esta sede en la empresa seleccionada.',
+            'EMP_Id.required'          => 'La empresa es obligatoria.',
+            'ALM_NombreAlmacen.required' => 'El nombre de la sede es obligatorio.',
+            'ALM_Latitud.between'      => 'La latitud debe ser un rango válido entre -90 y 90.',
+            'ALM_Longitud.between'     => 'La longitud debe ser un rango válido entre -180 y 180.',
+        ]);
 
-        if($query) //si lo encuentra, osea si no esta vacia
-        {
-            return response()->json(['error' => 'Ya se encuentra registrado esta sede en la empresa ingresada'], 422);                   
-        }
-        else{
-            $Almacen= new Almacen();
-            $Almacen->EMP_Id=$request->EMP_Id;
-            $Almacen->ALM_NombreAlmacen=$request->ALM_NombreAlmacen;
-            $Almacen->ALM_Direccion=$request->ALM_Direccion;
-            $Almacen->ALM_Celular=$request->ALM_Celular;
-            $Almacen->ALM_Status=$request->ALM_Status ?? 1 ;
-            $Almacen->save();
-            return response()->json(['success' => 'Sede Registrado Exitosamente!',compact('Almacen')]);    
+        try {
+            $almacen = DB::transaction(function () use ($request, $validated) {
+
+                // Si la nueva sede se marca como principal, desmarcamos las demás sedes de la empresa
+                if ($request->boolean('ALM_EsPrincipal')) {
+                    Almacen::where('EMP_Id', $request->EMP_Id)
+                        ->update(['ALM_EsPrincipal' => 0]);
+                }
+
+                return Almacen::create([
+                    'EMP_Id'                    => $validated['EMP_Id'],
+                    'ALM_NombreAlmacen'         => trim($validated['ALM_NombreAlmacen']),
+                    'ALM_Direccion'             => $validated['ALM_Direccion'] ?? null,
+                    'ALM_Referencia'            => $validated['ALM_Referencia'] ?? null,
+                    'ALM_Latitud'               => $validated['ALM_Latitud'] ?? null,
+                    'ALM_Longitud'              => $validated['ALM_Longitud'] ?? null,
+                    'ALM_Departamento'          => $validated['ALM_Departamento'] ?? null,
+                    'ALM_Provincia'             => $validated['ALM_Provincia'] ?? null,
+                    'ALM_Distrito'              => $validated['ALM_Distrito'] ?? null,
+                    'ALM_Ubigeo'                => $validated['ALM_Ubigeo'] ?? null,
+                    'ALM_Telefono'              => $validated['ALM_Telefono'] ?? null,
+                    'ALM_Celular'               => $validated['ALM_Celular'] ?? null,
+                    'ALM_Email'                 => $validated['ALM_Email'] ?? null,
+                    'ALM_CodigoSunat'           => $validated['ALM_CodigoSunat'] ?? null,
+                    'ALM_SerieFactura'          => isset($validated['ALM_SerieFactura']) ? strtoupper($validated['ALM_SerieFactura']) : null,
+                    'ALM_SerieBoleta'           => isset($validated['ALM_SerieBoleta']) ? strtoupper($validated['ALM_SerieBoleta']) : null,
+                    'ALM_SerieNotaCredito'      => isset($validated['ALM_SerieNotaCredito']) ? strtoupper($validated['ALM_SerieNotaCredito']) : null,
+                    'ALM_SerieNotaDebito'       => isset($validated['ALM_SerieNotaDebito']) ? strtoupper($validated['ALM_SerieNotaDebito']) : null,
+                    'ALM_SerieGuiaRemision'     => isset($validated['ALM_SerieGuiaRemision']) ? strtoupper($validated['ALM_SerieGuiaRemision']) : null,
+                    'ALM_SerieNotaVenta'        => isset($validated['ALM_SerieNotaVenta']) ? strtoupper($validated['ALM_SerieNotaVenta']) : null,
+                    'ALM_EsPrincipal'           => $request->boolean('ALM_EsPrincipal') ? 1 : 0,
+                    'ALM_PermitirVentaSinStock' => $request->boolean('ALM_PermitirVentaSinStock') ? 1 : 0,
+                    'ALM_Status'                => $request->input('ALM_Status', 1),
+                ]);
+            });
+
+            return response()->json([
+                'success' => '¡Sede registrada exitosamente!',
+                'data'    => $almacen
+            ], 201);
+        } catch (\Throwable $e) {
+            Log::error('Error al guardar la sede: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request'   => $request->all()
+            ]);
+
+            return response()->json([
+                'error' => 'Ocurrió un error interno al intentar guardar la sede. Por favor, reintente.'
+            ], 500);
         }
     }
 
@@ -95,13 +169,110 @@ class SedeController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        // 1. Buscar el registro o lanzar error 404 si no existe
         $almacen = Almacen::find($id);
-        $almacen->ALM_NombreAlmacen=$request->ALM_NombreAlmacen;
-        $almacen->ALM_Direccion=$request->ALM_Direccion;
-        $almacen->ALM_Celular=$request->ALM_Celular;
-		$almacen->update();
 
-        return response()->json(['success' => 'Sede Editado Exitosamente.',compact('almacen')]);
+        if (!$almacen) {
+            return response()->json([
+                'error' => 'La sede solicitada no existe o fue eliminada.'
+            ], 404);
+        }
+
+        // 2. Validaciones de entrada
+        $validated = $request->validate([
+            'EMP_Id' => ['required', 'exists:empresa_facturacion,id'],
+            'ALM_NombreAlmacen' => [
+                'required',
+                'string',
+                'max:255',
+                // Valida duplicado por nombre en la misma empresa, ignorando el registro actual
+                Rule::unique('almacen', 'ALM_NombreAlmacen')
+                    ->where(function ($query) use ($request) {
+                        return $query->where('EMP_Id', $request->EMP_Id);
+                    })
+                    ->ignore($id, 'ALM_Id'), // Reemplaza 'ALM_Id' si tu PK se llama distinto
+            ],
+            'ALM_Direccion'           => ['nullable', 'string', 'max:255'],
+            'ALM_Referencia'          => ['nullable', 'string', 'max:255'],
+            'ALM_Latitud'             => ['nullable', 'numeric', 'between:-90,90'],
+            'ALM_Longitud'            => ['nullable', 'numeric', 'between:-180,180'],
+            'ALM_Departamento'        => ['nullable', 'string', 'max:100'],
+            'ALM_Provincia'           => ['nullable', 'string', 'max:100'],
+            'ALM_Distrito'            => ['nullable', 'string', 'max:100'],
+            'ALM_Ubigeo'              => ['nullable', 'string', 'max:6'],
+            'ALM_Telefono'            => ['nullable', 'string', 'max:20'],
+            'ALM_Celular'             => ['nullable', 'string', 'max:20'],
+            'ALM_Email'               => ['nullable', 'email', 'max:150'],
+            'ALM_CodigoSunat'         => ['nullable', 'string', 'max:10'],
+            'ALM_SerieFactura'        => ['nullable', 'string', 'max:4'],
+            'ALM_SerieBoleta'         => ['nullable', 'string', 'max:4'],
+            'ALM_SerieNotaCredito'    => ['nullable', 'string', 'max:4'],
+            'ALM_SerieNotaDebito'     => ['nullable', 'string', 'max:4'],
+            'ALM_SerieGuiaRemision'   => ['nullable', 'string', 'max:4'],
+            'ALM_SerieNotaVenta'      => ['nullable', 'string', 'max:4'],
+            'ALM_EsPrincipal'         => ['nullable', 'boolean'],
+            'ALM_PermitirVentaSinStock' => ['nullable', 'boolean'],
+            'ALM_Status'              => ['nullable', 'in:0,1,true,false'],
+        ], [
+            'ALM_NombreAlmacen.unique'   => 'Ya existe otra sede registrada con el mismo nombre en esta empresa.',
+            'EMP_Id.required'            => 'La empresa es obligatoria.',
+            'ALM_NombreAlmacen.required' => 'El nombre de la sede es obligatorio.',
+            'ALM_Latitud.between'        => 'La latitud debe ser un rango válido entre -90 y 90.',
+            'ALM_Longitud.between'       => 'La longitud debe ser un rango válido entre -180 y 180.',
+        ]);
+
+        try {
+            DB::transaction(function () use ($request, $validated, $almacen) {
+
+                // Si la sede actualizada pasa a ser principal, desmarcamos las demás de la misma empresa
+                if ($request->boolean('ALM_EsPrincipal')) {
+                    Almacen::where('EMP_Id', $request->EMP_Id)
+                        ->where('ALM_Id', '!=', $almacen->ALM_Id) // Reemplaza 'ALM_Id' si tu PK se llama distinto
+                        ->update(['ALM_EsPrincipal' => 0]);
+                }
+
+                // Actualizamos la entidad
+                $almacen->update([
+                    'EMP_Id'                    => $validated['EMP_Id'],
+                    'ALM_NombreAlmacen'         => trim($validated['ALM_NombreAlmacen']),
+                    'ALM_Direccion'             => $validated['ALM_Direccion'] ?? null,
+                    'ALM_Referencia'            => $validated['ALM_Referencia'] ?? null,
+                    'ALM_Latitud'               => $validated['ALM_Latitud'] ?? null,
+                    'ALM_Longitud'              => $validated['ALM_Longitud'] ?? null,
+                    'ALM_Departamento'          => $validated['ALM_Departamento'] ?? null,
+                    'ALM_Provincia'             => $validated['ALM_Provincia'] ?? null,
+                    'ALM_Distrito'              => $validated['ALM_Distrito'] ?? null,
+                    'ALM_Ubigeo'                => $validated['ALM_Ubigeo'] ?? null,
+                    'ALM_Telefono'              => $validated['ALM_Telefono'] ?? null,
+                    'ALM_Celular'               => $validated['ALM_Celular'] ?? null,
+                    'ALM_Email'                 => $validated['ALM_Email'] ?? null,
+                    'ALM_CodigoSunat'           => $validated['ALM_CodigoSunat'] ?? null,
+                    'ALM_SerieFactura'          => isset($validated['ALM_SerieFactura']) ? strtoupper($validated['ALM_SerieFactura']) : null,
+                    'ALM_SerieBoleta'           => isset($validated['ALM_SerieBoleta']) ? strtoupper($validated['ALM_SerieBoleta']) : null,
+                    'ALM_SerieNotaCredito'      => isset($validated['ALM_SerieNotaCredito']) ? strtoupper($validated['ALM_SerieNotaCredito']) : null,
+                    'ALM_SerieNotaDebito'       => isset($validated['ALM_SerieNotaDebito']) ? strtoupper($validated['ALM_SerieNotaDebito']) : null,
+                    'ALM_SerieGuiaRemision'     => isset($validated['ALM_SerieGuiaRemision']) ? strtoupper($validated['ALM_SerieGuiaRemision']) : null,
+                    'ALM_SerieNotaVenta'        => isset($validated['ALM_SerieNotaVenta']) ? strtoupper($validated['ALM_SerieNotaVenta']) : null,
+                    'ALM_EsPrincipal'           => $request->boolean('ALM_EsPrincipal') ? 1 : 0,
+                    'ALM_PermitirVentaSinStock' => $request->boolean('ALM_PermitirVentaSinStock') ? 1 : 0,
+                    'ALM_Status'                => $request->input('ALM_Status', 1),
+                ]);
+            });
+
+            return response()->json([
+                'success' => '¡Sede actualizada exitosamente!',
+                'data'    => $almacen->fresh() // Devuelve el modelo actualizado con los datos frescos
+            ], 200);
+        } catch (\Throwable $e) {
+            Log::error('Error al actualizar la sede ID ' . $id . ': ' . $e->getMessage(), [
+                'exception' => $e,
+                'request'   => $request->all()
+            ]);
+
+            return response()->json([
+                'error' => 'Ocurrió un error interno al intentar actualizar la sede.'
+            ], 500);
+        }
     }
 
     /**

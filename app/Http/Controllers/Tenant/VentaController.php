@@ -157,8 +157,18 @@ class VentaController extends Controller
 
                     return $btn;
                 })
+                ->addColumn('pdf', function ($row) {
+                    $btn = '<a title="PDF" target="_blank" href="/tenant/ventas/venta/' . $row->VEN_Id . '/pdf"  data-original-title="Ver" class="btn btn-primary btn-sm printVenta"><i class="fa fa-file-pdf" aria-hidden="true"></i></a>';
 
-                ->rawColumns(['action1', 'action2', 'action3', 'ticket'])
+                    return $btn;
+                })
+                ->addColumn('whatsapp', function ($row) {
+                    $btn = '<a title="WHATSAPP" target="_blank" href="/tenant/ventas/venta/' . $row->VEN_Id . '/ticket-imagen"  data-original-title="Ver" class="btn btn-success btn-sm envioWhatsapp"><i class="fab fa-whatsapp" aria-hidden="true"></i></a>';
+
+                    return $btn;
+                })
+
+                ->rawColumns(['action1', 'action2', 'action3', 'ticket', 'pdf', 'whatsapp'])
                 ->make(true);
         }
     }

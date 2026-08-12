@@ -161,36 +161,36 @@ class MantenimientoGeneralCarburadaController extends Controller
             $mtto_general_carburadas->MGC_KMEntrada = $request->get('MGC_KMEntrada');
             $mtto_general_carburadas->MGC_DetalleIngreso = $request->get('MGC_DetalleIngreso');
             $mtto_general_carburadas->MGC_DetalleObservacion = $request->get('MGC_DetalleObservacion');
-            $mtto_general_carburadas->MGC_Det1=$request->get('MGC_Det1')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det1Informacion=$request->get('MGC_Det1Informacion');
-            $mtto_general_carburadas->MGC_Det2=$request->get('MGC_Det2')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det3=$request->get('MGC_Det3')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det4=$request->get('MGC_Det4')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det5=$request->get('MGC_Det5')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det6=$request->get('MGC_Det6')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det7=$request->get('MGC_Det7')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det8=$request->get('MGC_Det8')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det8Admision=$request->get('MGC_Det8Admision');
-            $mtto_general_carburadas->MGC_Det8Escape=$request->get('MGC_Det8Escape');
-            $mtto_general_carburadas->MGC_Det9=$request->get('MGC_Det9')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det9Medida=$request->get('MGC_Det9Medida');
-            $mtto_general_carburadas->MGC_Det10=$request->get('MGC_Det10')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det11=$request->get('MGC_Det11')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det12=$request->get('MGC_Det12')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det13=$request->get('MGC_Det13')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det14=$request->get('MGC_Det14')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det15=$request->get('MGC_Det15')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det16=$request->get('MGC_Det16');
-            $mtto_general_carburadas->MGC_Det17=$request->get('MGC_Det17');
-            $mtto_general_carburadas->MGC_Det18=$request->get('MGC_Det18')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det18Humedad=$request->get('MGC_Det18Humedad');
-            $mtto_general_carburadas->MGC_Det19=$request->get('MGC_Det19')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det19Ventilador=$request->get('MGC_Det19Ventilador');
-            $mtto_general_carburadas->MGC_Det20=$request->get('MGC_Det20')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det21=$request->get('MGC_Det21')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det21Vida=$request->get('MGC_Det21Vida');
-            $mtto_general_carburadas->MGC_Det21Carga=$request->get('MGC_Det21Carga');
-            $mtto_general_carburadas->MGC_Det21Arranque=$request->get('MGC_Det21Arranque');
+            $mtto_general_carburadas->MGC_Det1 = $request->get('MGC_Det1') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det1Informacion = $request->get('MGC_Det1Informacion');
+            $mtto_general_carburadas->MGC_Det2 = $request->get('MGC_Det2') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det3 = $request->get('MGC_Det3') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det4 = $request->get('MGC_Det4') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det5 = $request->get('MGC_Det5') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det6 = $request->get('MGC_Det6') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det7 = $request->get('MGC_Det7') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det8 = $request->get('MGC_Det8') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det8Admision = $request->get('MGC_Det8Admision');
+            $mtto_general_carburadas->MGC_Det8Escape = $request->get('MGC_Det8Escape');
+            $mtto_general_carburadas->MGC_Det9 = $request->get('MGC_Det9') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det9Medida = $request->get('MGC_Det9Medida');
+            $mtto_general_carburadas->MGC_Det10 = $request->get('MGC_Det10') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det11 = $request->get('MGC_Det11') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det12 = $request->get('MGC_Det12') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det13 = $request->get('MGC_Det13') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det14 = $request->get('MGC_Det14') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det15 = $request->get('MGC_Det15') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det16 = $request->get('MGC_Det16');
+            $mtto_general_carburadas->MGC_Det17 = $request->get('MGC_Det17');
+            $mtto_general_carburadas->MGC_Det18 = $request->get('MGC_Det18') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det18Humedad = $request->get('MGC_Det18Humedad');
+            $mtto_general_carburadas->MGC_Det19 = $request->get('MGC_Det19') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det19Ventilador = $request->get('MGC_Det19Ventilador');
+            $mtto_general_carburadas->MGC_Det20 = $request->get('MGC_Det20') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det21 = $request->get('MGC_Det21') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det21Vida = $request->get('MGC_Det21Vida');
+            $mtto_general_carburadas->MGC_Det21Carga = $request->get('MGC_Det21Carga');
+            $mtto_general_carburadas->MGC_Det21Arranque = $request->get('MGC_Det21Arranque');
             $mtto_general_carburadas->MGC_DetalleRealizado = $request->get('MGC_DetalleRealizado');
             $mtto_general_carburadas->MGC_CorrecionObservacion = $request->get('MGC_CorrecionObservacion');
             $mtto_general_carburadas->MGC_ProximoCambioAceite = $request->get('MGC_ProximoCambioAceite');
@@ -278,7 +278,7 @@ class MantenimientoGeneralCarburadaController extends Controller
     public function crop(Request $request, $id)
     {
 
-        $request->validate([ 'file' => 'required|image|max:5120']);
+        $request->validate(['file' => 'required|image|max:5120']);
 
         $mantenimientoId = $id;
         $tenantId = tenant('id') ?? 'central';
@@ -291,7 +291,7 @@ class MantenimientoGeneralCarburadaController extends Controller
                 'msg' => 'Tu plan alcanzó el límite de imágenes.'
             ], 422);
         }
-        $ultimoItem = MgcImagen::where('MGC_Id',$mantenimientoId)->max('MGCI_Item');
+        $ultimoItem = MgcImagen::where('MGC_Id', $mantenimientoId)->max('MGCI_Item');
         $item = $ultimoItem ? $ultimoItem + 1 : 1;
 
         $file = $request->file('file');
@@ -311,9 +311,9 @@ class MantenimientoGeneralCarburadaController extends Controller
             (string) $imageOriginal->toWebp(70)
         );
 
-        $pesoFinal = Storage::disk('public')->size($pathOriginal.$nombreArchivo);
+        $pesoFinal = Storage::disk('public')->size($pathOriginal . $nombreArchivo);
         $tamañoFormateado = $this->formatBytes($pesoFinal);
-        
+
         /* THUMBNAIL */
         $imageThumb = Image::read($file);
         $imageThumb->scaleDown(width: 300);
@@ -334,7 +334,7 @@ class MantenimientoGeneralCarburadaController extends Controller
         $mgiImagen->MGCI_Peso = $tamañoFormateado;
         $mgiImagen->save();
 
-        $datos = MgcImagen::where('MGC_Id',$mantenimientoId)->get();
+        $datos = MgcImagen::where('MGC_Id', $mantenimientoId)->get();
 
         return response()->json([
             'status' => 1,
@@ -346,41 +346,86 @@ class MantenimientoGeneralCarburadaController extends Controller
     }
 
     public function pdf($id)
-	{
-		$datos = DB::table('mantenimiento_general_carburada as mgi')
-				->join('users as u','u.id','=','mgi.PER_Id')
-				->select('mgi.*',DB::raw('CONCAT(u.name) as personal'))
-				->where('MGC_Id','=',$id)
-				->first();
+    {
+        $datos = DB::table('mantenimiento_general_carburada as mgi')
+            ->join('users as u', 'u.id', '=', 'mgi.PER_Id')
+            ->select('mgi.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MGC_Id', '=', $id)
+            ->first();
 
         $detalle_reemplazo = DB::table('mgc_detalle_reemplazo')
-				->where('MGC_Id','=',$id)
-				->get();
+            ->where('MGC_Id', '=', $id)
+            ->get();
 
         $total_detalle = 0;
         foreach ($detalle_reemplazo as $dr) {
-            $total_detalle =round($total_detalle + $dr->MGC_Precio, 2) ; 
+            $total_detalle = round($total_detalle + $dr->MGC_Precio, 2);
         }
 
         $imagenes = DB::table('mgc_imagen')
-                ->where('MGC_Id','=',$id)
-                ->get();
+            ->where('MGC_Id', '=', $id)
+            ->get();
 
         $url = URL::to('');
-		$empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
-        
-		$pdf   = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/general/carburadas/pdf', [
-			"mttoPreventivo"=>$datos,
-			"detalle"=>$detalle_reemplazo,
-			"imagenes"=>$imagenes,
-			"url"=>$url,
-            "total_detalle"=>$total_detalle,
-            "empresa"=>$empresa
-		])->setOptions(['defaultFont' => 'sans-serif',
-        'chroot'  => public_path('dist/img'), 'isRemoteEnabled' => true]);
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
 
-		return $pdf->stream('mantenimiento-general-carburada-' . tenant('id') . '.pdf');
-	}
+        $pdf   = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/general/carburadas/pdf', [
+            "mttoPreventivo" => $datos,
+            "detalle" => $detalle_reemplazo,
+            "imagenes" => $imagenes,
+            "url" => $url,
+            "total_detalle" => $total_detalle,
+            "empresa" => $empresa
+        ])->setOptions([
+            'defaultFont' => 'sans-serif',
+            'chroot'  => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        return $pdf->stream('mantenimiento-general-carburada-' . tenant('id') . '.pdf');
+    }
+
+    public function descargarpdf($id)
+    {
+        $datos = DB::table('mantenimiento_general_carburada as mgi')
+            ->join('users as u', 'u.id', '=', 'mgi.PER_Id')
+            ->select('mgi.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MGC_Id', '=', $id)
+            ->first();
+
+        $detalle_reemplazo = DB::table('mgc_detalle_reemplazo')
+            ->where('MGC_Id', '=', $id)
+            ->get();
+
+        // Optimización: Sumar directamente desde la colección
+        $total_detalle = round($detalle_reemplazo->sum('MGC_Precio'), 2);
+
+        $imagenes = DB::table('mgc_imagen')
+            ->where('MGC_Id', '=', $id)
+            ->get();
+
+        $url = URL::to('');
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+        $pdf = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/general/carburadas/pdf', [
+            "mttoPreventivo" => $datos,
+            "detalle"        => $detalle_reemplazo,
+            "imagenes"       => $imagenes,
+            "url"            => $url,
+            "total_detalle"  => $total_detalle,
+            "empresa"        => $empresa
+        ])->setOptions([
+            'defaultFont'     => 'sans-serif',
+            'chroot'          => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        // Nombre dinámico para el archivo descargado incluyendo el ID del mantenimiento
+        $nombreArchivo = 'mantenimiento-general-carburada-' . $id . '-' . tenant('id') . '.pdf';
+
+        // Cambiado de ->stream() a ->download() para forzar la descarga
+        return $pdf->download($nombreArchivo);
+    }
 
     // ACTUALIZAR
 
@@ -404,36 +449,36 @@ class MantenimientoGeneralCarburadaController extends Controller
             $mtto_general_carburadas->MGC_KMEntrada = $request->get('MGC_KMEntrada');
             $mtto_general_carburadas->MGC_DetalleIngreso = $request->get('MGC_DetalleIngreso');
             $mtto_general_carburadas->MGC_DetalleObservacion = $request->get('MGC_DetalleObservacion');
-            $mtto_general_carburadas->MGC_Det1=$request->get('MGC_Det1')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det1Informacion=$request->get('MGC_Det1Informacion');
-            $mtto_general_carburadas->MGC_Det2=$request->get('MGC_Det2')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det3=$request->get('MGC_Det3')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det4=$request->get('MGC_Det4')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det5=$request->get('MGC_Det5')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det6=$request->get('MGC_Det6')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det7=$request->get('MGC_Det7')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det8=$request->get('MGC_Det8')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det8Admision=$request->get('MGC_Det8Admision');
-            $mtto_general_carburadas->MGC_Det8Escape=$request->get('MGC_Det8Escape');
-            $mtto_general_carburadas->MGC_Det9=$request->get('MGC_Det9')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det9Medida=$request->get('MGC_Det9Medida');
-            $mtto_general_carburadas->MGC_Det10=$request->get('MGC_Det10')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det11=$request->get('MGC_Det11')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det12=$request->get('MGC_Det12')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det13=$request->get('MGC_Det13')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det14=$request->get('MGC_Det14')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det15=$request->get('MGC_Det15')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det16=$request->get('MGC_Det16');
-            $mtto_general_carburadas->MGC_Det17=$request->get('MGC_Det17');
-            $mtto_general_carburadas->MGC_Det18=$request->get('MGC_Det18')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det18Humedad=$request->get('MGC_Det18Humedad');
-            $mtto_general_carburadas->MGC_Det19=$request->get('MGC_Det19')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det19Ventilador=$request->get('MGC_Det19Ventilador');
-            $mtto_general_carburadas->MGC_Det20=$request->get('MGC_Det20')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det21=$request->get('MGC_Det21')?"SI":"NO";
-            $mtto_general_carburadas->MGC_Det21Vida=$request->get('MGC_Det21Vida');
-            $mtto_general_carburadas->MGC_Det21Carga=$request->get('MGC_Det21Carga');
-            $mtto_general_carburadas->MGC_Det21Arranque=$request->get('MGC_Det21Arranque');
+            $mtto_general_carburadas->MGC_Det1 = $request->get('MGC_Det1') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det1Informacion = $request->get('MGC_Det1Informacion');
+            $mtto_general_carburadas->MGC_Det2 = $request->get('MGC_Det2') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det3 = $request->get('MGC_Det3') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det4 = $request->get('MGC_Det4') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det5 = $request->get('MGC_Det5') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det6 = $request->get('MGC_Det6') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det7 = $request->get('MGC_Det7') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det8 = $request->get('MGC_Det8') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det8Admision = $request->get('MGC_Det8Admision');
+            $mtto_general_carburadas->MGC_Det8Escape = $request->get('MGC_Det8Escape');
+            $mtto_general_carburadas->MGC_Det9 = $request->get('MGC_Det9') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det9Medida = $request->get('MGC_Det9Medida');
+            $mtto_general_carburadas->MGC_Det10 = $request->get('MGC_Det10') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det11 = $request->get('MGC_Det11') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det12 = $request->get('MGC_Det12') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det13 = $request->get('MGC_Det13') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det14 = $request->get('MGC_Det14') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det15 = $request->get('MGC_Det15') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det16 = $request->get('MGC_Det16');
+            $mtto_general_carburadas->MGC_Det17 = $request->get('MGC_Det17');
+            $mtto_general_carburadas->MGC_Det18 = $request->get('MGC_Det18') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det18Humedad = $request->get('MGC_Det18Humedad');
+            $mtto_general_carburadas->MGC_Det19 = $request->get('MGC_Det19') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det19Ventilador = $request->get('MGC_Det19Ventilador');
+            $mtto_general_carburadas->MGC_Det20 = $request->get('MGC_Det20') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det21 = $request->get('MGC_Det21') ? "SI" : "NO";
+            $mtto_general_carburadas->MGC_Det21Vida = $request->get('MGC_Det21Vida');
+            $mtto_general_carburadas->MGC_Det21Carga = $request->get('MGC_Det21Carga');
+            $mtto_general_carburadas->MGC_Det21Arranque = $request->get('MGC_Det21Arranque');
             $mtto_general_carburadas->MGC_DetalleRealizado = $request->get('MGC_DetalleRealizado');
             $mtto_general_carburadas->MGC_CorrecionObservacion = $request->get('MGC_CorrecionObservacion');
             $mtto_general_carburadas->MGC_ProximoCambioAceite = $request->get('MGC_ProximoCambioAceite');
@@ -444,7 +489,7 @@ class MantenimientoGeneralCarburadaController extends Controller
             if ($rolAdmin) {
                 $mtto_general_carburadas->MGC_Estado = 'APROBADO';
             }
-            if($request->notificar){
+            if ($request->notificar) {
                 $mtto_general_carburadas->notificar = 1;
             }
             $mtto_general_carburadas->update();
@@ -478,53 +523,50 @@ class MantenimientoGeneralCarburadaController extends Controller
         return response()->json(['success' => true, "message" => 'Mantenimiento General Carburadas Editado Exitosamente.']);
     }
 
-    public function actualizarestado(Request $request,$id)
-	{
+    public function actualizarestado(Request $request, $id)
+    {
         try {
             DB::beginTransaction();
-            $mtto_general_carburadas=MantenimientoGeneralCarburada::findOrFail($id);
-            if($request->notificar == 1){
-                $mtto_general_carburadas->MGC_Estado="PENDIENTE";
-                $mtto_general_carburadas->notificar=0;
+            $mtto_general_carburadas = MantenimientoGeneralCarburada::findOrFail($id);
+            if ($request->notificar == 1) {
+                $mtto_general_carburadas->MGC_Estado = "PENDIENTE";
+                $mtto_general_carburadas->notificar = 0;
             }
-            if($request->estado == "APROBADO"){
-                $mtto_general_carburadas->MGC_Estado="APROBADO";
-                if($request->notificar == 2){
-                    $mtto_general_carburadas->notificar=0;
-                }else{
-                    $mtto_general_carburadas->notificar=1;
+            if ($request->estado == "APROBADO") {
+                $mtto_general_carburadas->MGC_Estado = "APROBADO";
+                if ($request->notificar == 2) {
+                    $mtto_general_carburadas->notificar = 0;
+                } else {
+                    $mtto_general_carburadas->notificar = 1;
                 }
             }
-            if($request->observacion){
-                $mtto_general_carburadas->observacion=$request->observacion ;
+            if ($request->observacion) {
+                $mtto_general_carburadas->observacion = $request->observacion;
             }
 
-            if($request->respuesta){
-                $mtto_general_carburadas->respuesta=$request->respuesta ;
+            if ($request->respuesta) {
+                $mtto_general_carburadas->respuesta = $request->respuesta;
             }
             $mtto_general_carburadas->update();
 
             DB::commit();
-
-        } catch (Exception $e)
-        {
-        DB::rollback();
+        } catch (Exception $e) {
+            DB::rollback();
         }
 
-        if($request->notificar == 1){
+        if ($request->notificar == 1) {
             return response()->json(['success' => true, 'message' => 'Mantenimiento Se Desactivo Correctamente.']);
         }
-        if($request->estado == "APROBADO"){
+        if ($request->estado == "APROBADO") {
             return response()->json(['success' => true, 'message' => 'Mantenimiento Se Aprobó Correctamente.']);
         }
-        if($request->observacion){
+        if ($request->observacion) {
             return response()->json(['success' => true, 'message' => 'Observación Registrada Correctamente.']);
         }
-        if($request->respuesta){
+        if ($request->respuesta) {
             return response()->json(['success' => true, 'message' => 'Respuesta Registrada Correctamente.']);
         }
-
-	}
+    }
 
     public function destroyimagen($id, $item)
     {
@@ -556,14 +598,13 @@ class MantenimientoGeneralCarburadaController extends Controller
 
             /* ELIMINAR REGISTRO */
             MgcImagen::where('MGC_Id', $id)
-            ->where('MGCI_Item', $item)
-            ->delete();
+                ->where('MGCI_Item', $item)
+                ->delete();
 
             /* RECARGAR IMAGENES */
             $datos = MgcImagen::where('MGC_Id', $id)->get();
 
-            return response()->json(['success' => true,'message' => 'Eliminado Correctamente', 'data'=> $datos]);
-
+            return response()->json(['success' => true, 'message' => 'Eliminado Correctamente', 'data' => $datos]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
@@ -579,8 +620,8 @@ class MantenimientoGeneralCarburadaController extends Controller
                 return response()->json(['success' => false, 'message' => 'MantenimientoGeneralCarburada no encontrado.'], 404);
             }
 
-            $mtto_general_carburadas->MGC_Estado="PENDIENTE";
-            $mtto_general_carburadas->notificar=0;
+            $mtto_general_carburadas->MGC_Estado = "PENDIENTE";
+            $mtto_general_carburadas->notificar = 0;
             $mtto_general_carburadas->save();
 
             return response()->json(['success' => true, 'message' => 'MantenimientoGeneralCarburada activado exitosamente.']);
@@ -638,7 +679,6 @@ class MantenimientoGeneralCarburadaController extends Controller
                 'success' => true,
                 'message' => 'Registro eliminado correctamente'
             ]);
-
         } catch (\Exception $e) {
 
             DB::rollBack();

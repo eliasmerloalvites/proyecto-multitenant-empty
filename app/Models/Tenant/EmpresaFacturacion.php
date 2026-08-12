@@ -32,6 +32,8 @@ class EmpresaFacturacion extends Model
         // LOGOS
         'logo',
         'logo_pdf',
+        'logo_portada1',
+        'logo_portada2',
 
         // SOL
         'sol_usuario',
@@ -114,6 +116,21 @@ class EmpresaFacturacion extends Model
             ? asset('storage/' . $this->logo_pdf)
             : null;
     }
+
+    public function getLogoPortada1UrlAttribute()
+    {
+        return $this->logo_portada1
+            ? asset('storage/' . $this->logo_portada1)
+            : null;
+    }
+
+    public function getLogoPortada2UrlAttribute()
+    {
+        return $this->logo_portada2
+            ? asset('storage/' . $this->logo_portada2)
+            : null;
+    }
+
 
     /*
     |--------------------------------------------------------------------------

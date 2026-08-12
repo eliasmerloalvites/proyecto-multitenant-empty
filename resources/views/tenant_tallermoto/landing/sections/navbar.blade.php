@@ -4,11 +4,12 @@
     'bg-white/80 border-gray-200/50 shadow-sm' => $colorview !== 'dark',
 ])>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-            <span
-                class="{{ $colorview == 'dark' ? 'text-white' : 'text-gray-900' }} text-2xl font-black tracking-wider flex items-center">
-                <span class="text-brand-500 font-extrabold mr-0.5">K</span>KAEL
-            </span>
+        <div class="flex items-center gap-4">
+            <a href="{{ url('/') }}" class="flex items-center py-2">
+                <img src="{{ !empty($empresa->logo_pdf) ? asset_root($empresa->logo_pdf) : asset('images/icono.jpg') }}"
+                    alt="{{ $empresa->razon_social ?? 'Logo Empresa' }}"
+                    class="h-10 sm:h-12 w-auto max-w-[220px] object-contain transition-transform duration-200 hover:scale-105">
+            </a>
         </div>
 
         <nav class="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest">
