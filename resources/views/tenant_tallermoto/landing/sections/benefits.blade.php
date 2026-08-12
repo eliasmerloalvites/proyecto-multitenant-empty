@@ -180,7 +180,7 @@
                         </p>
                     </div>
 
-                    <a href="#buscar-placa"
+                    <a href="/historial"
                         class="w-full md:w-auto bg-brand-500 hover:bg-brand-400 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-brand-500/20 hover:scale-[1.02] border border-brand-400/20 group shrink-0">
                         <i data-lucide="search"
                             class="w-4 h-4 text-white group-hover:scale-110 transition-transform"></i>

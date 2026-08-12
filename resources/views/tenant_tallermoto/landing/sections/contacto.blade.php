@@ -74,7 +74,14 @@
                                         Express</span>
                                     <span
                                         class="{{ $colorview == 'dark' ? 'text-gray-300' : 'text-gray-800' }} font-semibold group-hover:text-emerald-500 transition-colors">
-                                        +51 987 654 321
+                                        {{ $empresa->whatsapp
+                                            ? '+51 ' .
+                                                preg_replace(
+                                                    '/(\d{3})(?=\d)/',
+                                                    '$1 ',
+                                                    preg_replace('/^\+?51/', '', preg_replace('/\D/', '', $empresa->whatsapp)),
+                                                )
+                                            : '+51 987 654 321' }}
                                     </span>
                                 </div>
                             </a>
@@ -96,7 +103,7 @@
                                     <span class="block text-[10px] text-gray-500 font-bold uppercase">Correo
                                         Electrónico</span>
                                     <span
-                                        class="{{ $colorview == 'dark' ? 'text-gray-300' : 'text-gray-800' }} font-semibold">soporte@kael.com</span>
+                                        class="{{ $colorview == 'dark' ? 'text-gray-300' : 'text-gray-800' }} font-semibold">{{ $empresa->correo ?? 'soporte@kael.com' }}</span>
                                 </div>
                             </div>
 
@@ -117,8 +124,7 @@
                                     <span class="block text-[10px] text-gray-500 font-bold uppercase">Ubicación
                                         Central</span>
                                     <span
-                                        class="{{ $colorview == 'dark' ? 'text-gray-300' : 'text-gray-800' }} font-semibold">Av.
-                                        Principal Tecno 452, Ciudad</span>
+                                        class="{{ $colorview == 'dark' ? 'text-gray-300' : 'text-gray-800' }} font-semibold">{{ ($empresa->direccion . ', ' . $empresa->distrito . ' - ' . $empresa->provincia . ' - ' . $empresa->departamento) ?? 'Av. Principal Tecno 452, Ciudad' }}</span>
                                 </div>
                             </div>
                         </div>

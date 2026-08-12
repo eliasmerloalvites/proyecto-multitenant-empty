@@ -364,6 +364,48 @@ class MantenimientoActividadVariadaController extends Controller
 		return $pdf->stream('mantenimiento-actividad-variada-' . tenant('id') . '.pdf');
 	}
 
+    public function descargarpdf($id)
+    {
+        $datos = DB::table('mantenimiento_actividad_variadas as mav')
+                ->join('users as u', 'u.id', '=', 'mav.PER_Id')
+                ->select('mav.*', DB::raw('CONCAT(u.name) as personal'))
+                ->where('MAV_Id', '=', $id)
+                ->first();
+
+        $detalle_reemplazo = DB::table('mav_detalle_reemplazo')
+                ->where('MAV_Id', '=', $id)
+                ->get();
+
+        // Optimización: Sumar directamente desde la colección
+        $total_detalle = round($detalle_reemplazo->sum('MAV_Precio'), 2);
+
+        $imagenes = DB::table('mav_imagen')
+                ->where('MAV_Id', '=', $id)
+                ->get();
+
+        $url = URL::to('');
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+        $pdf = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/actividades/variadas/pdf', [
+            "mttoPreventivo" => $datos,
+            "detalle"        => $detalle_reemplazo,
+            "imagenes"       => $imagenes,
+            "url"            => $url,
+            "total_detalle"  => $total_detalle,
+            "empresa"        => $empresa
+        ])->setOptions([
+            'defaultFont'     => 'sans-serif',
+            'chroot'          => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        // Asignar un nombre dinámico al archivo PDF descargado
+        $nombreArchivo = 'mantenimiento-actividad-variada-' . $id . '-' . tenant('id') . '.pdf';
+
+        // Cambiado de ->stream() a ->download() para forzar la descarga
+        return $pdf->download($nombreArchivo);
+    }
+
     // ACTUALIZAR
 
     public function update(Request $request, $id)

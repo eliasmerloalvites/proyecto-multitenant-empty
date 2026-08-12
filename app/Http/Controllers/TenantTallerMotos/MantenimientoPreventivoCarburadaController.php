@@ -161,24 +161,24 @@ class MantenimientoPreventivoCarburadaController extends Controller
             $mtto_preventivo_carburadas->MPC_KMEntrada = $request->get('MPC_KMEntrada');
             $mtto_preventivo_carburadas->MPC_DetalleIngreso = $request->get('MPC_DetalleIngreso');
             $mtto_preventivo_carburadas->MPC_DetalleObservacion = $request->get('MPC_DetalleObservacion');
-            $mtto_preventivo_carburadas->MPC_Det1=$request->get('MPC_Det1')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det1Informacion=$request->get('MPC_Det1Informacion');
-            $mtto_preventivo_carburadas->MPC_Det2=$request->get('MPC_Det2')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det3=$request->get('MPC_Det3')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det4=$request->get('MPC_Det4')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det5=$request->get('MPC_Det5')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det6=$request->get('MPC_Det6')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det7=$request->get('MPC_Det7')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det7Admision=$request->get('MPC_Det7Admision');
-            $mtto_preventivo_carburadas->MPC_Det7Escape=$request->get('MPC_Det7Escape');
-            $mtto_preventivo_carburadas->MPC_Det8=$request->get('MPC_Det8')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det8Medida=$request->get('MPC_Det8Medida');
-            $mtto_preventivo_carburadas->MPC_Det9=$request->get('MPC_Det9');
-            $mtto_preventivo_carburadas->MPC_Det10=$request->get('MPC_Det10');
-            $mtto_preventivo_carburadas->MPC_Det11=$request->get('MPC_Det11')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det11Vida=$request->get('MPC_Det11Vida');
-            $mtto_preventivo_carburadas->MPC_Det11Carga=$request->get('MPC_Det11Carga');
-            $mtto_preventivo_carburadas->MPC_Det11Arranque=$request->get('MPC_Det11Arranque');
+            $mtto_preventivo_carburadas->MPC_Det1 = $request->get('MPC_Det1') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det1Informacion = $request->get('MPC_Det1Informacion');
+            $mtto_preventivo_carburadas->MPC_Det2 = $request->get('MPC_Det2') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det3 = $request->get('MPC_Det3') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det4 = $request->get('MPC_Det4') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det5 = $request->get('MPC_Det5') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det6 = $request->get('MPC_Det6') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det7 = $request->get('MPC_Det7') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det7Admision = $request->get('MPC_Det7Admision');
+            $mtto_preventivo_carburadas->MPC_Det7Escape = $request->get('MPC_Det7Escape');
+            $mtto_preventivo_carburadas->MPC_Det8 = $request->get('MPC_Det8') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det8Medida = $request->get('MPC_Det8Medida');
+            $mtto_preventivo_carburadas->MPC_Det9 = $request->get('MPC_Det9');
+            $mtto_preventivo_carburadas->MPC_Det10 = $request->get('MPC_Det10');
+            $mtto_preventivo_carburadas->MPC_Det11 = $request->get('MPC_Det11') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det11Vida = $request->get('MPC_Det11Vida');
+            $mtto_preventivo_carburadas->MPC_Det11Carga = $request->get('MPC_Det11Carga');
+            $mtto_preventivo_carburadas->MPC_Det11Arranque = $request->get('MPC_Det11Arranque');
             $mtto_preventivo_carburadas->MPC_DetalleRealizado = $request->get('MPC_DetalleRealizado');
             $mtto_preventivo_carburadas->MPC_CorrecionObservacion = $request->get('MPC_CorrecionObservacion');
             $mtto_preventivo_carburadas->MPC_ProximoCambioAceite = $request->get('MPC_ProximoCambioAceite');
@@ -266,7 +266,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
     public function crop(Request $request, $id)
     {
 
-        $request->validate([ 'file' => 'required|image|max:5120']);
+        $request->validate(['file' => 'required|image|max:5120']);
 
         $mantenimientoId = $id;
         $tenantId = tenant('id') ?? 'central';
@@ -279,7 +279,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
                 'msg' => 'Tu plan alcanzó el límite de imágenes.'
             ], 422);
         }
-        $ultimoItem = MpcImagen::where('MPC_Id',$mantenimientoId)->max('MPCI_Item');
+        $ultimoItem = MpcImagen::where('MPC_Id', $mantenimientoId)->max('MPCI_Item');
         $item = $ultimoItem ? $ultimoItem + 1 : 1;
 
         $file = $request->file('file');
@@ -299,9 +299,9 @@ class MantenimientoPreventivoCarburadaController extends Controller
             (string) $imageOriginal->toWebp(70)
         );
 
-        $pesoFinal = Storage::disk('public')->size($pathOriginal.$nombreArchivo);
+        $pesoFinal = Storage::disk('public')->size($pathOriginal . $nombreArchivo);
         $tamañoFormateado = $this->formatBytes($pesoFinal);
-        
+
         /* THUMBNAIL */
         $imageThumb = Image::read($file);
         $imageThumb->scaleDown(width: 300);
@@ -322,7 +322,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
         $mpcImagen->MPCI_Peso = $tamañoFormateado;
         $mpcImagen->save();
 
-        $datos = MpcImagen::where('MPC_Id',$mantenimientoId)->get();
+        $datos = MpcImagen::where('MPC_Id', $mantenimientoId)->get();
 
         return response()->json([
             'status' => 1,
@@ -334,41 +334,86 @@ class MantenimientoPreventivoCarburadaController extends Controller
     }
 
     public function pdf($id)
-	{
-		$datos = DB::table('mantenimiento_preventivo_carburada as mpc')
-				->join('users as u','u.id','=','mpc.PER_Id')
-				->select('mpc.*',DB::raw('CONCAT(u.name) as personal'))
-				->where('MPC_Id','=',$id)
-				->first();
+    {
+        $datos = DB::table('mantenimiento_preventivo_carburada as mpc')
+            ->join('users as u', 'u.id', '=', 'mpc.PER_Id')
+            ->select('mpc.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MPC_Id', '=', $id)
+            ->first();
 
         $detalle_reemplazo = DB::table('mpc_detalle_reemplazo')
-				->where('MPC_Id','=',$id)
-				->get();
+            ->where('MPC_Id', '=', $id)
+            ->get();
 
         $total_detalle = 0;
         foreach ($detalle_reemplazo as $dr) {
-            $total_detalle =round($total_detalle + $dr->MPC_Precio, 2) ; 
+            $total_detalle = round($total_detalle + $dr->MPC_Precio, 2);
         }
 
         $imagenes = DB::table('mpc_imagen')
-                ->where('MPC_Id','=',$id)
-                ->get();
+            ->where('MPC_Id', '=', $id)
+            ->get();
 
         $url = URL::to('');
-		$empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
-        
-		$pdf   = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/preventivo/carburadas/pdf', [
-			"mttoPreventivo"=>$datos,
-			"detalle"=>$detalle_reemplazo,
-			"imagenes"=>$imagenes,
-			"url"=>$url,
-            "total_detalle"=>$total_detalle,
-            "empresa"=>$empresa
-		])->setOptions(['defaultFont' => 'sans-serif',
-        'chroot'  => public_path('dist/img'), 'isRemoteEnabled' => true]);
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
 
-		return $pdf->stream('mantenimiento-preventivo-carburada-' . tenant('id') . '.pdf');
-	}
+        $pdf   = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/preventivo/carburadas/pdf', [
+            "mttoPreventivo" => $datos,
+            "detalle" => $detalle_reemplazo,
+            "imagenes" => $imagenes,
+            "url" => $url,
+            "total_detalle" => $total_detalle,
+            "empresa" => $empresa
+        ])->setOptions([
+            'defaultFont' => 'sans-serif',
+            'chroot'  => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        return $pdf->stream('mantenimiento-preventivo-carburada-' . tenant('id') . '.pdf');
+    }
+
+    public function descargarpdf($id)
+    {
+        $datos = DB::table('mantenimiento_preventivo_carburada as mpc')
+            ->join('users as u', 'u.id', '=', 'mpc.PER_Id')
+            ->select('mpc.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MPC_Id', '=', $id)
+            ->first();
+
+        $detalle_reemplazo = DB::table('mpc_detalle_reemplazo')
+            ->where('MPC_Id', '=', $id)
+            ->get();
+
+        // Optimización: Suma directa mediante la colección
+        $total_detalle = round($detalle_reemplazo->sum('MPC_Precio'), 2);
+
+        $imagenes = DB::table('mpc_imagen')
+            ->where('MPC_Id', '=', $id)
+            ->get();
+
+        $url = URL::to('');
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+        $pdf = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/preventivo/carburadas/pdf', [
+            "mttoPreventivo" => $datos,
+            "detalle"        => $detalle_reemplazo,
+            "imagenes"       => $imagenes,
+            "url"            => $url,
+            "total_detalle"  => $total_detalle,
+            "empresa"        => $empresa
+        ])->setOptions([
+            'defaultFont'     => 'sans-serif',
+            'chroot'          => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        // Nombre único del archivo descargado
+        $nombreArchivo = 'mantenimiento-preventivo-carburada-' . $id . '-' . tenant('id') . '.pdf';
+
+        // Se reemplaza ->stream() por ->download()
+        return $pdf->download($nombreArchivo);
+    }
 
     // ACTUALIZAR
 
@@ -392,24 +437,24 @@ class MantenimientoPreventivoCarburadaController extends Controller
             $mtto_preventivo_carburadas->MPC_KMEntrada = $request->get('MPC_KMEntrada');
             $mtto_preventivo_carburadas->MPC_DetalleIngreso = $request->get('MPC_DetalleIngreso');
             $mtto_preventivo_carburadas->MPC_DetalleObservacion = $request->get('MPC_DetalleObservacion');
-            $mtto_preventivo_carburadas->MPC_Det1=$request->get('MPC_Det1')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det1Informacion=$request->get('MPC_Det1Informacion');
-            $mtto_preventivo_carburadas->MPC_Det2=$request->get('MPC_Det2')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det3=$request->get('MPC_Det3')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det4=$request->get('MPC_Det4')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det5=$request->get('MPC_Det5')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det6=$request->get('MPC_Det6')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det7=$request->get('MPC_Det7')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det7Admision=$request->get('MPC_Det7Admision');
-            $mtto_preventivo_carburadas->MPC_Det7Escape=$request->get('MPC_Det7Escape');
-            $mtto_preventivo_carburadas->MPC_Det8=$request->get('MPC_Det8')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det8Medida=$request->get('MPC_Det8Medida');
-            $mtto_preventivo_carburadas->MPC_Det9=$request->get('MPC_Det9');
-            $mtto_preventivo_carburadas->MPC_Det10=$request->get('MPC_Det10');
-            $mtto_preventivo_carburadas->MPC_Det11=$request->get('MPC_Det11')?"SI":"NO";
-            $mtto_preventivo_carburadas->MPC_Det11Vida=$request->get('MPC_Det11Vida');
-            $mtto_preventivo_carburadas->MPC_Det11Carga=$request->get('MPC_Det11Carga');
-            $mtto_preventivo_carburadas->MPC_Det11Arranque=$request->get('MPC_Det11Arranque');
+            $mtto_preventivo_carburadas->MPC_Det1 = $request->get('MPC_Det1') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det1Informacion = $request->get('MPC_Det1Informacion');
+            $mtto_preventivo_carburadas->MPC_Det2 = $request->get('MPC_Det2') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det3 = $request->get('MPC_Det3') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det4 = $request->get('MPC_Det4') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det5 = $request->get('MPC_Det5') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det6 = $request->get('MPC_Det6') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det7 = $request->get('MPC_Det7') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det7Admision = $request->get('MPC_Det7Admision');
+            $mtto_preventivo_carburadas->MPC_Det7Escape = $request->get('MPC_Det7Escape');
+            $mtto_preventivo_carburadas->MPC_Det8 = $request->get('MPC_Det8') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det8Medida = $request->get('MPC_Det8Medida');
+            $mtto_preventivo_carburadas->MPC_Det9 = $request->get('MPC_Det9');
+            $mtto_preventivo_carburadas->MPC_Det10 = $request->get('MPC_Det10');
+            $mtto_preventivo_carburadas->MPC_Det11 = $request->get('MPC_Det11') ? "SI" : "NO";
+            $mtto_preventivo_carburadas->MPC_Det11Vida = $request->get('MPC_Det11Vida');
+            $mtto_preventivo_carburadas->MPC_Det11Carga = $request->get('MPC_Det11Carga');
+            $mtto_preventivo_carburadas->MPC_Det11Arranque = $request->get('MPC_Det11Arranque');
             $mtto_preventivo_carburadas->MPC_DetalleRealizado = $request->get('MPC_DetalleRealizado');
             $mtto_preventivo_carburadas->MPC_CorrecionObservacion = $request->get('MPC_CorrecionObservacion');
             $mtto_preventivo_carburadas->MPC_ProximoCambioAceite = $request->get('MPC_ProximoCambioAceite');
@@ -420,7 +465,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
             if ($rolAdmin) {
                 $mtto_preventivo_carburadas->MPC_Estado = 'APROBADO';
             }
-            if($request->notificar){
+            if ($request->notificar) {
                 $mtto_preventivo_carburadas->notificar = 1;
             }
             $mtto_preventivo_carburadas->update();
@@ -454,52 +499,50 @@ class MantenimientoPreventivoCarburadaController extends Controller
         return response()->json(['success' => true, "message" => 'Mantenimiento Preventivo Carburadas Editado Exitosamente.']);
     }
 
-    public function actualizarestado(Request $request,$id)
-	{
+    public function actualizarestado(Request $request, $id)
+    {
         try {
             DB::beginTransaction();
-            $mtto_preventivo_carburadas=MantenimientoPreventivoCarburada::findOrFail($id);
-            if($request->notificar == 1){
-                $mtto_preventivo_carburadas->MPC_Estado="PENDIENTE";
-                $mtto_preventivo_carburadas->notificar=0;
+            $mtto_preventivo_carburadas = MantenimientoPreventivoCarburada::findOrFail($id);
+            if ($request->notificar == 1) {
+                $mtto_preventivo_carburadas->MPC_Estado = "PENDIENTE";
+                $mtto_preventivo_carburadas->notificar = 0;
             }
-            if($request->estado == "APROBADO"){
-                $mtto_preventivo_carburadas->MPC_Estado="APROBADO";
-                if($request->notificar == 2){
-                    $mtto_preventivo_carburadas->notificar=0;
-                }else{
-                    $mtto_preventivo_carburadas->notificar=1;
+            if ($request->estado == "APROBADO") {
+                $mtto_preventivo_carburadas->MPC_Estado = "APROBADO";
+                if ($request->notificar == 2) {
+                    $mtto_preventivo_carburadas->notificar = 0;
+                } else {
+                    $mtto_preventivo_carburadas->notificar = 1;
                 }
             }
-            if($request->observacion){
-                $mtto_preventivo_carburadas->observacion=$request->observacion ;
+            if ($request->observacion) {
+                $mtto_preventivo_carburadas->observacion = $request->observacion;
             }
 
-            if($request->respuesta){
-                $mtto_preventivo_carburadas->respuesta=$request->respuesta ;
+            if ($request->respuesta) {
+                $mtto_preventivo_carburadas->respuesta = $request->respuesta;
             }
             $mtto_preventivo_carburadas->update();
 
             DB::commit();
-
-        } catch (Exception $e)
-        {
-        DB::rollback();
+        } catch (Exception $e) {
+            DB::rollback();
         }
 
-        if($request->notificar == 1){
+        if ($request->notificar == 1) {
             return response()->json(['success' => true, 'message' => 'Mantenimiento Se Desactivo Correctamente.']);
         }
-        if($request->estado == "APROBADO"){
+        if ($request->estado == "APROBADO") {
             return response()->json(['success' => true, 'message' => 'Mantenimiento Se Aprobó Correctamente.']);
         }
-        if($request->observacion){
+        if ($request->observacion) {
             return response()->json(['success' => true, 'message' => 'Observación Registrada Correctamente.']);
         }
-        if($request->respuesta){
+        if ($request->respuesta) {
             return response()->json(['success' => true, 'message' => 'Respuesta Registrada Correctamente.']);
         }
-	}
+    }
 
     public function destroyimagen($id, $item)
     {
@@ -531,14 +574,13 @@ class MantenimientoPreventivoCarburadaController extends Controller
 
             /* ELIMINAR REGISTRO */
             MpcImagen::where('MPC_Id', $id)
-            ->where('MPCI_Item', $item)
-            ->delete();
+                ->where('MPCI_Item', $item)
+                ->delete();
 
             /* RECARGAR IMAGENES */
             $datos = MpcImagen::where('MPC_Id', $id)->get();
 
-            return response()->json(['success' => true,'message' => 'Eliminado Correctamente', 'data'=> $datos]);
-
+            return response()->json(['success' => true, 'message' => 'Eliminado Correctamente', 'data' => $datos]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
@@ -554,8 +596,8 @@ class MantenimientoPreventivoCarburadaController extends Controller
                 return response()->json(['success' => false, 'message' => 'MantenimientoPreventivoCarburada no encontrado.'], 404);
             }
 
-            $mtto_preventivo_carburadas->MPC_Estado="PENDIENTE";
-            $mtto_preventivo_carburadas->notificar=0;
+            $mtto_preventivo_carburadas->MPC_Estado = "PENDIENTE";
+            $mtto_preventivo_carburadas->notificar = 0;
             $mtto_preventivo_carburadas->save();
 
             return response()->json(['success' => true, 'message' => 'MantenimientoPreventivoCarburada activado exitosamente.']);
@@ -613,7 +655,6 @@ class MantenimientoPreventivoCarburadaController extends Controller
                 'success' => true,
                 'message' => 'Registro eliminado correctamente'
             ]);
-
         } catch (\Exception $e) {
 
             DB::rollBack();

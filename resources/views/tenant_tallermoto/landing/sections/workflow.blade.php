@@ -2,9 +2,10 @@
     @php
         $fondo =
             $colorview == 'dark'
-                ? 'landing_tallermoto/images/reserva-moto.png'
-                : 'landing_tallermoto/images/reserva-moto-light.png';
+                ? (!empty($empresa->logo_portada2) ? $empresa->logo_portada2 : 'landing_tallermoto/images/reserva-moto.png') 
+                : (!empty($empresa->logo_portada2) ? $empresa->logo_portada2 : 'landing_tallermoto/images/reserva-moto-light.png');
     @endphp
+
     <div class="absolute inset-0 z-0">
         <img src="{{ asset_root($fondo) }}" class="w-full h-full object-cover" alt="">
     </div>
@@ -55,7 +56,7 @@
                     </p>
                 </div>
 
-                <a href="#"
+                <a href="/reservar"
                     class="bg-brand-500 hover:bg-brand-400 text-white px-6 py-3.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-brand-500/20 group self-start md:self-end shrink-0">
                     Ir a Reservar <i data-lucide="arrow-right"
                         class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>

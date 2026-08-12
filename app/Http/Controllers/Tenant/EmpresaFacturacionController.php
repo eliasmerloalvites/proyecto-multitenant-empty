@@ -15,7 +15,7 @@ class EmpresaFacturacionController extends Controller
     public function index()
     {
         $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
-
+        // dd($empresa);
         return view(
             'tenant_'.tenant('tipo_negocio').'.configuracion.empresa.index', 
             compact('empresa')
@@ -78,9 +78,7 @@ class EmpresaFacturacionController extends Controller
 
                     // BRANDING
                     // 'color_principal' => $request->color_principal,
-                    // SERIES
-                    'logo_portada1' => $request->logo_portada1,
-                    'logo_portada2' => $request->logo_portada2,
+                    
 
                     // SERIES
                     'tipo_tema' => $request->tipo_tema,
@@ -142,6 +140,56 @@ class EmpresaFacturacionController extends Controller
                     (string) $image->toWebp(85)
                 );
                 $empresa->logo_pdf = Storage::url($path . $nombreArchivo);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | PORTADA 1
+            |--------------------------------------------------------------------------
+            */
+            if ($request->hasFile('logo_portada1')) {
+                /* ELIMINAR ANTERIOR */
+                if ($empresa->logo_portada1) {
+                    $rutaAnterior = str_replace('/storage/', '', $empresa->logo_portada1);
+                    Storage::disk('public')->delete($rutaAnterior);
+                }
+
+                $file = $request->file('logo_portada1');
+                $nombreArchivo = Str::uuid() . '.webp';
+                $path = tenant('tipo_negocio') . '/'. tenant('id'). '/empresa/logo_portada1/';
+
+                /* OPTIMIZAR */
+                $image = Image::read($file);
+                $image->scaleDown(width: 500);
+                Storage::disk('public')->put(
+                    $path . $nombreArchivo,
+                    (string) $image->toWebp(80)
+                );
+                $empresa->logo_portada1 = Storage::url($path . $nombreArchivo);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | PORTADA 2
+            |--------------------------------------------------------------------------
+            */
+
+            if ($request->hasFile('logo_portada2')) {
+                if ($empresa->logo_portada2) {
+                    $rutaAnterior = str_replace('/storage/', '', $empresa->logo_portada2);
+                    Storage::disk('public')->delete($rutaAnterior);
+                }
+
+                $file = $request->file('logo_portada2');
+                $nombreArchivo = Str::uuid() . '.webp';
+                $path = tenant('tipo_negocio') . '/'. tenant('id'). '/empresa/logo_portada2/';
+                $image = Image::read($file);
+                $image->scaleDown(width: 800);
+                Storage::disk('public')->put(
+                    $path . $nombreArchivo,
+                    (string) $image->toWebp(85)
+                );
+                $empresa->logo_portada2 = Storage::url($path . $nombreArchivo);
             }
 
             /*

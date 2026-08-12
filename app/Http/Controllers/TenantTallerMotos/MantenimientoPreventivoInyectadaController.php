@@ -161,34 +161,34 @@ class MantenimientoPreventivoInyectadaController extends Controller
             $mtto_preventivo_inyectadas->MPI_KMEntrada = $request->get('MPI_KMEntrada');
             $mtto_preventivo_inyectadas->MPI_DetalleIngreso = $request->get('MPI_DetalleIngreso');
             $mtto_preventivo_inyectadas->MPI_DetalleObservacion = $request->get('MPI_DetalleObservacion');
-            $mtto_preventivo_inyectadas->MPI_Det1=$request->get('MPI_Det1')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det1Informacion=$request->get('MPI_Det1Informacion');
-            $mtto_preventivo_inyectadas->MPI_Det2=$request->get('MPI_Det2')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det3=$request->get('MPI_Det3')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det4=$request->get('MPI_Det4')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det5=$request->get('MPI_Det5')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det6=$request->get('MPI_Det6')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det7=$request->get('MPI_Det7')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det7Admision=$request->get('MPI_Det7Admision');
-            $mtto_preventivo_inyectadas->MPI_Det7Escape=$request->get('MPI_Det7Escape');
-            $mtto_preventivo_inyectadas->MPI_Det8=$request->get('MPI_Det8')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det8Medida=$request->get('MPI_Det8Medida');
-            $mtto_preventivo_inyectadas->MPI_Det9=$request->get('MPI_Det9')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det10=$request->get('MPI_Det10')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det11=$request->get('MPI_Det11')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det12=$request->get('MPI_Det12')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det13=$request->get('MPI_Det13')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det14=$request->get('MPI_Det14')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det15=$request->get('MPI_Det15');
-            $mtto_preventivo_inyectadas->MPI_Det16=$request->get('MPI_Det16');
-            $mtto_preventivo_inyectadas->MPI_Det17=$request->get('MPI_Det17')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det17Ventilador=$request->get('MPI_Det17Ventilador');
-            $mtto_preventivo_inyectadas->MPI_Det18=$request->get('MPI_Det18')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det19=$request->get('MPI_Det19')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det19Vida=$request->get('MPI_Det19Vida');
-            $mtto_preventivo_inyectadas->MPI_Det19Carga=$request->get('MPI_Det19Carga');
-            $mtto_preventivo_inyectadas->MPI_Det19Arranque=$request->get('MPI_Det19Arranque');
-            $mtto_preventivo_inyectadas->MPI_Det20=$request->get('MPI_Det20')?"SI":"NO";
+            $mtto_preventivo_inyectadas->MPI_Det1 = $request->get('MPI_Det1') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det1Informacion = $request->get('MPI_Det1Informacion');
+            $mtto_preventivo_inyectadas->MPI_Det2 = $request->get('MPI_Det2') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det3 = $request->get('MPI_Det3') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det4 = $request->get('MPI_Det4') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det5 = $request->get('MPI_Det5') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det6 = $request->get('MPI_Det6') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det7 = $request->get('MPI_Det7') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det7Admision = $request->get('MPI_Det7Admision');
+            $mtto_preventivo_inyectadas->MPI_Det7Escape = $request->get('MPI_Det7Escape');
+            $mtto_preventivo_inyectadas->MPI_Det8 = $request->get('MPI_Det8') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det8Medida = $request->get('MPI_Det8Medida');
+            $mtto_preventivo_inyectadas->MPI_Det9 = $request->get('MPI_Det9') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det10 = $request->get('MPI_Det10') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det11 = $request->get('MPI_Det11') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det12 = $request->get('MPI_Det12') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det13 = $request->get('MPI_Det13') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det14 = $request->get('MPI_Det14') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det15 = $request->get('MPI_Det15');
+            $mtto_preventivo_inyectadas->MPI_Det16 = $request->get('MPI_Det16');
+            $mtto_preventivo_inyectadas->MPI_Det17 = $request->get('MPI_Det17') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det17Ventilador = $request->get('MPI_Det17Ventilador');
+            $mtto_preventivo_inyectadas->MPI_Det18 = $request->get('MPI_Det18') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det19 = $request->get('MPI_Det19') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det19Vida = $request->get('MPI_Det19Vida');
+            $mtto_preventivo_inyectadas->MPI_Det19Carga = $request->get('MPI_Det19Carga');
+            $mtto_preventivo_inyectadas->MPI_Det19Arranque = $request->get('MPI_Det19Arranque');
+            $mtto_preventivo_inyectadas->MPI_Det20 = $request->get('MPI_Det20') ? "SI" : "NO";
             $mtto_preventivo_inyectadas->MPI_DetalleRealizado = $request->get('MPI_DetalleRealizado');
             $mtto_preventivo_inyectadas->MPI_CorrecionObservacion = $request->get('MPI_CorrecionObservacion');
             $mtto_preventivo_inyectadas->MPI_ProximoCambioAceite = $request->get('MPI_ProximoCambioAceite');
@@ -276,7 +276,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
     public function crop(Request $request, $id)
     {
 
-        $request->validate([ 'file' => 'required|image|max:5120']);
+        $request->validate(['file' => 'required|image|max:5120']);
 
         $mantenimientoId = $id;
         $tenantId = tenant('id') ?? 'central';
@@ -289,7 +289,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
                 'msg' => 'Tu plan alcanzó el límite de imágenes.'
             ], 422);
         }
-        $ultimoItem = MpiImagen::where('MPI_Id',$mantenimientoId)->max('MPII_Item');
+        $ultimoItem = MpiImagen::where('MPI_Id', $mantenimientoId)->max('MPII_Item');
         $item = $ultimoItem ? $ultimoItem + 1 : 1;
 
         $file = $request->file('file');
@@ -309,9 +309,9 @@ class MantenimientoPreventivoInyectadaController extends Controller
             (string) $imageOriginal->toWebp(70)
         );
 
-        $pesoFinal = Storage::disk('public')->size($pathOriginal.$nombreArchivo);
+        $pesoFinal = Storage::disk('public')->size($pathOriginal . $nombreArchivo);
         $tamañoFormateado = $this->formatBytes($pesoFinal);
-        
+
         /* THUMBNAIL */
         $imageThumb = Image::read($file);
         $imageThumb->scaleDown(width: 300);
@@ -332,7 +332,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
         $mpiImagen->MPII_Peso = $tamañoFormateado;
         $mpiImagen->save();
 
-        $datos = MpiImagen::where('MPI_Id',$mantenimientoId)->get();
+        $datos = MpiImagen::where('MPI_Id', $mantenimientoId)->get();
 
         return response()->json([
             'status' => 1,
@@ -344,41 +344,86 @@ class MantenimientoPreventivoInyectadaController extends Controller
     }
 
     public function pdf($id)
-	{
-		$datos = DB::table('mantenimiento_preventivo_inyectada as mpi')
-				->join('users as u','u.id','=','mpi.PER_Id')
-				->select('mpi.*',DB::raw('CONCAT(u.name) as personal'))
-				->where('MPI_Id','=',$id)
-				->first();
+    {
+        $datos = DB::table('mantenimiento_preventivo_inyectada as mpi')
+            ->join('users as u', 'u.id', '=', 'mpi.PER_Id')
+            ->select('mpi.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MPI_Id', '=', $id)
+            ->first();
 
         $detalle_reemplazo = DB::table('mpi_detalle_reemplazo')
-				->where('MPI_Id','=',$id)
-				->get();
+            ->where('MPI_Id', '=', $id)
+            ->get();
 
         $total_detalle = 0;
         foreach ($detalle_reemplazo as $dr) {
-            $total_detalle =round($total_detalle + $dr->MPI_Precio, 2) ; 
+            $total_detalle = round($total_detalle + $dr->MPI_Precio, 2);
         }
 
         $imagenes = DB::table('mpi_imagen')
-                ->where('MPI_Id','=',$id)
-                ->get();
+            ->where('MPI_Id', '=', $id)
+            ->get();
 
         $url = URL::to('');
-		$empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
-        
-		$pdf   = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/preventivo/inyectadas/pdf', [
-			"mttoPreventivo"=>$datos,
-			"detalle"=>$detalle_reemplazo,
-			"imagenes"=>$imagenes,
-			"url"=>$url,
-            "total_detalle"=>$total_detalle,
-            "empresa"=>$empresa
-		])->setOptions(['defaultFont' => 'sans-serif',
-        'chroot'  => public_path('dist/img'), 'isRemoteEnabled' => true]);
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
 
-		return $pdf->stream('mantenimiento-preventivo-inyectada-' . tenant('id') . '.pdf');
-	}
+        $pdf   = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/preventivo/inyectadas/pdf', [
+            "mttoPreventivo" => $datos,
+            "detalle" => $detalle_reemplazo,
+            "imagenes" => $imagenes,
+            "url" => $url,
+            "total_detalle" => $total_detalle,
+            "empresa" => $empresa
+        ])->setOptions([
+            'defaultFont' => 'sans-serif',
+            'chroot'  => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        return $pdf->stream('mantenimiento-preventivo-inyectada-' . tenant('id') . '.pdf');
+    }
+
+    public function descargarpdf($id)
+    {
+        $datos = DB::table('mantenimiento_preventivo_inyectada as mpi')
+            ->join('users as u', 'u.id', '=', 'mpi.PER_Id')
+            ->select('mpi.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MPI_Id', '=', $id)
+            ->first();
+
+        $detalle_reemplazo = DB::table('mpi_detalle_reemplazo')
+            ->where('MPI_Id', '=', $id)
+            ->get();
+
+        // Optimización: Suma directa desde la colección
+        $total_detalle = round($detalle_reemplazo->sum('MPI_Precio'), 2);
+
+        $imagenes = DB::table('mpi_imagen')
+            ->where('MPI_Id', '=', $id)
+            ->get();
+
+        $url = URL::to('');
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+        $pdf = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/preventivo/inyectadas/pdf', [
+            "mttoPreventivo" => $datos,
+            "detalle"        => $detalle_reemplazo,
+            "imagenes"       => $imagenes,
+            "url"            => $url,
+            "total_detalle"  => $total_detalle,
+            "empresa"        => $empresa
+        ])->setOptions([
+            'defaultFont'     => 'sans-serif',
+            'chroot'          => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        // Nombre dinámico para el archivo descargado incluyendo el ID
+        $nombreArchivo = 'mantenimiento-preventivo-inyectada-' . $id . '-' . tenant('id') . '.pdf';
+
+        // Se cambió ->stream() por ->download() para forzar la descarga
+        return $pdf->download($nombreArchivo);
+    }
 
     // ACTUALIZAR
 
@@ -402,34 +447,34 @@ class MantenimientoPreventivoInyectadaController extends Controller
             $mtto_preventivo_inyectadas->MPI_KMEntrada = $request->get('MPI_KMEntrada');
             $mtto_preventivo_inyectadas->MPI_DetalleIngreso = $request->get('MPI_DetalleIngreso');
             $mtto_preventivo_inyectadas->MPI_DetalleObservacion = $request->get('MPI_DetalleObservacion');
-            $mtto_preventivo_inyectadas->MPI_Det1=$request->get('MPI_Det1')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det1Informacion=$request->get('MPI_Det1Informacion');
-            $mtto_preventivo_inyectadas->MPI_Det2=$request->get('MPI_Det2')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det3=$request->get('MPI_Det3')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det4=$request->get('MPI_Det4')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det5=$request->get('MPI_Det5')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det6=$request->get('MPI_Det6')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det7=$request->get('MPI_Det7')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det7Admision=$request->get('MPI_Det7Admision');
-            $mtto_preventivo_inyectadas->MPI_Det7Escape=$request->get('MPI_Det7Escape');
-            $mtto_preventivo_inyectadas->MPI_Det8=$request->get('MPI_Det8')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det8Medida=$request->get('MPI_Det8Medida');
-            $mtto_preventivo_inyectadas->MPI_Det9=$request->get('MPI_Det9')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det10=$request->get('MPI_Det10')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det11=$request->get('MPI_Det11')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det12=$request->get('MPI_Det12')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det13=$request->get('MPI_Det13')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det14=$request->get('MPI_Det14')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det15=$request->get('MPI_Det15');
-            $mtto_preventivo_inyectadas->MPI_Det16=$request->get('MPI_Det16');
-            $mtto_preventivo_inyectadas->MPI_Det17=$request->get('MPI_Det17')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det17Ventilador=$request->get('MPI_Det17Ventilador');
-            $mtto_preventivo_inyectadas->MPI_Det18=$request->get('MPI_Det18')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det19=$request->get('MPI_Det19')?"SI":"NO";
-            $mtto_preventivo_inyectadas->MPI_Det19Vida=$request->get('MPI_Det19Vida');
-            $mtto_preventivo_inyectadas->MPI_Det19Carga=$request->get('MPI_Det19Carga');
-            $mtto_preventivo_inyectadas->MPI_Det19Arranque=$request->get('MPI_Det19Arranque');
-            $mtto_preventivo_inyectadas->MPI_Det20=$request->get('MPI_Det20')?"SI":"NO";
+            $mtto_preventivo_inyectadas->MPI_Det1 = $request->get('MPI_Det1') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det1Informacion = $request->get('MPI_Det1Informacion');
+            $mtto_preventivo_inyectadas->MPI_Det2 = $request->get('MPI_Det2') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det3 = $request->get('MPI_Det3') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det4 = $request->get('MPI_Det4') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det5 = $request->get('MPI_Det5') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det6 = $request->get('MPI_Det6') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det7 = $request->get('MPI_Det7') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det7Admision = $request->get('MPI_Det7Admision');
+            $mtto_preventivo_inyectadas->MPI_Det7Escape = $request->get('MPI_Det7Escape');
+            $mtto_preventivo_inyectadas->MPI_Det8 = $request->get('MPI_Det8') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det8Medida = $request->get('MPI_Det8Medida');
+            $mtto_preventivo_inyectadas->MPI_Det9 = $request->get('MPI_Det9') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det10 = $request->get('MPI_Det10') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det11 = $request->get('MPI_Det11') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det12 = $request->get('MPI_Det12') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det13 = $request->get('MPI_Det13') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det14 = $request->get('MPI_Det14') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det15 = $request->get('MPI_Det15');
+            $mtto_preventivo_inyectadas->MPI_Det16 = $request->get('MPI_Det16');
+            $mtto_preventivo_inyectadas->MPI_Det17 = $request->get('MPI_Det17') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det17Ventilador = $request->get('MPI_Det17Ventilador');
+            $mtto_preventivo_inyectadas->MPI_Det18 = $request->get('MPI_Det18') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det19 = $request->get('MPI_Det19') ? "SI" : "NO";
+            $mtto_preventivo_inyectadas->MPI_Det19Vida = $request->get('MPI_Det19Vida');
+            $mtto_preventivo_inyectadas->MPI_Det19Carga = $request->get('MPI_Det19Carga');
+            $mtto_preventivo_inyectadas->MPI_Det19Arranque = $request->get('MPI_Det19Arranque');
+            $mtto_preventivo_inyectadas->MPI_Det20 = $request->get('MPI_Det20') ? "SI" : "NO";
             $mtto_preventivo_inyectadas->MPI_DetalleRealizado = $request->get('MPI_DetalleRealizado');
             $mtto_preventivo_inyectadas->MPI_CorrecionObservacion = $request->get('MPI_CorrecionObservacion');
             $mtto_preventivo_inyectadas->MPI_ProximoCambioAceite = $request->get('MPI_ProximoCambioAceite');
@@ -440,7 +485,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
             if ($rolAdmin) {
                 $mtto_preventivo_inyectadas->MPI_Estado = 'APROBADO';
             }
-            if($request->notificar){
+            if ($request->notificar) {
                 $mtto_preventivo_inyectadas->notificar = 1;
             }
             $mtto_preventivo_inyectadas->update();
@@ -474,54 +519,52 @@ class MantenimientoPreventivoInyectadaController extends Controller
         return response()->json(['success' => true, "message" => 'Mantenimiento Preventivo Inyectadas Editado Exitosamente.']);
     }
 
-    public function actualizarestado(Request $request,$id)
-	{
+    public function actualizarestado(Request $request, $id)
+    {
         try {
             DB::beginTransaction();
-            $mtto_preventivo_inyectadas=MantenimientoPreventivoInyectada::findOrFail($id);
-            if($request->notificar == 1){
-                $mtto_preventivo_inyectadas->MPI_Estado="PENDIENTE";
-                $mtto_preventivo_inyectadas->notificar=0;
+            $mtto_preventivo_inyectadas = MantenimientoPreventivoInyectada::findOrFail($id);
+            if ($request->notificar == 1) {
+                $mtto_preventivo_inyectadas->MPI_Estado = "PENDIENTE";
+                $mtto_preventivo_inyectadas->notificar = 0;
             }
-            if($request->estado == "APROBADO"){
-                $mtto_preventivo_inyectadas->MPI_Estado="APROBADO";
-                if($request->notificar == 2){
-                    $mtto_preventivo_inyectadas->notificar=0;
-                }else{
-                    $mtto_preventivo_inyectadas->notificar=1;
+            if ($request->estado == "APROBADO") {
+                $mtto_preventivo_inyectadas->MPI_Estado = "APROBADO";
+                if ($request->notificar == 2) {
+                    $mtto_preventivo_inyectadas->notificar = 0;
+                } else {
+                    $mtto_preventivo_inyectadas->notificar = 1;
                 }
             }
-            if($request->observacion){
-                $mtto_preventivo_inyectadas->observacion=$request->observacion ;
+            if ($request->observacion) {
+                $mtto_preventivo_inyectadas->observacion = $request->observacion;
             }
 
-            if($request->respuesta){
-                $mtto_preventivo_inyectadas->respuesta=$request->respuesta ;
+            if ($request->respuesta) {
+                $mtto_preventivo_inyectadas->respuesta = $request->respuesta;
             }
-            
+
             $mtto_preventivo_inyectadas->update();
 
             DB::commit();
-
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             dd($e);
             DB::rollback();
         }
-        
-        if($request->notificar == 1){
+
+        if ($request->notificar == 1) {
             return response()->json(['success' => true, 'message' => 'Mantenimiento Se Activo Correctamente.']);
         }
-        if($request->estado == "APROBADO"){
+        if ($request->estado == "APROBADO") {
             return response()->json(['success' => true, 'message' => 'Mantenimiento Se Aprobó Correctamente.']);
         }
-        if($request->observacion){
+        if ($request->observacion) {
             return response()->json(['success' => true, 'message' => 'Observación Registrada Correctamente.']);
         }
-        if($request->respuesta){
+        if ($request->respuesta) {
             return response()->json(['success' => true, 'message' => 'Respuesta Registrada Correctamente.']);
         }
-	}   
+    }
 
     public function destroyimagen($id, $item)
     {
@@ -553,14 +596,13 @@ class MantenimientoPreventivoInyectadaController extends Controller
 
             /* ELIMINAR REGISTRO */
             MpiImagen::where('MPI_Id', $id)
-            ->where('MPII_Item', $item)
-            ->delete();
+                ->where('MPII_Item', $item)
+                ->delete();
 
             /* RECARGAR IMAGENES */
             $datos = MpiImagen::where('MPI_Id', $id)->get();
 
-            return response()->json(['success' => true,'message' => 'Eliminado Correctamente', 'data'=> $datos]);
-
+            return response()->json(['success' => true, 'message' => 'Eliminado Correctamente', 'data' => $datos]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
@@ -576,8 +618,8 @@ class MantenimientoPreventivoInyectadaController extends Controller
                 return response()->json(['success' => false, 'message' => 'MantenimientoPreventivoInyectada no encontrado.'], 404);
             }
 
-            $mtto_preventivo_inyectadas->MPI_Estado="PENDIENTE";
-            $mtto_preventivo_inyectadas->notificar=0;
+            $mtto_preventivo_inyectadas->MPI_Estado = "PENDIENTE";
+            $mtto_preventivo_inyectadas->notificar = 0;
             $mtto_preventivo_inyectadas->save();
 
             return response()->json(['success' => true, 'message' => 'MantenimientoPreventivoInyectada activado exitosamente.']);
@@ -635,7 +677,6 @@ class MantenimientoPreventivoInyectadaController extends Controller
                 'success' => true,
                 'message' => 'Registro eliminado correctamente'
             ]);
-
         } catch (\Exception $e) {
 
             DB::rollBack();

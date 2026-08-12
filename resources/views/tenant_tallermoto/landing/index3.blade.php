@@ -138,7 +138,7 @@
                 <div class="absolute bottom-6 left-2 sm:left-6 bg-white/90 backdrop-blur-xl border border-white/60 p-5 rounded-2xl w-64 shadow-[0_20px_50px_rgba(0,0,0,0.1)] z-20 space-y-4">
                     <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
                         <div class="flex items-center gap-1.5 text-xs font-extrabold text-slate-900 tracking-wide">
-                            <i data-lucide="pulse" class="w-4 h-4 text-brand-600"></i> Sistema Kael
+                            <i data-lucide="pulse" class="w-4 h-4 text-brand-600"></i> Sistema {{ $empresa->nombre_comercial }}
                         </div>
                         <span class="flex items-center gap-1 text-[10px] bg-green-50 text-green-600 px-2.5 py-0.5 rounded-full font-bold border border-green-200">
                             <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> En tiempo real

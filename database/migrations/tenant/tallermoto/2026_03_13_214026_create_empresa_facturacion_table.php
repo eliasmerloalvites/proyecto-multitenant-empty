@@ -14,88 +14,78 @@ return new class extends Migration
         Schema::create('empresa_facturacion', function (Blueprint $table) {
             $table->id();
 
+            // RELACIÓN TENANT
+            // Nota: Si usas stancl/tenancy u otro paquete, asegúrate de ajustar 'tenants' o usar foreignUuid / foreignId.
             $table->string('tenant_id')->unique();
+            $table->foreign('tenant_id')
+                  ->references('id')
+                  ->on('tenants')
+                  ->onDelete('cascade');
 
-            // EMPRESA
-            $table->string('ruc', 11);
+            // IDENTIFICACIÓN EMPRESA
+            $table->string('ruc', 11)->index();
             $table->string('razon_social');
             $table->string('nombre_comercial')->nullable();
 
-            // DIRECCION
+            // DIRECCIÓN FISCAL Y LOCAL
             $table->string('ubigeo', 6)->nullable();
-            $table->string('direccion')->nullable();
-            $table->string('departamento')->nullable();
-            $table->string('provincia')->nullable();
-            $table->string('distrito')->nullable();
-            $table->string('cod_local', 4)->default('0000');
+            $table->text('direccion')->nullable(); // 'text' por si la dirección fiscal es muy extendida
+            $table->string('departamento', 100)->nullable();
+            $table->string('provincia', 100)->nullable();
+            $table->string('distrito', 100)->nullable();
+            $table->string('cod_local', 4)->default('0000'); // Código de establecimiento anexo SUNAT
 
             // CONTACTO
-            $table->string('telefono')->nullable();
-            $table->string('whatsapp')->nullable();
+            $table->string('telefono', 30)->nullable();
+            $table->string('whatsapp', 30)->nullable();
             $table->string('correo')->nullable();
             $table->string('web')->nullable();
 
-            // LOGOS
+            // RECURSOS VISUALES / LOGOS
             $table->string('logo')->nullable();
             $table->string('logo_pdf')->nullable();
+            $table->string('logo_portada1')->nullable();
+            $table->string('logo_portada2')->nullable();
 
-            // SOL
-            $table->string('sol_usuario')->nullable();
-            $table->string('sol_password')->nullable();
+            // CREDENCIALES SOL (Guardar encriptado usando Crypt/Attribute Casting en Eloquent)
+            $table->string('sol_usuario', 50)->nullable();
+            $table->text('sol_password')->nullable(); // 'text' para alojar la cadena encriptada con Crypt::encryptString()
 
-            // CERTIFICADO
+            // CERTIFICADO DIGITAL
             $table->string('certificado_ruta')->nullable();
-            $table->string('certificado_password')->nullable();
+            $table->text('certificado_password')->nullable(); // Encriptado
             $table->date('certificado_vencimiento')->nullable();
 
-            // FACTURACION
-            $table->enum('ambiente', [
-                'beta',
-                'produccion'
-            ])->default('beta');
-
-            $table->enum('proveedor_facturacion', [
-                'sunat',
-                'ose',
-                'nubefact'
-            ])->default('sunat');
-
+            // PARAMETRIZACIÓN FACTURACIÓN
+            $table->enum('ambiente', ['beta', 'produccion'])->default('beta');
+            $table->enum('proveedor_facturacion', ['sunat', 'ose', 'nubefact'])->default('sunat');
             $table->boolean('facturacion_electronica')->default(true);
 
-            // SERIES
-            $table->string('serie_factura')->nullable();
-            $table->string('serie_boleta')->nullable();
-            $table->string('serie_nota_credito')->nullable();
-            $table->string('serie_nota_debito')->nullable();
+            // SERIES PREDETERMINADAS (Series SUNAT tienen 4 caracteres: F001, B001, FC01, FN01, etc.)
+            $table->string('serie_factura', 4)->nullable();
+            $table->string('serie_boleta', 4)->nullable();
+            $table->string('serie_nota_credito', 4)->nullable();
+            $table->string('serie_nota_debito', 4)->nullable();
+            $table->string('serie_guia_remision', 4)->nullable(); // Adicionado sugerido
 
-            // CONFIG
+            // CONFIGURACIÓN DE IMPRESIÓN Y MONEDA
             $table->string('moneda', 3)->default('PEN');
-            $table->integer('decimales')->default(2);
+            $table->unsignedTinyInteger('decimales')->default(2);
+            $table->enum('formato_pdf', ['ticket', 'a4', 'a5'])->default('ticket');
 
-            $table->enum('formato_pdf', [
-                'ticket',
-                'a4',
-                'a5'
-            ])->default('ticket');
-
-            // BRANDING
-            $table->string('color_principal')->default('#00398A');
-
-            // ESTADO
-            $table->boolean('activo')->default(true);
-
-
-            // El núcleo: ¿la web es oscura o clara?
+            // PERSONALIZACIÓN Y BRANDING (Colores Hexadecimales #RRGGBB)
+            $table->string('color_principal', 7)->default('#00398A');
             $table->enum('tipo_tema', ['dark', 'light'])->default('dark');
-            
-            // Colores únicos de la marca
-            $table->string('color_main', 7)->default('#3b82f6');   // Color corporativo (ej: Azul o Rojo)
-            $table->string('color_light', 7)->default('#60a5fa');  // Versión más clara/hover del corporativo
-            $table->string('color_bg', 7)->default('#030712');     // Fondo general de la web
+            $table->string('color_main', 7)->default('#3b82f6');
+            $table->string('color_light', 7)->default('#60a5fa');
+            $table->string('color_bg', 7)->default('#030712');
             $table->string('color_card', 7)->default('#070b17');
 
-            $table->timestamps();
+            // ESTADO
+            $table->boolean('activo')->default(true)->index();
 
+            $table->timestamps();
+            $table->softDeletes(); // Opcional: Recomendado para auditorías de configuración
         });
     }
 

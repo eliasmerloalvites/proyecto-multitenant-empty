@@ -87,7 +87,8 @@
                                 </div>
 
                                 <!-- Botón para descargar/ver PDF completo -->
-                                <a href="{{ $res['cabecera']['url_pdf'] }}/{{ $res['cabecera']['id'] }}" target="_blank"
+                                <a href="{{ $res['cabecera']['url_pdf'] }}/{{ $res['cabecera']['id'] }}/descargarpdf"
+                                    download
                                     class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2">
                                     <i data-lucide="file-text" class="w-4 h-4"></i>
                                     Descargar Ficha PDF

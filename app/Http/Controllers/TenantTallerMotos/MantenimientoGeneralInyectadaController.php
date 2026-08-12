@@ -389,6 +389,43 @@ class MantenimientoGeneralInyectadaController extends Controller
 		return $pdf->stream('mantenimiento-general-inyectada-' . tenant('id') . '.pdf');
 	}
 
+    public function descargarpdf($id)
+	{
+		$datos = DB::table('mantenimiento_general_inyectada as mgi')
+				->join('users as u','u.id','=','mgi.PER_Id')
+				->select('mgi.*',DB::raw('CONCAT(u.name) as personal'))
+				->where('MGI_Id','=',$id)
+				->first();
+
+        $detalle_reemplazo = DB::table('mgi_detalle_reemplazo')
+				->where('MGI_Id','=',$id)
+				->get();
+
+        $total_detalle = 0;
+        foreach ($detalle_reemplazo as $dr) {
+            $total_detalle =round($total_detalle + $dr->MGI_Precio, 2) ; 
+        }
+
+        $imagenes = DB::table('mgi_imagen')
+                ->where('MGI_Id','=',$id)
+                ->get();
+
+        $url = URL::to('');
+		$empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+        
+		$pdf   = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/general/inyectadas/pdf', [
+			"mttoPreventivo"=>$datos,
+			"detalle"=>$detalle_reemplazo,
+			"imagenes"=>$imagenes,
+			"url"=>$url,
+            "total_detalle"=>$total_detalle,
+            "empresa"=>$empresa
+		])->setOptions(['defaultFont' => 'sans-serif',
+        'chroot'  => public_path('dist/img'), 'isRemoteEnabled' => true]);
+
+		return $pdf->stream('mantenimiento-general-inyectada-' . tenant('id') . '.pdf');
+	}
+
     // ACTUALIZAR
 
     public function update(Request $request, $id)
