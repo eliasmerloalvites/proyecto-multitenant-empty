@@ -17,11 +17,6 @@ return new class extends Migration
             // RELACIÓN TENANT
             // Nota: Si usas stancl/tenancy u otro paquete, asegúrate de ajustar 'tenants' o usar foreignUuid / foreignId.
             $table->string('tenant_id')->unique();
-            $table->foreign('tenant_id')
-                  ->references('id')
-                  ->on('tenants')
-                  ->onDelete('cascade');
-
             // IDENTIFICACIÓN EMPRESA
             $table->string('ruc', 11)->index();
             $table->string('razon_social');
