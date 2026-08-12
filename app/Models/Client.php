@@ -14,5 +14,11 @@ class Client extends Model
         'billing_day',
         'domain_id',
         'status',
+        'next_payment_date',
+    ];
+
+    protected $casts = [
+        'billing_day' => 'integer',
+        'next_payment_date' => 'date',
     ];
 }

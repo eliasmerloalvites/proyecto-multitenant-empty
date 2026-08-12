@@ -49,6 +49,8 @@ Route::middleware([
       'destroy' => 'admin.clients.destroy',
       'show' => 'admin.clients.show'
     ]);
+    Route::patch('admin/clients/{client}/toggle-status', [ClientController::class, 'toggleStatus'])
+      ->name('admin.clients.toggleStatus');
   });
 });
 Route::get('/__who', fn () => dd('CENTRAL', tenant()));

@@ -104,6 +104,40 @@ return [
             ],
         ],
 
+        'empresarial' => [
+
+            'max_users' => 50,
+            'max_images' => 200,
+            'storage_limit_mb' => 20000,
+
+            'custom_domain_enabled' => true,
+            'custom_branding' => true,
+
+            'data' => [
+
+                'branding' => [
+                    'logo' => null,
+                    'primary_color' => '#0B63CE',
+                ],
+
+                'modules' => [
+                    'agenda' => true,
+                    'reports' => true,
+                    'inventory' => true,
+                    'sales' => true,
+                    'analytics' => true,
+                    'api_access' => true,
+                ],
+
+                'limits' => [
+                    'branches' => 20,
+                    'warehouses' => 50,
+                    'cash_registers' => 50,
+                ],
+
+            ],
+        ],
+
     ],
 
 ];
