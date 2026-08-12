@@ -34,7 +34,7 @@ class HomeController extends Controller
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
             if ($plan == 'start') {
                 $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'empresa', 'colorview'));
+                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
             } else if ($plan == 'basic') {
                 $colorview = $empresa->tipo_tema;
 
@@ -85,10 +85,10 @@ class HomeController extends Controller
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
             if ($plan == 'start') {
                 $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'empresa', 'colorview'));
+                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
             } else if ($plan == 'basic') {
                 $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.landing.page.servicio', compact('tenantid', 'empresa', 'plan', 'colorview'));
+                return view('tenant_' . $tiponegocio . '.landing.page.servicio', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview'));
             }
         } else {
             $tenantid = null;
@@ -217,10 +217,10 @@ class HomeController extends Controller
 
             if ($plan == 'start') {
                 $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'empresa', 'colorview', 'locales', 'localFirst', 'idlocal', 'turnos', 'totalBahias', 'semana', 'bahias', 'reservas', 'horarioprogramado', 'fechaInicial', 'fechaFinal', 'fechaSeleccionada'));
+                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview', 'locales', 'localFirst', 'idlocal', 'turnos', 'totalBahias', 'semana', 'bahias', 'reservas', 'horarioprogramado', 'fechaInicial', 'fechaFinal', 'fechaSeleccionada'));
             } else if ($plan == 'basic') {
                 $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.landing.page.reservar', compact('tenantid', 'empresa', 'plan', 'colorview', 'locales', 'localFirst', 'idlocal', 'turnos', 'totalBahias', 'semana', 'bahias', 'reservas', 'horarioprogramado', 'fechaInicial', 'fechaFinal', 'fechaSeleccionada'));
+                return view('tenant_' . $tiponegocio . '.landing.page.reservar', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'locales', 'localFirst', 'idlocal', 'turnos', 'totalBahias', 'semana', 'bahias', 'reservas', 'horarioprogramado', 'fechaInicial', 'fechaFinal', 'fechaSeleccionada'));
             }
         } else {
             $tenantid = null;
@@ -416,11 +416,11 @@ class HomeController extends Controller
         // dd($data);
         // Retorno de vistas según plan
         if ($plan === 'start') {
-            return view("tenant_{$tiponegocio}.welcome", compact('tenantid', 'plan', 'empresa', 'colorview', 'data'));
+            return view("tenant_{$tiponegocio}.welcome", compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview', 'data'));
         }
 
         if ($plan === 'basic') {
-            return view("tenant_{$tiponegocio}.landing.page.historial", compact('tenantid', 'empresa', 'plan', 'colorview', 'data'));
+            return view("tenant_{$tiponegocio}.landing.page.historial", compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'data'));
         }
 
         return redirect()->back();
@@ -511,11 +511,11 @@ class HomeController extends Controller
             if ($plan == 'start') {
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'tiponegocio', 'plan', 'empresa', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
             } else if ($plan == 'basic') {
-                return view('tenant_' . $tiponegocio . '.landing.page.catalogo', compact('tenantid', 'tiponegocio', 'empresa', 'plan', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
+                return view('tenant_' . $tiponegocio . '.landing.page.catalogo', compact('tenantid', 'tiponegocio', 'empresa', 'plan', 'tiponegocio', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
             }
 
             // Fallback por si hay otro plan configurado
-            return view('tenant_' . $tiponegocio . '.landing.page.catalogo', compact('tenantid', 'tiponegocio', 'empresa', 'plan', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
+            return view('tenant_' . $tiponegocio . '.landing.page.catalogo', compact('tenantid', 'tiponegocio', 'empresa', 'plan', 'tiponegocio', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
         } else {
             $tenantid = null;
             return view('welcome', compact('tenantid'));
@@ -532,10 +532,10 @@ class HomeController extends Controller
             
             if ($plan == 'start') {
                 $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'empresa', 'colorview'));
+                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
             } else if ($plan == 'basic') {
                 $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.landing.page.nosotros', compact('tenantid', 'empresa', 'plan', 'colorview'));
+                return view('tenant_' . $tiponegocio . '.landing.page.nosotros', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview'));
             }
         } else {
             $tenantid = null;
@@ -552,7 +552,7 @@ class HomeController extends Controller
             $sede = Almacen::where('ALM_Status', 1)->get();
             if ($plan == 'start') {
                 $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'empresa', 'colorview'));
+                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
             } else if ($plan == 'basic') {
                 $colorview = $empresa->tipo_tema;
                 return view('tenant_' . $tiponegocio . '.landing.page.contacto', compact('tenantid', 'empresa', 'sede', 'plan', 'colorview'));

@@ -6,7 +6,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         <div class="flex items-center gap-4">
             <a href="{{ url('/') }}" class="flex items-center py-2">
-                <img src="{{ !empty($empresa->logo_pdf) ? asset_root($empresa->logo_pdf) : asset('images/icono.jpg') }}"
+                <img src="{{ !empty($empresa->logo_pdf) ? asset_root($empresa->logo_pdf) : asset_root('images/icono.jpg') }}"
                     alt="{{ $empresa->razon_social ?? 'Logo Empresa' }}"
                     class="h-10 sm:h-12 w-auto max-w-[220px] object-contain transition-transform duration-200 hover:scale-105">
             </a>
@@ -14,15 +14,28 @@
 
         <nav class="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest">
             @php
-                $links = [
-                    'Inicio' => ['route' => 'central.inicio', 'url' => '/'],
-                    'Servicios' => ['route' => 'web.servicios', 'url' => '/servicios'],
-                    'Reservar' => ['route' => 'web.reservar', 'url' => '/reservar'],
-                    'Historial' => ['route' => 'web.historial', 'url' => '/historial'],
-                    'Catálogo' => ['route' => 'web.catalogo', 'url' => '/catalogo'],
-                    'Nosotros' => ['route' => 'web.nosotros', 'url' => '/nosotros'],
-                    'Contacto' => ['route' => 'web.contacto', 'url' => '/contacto'],
-                ];
+                
+                if ($tiponegocio == 'plus'){
+                    $links = [
+                            'Inicio' => ['route' => 'central.inicio', 'url' => '/'],
+                            'Servicios' => ['route' => 'web.servicios', 'url' => '/servicios'],
+                            'Reservar' => ['route' => 'web.reservar', 'url' => '/reservar'],
+                            'Historial' => ['route' => 'web.historial', 'url' => '/historial'],
+                            'Catálogo' => ['route' => 'web.catalogo', 'url' => '/catalogo'],
+                            'Nosotros' => ['route' => 'web.nosotros', 'url' => '/nosotros'],
+                            'Contacto' => ['route' => 'web.contacto', 'url' => '/contacto'],
+                        ];
+                } else {
+                    $links = [
+                            'Inicio' => ['route' => 'central.inicio', 'url' => '/'],
+                            'Servicios' => ['route' => 'web.servicios', 'url' => '/servicios'],
+                            'Reservar' => ['route' => 'web.reservar', 'url' => '/reservar'],
+                            'Historial' => ['route' => 'web.historial', 'url' => '/historial'],
+                            'Nosotros' => ['route' => 'web.nosotros', 'url' => '/nosotros'],
+                            'Contacto' => ['route' => 'web.contacto', 'url' => '/contacto'],
+                        ];
+                }
+
             @endphp
 
             @foreach ($links as $name => $data)

@@ -110,7 +110,7 @@
         <div class="md:col-span-5 space-y-5">
             <div class="flex items-center gap-4">
                 <a href="{{ url('/') }}" class="flex items-center py-2">
-                    <img src="{{ !empty($empresa->logo_pdf) ? asset_root($empresa->logo_pdf) : asset('images/icono.jpg') }}"
+                    <img src="{{ !empty($empresa->logo_pdf) ? asset_root($empresa->logo_pdf) : asset_root('images/icono.jpg') }}"
                         alt="{{ $empresa->razon_social ?? 'Logo Empresa' }}"
                         class="h-10 sm:h-12 w-auto max-w-[220px] object-contain transition-transform duration-200 hover:scale-105">
                 </a>
