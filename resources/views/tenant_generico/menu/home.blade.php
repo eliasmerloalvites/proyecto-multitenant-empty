@@ -251,6 +251,17 @@
         font-size:12px;
     }
 
+    .kpi-growth-negative{
+        color:#EF4444;
+        background:rgba(239,68,68,.08);
+    }
+
+    .empty-state{
+        color:#94A3B8;
+        text-align:center;
+        padding:30px 10px;
+    }
+
 </style>
 
 <div class="dashboard-wrapper">
@@ -288,11 +299,11 @@
 
             </div>
 
-            <div class="kpi-value">S/ 12,580</div>
+            <div class="kpi-value">S/ {{ number_format($ventasHoy, 2) }}</div>
 
-            <div class="kpi-growth">
-                <i class="fas fa-arrow-up"></i>
-                +12.5%
+            <div class="kpi-growth {{ $crecimientoVentas < 0 ? 'kpi-growth-negative' : '' }}">
+                <i class="fas {{ $crecimientoVentas >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i>
+                {{ $crecimientoVentas >= 0 ? '+' : '' }}{{ $crecimientoVentas }}% vs ayer
             </div>
 
         </div>
@@ -315,11 +326,11 @@
 
             </div>
 
-            <div class="kpi-value">S/ 45,920</div>
+            <div class="kpi-value">S/ {{ number_format($ingresosMes, 2) }}</div>
 
-            <div class="kpi-growth">
-                <i class="fas fa-arrow-up"></i>
-                +8.2%
+            <div class="kpi-growth {{ $crecimientoIngresos < 0 ? 'kpi-growth-negative' : '' }}">
+                <i class="fas {{ $crecimientoIngresos >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i>
+                {{ $crecimientoIngresos >= 0 ? '+' : '' }}{{ $crecimientoIngresos }}% vs mes anterior
             </div>
 
         </div>
@@ -342,11 +353,11 @@
 
             </div>
 
-            <div class="kpi-value">S/ 8,420</div>
+            <div class="kpi-value">S/ {{ number_format($gastosMes, 2) }}</div>
 
-            <div class="kpi-growth">
-                <i class="fas fa-arrow-up"></i>
-                +3.1%
+            <div class="kpi-growth {{ $crecimientoGastos > 0 ? 'kpi-growth-negative' : '' }}">
+                <i class="fas {{ $crecimientoGastos > 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i>
+                {{ $crecimientoGastos >= 0 ? '+' : '' }}{{ $crecimientoGastos }}% vs mes anterior
             </div>
 
         </div>
@@ -369,11 +380,11 @@
 
             </div>
 
-            <div class="kpi-value">18</div>
+            <div class="kpi-value">{{ $stockBajo }}</div>
 
-            <div class="kpi-growth">
-                <i class="fas fa-exclamation-circle"></i>
-                Atención
+            <div class="kpi-growth {{ $stockBajo > 0 ? 'kpi-growth-negative' : '' }}">
+                <i class="fas {{ $stockBajo > 0 ? 'fa-exclamation-circle' : 'fa-check-circle' }}"></i>
+                {{ $stockBajo > 0 ? 'Atención' : 'Todo en orden' }}
             </div>
 
         </div>
@@ -407,12 +418,19 @@
         <div class="dashboard-card">
 
             <div class="dashboard-card-title">
-                Métodos de Pago
+                Métodos de Pago (mes actual)
             </div>
 
-            <div class="donut-container">
-                <canvas id="paymentChart"></canvas>
-            </div>
+            @if($metodosPagoLabels->isEmpty())
+                <div class="empty-state">
+                    <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                    <p class="mb-0">Aún no hay ventas este mes.</p>
+                </div>
+            @else
+                <div class="donut-container">
+                    <canvas id="paymentChart"></canvas>
+                </div>
+            @endif
 
         </div>
 
@@ -447,38 +465,24 @@
 
                     <tbody>
 
-                        <tr>
-                            <td>Juan Perez</td>
-                            <td>12/05/2026</td>
-                            <td>S/ 250.00</td>
-                            <td>
-                                <span class="badge-soft-success">
-                                    Completado
-                                </span>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>Maria Lopez</td>
-                            <td>12/05/2026</td>
-                            <td>S/ 120.00</td>
-                            <td>
-                                <span class="badge-soft-success">
-                                    Completado
-                                </span>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>Carlos Diaz</td>
-                            <td>11/05/2026</td>
-                            <td>S/ 580.00</td>
-                            <td>
-                                <span class="badge-soft-danger">
-                                    Pendiente
-                                </span>
-                            </td>
-                        </tr>
+                        @forelse($ultimasVentas as $mov)
+                            <tr>
+                                <td>{{ $mov->CLI_Nombre }}</td>
+                                <td>{{ \Carbon\Carbon::parse($mov->created_at)->format('d/m/Y') }}</td>
+                                <td>S/ {{ number_format($mov->total, 2) }}</td>
+                                <td>
+                                    @if($mov->VEN_Status == 1)
+                                        <span class="badge-soft-success">Completado</span>
+                                    @else
+                                        <span class="badge-soft-danger">Anulado</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="empty-state">Aún no hay ventas registradas.</td>
+                            </tr>
+                        @endforelse
 
                     </tbody>
 
@@ -498,66 +502,43 @@
                 Top Productos
             </div>
 
-            <div class="top-product">
+            @forelse($topProductos as $index => $prod)
+                @php
+                    $porcentajeTop = $maxUnidadesTop > 0 ? round(($prod->unidades / $maxUnidadesTop) * 100) : 0;
+                    $coloresTop = ['bg-primary', 'bg-success', 'bg-warning'];
+                    $imagenTop = $prod->PRO_Imagen
+                        ? '/storage/' . tenant('tipo_negocio') . '/' . tenant('id') . '/archivos/producto/' . $prod->PRO_Imagen
+                        : '/images/imagen_default.png';
+                @endphp
+                <div class="top-product">
 
-                <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=300&auto=format&fit=crop" alt="">
+                    <img src="{{ $imagenTop }}" alt="{{ $prod->PRO_Nombre }}">
 
-                <div class="flex-grow-1">
+                    <div class="flex-grow-1">
 
-                    <div class="top-product-name">iPhone 15 Pro</div>
+                        <div class="top-product-name">{{ $prod->PRO_Nombre }}</div>
 
-                    <div class="top-product-sales">120 ventas</div>
+                        <div class="top-product-sales">{{ (int) $prod->unidades }} unidades vendidas</div>
 
-                    <div class="progress">
-                        <div class="progress-bar bg-primary" style="width:85%"></div>
+                        <div class="progress">
+                            <div class="progress-bar {{ $coloresTop[$index % 3] }}" style="width:{{ $porcentajeTop }}%"></div>
+                        </div>
+
                     </div>
 
                 </div>
-
-            </div>
-
-            <div class="top-product">
-
-                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=300&auto=format&fit=crop" alt="">
-
-                <div class="flex-grow-1">
-
-                    <div class="top-product-name">Nike Air Max</div>
-
-                    <div class="top-product-sales">95 ventas</div>
-
-                    <div class="progress">
-                        <div class="progress-bar bg-success" style="width:70%"></div>
-                    </div>
-
+            @empty
+                <div class="empty-state">
+                    <i class="fas fa-box-open fa-2x mb-2"></i>
+                    <p class="mb-0">Aún no hay ventas de productos.</p>
                 </div>
-
-            </div>
-
-            <div class="top-product">
-
-                <img src="https://images.unsplash.com/photo-1517336714739-489689fd1ca8?q=80&w=300&auto=format&fit=crop" alt="">
-
-                <div class="flex-grow-1">
-
-                    <div class="top-product-name">Macbook Pro</div>
-
-                    <div class="top-product-sales">75 ventas</div>
-
-                    <div class="progress">
-                        <div class="progress-bar bg-warning" style="width:55%"></div>
-                    </div>
-
-                </div>
-
-            </div>
+            @endforelse
 
         </div>
 
     </div>
 
 </div>
-```
 
 </div>
 
@@ -581,12 +562,12 @@
 
         data: {
 
-            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+            labels: @json($labelsMeses),
 
             datasets: [
                 {
                     label: 'Ventas',
-                    data: [12000, 19000, 15000, 24000, 21000, 28000],
+                    data: @json($serieVentasMensual),
                     borderColor: '#2563EB',
                     backgroundColor: 'rgba(37,99,235,.10)',
                     fill: true,
@@ -595,7 +576,7 @@
                 },
                 {
                     label: 'Gastos',
-                    data: [8000, 12000, 10000, 14000, 12000, 16000],
+                    data: @json($serieGastosMensual),
                     borderColor: '#EF4444',
                     backgroundColor: 'rgba(239,68,68,.08)',
                     fill: true,
@@ -637,42 +618,46 @@
 
     const paymentCtx = document.getElementById('paymentChart');
 
-    new Chart(paymentCtx, {
+    if (paymentCtx) {
+        new Chart(paymentCtx, {
 
-        type: 'doughnut',
+            type: 'doughnut',
 
-        data: {
+            data: {
 
-            labels: ['Yape', 'Efectivo', 'Tarjeta'],
+                labels: @json($metodosPagoLabels),
 
-            datasets: [{
+                datasets: [{
 
-                data: [45, 30, 25],
+                    data: @json($metodosPagoData),
 
-                backgroundColor: [
-                    '#2563EB',
-                    '#22C55E',
-                    '#F59E0B'
-                ],
+                    backgroundColor: [
+                        '#2563EB',
+                        '#22C55E',
+                        '#F59E0B',
+                        '#A855F7',
+                        '#EF4444'
+                    ],
 
-                borderWidth: 0
-            }]
-        },
+                    borderWidth: 0
+                }]
+            },
 
-        options: {
+            options: {
 
-            responsive: true,
-            maintainAspectRatio: false,
+                responsive: true,
+                maintainAspectRatio: false,
 
-            cutout: '70%',
+                cutout: '70%',
 
-            plugins: {
-                legend: {
-                    position: 'bottom'
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 
 </script>
 

@@ -12,16 +12,208 @@ use App\Models\TenantTallerMotos\Reservacion;
 use App\Models\TenantTallerMotos\Turno;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 use ReflectionFunction;
 
 class HomeController extends Controller
 {
+    /**
+     * Umbral (unidades totales en almacén) bajo el cual un producto se
+     * considera "stock bajo" en el dashboard. Ajustable si lo necesitas.
+     */
+    const STOCK_BAJO_LIMITE = 5;
+
     public function index()
     {
-
         $tenantid = tenant('id');
         $tiponegocio = tenant('tipo_negocio');
-        return view('tenant_' . $tiponegocio . '.menu.home');
+
+        $hoy = Carbon::now('America/Lima');
+
+        // Expresión reutilizada en todo el dashboard para el importe real de
+        // una línea de venta (misma fórmula que usa VentaController).
+        $totalVentaExpr = '(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento';
+
+        // ================= KPIs =================
+
+        $ventasHoy = (float) DB::table('venta as v')
+            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+            ->where('v.VEN_Status', 1)
+            ->whereDate('v.created_at', $hoy->toDateString())
+            ->sum(DB::raw($totalVentaExpr));
+
+        $ventasAyer = (float) DB::table('venta as v')
+            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+            ->where('v.VEN_Status', 1)
+            ->whereDate('v.created_at', $hoy->copy()->subDay()->toDateString())
+            ->sum(DB::raw($totalVentaExpr));
+
+        $ingresosMes = (float) DB::table('venta as v')
+            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+            ->where('v.VEN_Status', 1)
+            ->whereYear('v.created_at', $hoy->year)
+            ->whereMonth('v.created_at', $hoy->month)
+            ->sum(DB::raw($totalVentaExpr));
+
+        $mesAnterior = $hoy->copy()->subMonthNoOverflow();
+        $ingresosMesAnterior = (float) DB::table('venta as v')
+            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+            ->where('v.VEN_Status', 1)
+            ->whereYear('v.created_at', $mesAnterior->year)
+            ->whereMonth('v.created_at', $mesAnterior->month)
+            ->sum(DB::raw($totalVentaExpr));
+
+        // GAS_Fecha es nullable en BD, por eso se filtra directo sobre ella
+        // (gasto no tiene timestamps habilitados).
+        $gastosMes = (float) DB::table('gasto')
+            ->where('GAS_Status', 1)
+            ->whereYear('GAS_Fecha', $hoy->year)
+            ->whereMonth('GAS_Fecha', $hoy->month)
+            ->sum('GAS_Monto');
+
+        $gastosMesAnterior = (float) DB::table('gasto')
+            ->where('GAS_Status', 1)
+            ->whereYear('GAS_Fecha', $mesAnterior->year)
+            ->whereMonth('GAS_Fecha', $mesAnterior->month)
+            ->sum('GAS_Monto');
+
+        $stockBajo = DB::table('producto as p')
+            ->leftJoin('lote as l', 'l.PRO_Id', '=', 'p.PRO_Id')
+            ->where('p.PRO_Status', 1)
+            ->selectRaw('p.PRO_Id')
+            ->groupBy('p.PRO_Id')
+            ->havingRaw('COALESCE(SUM(l.LOT_CantidadReal), 0) <= ?', [self::STOCK_BAJO_LIMITE])
+            ->get()
+            ->count();
+
+        $crecimientoVentas = $this->crecimientoPorcentual($ventasHoy, $ventasAyer);
+        $crecimientoIngresos = $this->crecimientoPorcentual($ingresosMes, $ingresosMesAnterior);
+        $crecimientoGastos = $this->crecimientoPorcentual($gastosMes, $gastosMesAnterior);
+
+        // ================= CHART: VENTAS VS GASTOS (últimos 6 meses) =================
+
+        $mesesEs = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        $labelsMeses = [];
+        $serieVentasMensual = [];
+        $serieGastosMensual = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $mesRef = $hoy->copy()->subMonthsNoOverflow($i);
+            $labelsMeses[] = $mesesEs[$mesRef->month - 1];
+
+            $serieVentasMensual[] = round((float) DB::table('venta as v')
+                ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                ->where('v.VEN_Status', 1)
+                ->whereYear('v.created_at', $mesRef->year)
+                ->whereMonth('v.created_at', $mesRef->month)
+                ->sum(DB::raw($totalVentaExpr)), 2);
+
+            $serieGastosMensual[] = round((float) DB::table('gasto')
+                ->where('GAS_Status', 1)
+                ->whereYear('GAS_Fecha', $mesRef->year)
+                ->whereMonth('GAS_Fecha', $mesRef->month)
+                ->sum('GAS_Monto'), 2);
+        }
+
+        // ================= CHART: MÉTODOS DE PAGO (mes actual) =================
+
+        $metodosPago = DB::table('venta as v')
+            ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
+            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+            ->where('v.VEN_Status', 1)
+            ->whereYear('v.created_at', $hoy->year)
+            ->whereMonth('v.created_at', $hoy->month)
+            ->select('mp.MEP_Pago', DB::raw("SUM($totalVentaExpr) as total"))
+            ->groupBy('mp.MEP_Id', 'mp.MEP_Pago')
+            ->orderByDesc('total')
+            ->get();
+
+        $metodosPagoLabels = $metodosPago->pluck('MEP_Pago')->values();
+        $metodosPagoData = $metodosPago->pluck('total')->map(fn ($v) => round((float) $v, 2))->values();
+
+        // ================= ÚLTIMOS MOVIMIENTOS (últimas ventas) =================
+
+        $ultimasVentas = DB::table('venta as v')
+            ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
+            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+            ->select(
+                'v.VEN_Id',
+                'c.CLI_Nombre',
+                'v.VEN_Status',
+                'v.created_at',
+                DB::raw("SUM($totalVentaExpr) as total")
+            )
+            ->groupBy('v.VEN_Id', 'c.CLI_Nombre', 'v.VEN_Status', 'v.created_at')
+            ->orderByDesc('v.VEN_Id')
+            ->limit(6)
+            ->get();
+
+        // ================= TOP PRODUCTOS =================
+
+        $topProductos = DB::table('detalle_venta as dv')
+            ->join('venta as v', 'v.VEN_Id', '=', 'dv.VEN_Id')
+            ->join('producto as p', 'p.PRO_Id', '=', 'dv.PRO_Id')
+            ->where('v.VEN_Status', 1)
+            ->select('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Imagen', DB::raw('SUM(dv.DEV_Cantidad) as unidades'))
+            ->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Imagen')
+            ->orderByDesc('unidades')
+            ->limit(3)
+            ->get();
+
+        $maxUnidadesTop = (float) ($topProductos->max('unidades') ?: 1);
+
+        $data = compact(
+            'tenantid',
+            'tiponegocio',
+            'ventasHoy',
+            'crecimientoVentas',
+            'ingresosMes',
+            'crecimientoIngresos',
+            'gastosMes',
+            'crecimientoGastos',
+            'stockBajo',
+            'labelsMeses',
+            'serieVentasMensual',
+            'serieGastosMensual',
+            'metodosPagoLabels',
+            'metodosPagoData',
+            'ultimasVentas',
+            'topProductos',
+            'maxUnidadesTop'
+        );
+
+        // ================= KPIs PROPIOS DEL TALLER DE MOTOS =================
+
+        if ($tiponegocio === 'tallermoto') {
+            $data['reservasHoy'] = Reservacion::whereDate('RES_FechaProgramada', $hoy->toDateString())
+                ->where('RES_Estado', 'ACT')
+                ->where('RES_State', 'APROBADO')
+                ->count();
+
+            $data['bahiasActivas'] = Bahia::where('BAH_Estado', 'ACT')->count();
+
+            $data['mantenimientosPendientes'] =
+                DB::table('mantenimiento_actividad_variadas')->where('MAV_Estado', 'PENDIENTE')->count() +
+                DB::table('mantenimiento_general_carburada')->where('MGC_Estado', 'PENDIENTE')->count() +
+                DB::table('mantenimiento_general_inyectada')->where('MGI_Estado', 'PENDIENTE')->count() +
+                DB::table('mantenimiento_preventivo_carburada')->where('MPC_Estado', 'PENDIENTE')->count() +
+                DB::table('mantenimiento_preventivo_inyectada')->where('MPI_Estado', 'PENDIENTE')->count();
+        }
+
+        return view('tenant_' . $tiponegocio . '.menu.home', $data);
+    }
+
+    /**
+     * % de variación entre dos montos. Si el punto de referencia es 0,
+     * se evita la división entre cero.
+     */
+    private function crecimientoPorcentual(float $actual, float $anterior): float
+    {
+        if ($anterior <= 0.0) {
+            return $actual > 0 ? 100.0 : 0.0;
+        }
+
+        return round((($actual - $anterior) / $anterior) * 100, 1);
     }
 
 
@@ -247,7 +439,36 @@ class HomeController extends Controller
 
     public function reservar_store(Request $request)
     {
-        $Reservacion = Reservacion::create($request->all());
+        $validated = $request->validate([
+            'ALM_Id' => 'required|integer|exists:almacen,ALM_Id',
+            'TUR_Id' => 'required|integer|exists:turno,TUR_Id',
+            'BAH_Id' => 'required|integer|exists:bahia,BAH_Id',
+            'RES_FechaProgramada' => 'required|string',
+            'RES_Placa' => 'required|string|max:20',
+            'RES_Moto' => 'required|string|max:150',
+            'RES_Cliente' => 'required|string|max:120',
+            'RES_Celular' => 'required|string|max:12',
+            'RES_Detalle' => 'nullable|string|max:250',
+            'RES_Adicional' => 'nullable|string|max:250',
+        ]);
+
+        // Pre-chequeo: da un mensaje inmediato en el caso normal (sin carrera).
+        if (Reservacion::slotEstaOcupado($validated['BAH_Id'], $validated['TUR_Id'], $validated['RES_FechaProgramada'])) {
+            return $this->reservaOcupadaResponse($request);
+        }
+
+        try {
+            $Reservacion = Reservacion::create($validated);
+        } catch (QueryException $e) {
+            // Protección real contra condición de carrera: si dos personas
+            // reservaron el mismo slot casi al mismo tiempo, el índice único
+            // de BD rechaza el segundo INSERT y caemos aquí.
+            if (Reservacion::esConflictoDeSlot($e)) {
+                return $this->reservaOcupadaResponse($request);
+            }
+            throw $e;
+        }
+
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
@@ -256,6 +477,17 @@ class HomeController extends Controller
         }
 
         return redirect()->back()->with('success', 'Reserva realizada con éxito');
+    }
+
+    private function reservaOcupadaResponse(Request $request)
+    {
+        $mensaje = 'Ese horario acaba de ser reservado por otra persona. Por favor elige otra bahía u otro turno.';
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => false, 'message' => $mensaje], 409);
+        }
+
+        return redirect()->back()->withInput()->with('error', $mensaje);
     }
 
     public function historial(Request $request)

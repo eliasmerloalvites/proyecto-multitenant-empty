@@ -1399,13 +1399,17 @@
                         },
                         error: function(xhr) {
                             console.log(xhr.responseText);
+                            const msg = (xhr.responseJSON && xhr.responseJSON.message) || 'Error al registrar la reservación';
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Error al registrar la reservación',
+                                title: msg,
                                 toast: true,
                                 position: 'top-end',
-                                timer: 3000,
+                                timer: 4000,
                                 showConfirmButton: false
+                            }).then(() => {
+                                // Recargar para reflejar el panorama actual (por ejemplo, si el slot ya fue tomado)
+                                location.reload();
                             });
                         }
                     });
@@ -1453,13 +1457,17 @@
                             },
                             error: function(xhr) {
                                 console.log(xhr.responseText);
+                                const msg = (xhr.responseJSON && xhr.responseJSON.message) || 'Error al registrar la reservación';
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'Error al registrar la reservación',
+                                    title: msg,
                                     toast: true,
                                     position: 'top-end',
-                                    timer: 3000,
+                                    timer: 4000,
                                     showConfirmButton: false
+                                }).then(() => {
+                                    // Recargar para reflejar el panorama actual (por ejemplo, si el slot ya fue tomado)
+                                    location.reload();
                                 });
                             }
                         });
@@ -1516,13 +1524,17 @@
                             },
                             error: function(xhr) {
                                 console.log(xhr.responseText);
+                                const msg = (xhr.responseJSON && xhr.responseJSON.message) || 'Error al registrar la reservación';
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'Error al registrar la reservación',
+                                    title: msg,
                                     toast: true,
                                     position: 'top-end',
-                                    timer: 3000,
+                                    timer: 4000,
                                     showConfirmButton: false
+                                }).then(() => {
+                                    // Recargar para reflejar el panorama actual (por ejemplo, si el slot ya fue tomado)
+                                    location.reload();
                                 });
                             }
                         });
@@ -1578,13 +1590,17 @@
                             },
                             error: function(xhr) {
                                 console.log(xhr.responseText);
+                                const msg = (xhr.responseJSON && xhr.responseJSON.message) || 'Error al registrar la reservación';
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'Error al registrar la reservación',
+                                    title: msg,
                                     toast: true,
                                     position: 'top-end',
-                                    timer: 3000,
+                                    timer: 4000,
                                     showConfirmButton: false
+                                }).then(() => {
+                                    // Recargar para reflejar el panorama actual (por ejemplo, si el slot ya fue tomado)
+                                    location.reload();
                                 });
                             }
                         });
