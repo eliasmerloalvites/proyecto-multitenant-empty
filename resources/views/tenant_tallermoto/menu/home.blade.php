@@ -251,6 +251,14 @@
         font-size:12px;
     }
 
+    .badge-soft-warning{
+        background:rgba(245,158,11,.12);
+        color:#D97706;
+        padding:6px 10px;
+        border-radius:30px;
+        font-size:12px;
+    }
+
     .kpi-growth-negative{
         color:#EF4444;
         background:rgba(239,68,68,.08);
@@ -479,6 +487,114 @@
 
 </div>
 
+{{-- REPORTES DE RESERVAS Y MANTENIMIENTOS (Taller: todos los planes) --}}
+
+<div class="row mb-4">
+
+    <div class="col-lg-7 mb-3">
+
+        <div class="dashboard-card mb-0" style="height:100%;">
+
+            <div class="dashboard-card-title">
+                Reservas de los Últimos 7 Días
+            </div>
+
+            <div class="chart-container" style="height:280px;">
+                <canvas id="reservasChart"></canvas>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-5 mb-3">
+
+        <div class="dashboard-card mb-0" style="height:100%;">
+
+            <div class="dashboard-card-title">
+                Mantenimientos por Estado
+            </div>
+
+            @if($mantenimientosPendientes + $mantenimientosAprobados + $mantenimientosObservados == 0)
+                <div class="empty-state">
+                    <i class="fas fa-tools fa-2x mb-2"></i>
+                    <p class="mb-0">Aún no hay mantenimientos registrados.</p>
+                </div>
+            @else
+                <div class="donut-container" style="height:280px;">
+                    <canvas id="mantenimientoEstadoChart"></canvas>
+                </div>
+            @endif
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="row mb-4">
+
+    <div class="col-lg-7 mb-3">
+
+        <div class="dashboard-card mb-0" style="height:100%;">
+
+            <div class="dashboard-card-title">
+                Mantenimientos por Tipo
+            </div>
+
+            <div class="chart-container" style="height:280px;">
+                <canvas id="mantenimientoTipoChart"></canvas>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-5 mb-3">
+
+        <div class="dashboard-card mb-0" style="height:100%;">
+
+            <div class="dashboard-card-title">
+                Próximas Reservas
+            </div>
+
+            @forelse($proximasReservas as $reserva)
+                <div class="top-product" style="align-items:flex-start;">
+
+                    <div class="kpi-icon bg-primary-gradient" style="width:44px;height:44px;font-size:15px;flex-shrink:0;">
+                        <i class="fas fa-motorcycle"></i>
+                    </div>
+
+                    <div class="flex-grow-1">
+
+                        <div class="top-product-name">{{ $reserva->RES_Cliente }}</div>
+
+                        <div class="top-product-sales">
+                            {{ \Carbon\Carbon::parse($reserva->RES_FechaProgramada)->translatedFormat('d M Y') }}
+                            &middot; {{ $reserva->TUR_Nombre }}
+                            &middot; {{ $reserva->BAH_Nombre }}
+                        </div>
+
+                    </div>
+
+                    <span class="badge-soft-{{ $reserva->RES_State === 'APROBADO' ? 'success' : 'warning' }}">
+                        {{ $reserva->RES_State === 'APROBADO' ? 'Aprobado' : 'Pendiente' }}
+                    </span>
+
+                </div>
+            @empty
+                <div class="empty-state">
+                    <i class="fas fa-calendar-check fa-2x mb-2"></i>
+                    <p class="mb-0">No hay reservas próximas.</p>
+                </div>
+            @endforelse
+
+        </div>
+
+    </div>
+
+</div>
+
 {{-- CHARTS (Ventas/Inventario/Compras: solo Plus/Empresarial) --}}
 
 @if($mostrarVentas)
@@ -636,9 +752,17 @@
 
 @section('script')
 
-@if($mostrarVentas)
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+{{-- Colores de texto/rejilla que se adaptan al tema claro/oscuro del panel --}}
+<script>
+    const chartTextColor = getComputedStyle(document.body).getPropertyValue('--text-muted').trim() || '#64748B';
+    const chartGridColor = getComputedStyle(document.body).getPropertyValue('--bg-main').trim() === '#0F172A'
+        ? 'rgba(255,255,255,.06)'
+        : 'rgba(148,163,184,.15)';
+</script>
+
+@if($mostrarVentas)
 <script>
 
     // ======================================================
@@ -752,5 +876,141 @@
 
 </script>
 @endif
+
+<script>
+
+    // ======================================================
+    // RESERVAS ÚLTIMOS 7 DÍAS
+    // ======================================================
+
+    new Chart(document.getElementById('reservasChart'), {
+        type: 'bar',
+        data: {
+            labels: @json($labelsReservas7d),
+            datasets: [{
+                label: 'Reservas',
+                data: @json($serieReservas7d),
+                backgroundColor: 'rgba(37,99,235,.65)',
+                borderRadius: 8,
+                maxBarThickness: 40
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0,
+                        color: chartTextColor
+                    },
+                    grid: {
+                        color: chartGridColor
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: chartTextColor
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // ======================================================
+    // MANTENIMIENTOS POR ESTADO
+    // ======================================================
+
+    const mantenimientoEstadoCtx = document.getElementById('mantenimientoEstadoChart');
+
+    if (mantenimientoEstadoCtx) {
+        new Chart(mantenimientoEstadoCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pendiente', 'Aprobado', 'Observado'],
+                datasets: [{
+                    data: [
+                        {{ $mantenimientosPendientes }},
+                        {{ $mantenimientosAprobados }},
+                        {{ $mantenimientosObservados }}
+                    ],
+                    backgroundColor: ['#F59E0B', '#22C55E', '#EF4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: chartTextColor
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // ======================================================
+    // MANTENIMIENTOS POR TIPO
+    // ======================================================
+
+    new Chart(document.getElementById('mantenimientoTipoChart'), {
+        type: 'bar',
+        data: {
+            labels: @json($mantenimientosPorTipoLabels),
+            datasets: [{
+                label: 'Mantenimientos',
+                data: @json($mantenimientosPorTipoData),
+                backgroundColor: 'rgba(124,58,237,.65)',
+                borderRadius: 8,
+                maxBarThickness: 40
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0,
+                        color: chartTextColor
+                    },
+                    grid: {
+                        color: chartGridColor
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: chartTextColor
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+</script>
 
 @endsection

@@ -190,9 +190,20 @@ class HomeController extends Controller
             );
         }
 
-        // ================= KPIs PROPIOS DEL TALLER DE MOTOS =================
+        // ================= KPIs Y REPORTES PROPIOS DEL TALLER DE MOTOS =================
+        // Disponibles en todos los planes: Mantenimientos + Reservas es el
+        // módulo base que incluyen Start, Basic, Plus y Empresarial.
 
         if ($tiponegocio === 'tallermoto') {
+            // Tabla, prefijo de columnas y etiqueta legible de cada tipo de mantenimiento.
+            $tiposMantenimiento = [
+                ['tabla' => 'mantenimiento_general_inyectada', 'prefix' => 'MGI', 'label' => 'General Inyectada'],
+                ['tabla' => 'mantenimiento_general_carburada', 'prefix' => 'MGC', 'label' => 'General Carburada'],
+                ['tabla' => 'mantenimiento_preventivo_inyectada', 'prefix' => 'MPI', 'label' => 'Preventivo Inyectada'],
+                ['tabla' => 'mantenimiento_preventivo_carburada', 'prefix' => 'MPC', 'label' => 'Preventivo Carburada'],
+                ['tabla' => 'mantenimiento_actividad_variadas', 'prefix' => 'MAV', 'label' => 'Actividad Variada'],
+            ];
+
             $data['reservasHoy'] = Reservacion::whereDate('RES_FechaProgramada', $hoy->toDateString())
                 ->where('RES_Estado', 'ACT')
                 ->where('RES_State', 'APROBADO')
@@ -200,12 +211,52 @@ class HomeController extends Controller
 
             $data['bahiasActivas'] = Bahia::where('BAH_Estado', 'ACT')->count();
 
-            $data['mantenimientosPendientes'] =
-                DB::table('mantenimiento_actividad_variadas')->where('MAV_Estado', 'PENDIENTE')->count() +
-                DB::table('mantenimiento_general_carburada')->where('MGC_Estado', 'PENDIENTE')->count() +
-                DB::table('mantenimiento_general_inyectada')->where('MGI_Estado', 'PENDIENTE')->count() +
-                DB::table('mantenimiento_preventivo_carburada')->where('MPC_Estado', 'PENDIENTE')->count() +
-                DB::table('mantenimiento_preventivo_inyectada')->where('MPI_Estado', 'PENDIENTE')->count();
+            $data['mantenimientosPendientes'] = 0;
+            $data['mantenimientosAprobados'] = 0;
+            $data['mantenimientosObservados'] = 0;
+            $data['mantenimientosPorTipoLabels'] = [];
+            $data['mantenimientosPorTipoData'] = [];
+
+            foreach ($tiposMantenimiento as $tipo) {
+                $estadoCol = "{$tipo['prefix']}_Estado";
+
+                $data['mantenimientosPendientes'] += DB::table($tipo['tabla'])->where($estadoCol, 'PENDIENTE')->count();
+                $data['mantenimientosAprobados'] += DB::table($tipo['tabla'])->where($estadoCol, 'APROBADO')->count();
+                $data['mantenimientosObservados'] += DB::table($tipo['tabla'])->where($estadoCol, 'OBSERVADO')->count();
+
+                $data['mantenimientosPorTipoLabels'][] = $tipo['label'];
+                $data['mantenimientosPorTipoData'][] = DB::table($tipo['tabla'])->count();
+            }
+
+            // ============ RESERVAS DE LOS ÚLTIMOS 7 DÍAS ============
+
+            $labelsReservas7d = [];
+            $serieReservas7d = [];
+
+            for ($i = 6; $i >= 0; $i--) {
+                $dia = $hoy->copy()->subDays($i);
+                $labelsReservas7d[] = $dia->translatedFormat('d M');
+
+                $serieReservas7d[] = Reservacion::whereDate('RES_FechaProgramada', $dia->toDateString())
+                    ->where('RES_State', '!=', 'RECHAZADO')
+                    ->count();
+            }
+
+            $data['labelsReservas7d'] = $labelsReservas7d;
+            $data['serieReservas7d'] = $serieReservas7d;
+
+            // ============ PRÓXIMAS RESERVAS (agenda) ============
+
+            $data['proximasReservas'] = Reservacion::join('bahia as b', 'b.BAH_Id', '=', 'reservacion.BAH_Id')
+                ->join('turno as t', 't.TUR_Id', '=', 'reservacion.TUR_Id')
+                ->where('reservacion.RES_Estado', 'ACT')
+                ->where('reservacion.RES_State', '!=', 'RECHAZADO')
+                ->whereDate('reservacion.RES_FechaProgramada', '>=', $hoy->toDateString())
+                ->orderBy('reservacion.RES_FechaProgramada')
+                ->orderBy('t.TUR_Id')
+                ->select('reservacion.*', 'b.BAH_Nombre', 't.TUR_Nombre')
+                ->limit(6)
+                ->get();
         }
 
         return view('tenant_' . $tiponegocio . '.menu.home', $data);

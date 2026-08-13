@@ -1,0 +1,1264 @@
+:root {
+    --primary: #3B82F6;
+    --accent: #8B5CF6;
+    --bg-main: #0F172A;
+    --bg-sidebar: #111827;
+    --bg-card: #1E293B;
+    --text-main: #E2E8F0;
+    --text-muted: #94A3B8;
+    --success: #22C55E;
+    --danger: #F87171;
+}
+
+/* BODY */
+body {
+    background-color: var(--bg-main) !important;
+    color: var(--text-main);
+}
+
+/* HEADER */
+.main-header .navbar {
+    background: var(--bg-sidebar) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.main-header .navbar .nav-link {
+    color: var(--text-main) !important;
+}
+
+/* LOGO */
+.main-header .logo {
+    background: var(--bg-sidebar) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+
+
+
+/* =======================================================
+   SIDEBAR
+======================================================= */
+
+.main-sidebar{
+
+    background:var(--bg-sidebar) !important;
+
+    border-right:1px solid rgba(255,255,255,.06);
+
+    box-shadow:4px 0 25px rgba(0,0,0,.35);
+}
+
+
+.sidebar{
+    padding-left: .0rem;
+    padding-right: .0rem;
+}
+
+/* BRAND */
+
+.brand-link{
+
+    border-bottom:1px solid rgba(255,255,255,.06) !important;
+
+    background:var(--bg-sidebar) !important;
+}
+
+.brand-text{
+
+    color:var(--text-main) !important;
+
+    font-weight:600;
+}
+
+/* =======================================================
+   MENU LINKS
+======================================================= */
+
+.nav-sidebar .nav-link{
+    margin:4px 8px;
+    padding:10px 12px;
+    border-radius:14px;
+    transition:all .25s ease;
+    font-weight:500;
+    position:relative;
+    color: var(--text-muted);
+}
+
+.nav-sidebar .nav-link p {
+    color: var(--text-main);
+}
+
+/* HOVER */
+
+.nav-sidebar .nav-link:hover{
+    background:rgba(59,130,246,.15) !important;
+    color:var(--primary) !important;
+    transform:translateX(4px);
+}
+
+.nav-sidebar .nav-link:hover p {
+    color: var(--primary) !important;
+}
+
+/* ACTIVE */
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link{
+    background:linear-gradient(
+        135deg,
+        #3B82F6,
+        #8B5CF6
+    ) !important;
+    color:#fff !important;
+    border-radius:12px;
+    box-shadow:0 8px 20px rgba(59,130,246,.28);
+}
+
+/* ACTIVE ICON */
+
+.nav-pills .nav-link.active .nav-icon{
+
+    color:#fff !important;
+}
+
+.nav-pills .nav-link.active p{
+
+    color:#fff !important;
+
+    font-weight:600;
+}
+
+/* ACTIVE ARROW */
+
+.nav-pills .nav-link.active .right{
+
+    color:#fff !important;
+}
+
+/* ICONS */
+
+.nav-sidebar .nav-icon{
+
+    color:#94A3B8;
+
+    transition:all .25s ease;
+}
+
+.nav-sidebar .nav-link:hover .nav-icon{
+
+    color:var(--primary);
+}
+
+/* =======================================================
+   SUBMENU INDENT
+======================================================= */
+
+.nav-treeview{
+
+    padding-left:18px;
+
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* LINKS DEL SUBMENU */
+
+.nav-treeview .nav-link{
+
+    margin-left:14px;
+
+    padding-left:14px !important;
+
+    font-size:14px;
+
+    border-radius:10px;
+
+    position:relative;
+}
+
+
+
+
+/* MENU OPEN */
+
+.nav-item.menu-open > .nav-link{
+
+    background:rgba(59,130,246,.10);
+
+    color:var(--primary) !important;
+}
+
+/* =======================================================
+   SCROLLBAR
+======================================================= */
+
+.sidebar::-webkit-scrollbar{
+
+    width:6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+
+    background:#334155;
+
+    border-radius:10px;
+}
+
+
+
+/* CONTENT WRAPPER */
+.content-wrapper {
+    background: var(--bg-main) !important;
+    color: var(--text-main);
+}
+
+.content-header h1,
+.content-header .breadcrumb {
+    color: var(--text-main);
+}
+
+.content-header .breadcrumb-item.active {
+    color: var(--text-muted);
+}
+
+.content-header .breadcrumb-item a {
+    color: var(--primary);
+}
+
+/* CARDS / BOX */
+.box {
+    background: var(--bg-card) !important;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    padding: 20px;
+    color: var(--text-main);
+}
+
+.box-header {
+    color: var(--text-main);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.box-title {
+    color: var(--text-main);
+}
+
+/* BUTTON PRIMARY */
+/* ===== PRIMARY ===== */
+
+.btn-primary{
+
+    background: linear-gradient(
+        135deg,
+        #3B82F6,
+        #8B5CF6
+    ) !important;
+
+    border:none !important;
+
+    color:#fff !important;
+
+    border-radius:12px !important;
+
+    box-shadow:0 8px 20px rgba(59,130,246,.30);
+
+    transition:all .25s ease;
+}
+
+.btn-primary:hover{
+
+    transform:translateY(-1px);
+
+    box-shadow:0 12px 24px rgba(59,130,246,.40);
+}
+
+/* ===== SUCCESS ===== */
+
+.btn-success{
+
+    background: linear-gradient(
+        135deg,
+        #22C55E,
+        #16A34A
+    ) !important;
+
+    border:none !important;
+
+    color:#fff !important;
+
+    border-radius:12px !important;
+
+    box-shadow:0 8px 20px rgba(34,197,94,.28);
+
+    transition:all .25s ease;
+}
+
+.btn-success:hover{
+
+    transform:translateY(-1px);
+
+    box-shadow:0 12px 24px rgba(34,197,94,.38);
+}
+
+/* ===== DANGER ===== */
+
+.btn-danger{
+
+    background: linear-gradient(
+        135deg,
+        #EF4444,
+        #F43F5E
+    ) !important;
+
+    border:none !important;
+
+    color:#fff !important;
+
+    border-radius:12px !important;
+
+    box-shadow:0 8px 20px rgba(239,68,68,.28);
+
+    transition:all .25s ease;
+}
+
+.btn-danger:hover{
+
+    transform:translateY(-1px);
+
+    box-shadow:0 12px 24px rgba(239,68,68,.38);
+}
+
+/* ===== WARNING ===== */
+
+.btn-warning{
+
+    background: linear-gradient(
+        135deg,
+        #F59E0B,
+        #F97316
+    ) !important;
+
+    border:none !important;
+
+    color:#fff !important;
+
+    border-radius:12px !important;
+
+    box-shadow:0 8px 20px rgba(245,158,11,.28);
+
+    transition:all .25s ease;
+}
+
+.btn-warning:hover{
+
+    transform:translateY(-1px);
+
+    box-shadow:0 12px 24px rgba(245,158,11,.38);
+}
+
+/* ===== INFO ===== */
+
+.btn-info{
+
+    background: linear-gradient(
+        135deg,
+        #06B6D4,
+        #3B82F6
+    ) !important;
+
+    border:none !important;
+
+    color:#fff !important;
+
+    border-radius:12px !important;
+
+    box-shadow:0 8px 20px rgba(14,165,233,.28);
+
+    transition:all .25s ease;
+}
+
+.btn-info:hover{
+
+    transform:translateY(-1px);
+
+    box-shadow:0 12px 24px rgba(14,165,233,.38);
+}
+
+.btn-success-custom {
+    background: #1D4ED8;
+    color: white;
+    border-radius: 20px;
+}
+
+.btn-success-custom:hover {
+    opacity: 0.9;
+}
+
+/* BUTTON DEFAULT */
+.btn-default {
+    background: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    border-radius: 30px !important;
+}
+
+.btn-default:hover {
+    background: #273449 !important;
+}
+
+.btn-default:focus,
+.btn-default:active {
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25) !important;
+}
+
+.btn-kael-secondary {
+    background: var(--bg-card);
+    color: var(--text-main);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.btn-kael-secondary:hover {
+    background: #273449;
+}
+
+.btn-circle {
+    border-radius: 50% !important;
+    width: 32px;
+    height: 32px;
+    padding: 5px 0;
+}
+
+/* INPUTS */
+.form-control {
+    background: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    color: var(--text-main) !important;
+    border-radius: 10px;
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+    opacity: .8;
+}
+
+.form-control:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 235, 0.25);
+    background: #1E293B !important;
+    color: var(--text-main) !important;
+}
+
+select.form-control option {
+    background: #1E293B;
+    color: var(--text-main);
+}
+
+/* USER PANEL */
+.user-panel {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* DROPDOWN */
+.dropdown-menu {
+    background: var(--bg-card) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.dropdown-menu a {
+    color: var(--text-main) !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background: rgba(59, 130, 246, .12) !important;
+    color: var(--text-main) !important;
+}
+
+.dropdown-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ONLINE TEXT */
+.online-status {
+    color: var(--success);
+    font-weight: 600;
+}
+
+/* TABLE */
+
+/* Muchas vistas de listado (Turnos, Productos, Usuarios, Permisos, etc.)
+   traen un style="background:#FFF" inline en el .table-responsive. El
+   !important aquí es necesario para ganarle a ese inline (que no trae
+   !important propio). */
+.table-responsive {
+    background: transparent !important;
+}
+
+.table {
+    color: var(--text-main);
+}
+
+.table thead {
+    background: #172033 !important;
+}
+
+.table th {
+    color: var(--text-muted) !important;
+}
+
+.table td {
+    color: var(--text-main);
+}
+
+.table td,
+.table th {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.08);
+}
+
+/* DATATABLES */
+
+.dataTables_wrapper {
+    color: var(--text-main);
+}
+
+table.dataTable thead {
+    background: #172033 !important;
+}
+
+table.dataTable thead th {
+    color: var(--text-muted) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+table.dataTable tbody tr {
+    background: transparent !important;
+    color: var(--text-main);
+}
+
+table.dataTable.stripe tbody tr.odd,
+table.dataTable.table-striped tbody tr:nth-of-type(odd) {
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+table.dataTable tbody td {
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+table.dataTable tbody tr:hover {
+    background: rgba(59, 130, 246, 0.08) !important;
+}
+
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+    background: #1E293B !important;
+    color: var(--text-main) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter label {
+    color: var(--text-muted);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    color: var(--text-main) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--primary) !important;
+    color: #fff !important;
+    border-color: var(--primary) !important;
+}
+
+/* CARDS */
+
+.card-dark {
+    background: var(--bg-card);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    padding: 20px;
+    color: var(--text-main);
+}
+
+.card-header-dark {
+    border-left: 4px solid var(--primary);
+    padding-left: 12px;
+    margin-bottom: 20px;
+}
+
+.card-body-dark {
+    padding: 20px;
+    background: transparent;
+    /* importante */
+}
+
+/* Separación entre bloques */
+    .card-section {
+        margin-bottom: 20px;
+    }
+
+.card-footer-dark {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.card-footer {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding-top: 10px;
+    margin-top: 10px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+}
+
+.card-footer-left {
+
+    display: flex;
+    align-items: center;
+
+}
+
+.card-footer-right {
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+    flex-wrap: wrap;
+
+}
+
+
+/* KAEL PRODUCTOS */
+
+.kael-card {
+    background: var(--bg-card);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--text-main);
+}
+
+.kael-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.kael-body {
+    padding: 20px;
+    background: transparent;
+    /* importante */
+}
+
+.kael-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.kael-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.kael-file {
+    background: #1E293B;
+    color: var(--text-main);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+/* ================================= */
+/*           KAEL FOOTER             */
+/* ================================= */
+
+.kael-footer {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding-top: 10px;
+    margin-top: 10px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+}
+
+.kael-footer-left {
+
+    display: flex;
+    align-items: center;
+
+}
+
+.kael-footer-right {
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+    flex-wrap: wrap;
+
+}
+
+
+/* MODAL */
+
+.modal-content {
+    background: var(--bg-card) !important;
+    color: var(--text-main) !important;
+}
+
+.modal-header,
+.modal-footer {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.modal-body.panel-body {
+    background: transparent !important;
+}
+
+/* CLOSE BUTTONS (AdminLTE usa texto negro por defecto) */
+.close {
+    color: var(--text-main);
+    text-shadow: none;
+}
+
+/* SELECT2 */
+.select2-container--bootstrap4 .select2-selection,
+.select2-container--bootstrap4 .select2-dropdown {
+    background: #1E293B !important;
+    color: var(--text-main) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+.select2-container--bootstrap4 .select2-results__option--highlighted[aria-selected] {
+    background-color: rgba(59, 130, 246, .25) !important;
+}
+
+/* =======================================================
+   DASHBOARD (menu/home.blade.php trae su propio <style>
+   con colores fijos para claro; se sobreescribe con !important
+   porque ese <style> se imprime después de este <link>).
+======================================================= */
+
+.dashboard-title {
+    color: var(--text-main) !important;
+}
+
+.dashboard-subtitle {
+    color: var(--text-muted) !important;
+}
+
+.kpi-card,
+.dashboard-card {
+    background: var(--bg-card) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+}
+
+.kpi-title {
+    color: var(--text-muted) !important;
+}
+
+.kpi-value {
+    color: var(--text-main) !important;
+}
+
+.dashboard-card-title {
+    color: var(--text-main) !important;
+}
+
+.dashboard-table thead {
+    background: #172033 !important;
+}
+
+.dashboard-table thead th {
+    color: var(--text-muted) !important;
+}
+
+.dashboard-table tbody td {
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+    color: var(--text-main);
+}
+
+.dashboard-table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.08) !important;
+}
+
+.top-product-name {
+    color: var(--text-main) !important;
+}
+
+.top-product-sales {
+    color: var(--text-muted) !important;
+}
+
+.empty-state {
+    color: var(--text-muted) !important;
+}
+
+.section-subtitle {
+    color: var(--text-main) !important;
+}
+
+.progress {
+    background: #273449 !important;
+}
+
+/* =======================================================
+   RESERVACIONES SEMANALES (reservaciones/administracion/create)
+   Esta vista trae su propio <style> muy extenso con colores fijos
+   para claro; se sobreescribe con !important porque ese <style>
+   se imprime después de este <link>.
+======================================================= */
+
+.scheduler-logo,
+.reservation-header-icon,
+.detail-icon {
+    background: rgba(59, 130, 246, .15) !important;
+    color: #60A5FA !important;
+}
+
+.scheduler-title,
+.reservation-title,
+.reservation-detail strong {
+    color: var(--text-main) !important;
+}
+
+.scheduler-subtitle,
+.day-name,
+.turno-detalle,
+.kpi-info h6,
+.kpi-info small,
+.reservation-subtitle,
+.reservation-section-subtitle,
+.reservation-detail small {
+    color: var(--text-muted) !important;
+}
+
+.scheduler-btn,
+.scheduler-date {
+    background: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .35) !important;
+}
+
+.kpi-card {
+    background: var(--bg-card) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .35) !important;
+}
+
+.kpi-info h2 {
+    color: var(--text-main) !important;
+}
+
+.scheduler-container {
+    background: var(--bg-card) !important;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, .35) !important;
+}
+
+.scheduler-table thead th,
+.turno-cell {
+    background: #172033 !important;
+    color: var(--text-main) !important;
+}
+
+.turno-hora {
+    color: var(--text-main);
+}
+
+.day-date {
+    color: var(--text-main) !important;
+}
+
+/* Estados de bahía: se oscurece el fondo pastel pero se conserva el
+   acento de color (borde/badge) para que siga siendo reconocible. */
+.estado-disponible {
+    background: rgba(34, 197, 94, .12) !important;
+}
+
+.estado-pendiente {
+    background: rgba(245, 158, 11, .14) !important;
+}
+
+.estado-ocupado {
+    background: rgba(239, 68, 68, .14) !important;
+}
+
+.estado-mantenimiento {
+    background: rgba(148, 163, 184, .12) !important;
+}
+
+.ocupacion-badge {
+    background: rgba(255, 255, 255, .08) !important;
+    color: var(--text-main) !important;
+}
+
+/* MODAL DE RESERVA */
+.reservation-info {
+    background: rgba(59, 130, 246, .10) !important;
+}
+
+.reservation-section-title {
+    color: #93C5FD !important;
+}
+
+.reservation-form-card {
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.reservation-input {
+    background: #1E293B !important;
+    color: var(--text-main) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+.reservation-btn-danger {
+    background: rgba(239, 68, 68, .12) !important;
+    color: #FCA5A5 !important;
+    border: 1px solid rgba(239, 68, 68, .35) !important;
+}
+
+/* =======================================================
+   PUNTO DE VENTA (ventas/venta/create) — pantalla "Nueva Venta".
+   Trae su propio <style> con :root y colores fijos para claro;
+   se sobreescribe con !important porque ese <style> se imprime
+   después de este <link>.
+======================================================= */
+
+.pos-wrapper {
+    background: var(--bg-main) !important;
+}
+
+.pos-panel {
+    background: var(--bg-card) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, .35) !important;
+}
+
+.pos-title {
+    color: var(--text-main) !important;
+}
+
+.pos-subtitle,
+.product-description,
+.cart-price,
+.payment-box label {
+    color: var(--text-muted) !important;
+}
+
+.search-box {
+    background: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+.search-box input {
+    color: var(--text-main) !important;
+}
+
+.search-box input::placeholder {
+    color: var(--text-muted) !important;
+}
+
+.category-btn {
+    background: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    color: var(--text-main) !important;
+}
+
+.category-btn.active {
+    background: linear-gradient(135deg, #7C5CFF, #A78BFA) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}
+
+.product-card {
+    background: var(--bg-card) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.product-image,
+.cart-image {
+    background: #172033 !important;
+}
+
+.product-name,
+.cart-name {
+    color: var(--text-main) !important;
+}
+
+.product-price,
+.cart-total {
+    color: #A78BFA !important;
+}
+
+.cart-item {
+    background: var(--bg-card) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.qty-control {
+    background: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+.qty-btn {
+    background: transparent !important;
+    color: var(--text-main) !important;
+}
+
+.qty-value {
+    color: var(--text-main) !important;
+}
+
+.btn-remove {
+    background: rgba(239, 68, 68, .15) !important;
+    color: #FCA5A5 !important;
+}
+
+.payment-box {
+    background: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+.payment-box input {
+    background: transparent !important;
+    color: var(--text-main) !important;
+}
+
+.btn-load-more {
+    background: var(--bg-card) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    color: var(--text-main) !important;
+}
+
+.btn-load-more:hover {
+    background: #1E293B !important;
+}
+
+/* MODAL DE COBRO */
+.checkout-modal {
+    background: var(--bg-card) !important;
+}
+
+.checkout-title,
+.client-name,
+.client-modal-title,
+.client-item-name {
+    color: var(--text-main) !important;
+}
+
+.checkout-subtitle,
+.checkout-close,
+.client-subtitle,
+.client-modal-subtitle,
+.client-counter,
+.client-item-document,
+.client-item-phone,
+.client-search i {
+    color: var(--text-muted) !important;
+}
+
+.checkout-close:hover {
+    color: var(--text-main) !important;
+}
+
+.checkout-input,
+.client-search input {
+    background: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    color: var(--text-main) !important;
+}
+
+.client-selector {
+    background: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+.client-selector:hover {
+    background: #253248 !important;
+    border-color: var(--primary) !important;
+}
+
+.client-avatar,
+.client-action,
+.client-item-avatar {
+    background: #273449 !important;
+    color: var(--text-muted) !important;
+}
+
+.voucher-switch {
+    background: #172033 !important;
+}
+
+.voucher-option {
+    color: var(--text-muted) !important;
+}
+
+.payment-summary,
+.checkout-footer {
+    background: transparent !important;
+}
+
+.client-modal .modal-content {
+    background: var(--bg-card) !important;
+}
+
+.client-item {
+    background: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.btn-select-client {
+    background: #273449 !important;
+    color: var(--text-main) !important;
+}
+
+/* SMALL BOXES / INFO BOXES DEL DASHBOARD */
+.small-box,
+.info-box {
+    background: var(--bg-card) !important;
+    color: var(--text-main) !important;
+}
+
+.info-box-text,
+.info-box-number {
+    color: var(--text-main) !important;
+}
+
+/* =======================================================
+   BOOTSTRAP CARDS (.card / .card-body)
+   Muchas pantallas del panel (Productos, Categorías, etc.)
+   usan tarjetas Bootstrap normales en vez de .box de AdminLTE.
+======================================================= */
+
+.card {
+    background: var(--bg-card) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    color: var(--text-main);
+}
+
+.card-header {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: var(--text-main);
+}
+
+.card-footer {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.card-title,
+.card-text,
+.card-body {
+    color: var(--text-main);
+}
+
+.card-subtitle,
+.card-text.text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* LABELS / FORM TEXT */
+label,
+.control-label,
+.custom-file-label,
+.form-label,
+.form-text {
+    color: var(--text-main);
+}
+
+.custom-file-label {
+    background: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+.custom-file-label::after {
+    background: #273449 !important;
+    color: var(--text-main) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-dark {
+    color: var(--text-main) !important;
+}
+
+/* Select2 con etiqueta "Seleccionar..." (placeholder) */
+.select2-container--bootstrap4 .select2-selection__placeholder {
+    color: var(--text-muted) !important;
+}
+
+.select2-container--bootstrap4 .select2-selection__rendered {
+    color: var(--text-main) !important;
+}
+
+/* PAGINACIÓN (DataTables) */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    background: var(--bg-card) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    color: var(--text-main) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: rgba(59, 130, 246, .15) !important;
+    color: var(--text-main) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    color: var(--text-muted) !important;
+    opacity: .5;
+}
+
+/* Botones de paginación custom (no DataTables) tipo Bootstrap */
+.pagination .page-link {
+    background: var(--bg-card) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    color: var(--text-main) !important;
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: #fff !important;
+}
+
+.pagination .page-item.disabled .page-link {
+    background: transparent !important;
+    color: var(--text-muted) !important;
+}
+
+/* MODALES: títulos y textos secundarios */
+.modal-title {
+    color: var(--text-main) !important;
+}
+
+/* SWEETALERT2 */
+.swal2-popup {
+    background: var(--bg-card) !important;
+    color: var(--text-main) !important;
+}
+
+/* TOASTR (mantiene sus propios colores de fondo por tipo, solo ajustamos sombra) */
+#toast-container > div {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .45) !important;
+}

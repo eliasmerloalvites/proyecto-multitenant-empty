@@ -36,13 +36,16 @@ class AppServiceProvider extends ServiceProvider
         URL::forceScheme('https');
         } */
 
-        // El sidebar del panel (tallermoto/generico) usa $empresa (logo, nombre)
-        // sin depender de que cada controlador la pase manualmente. Se resuelve
-        // una sola vez por request y se cachea en memoria para no repetir la
-        // consulta si el sidebar se renderiza más de una vez en la misma vista.
+        // El sidebar y el layout del panel (tallermoto/generico) usan $empresa
+        // (logo, nombre, tema claro/oscuro) sin depender de que cada
+        // controlador la pase manualmente. Se resuelve una sola vez por
+        // request y se cachea en memoria para no repetir la consulta si la
+        // vista se renderiza más de una vez en la misma respuesta.
         View::composer([
             'tenant_tallermoto.partials.sidebar',
             'tenant_generico.partials.sidebar',
+            'tenant_tallermoto.layout.appAdminLte',
+            'tenant_generico.layout.appAdminLte',
         ], function ($view) {
             static $empresa = null;
             static $resuelto = false;
