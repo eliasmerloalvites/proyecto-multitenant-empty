@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
+use App\Models\Tenant\EmpresaFacturacion;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Stringable;
@@ -22,8 +23,12 @@ class UserController extends Controller
      */
     public function showlogin()
     {
+        if (Auth::guard('tenant')->check()) {
+            return redirect()->route('tenant.home');
+        }
 
-        return view('tenant_'.tenant('tipo_negocio').'.login');
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+        return view('tenant_'.tenant('tipo_negocio').'.login', compact('empresa'));
     }
 
     public function login(Request $request)

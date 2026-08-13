@@ -1,4 +1,4 @@
-@if ($dataProductos && $dataProductos->count() > 0)
+@if ($dataProductos && $dataProductos->count() > 0 && ($tiponegocio == 'plus' || $tiponegocio == 'empresarial' ))
 <main class="relative min-h-screen overflow-hidden">
     <div class="relative z-30 max-w-7xl mx-auto px-6 py-12">
         <div id="catalogo" class="space-y-8 pt-6">

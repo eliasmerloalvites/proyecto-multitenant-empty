@@ -286,8 +286,9 @@
 
 </div>
 
-{{-- KPI CARDS --}}
+{{-- KPI CARDS (Ventas/Inventario/Compras: solo Plus/Empresarial) --}}
 
+@if($mostrarVentas)
 <div class="row mb-4">
 
     <div class="col-lg-3 col-md-6 mb-3">
@@ -399,6 +400,7 @@
     </div>
 
 </div>
+@endif
 
 {{-- KPI TALLER --}}
 
@@ -477,8 +479,9 @@
 
 </div>
 
-{{-- CHARTS --}}
+{{-- CHARTS (Ventas/Inventario/Compras: solo Plus/Empresarial) --}}
 
+@if($mostrarVentas)
 <div class="row">
 
     <div class="col-lg-8">
@@ -521,9 +524,11 @@
     </div>
 
 </div>
+@endif
 
-{{-- TABLE + PRODUCTS --}}
+{{-- TABLE + PRODUCTS (Ventas/Inventario/Compras: solo Plus/Empresarial) --}}
 
+@if($mostrarVentas)
 <div class="row">
 
     <div class="col-lg-8">
@@ -623,6 +628,7 @@
     </div>
 
 </div>
+@endif
 
 </div>
 
@@ -630,6 +636,7 @@
 
 @section('script')
 
+@if($mostrarVentas)
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
@@ -744,5 +751,6 @@
     }
 
 </script>
+@endif
 
 @endsection

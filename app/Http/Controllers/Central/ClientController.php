@@ -349,6 +349,17 @@ class ClientController extends Controller
                     $tenant->storage_limit_mb = $planConfig['storage_limit_mb'];
                     $tenant->custom_domain_enabled = $planConfig['custom_domain_enabled'];
                     $tenant->custom_branding = $planConfig['custom_branding'];
+
+                    // Resincroniza módulos y límites del nuevo plan (mantenimientos/
+                    // productos/inventario/compras/ventas/...) para que tome efecto
+                    // de inmediato en el panel y en las rutas protegidas. Se preserva
+                    // el branding ya personalizado por el cliente, si existe (mismo
+                    // patrón que ClientController::store()).
+                    $tenant->modules = $planConfig['data']['modules'];
+                    $tenant->limits = $planConfig['data']['limits'];
+                    if (! $tenant->branding) {
+                        $tenant->branding = $planConfig['data']['branding'];
+                    }
                 }
 
                 $tenant->save();

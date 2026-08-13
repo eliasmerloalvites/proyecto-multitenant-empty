@@ -20,19 +20,22 @@ class HomeController extends Controller
     public function inicio()
     {
         $tenantid = null;
-        if(tenant() !== null){
+        if (tenant() !== null) {
             $tenantid = tenant('id');
             $tiponegocio = tenant('tipo_negocio');
             $plan = tenant('plan');
             $dataProductos = [];
-		    $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
-            if($plan == 'start'){
-                $colorview = $empresa->tipo_tema;
-                return view('tenant_'.$tiponegocio.'.welcome',compact('tenantid', 'plan','empresa', 'colorview'));
-            }else if($plan == 'basic'){
-                $colorview = $empresa->tipo_tema;
+            $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+            if ($plan == 'start') {
+                $colorview = $empresa->tipo_tema ?? 'dark';
+                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
+            }
 
-                // 1. Query Base para Productos con Lotes acumulados
+            // basic, plus y empresarial comparten la web completa (multi-página).
+            $colorview = $empresa->tipo_tema ?? 'dark';
+
+            if (tenant_has_module('productos')) {
+                // Plus/Empresarial: Query Base para Productos con Lotes acumulados
                 $queryProductos = DB::table('producto as pd')
                     ->join('categoria as ct', 'pd.CAT_Id', '=', 'ct.CAT_Id')
                     ->join('lote as lt', 'pd.PRO_Id', '=', 'lt.PRO_Id')
@@ -58,20 +61,17 @@ class HomeController extends Controller
                         'ct.CAT_Nombre'
                     );
 
-
                 // Paginación de 12 en 12 productos (Mantiene la query con string del buscador si aplica)
                 $dataProductos = $queryProductos->paginate(4)->withQueryString();
-                //dd($dataProductos);
-                return view('tenant_'.$tiponegocio.'.landing.index',compact('tenantid','empresa', 'plan', 'tiponegocio', 'colorview','dataProductos'));
-            } else if($plan == 'plus'){
-                $colorview = $empresa->tipo_tema;
-                return view('tenant_'.$tiponegocio.'.landing.index',compact('tenantid','empresa', 'plan', 'tiponegocio', 'colorview'));
+            } else {
+                // Basic: sin catálogo de productos habilitado.
+                $dataProductos = null;
             }
+            return view('tenant_' . $tiponegocio . '.landing.index', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'dataProductos'));
         } else {
             $tenantid = null;
-            return view('welcome',compact('tenantid'));
+            return view('welcome', compact('tenantid'));
         }
-        
     }
 
     public function salir()

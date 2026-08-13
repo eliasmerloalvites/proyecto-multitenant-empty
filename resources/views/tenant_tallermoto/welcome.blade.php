@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>{{ $empresa->nombre ?? 'Moto Center' }}</title>
+    <title>{{ $empresa->nombre_comercial ?? $empresa->razon_social ?? 'Mi Negocio' }}</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -24,16 +24,31 @@
 <body class="bg-gray-100 text-slate-800">
 
     @php
-        $empresa = $empresa ?? (object) [
-            'nombre' => 'MOTO CENTER',
-            'descripcion' => 'Especialistas en mantenimiento y reparación de motos.',
-            'telefono' => '987654321',
-            'whatsapp' => '51987654321',
-            'direccion' => 'Av. Principal 123 - Lima',
-            'horario' => 'Lunes a Sábado 8:00am - 7:00pm',
-            'banner' => null,
-            'logo' => null,
-        ];
+        // La web básica del plan Start muestra los datos reales del negocio
+        // (EmpresaFacturacion) en vez de placeholders fijos. Si el tenant aún
+        // no configuró su empresa, se usa un valor de respaldo neutro.
+        $empresa = $empresa ?? null;
+
+        $nombreNegocio = $empresa->nombre_comercial ?? $empresa->razon_social ?? 'Mi Negocio';
+        $descripcionNegocio = 'Especialistas en mantenimiento y reparación de motos.';
+        $direccionNegocio = $empresa->direccion ?? 'Consultar con el negocio';
+        $telefonoNegocio = $empresa->telefono ?? '';
+        $whatsappNegocio = $empresa->whatsapp ?? $telefonoNegocio;
+        $logoNegocio = $empresa->logo ?? null;
+        $bannerNegocio = $empresa->logo_portada1 ?? null;
+
+        $horarioTexto = \Illuminate\Support\Facades\DB::table('horario as h')
+            ->join('turno as t', 't.TUR_Id', '=', 'h.TUR_Id')
+            ->where('h.HOR_Estado', 'ACT')
+            ->where('t.TUR_Estado', 'ACT')
+            ->orderBy('h.HOR_Id')
+            ->pluck('t.TUR_Nombre', 'h.HOR_Dia')
+            ->map(fn ($turno, $dia) => "$dia: $turno")
+            ->implode(' · ');
+
+        if (empty($horarioTexto)) {
+            $horarioTexto = 'Consulta nuestro horario de atención';
+        }
     @endphp
 
     <!-- HEADER -->
@@ -46,8 +61,8 @@
                 <div
                     class="w-12 h-12 rounded-lg bg-slate-900 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} flex items-center justify-center font-bold text-lg overflow-hidden">
 
-                    @if(!empty($empresa->logo))
-                        <img src="{{ asset($empresa->logo) }}"
+                    @if(!empty($logoNegocio))
+                        <img src="{{ asset($logoNegocio) }}"
                             class="w-full h-full object-cover">
                     @else
                         🏍️
@@ -58,7 +73,7 @@
                 <div>
 
                     <h1 class="font-extrabold text-xl">
-                        {{ $empresa->nombre }}
+                        {{ $nombreNegocio }}
                     </h1>
 
                     <p class="text-sm text-slate-500">
@@ -76,7 +91,7 @@
                     Acceso empleados
                 </a>
 
-                <a href="https://wa.me/{{ $empresa->whatsapp }}"
+                <a href="https://wa.me/{{ $whatsappNegocio }}"
                     target="_blank"
                     class="bg-green-500 hover:bg-green-600 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} px-5 py-2.5 rounded-lg font-semibold transition">
                     WhatsApp
@@ -105,12 +120,12 @@
                 </h2>
 
                 <p class="text-slate-600 text-lg leading-relaxed mb-8">
-                    {{ $empresa->descripcion }}
+                    {{ $descripcionNegocio }}
                 </p>
 
                 <div class="flex flex-wrap gap-4">
 
-                    <a href="https://wa.me/{{ $empresa->whatsapp }}"
+                    <a href="https://wa.me/{{ $whatsappNegocio }}"
                         target="_blank"
                         class="bg-slate-900 hover:bg-slate-800 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} px-6 py-3 rounded-lg font-semibold transition">
                         Solicitar atención
@@ -128,7 +143,7 @@
             <div>
 
                 <img
-                    src="{{ $empresa->banner ? asset($empresa->banner) : 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?q=80&w=1400&auto=format&fit=crop' }}"
+                    src="{{ $bannerNegocio ? asset($bannerNegocio) : 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?q=80&w=1400&auto=format&fit=crop' }}"
                     class="rounded-2xl w-full h-[380px] object-cover border border-gray-200">
 
             </div>
@@ -238,7 +253,7 @@
                         </h3>
 
                         <p class="text-slate-500">
-                            {{ $empresa->direccion }}
+                            {{ $direccionNegocio }}
                         </p>
 
                     </div>
@@ -250,7 +265,7 @@
                         </h3>
 
                         <p class="text-slate-500">
-                            {{ $empresa->telefono }}
+                            {{ $telefonoNegocio }}
                         </p>
 
                     </div>
@@ -262,7 +277,7 @@
                         </h3>
 
                         <p class="text-slate-500">
-                            {{ $empresa->horario }}
+                            {{ $horarioTexto }}
                         </p>
 
                     </div>
@@ -271,7 +286,7 @@
 
                 <div class="mt-10">
 
-                    <a href="https://wa.me/{{ $empresa->whatsapp }}"
+                    <a href="https://wa.me/{{ $whatsappNegocio }}"
                         target="_blank"
                         class="inline-block bg-green-500 hover:bg-green-600 {{ $colorview == 'dark' ? 'text-gray-400' : 'text-gray-600' }} px-8 py-4 rounded-xl font-bold transition">
                         Contactar por WhatsApp
@@ -292,7 +307,7 @@
             class="max-w-6xl mx-auto px-5 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
 
             <p class="text-sm text-slate-400">
-                © {{ date('Y') }} {{ $empresa->nombre }} - Todos los derechos reservados
+                © {{ date('Y') }} {{ $nombreNegocio }} - Todos los derechos reservados
             </p>
 
             <a href="{{ tenant_url('tenant.login') }}"

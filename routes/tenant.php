@@ -100,7 +100,13 @@ Route::middleware([
         Route::get('/tenant/home', [HomeController::class,'index'])->name('tenant.home');
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');
         
-        // RESERVACIONES ADMINISTRACION
+        //REPORTES
+        Route::get('/tenant/reportes/listageneral',[ReportesController::class, 'listageneral'])->name('tenant.reportes.listageneral');
+        Route::post('/tenant/reportes/listageneral1',[ReportesController::class, 'listageneral1'])->name('tenant.reportes.listageneral1');
+
+    Route::middleware(['tenant.module:mantenimientos'])->group(function () {
+
+        // RESERVACIONES ADMINISTRACION (parte del flujo de Mantenimientos)
         Route::resource('/tenant/reservaciones/administracion', ReservacionController::class)->names([
             'index' => 'tenant.reservaciones.administracion.index',
             'create' => 'tenant.reservaciones.administracion.create',
@@ -112,10 +118,6 @@ Route::middleware([
         ])->parameters([
             'reservacion' => 'reservacion'
         ]);
-          
-        //REPORTES
-        Route::get('/tenant/reportes/listageneral',[ReportesController::class, 'listageneral'])->name('tenant.reportes.listageneral');
-        Route::post('/tenant/reportes/listageneral1',[ReportesController::class, 'listageneral1'])->name('tenant.reportes.listageneral1');
 
         Route::post('/tenant/mantenimientos/preventivocarburada/{preventivocarburada}/crop',[MantenimientoPreventivoCarburadaController::class, 'crop'])->name('tenant.mantenimientos.preventivocarburada.crop');
         Route::delete('/tenant/mantenimientos/preventivocarburada/crop/{preventivocarburada}/{item}',[MantenimientoPreventivoCarburadaController::class, 'destroyimagen'])->name('tenant.mantenimientos.preventivocarburada.destroyimagen');
@@ -194,6 +196,8 @@ Route::middleware([
             'mantenimientoactividadvariada' => 'mantenimientoactividadvariada'
         ]);
 
+    });
+
         Route::put('/tenant/configuracion/horario/{horario}/activar', [HorarioController::class, 'activar'])->name('tenant.configuracion.horario.activar');
         Route::resource('/tenant/configuracion/horario', HorarioController::class)->names([
             'index' => 'tenant.configuracion.horario.index',
@@ -233,136 +237,155 @@ Route::middleware([
             'turno' => 'turno'
         ]);
         
-        Route::get('/tenant/ventas/venta/productos',[VentaController::class, 'getProductos'])->name('tenant.ventas.venta.productos');
-        Route::get('/tenant/ventas/venta/searchClientes',[VentaController::class, 'searchClientes'])->name('tenant.ventas.venta.searchClientes');
-        Route::post('/tenant/ventas/venta/createCliente',[VentaController::class, 'createCliente'])->name('tenant.ventas.venta.createCliente');
-        Route::resource('/tenant/ventas/venta', VentaController::class)->names([
-            'index' => 'tenant.ventas.venta.index',
-            'create' => 'tenant.ventas.venta.create',
-            'store' => 'tenant.ventas.venta.store',
-            'edit' => 'tenant.ventas.venta.edit',
-            'update' => 'tenant.ventas.venta.update',
-            'destroy' => 'tenant.ventas.venta.destroy',
-            'show' => 'tenant.ventas.venta.show'
-        ])->parameters([
-            'venta' => 'venta'
-        ]);
+        Route::middleware(['tenant.module:ventas'])->group(function () {
+            Route::get('/tenant/ventas/venta/productos',[VentaController::class, 'getProductos'])->name('tenant.ventas.venta.productos');
+            Route::get('/tenant/ventas/venta/searchClientes',[VentaController::class, 'searchClientes'])->name('tenant.ventas.venta.searchClientes');
+            Route::post('/tenant/ventas/venta/createCliente',[VentaController::class, 'createCliente'])->name('tenant.ventas.venta.createCliente');
+            Route::resource('/tenant/ventas/venta', VentaController::class)->names([
+                'index' => 'tenant.ventas.venta.index',
+                'create' => 'tenant.ventas.venta.create',
+                'store' => 'tenant.ventas.venta.store',
+                'edit' => 'tenant.ventas.venta.edit',
+                'update' => 'tenant.ventas.venta.update',
+                'destroy' => 'tenant.ventas.venta.destroy',
+                'show' => 'tenant.ventas.venta.show'
+            ])->parameters([
+                'venta' => 'venta'
+            ]);
 
-        Route::resource('/tenant/compras/compra', CompraController::class)->names([
-            'index' => 'tenant.compras.compra.index',
-            'create' => 'tenant.compras.compra.create',
-            'store' => 'tenant.compras.compra.store',
-            'edit' => 'tenant.compras.compra.edit',
-            'update' => 'tenant.compras.compra.update',
-            'destroy' => 'tenant.compras.compra.destroy',
-            'show' => 'tenant.compras.compra.show'
-        ])->parameters([
-            'compra' => 'compra'
-        ]);
+            Route::resource('/tenant/ventas/cliente', ClienteController::class)->names([
+                'index' => 'tenant.ventas.cliente.index',
+                'create' => 'tenant.ventas.cliente.create',
+                'store' => 'tenant.ventas.cliente.store',
+                'edit' => 'tenant.ventas.cliente.edit',
+                'update' => 'tenant.ventas.cliente.update',
+                'destroy' => 'tenant.ventas.cliente.destroy',
+                'show' => 'tenant.ventas.cliente.show'
+            ])->parameters([
+                'cliente' => 'cliente'
+            ]);
 
+            Route::get('/tenant/ventas/venta/{id}/ticket', [VentaController::class,'ticket'] )->name('tenant.ventas.venta.ticket');
+            Route::get('/tenant/ventas/venta/{id}/pdf', [VentaController::class,'pdf'] )->name('tenant.ventas.venta.pdf');
+            Route::get('/tenant/ventas/venta/filtro/{filtro}', [VentaController::class,'filtro'] )->name('tenant.ventas.venta.filtro');
+            Route::get('/tenant/ventas/venta/{id}/ticket-imagen',[VentaController::class, 'ticketImagen'])->name('tenant.ventas.venta.ticket-imagen');
 
-        Route::resource('/tenant/ventas/cliente', ClienteController::class)->names([
-            'index' => 'tenant.ventas.cliente.index',
-            'create' => 'tenant.ventas.cliente.create',
-            'store' => 'tenant.ventas.cliente.store',
-            'edit' => 'tenant.ventas.cliente.edit',
-            'update' => 'tenant.ventas.cliente.update',
-            'destroy' => 'tenant.ventas.cliente.destroy',
-            'show' => 'tenant.ventas.cliente.show'
-        ])->parameters([
-            'cliente' => 'cliente'
-        ]);
-        
-        Route::get('/tenant/ventas/venta/{id}/ticket', [VentaController::class,'ticket'] )->name('tenant.ventas.venta.ticket');
-        Route::get('/tenant/ventas/venta/{id}/pdf', [VentaController::class,'pdf'] )->name('tenant.ventas.venta.pdf');
-        Route::get('/tenant/ventas/venta/filtro/{filtro}', [VentaController::class,'filtro'] )->name('tenant.ventas.venta.filtro');
-        Route::get('/tenant/ventas/venta/{id}/ticket-imagen',[VentaController::class, 'ticketImagen'])->name('tenant.ventas.venta.ticket-imagen');
+            Route::resource('/tenant/ventas/metodopago', MetodoPagoController::class)->names([
+                'index' => 'tenant.ventas.metodopago.index',
+                'create' => 'tenant.ventas.metodopago.create',
+                'store' => 'tenant.ventas.metodopago.store',
+                'edit' => 'tenant.ventas.metodopago.edit',
+                'update' => 'tenant.ventas.metodopago.update',
+                'destroy' => 'tenant.ventas.metodopago.destroy',
+                'show' => 'tenant.ventas.metodopago.show'
+            ])->parameters([
+                'metodopago' => 'metodopago'
+            ]);
+        });
 
-        Route::resource('/tenant/compras/proveedor', ProveedorController::class)->names([
-            'index' => 'tenant.compras.proveedor.index',
-            'create' => 'tenant.compras.proveedor.create',
-            'store' => 'tenant.compras.proveedor.store',
-            'edit' => 'tenant.compras.proveedor.edit',
-            'update' => 'tenant.compras.proveedor.update',
-            'destroy' => 'tenant.compras.proveedor.destroy',
-            'show' => 'tenant.compras.proveedor.show'
-        ])->parameters([
-            'proveedor' => 'proveedor'
-        ]);
+        Route::middleware(['tenant.module:compras'])->group(function () {
+            Route::resource('/tenant/compras/compra', CompraController::class)->names([
+                'index' => 'tenant.compras.compra.index',
+                'create' => 'tenant.compras.compra.create',
+                'store' => 'tenant.compras.compra.store',
+                'edit' => 'tenant.compras.compra.edit',
+                'update' => 'tenant.compras.compra.update',
+                'destroy' => 'tenant.compras.compra.destroy',
+                'show' => 'tenant.compras.compra.show'
+            ])->parameters([
+                'compra' => 'compra'
+            ]);
 
-        
-        Route::resource('/tenant/ventas/metodopago', MetodoPagoController::class)->names([
-            'index' => 'tenant.ventas.metodopago.index',
-            'create' => 'tenant.ventas.metodopago.create',
-            'store' => 'tenant.ventas.metodopago.store',
-            'edit' => 'tenant.ventas.metodopago.edit',
-            'update' => 'tenant.ventas.metodopago.update',
-            'destroy' => 'tenant.ventas.metodopago.destroy',
-            'show' => 'tenant.ventas.metodopago.show'
-        ])->parameters([
-            'metodopago' => 'metodopago'
-        ]);
+            Route::resource('/tenant/compras/proveedor', ProveedorController::class)->names([
+                'index' => 'tenant.compras.proveedor.index',
+                'create' => 'tenant.compras.proveedor.create',
+                'store' => 'tenant.compras.proveedor.store',
+                'edit' => 'tenant.compras.proveedor.edit',
+                'update' => 'tenant.compras.proveedor.update',
+                'destroy' => 'tenant.compras.proveedor.destroy',
+                'show' => 'tenant.compras.proveedor.show'
+            ])->parameters([
+                'proveedor' => 'proveedor'
+            ]);
 
-        Route::resource('/tenant/compras/gasto', GastoController::class)->names([
-            'index' => 'tenant.compras.gasto.index',
-            'create' => 'tenant.compras.gasto.create',
-            'store' => 'tenant.compras.gasto.store',
-            'edit' => 'tenant.compras.gasto.edit',
-            'update' => 'tenant.compras.gasto.update',
-            'destroy' => 'tenant.compras.gasto.destroy',
-            'show' => 'tenant.compras.gasto.show'
-        ])->parameters([
-            'gasto' => 'gasto'
-        ]);
-        
-        Route::resource('/tenant/compras/tipogasto', TipoGastoController::class)->names([
-            'index' => 'tenant.compras.tipogasto.index',
-            'create' => 'tenant.compras.tipogasto.create',
-            'store' => 'tenant.compras.tipogasto.store',
-            'edit' => 'tenant.compras.tipogasto.edit',
-            'update' => 'tenant.compras.tipogasto.update',
-            'destroy' => 'tenant.compras.tipogasto.destroy',
-            'show' => 'tenant.compras.tipogasto.show'
-        ])->parameters([
-            'tipogasto' => 'tipogasto'
-        ]);
-        
-        Route::get('/tenant/inventario/controlinventario', [ProductoController::class,'controlinventario'] )->name('tenant.inventario.controlinventario.index');
-        Route::get('/tenant/inventario/controlinventario/{producto}', [ProductoController::class,'lotes'] )->name('tenant.inventario.controlinventario.lotes');
-        Route::get('/tenant/inventario/controlinventario/kardex/{producto}', [ProductoController::class,'kardex'] )->name('tenant.inventario.controlinventario.kardex');
-        Route::resource('/tenant/inventario/producto', ProductoController::class)->names([
-            'index' => 'tenant.inventario.producto.index',
-            'create' => 'tenant.inventario.producto.create',
-            'store' => 'tenant.inventario.producto.store',
-            'edit' => 'tenant.inventario.producto.edit',
-            'update' => 'tenant.inventario.producto.update',
-            'destroy' => 'tenant.inventario.producto.destroy',
-            'show' => 'tenant.inventario.producto.show',
-        ])->parameters([
-            'producto' => 'producto'
-        ]);
+            Route::resource('/tenant/compras/gasto', GastoController::class)->names([
+                'index' => 'tenant.compras.gasto.index',
+                'create' => 'tenant.compras.gasto.create',
+                'store' => 'tenant.compras.gasto.store',
+                'edit' => 'tenant.compras.gasto.edit',
+                'update' => 'tenant.compras.gasto.update',
+                'destroy' => 'tenant.compras.gasto.destroy',
+                'show' => 'tenant.compras.gasto.show'
+            ])->parameters([
+                'gasto' => 'gasto'
+            ]);
 
-        Route::resource('/tenant/inventario/categoria', CategoriaController::class)->names([
-            'index' => 'tenant.inventario.categoria.index',
-            'create' => 'tenant.inventario.categoria.create',
-            'store' => 'tenant.inventario.categoria.store',
-            'edit' => 'tenant.inventario.categoria.edit',
-            'update' => 'tenant.inventario.categoria.update',
-            'destroy' => 'tenant.inventario.categoria.destroy',
-            'show' => 'tenant.inventario.categoria.show'
-        ])->parameters([
-            'categoria' => 'categoria'
-        ]);
+            Route::resource('/tenant/compras/tipogasto', TipoGastoController::class)->names([
+                'index' => 'tenant.compras.tipogasto.index',
+                'create' => 'tenant.compras.tipogasto.create',
+                'store' => 'tenant.compras.tipogasto.store',
+                'edit' => 'tenant.compras.tipogasto.edit',
+                'update' => 'tenant.compras.tipogasto.update',
+                'destroy' => 'tenant.compras.tipogasto.destroy',
+                'show' => 'tenant.compras.tipogasto.show'
+            ])->parameters([
+                'tipogasto' => 'tipogasto'
+            ]);
+        });
 
-        Route::resource('/tenant/inventario/clase', ClaseController::class)->names([
-            'index' => 'tenant.inventario.clase.index',
-            'create' => 'tenant.inventario.clase.create',
-            'store' => 'tenant.inventario.clase.store',
-            'edit' => 'tenant.inventario.clase.edit',
-            'update' => 'tenant.inventario.clase.update',
-            'destroy' => 'tenant.inventario.clase.destroy',
-            'show' => 'tenant.inventario.clase.show'
-        ]);
+        Route::middleware(['tenant.module:productos'])->group(function () {
+            Route::resource('/tenant/inventario/producto', ProductoController::class)->names([
+                'index' => 'tenant.inventario.producto.index',
+                'create' => 'tenant.inventario.producto.create',
+                'store' => 'tenant.inventario.producto.store',
+                'edit' => 'tenant.inventario.producto.edit',
+                'update' => 'tenant.inventario.producto.update',
+                'destroy' => 'tenant.inventario.producto.destroy',
+                'show' => 'tenant.inventario.producto.show',
+            ])->parameters([
+                'producto' => 'producto'
+            ]);
+        });
+
+        Route::middleware(['tenant.module:inventario'])->group(function () {
+            Route::get('/tenant/inventario/controlinventario', [ProductoController::class,'controlinventario'] )->name('tenant.inventario.controlinventario.index');
+            Route::get('/tenant/inventario/controlinventario/{producto}', [ProductoController::class,'lotes'] )->name('tenant.inventario.controlinventario.lotes');
+            Route::get('/tenant/inventario/controlinventario/kardex/{producto}', [ProductoController::class,'kardex'] )->name('tenant.inventario.controlinventario.kardex');
+
+            Route::resource('/tenant/inventario/categoria', CategoriaController::class)->names([
+                'index' => 'tenant.inventario.categoria.index',
+                'create' => 'tenant.inventario.categoria.create',
+                'store' => 'tenant.inventario.categoria.store',
+                'edit' => 'tenant.inventario.categoria.edit',
+                'update' => 'tenant.inventario.categoria.update',
+                'destroy' => 'tenant.inventario.categoria.destroy',
+                'show' => 'tenant.inventario.categoria.show'
+            ])->parameters([
+                'categoria' => 'categoria'
+            ]);
+
+            Route::resource('/tenant/inventario/clase', ClaseController::class)->names([
+                'index' => 'tenant.inventario.clase.index',
+                'create' => 'tenant.inventario.clase.create',
+                'store' => 'tenant.inventario.clase.store',
+                'edit' => 'tenant.inventario.clase.edit',
+                'update' => 'tenant.inventario.clase.update',
+                'destroy' => 'tenant.inventario.clase.destroy',
+                'show' => 'tenant.inventario.clase.show'
+            ]);
+
+            Route::resource('/tenant/inventario/almacen', AlmacenController::class)->names([
+                'index' => 'tenant.inventario.almacen.index',
+                'create' => 'tenant.inventario.almacen.create',
+                'store' => 'tenant.inventario.almacen.store',
+                'edit' => 'tenant.inventario.almacen.edit',
+                'update' => 'tenant.inventario.almacen.update',
+                'destroy' => 'tenant.inventario.almacen.destroy',
+                'show' => 'tenant.inventario.almacen.show'
+            ])->parameters([
+                'almacen' => 'almacen'
+            ]);
+        });
 
         Route::resource('/tenant/configuracion/empresa', EmpresaFacturacionController::class)->names([
             'index' => 'tenant.configuracion.empresa.index',
@@ -386,18 +409,6 @@ Route::middleware([
             'show' => 'tenant.configuracion.sede.show'
         ])->parameters([
             'sede' => 'sede'
-        ]);
-
-        Route::resource('/tenant/inventario/almacen', AlmacenController::class)->names([
-            'index' => 'tenant.inventario.almacen.index',
-            'create' => 'tenant.inventario.almacen.create',
-            'store' => 'tenant.inventario.almacen.store',
-            'edit' => 'tenant.inventario.almacen.edit',
-            'update' => 'tenant.inventario.almacen.update',
-            'destroy' => 'tenant.inventario.almacen.destroy',
-            'show' => 'tenant.inventario.almacen.show'
-        ])->parameters([
-            'almacen' => 'almacen'
         ]);
 
         Route::resource('/tenant/seguridad/usuario', UserController::class)->names([

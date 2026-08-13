@@ -23,11 +23,16 @@ return [
                     'primary_color' => '#0B63CE',
                 ],
 
+                // mantenimientos incluye el flujo de reservas (agenda de servicios)
                 'modules' => [
-                    'agenda' => true,
+                    'mantenimientos' => true,
+                    'productos' => false,
+                    'inventario' => false,
+                    'compras' => false,
+                    'ventas' => false,
                     'reports' => false,
-                    'inventory' => true,
-                    'sales' => true,
+                    'analytics' => false,
+                    'api_access' => false,
                 ],
 
                 'limits' => [
@@ -56,10 +61,14 @@ return [
                 ],
 
                 'modules' => [
-                    'agenda' => true,
+                    'mantenimientos' => true,
+                    'productos' => false,
+                    'inventario' => false,
+                    'compras' => false,
+                    'ventas' => false,
                     'reports' => true,
-                    'inventory' => true,
-                    'sales' => true,
+                    'analytics' => false,
+                    'api_access' => false,
                 ],
 
                 'limits' => [
@@ -88,11 +97,14 @@ return [
                 ],
 
                 'modules' => [
-                    'agenda' => true,
+                    'mantenimientos' => true,
+                    'productos' => true,
+                    'inventario' => true,
+                    'compras' => true,
+                    'ventas' => true,
                     'reports' => true,
-                    'inventory' => true,
-                    'sales' => true,
                     'analytics' => true,
+                    'api_access' => false,
                 ],
 
                 'limits' => [
@@ -121,10 +133,12 @@ return [
                 ],
 
                 'modules' => [
-                    'agenda' => true,
+                    'mantenimientos' => true,
+                    'productos' => true,
+                    'inventario' => true,
+                    'compras' => true,
+                    'ventas' => true,
                     'reports' => true,
-                    'inventory' => true,
-                    'sales' => true,
                     'analytics' => true,
                     'api_access' => true,
                 ],
@@ -134,6 +148,11 @@ return [
                     'warehouses' => 50,
                     'cash_registers' => 50,
                 ],
+
+                // Plan Empresarial: base para personalizaciones específicas por cliente.
+                // Sobrescribir/añadir claves aquí a nivel de tenant (tenant.data) según
+                // lo que se acuerde con cada cliente, sin tocar este config global.
+                'customizable' => true,
 
             ],
         ],

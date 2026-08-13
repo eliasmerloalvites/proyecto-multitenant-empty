@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\PreventAccessFromTenant;
 use App\Http\Middleware\EnsureTenantIsActive;
+use App\Http\Middleware\EnsureTenantHasModule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'no-tenant' => PreventAccessFromTenant::class,
             'tenant.active' => EnsureTenantIsActive::class,
+            'tenant.module' => EnsureTenantHasModule::class,
         ]);
 
         $middleware->redirectGuestsTo(function () {

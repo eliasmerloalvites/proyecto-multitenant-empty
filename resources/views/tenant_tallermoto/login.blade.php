@@ -59,8 +59,8 @@
         <div class="bg-brand-cardBg border border-brand-border/60 rounded-2xl shadow-2xl p-8 backdrop-blur-md">
             
             <!-- Logo y Encabezado -->
-            <div class="text-center mb-8">
-                <img src="/images/login/logo_kael.png" alt="KAEL Logo" class="h-14 mx-auto mb-3 object-contain" />
+            <div class="text-center mb-8"> 
+                <img src="{{ !empty($empresa->logo_pdf) ? asset_root($empresa->logo_pdf) : asset_root('images/icono.jpg') }}" alt="KAEL Logo" class="h-14 mx-auto mb-3 object-contain" />
                 <span class="inline-block px-3 py-1 bg-brand-red/10 text-brand-red text-xs font-semibold rounded-full border border-brand-red/20 uppercase tracking-wider">
                     Panel Administrativo
                 </span>

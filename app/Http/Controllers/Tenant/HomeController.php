@@ -30,157 +30,165 @@ class HomeController extends Controller
 
         $hoy = Carbon::now('America/Lima');
 
-        // Expresión reutilizada en todo el dashboard para el importe real de
-        // una línea de venta (misma fórmula que usa VentaController).
-        $totalVentaExpr = '(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento';
+        // El dashboard comercial (ventas, gastos, stock, top productos) solo
+        // aplica a planes con Productos/Inventario/Compras/Ventas habilitados
+        // (Plus/Empresarial). Start/Basic no pueden realizar esas acciones,
+        // así que ni se consultan esas tablas ni se muestran esas tarjetas.
+        $mostrarVentas = tenant_has_module('ventas') || tenant_has_module('inventario') || tenant_has_module('compras');
 
-        // ================= KPIs =================
+        $data = compact('tenantid', 'tiponegocio', 'mostrarVentas');
 
-        $ventasHoy = (float) DB::table('venta as v')
-            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
-            ->where('v.VEN_Status', 1)
-            ->whereDate('v.created_at', $hoy->toDateString())
-            ->sum(DB::raw($totalVentaExpr));
+        if ($mostrarVentas) {
+            // Expresión reutilizada en todo el dashboard para el importe real
+            // de una línea de venta (misma fórmula que usa VentaController).
+            $totalVentaExpr = '(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento';
 
-        $ventasAyer = (float) DB::table('venta as v')
-            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
-            ->where('v.VEN_Status', 1)
-            ->whereDate('v.created_at', $hoy->copy()->subDay()->toDateString())
-            ->sum(DB::raw($totalVentaExpr));
+            // ================= KPIs =================
 
-        $ingresosMes = (float) DB::table('venta as v')
-            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
-            ->where('v.VEN_Status', 1)
-            ->whereYear('v.created_at', $hoy->year)
-            ->whereMonth('v.created_at', $hoy->month)
-            ->sum(DB::raw($totalVentaExpr));
-
-        $mesAnterior = $hoy->copy()->subMonthNoOverflow();
-        $ingresosMesAnterior = (float) DB::table('venta as v')
-            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
-            ->where('v.VEN_Status', 1)
-            ->whereYear('v.created_at', $mesAnterior->year)
-            ->whereMonth('v.created_at', $mesAnterior->month)
-            ->sum(DB::raw($totalVentaExpr));
-
-        // GAS_Fecha es nullable en BD, por eso se filtra directo sobre ella
-        // (gasto no tiene timestamps habilitados).
-        $gastosMes = (float) DB::table('gasto')
-            ->where('GAS_Status', 1)
-            ->whereYear('GAS_Fecha', $hoy->year)
-            ->whereMonth('GAS_Fecha', $hoy->month)
-            ->sum('GAS_Monto');
-
-        $gastosMesAnterior = (float) DB::table('gasto')
-            ->where('GAS_Status', 1)
-            ->whereYear('GAS_Fecha', $mesAnterior->year)
-            ->whereMonth('GAS_Fecha', $mesAnterior->month)
-            ->sum('GAS_Monto');
-
-        $stockBajo = DB::table('producto as p')
-            ->leftJoin('lote as l', 'l.PRO_Id', '=', 'p.PRO_Id')
-            ->where('p.PRO_Status', 1)
-            ->selectRaw('p.PRO_Id')
-            ->groupBy('p.PRO_Id')
-            ->havingRaw('COALESCE(SUM(l.LOT_CantidadReal), 0) <= ?', [self::STOCK_BAJO_LIMITE])
-            ->get()
-            ->count();
-
-        $crecimientoVentas = $this->crecimientoPorcentual($ventasHoy, $ventasAyer);
-        $crecimientoIngresos = $this->crecimientoPorcentual($ingresosMes, $ingresosMesAnterior);
-        $crecimientoGastos = $this->crecimientoPorcentual($gastosMes, $gastosMesAnterior);
-
-        // ================= CHART: VENTAS VS GASTOS (últimos 6 meses) =================
-
-        $mesesEs = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-        $labelsMeses = [];
-        $serieVentasMensual = [];
-        $serieGastosMensual = [];
-
-        for ($i = 5; $i >= 0; $i--) {
-            $mesRef = $hoy->copy()->subMonthsNoOverflow($i);
-            $labelsMeses[] = $mesesEs[$mesRef->month - 1];
-
-            $serieVentasMensual[] = round((float) DB::table('venta as v')
+            $ventasHoy = (float) DB::table('venta as v')
                 ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
                 ->where('v.VEN_Status', 1)
-                ->whereYear('v.created_at', $mesRef->year)
-                ->whereMonth('v.created_at', $mesRef->month)
-                ->sum(DB::raw($totalVentaExpr)), 2);
+                ->whereDate('v.created_at', $hoy->toDateString())
+                ->sum(DB::raw($totalVentaExpr));
 
-            $serieGastosMensual[] = round((float) DB::table('gasto')
+            $ventasAyer = (float) DB::table('venta as v')
+                ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                ->where('v.VEN_Status', 1)
+                ->whereDate('v.created_at', $hoy->copy()->subDay()->toDateString())
+                ->sum(DB::raw($totalVentaExpr));
+
+            $ingresosMes = (float) DB::table('venta as v')
+                ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                ->where('v.VEN_Status', 1)
+                ->whereYear('v.created_at', $hoy->year)
+                ->whereMonth('v.created_at', $hoy->month)
+                ->sum(DB::raw($totalVentaExpr));
+
+            $mesAnterior = $hoy->copy()->subMonthNoOverflow();
+            $ingresosMesAnterior = (float) DB::table('venta as v')
+                ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                ->where('v.VEN_Status', 1)
+                ->whereYear('v.created_at', $mesAnterior->year)
+                ->whereMonth('v.created_at', $mesAnterior->month)
+                ->sum(DB::raw($totalVentaExpr));
+
+            // GAS_Fecha es nullable en BD, por eso se filtra directo sobre ella
+            // (gasto no tiene timestamps habilitados).
+            $gastosMes = (float) DB::table('gasto')
                 ->where('GAS_Status', 1)
-                ->whereYear('GAS_Fecha', $mesRef->year)
-                ->whereMonth('GAS_Fecha', $mesRef->month)
-                ->sum('GAS_Monto'), 2);
+                ->whereYear('GAS_Fecha', $hoy->year)
+                ->whereMonth('GAS_Fecha', $hoy->month)
+                ->sum('GAS_Monto');
+
+            $gastosMesAnterior = (float) DB::table('gasto')
+                ->where('GAS_Status', 1)
+                ->whereYear('GAS_Fecha', $mesAnterior->year)
+                ->whereMonth('GAS_Fecha', $mesAnterior->month)
+                ->sum('GAS_Monto');
+
+            $stockBajo = DB::table('producto as p')
+                ->leftJoin('lote as l', 'l.PRO_Id', '=', 'p.PRO_Id')
+                ->where('p.PRO_Status', 1)
+                ->selectRaw('p.PRO_Id')
+                ->groupBy('p.PRO_Id')
+                ->havingRaw('COALESCE(SUM(l.LOT_CantidadReal), 0) <= ?', [self::STOCK_BAJO_LIMITE])
+                ->get()
+                ->count();
+
+            $crecimientoVentas = $this->crecimientoPorcentual($ventasHoy, $ventasAyer);
+            $crecimientoIngresos = $this->crecimientoPorcentual($ingresosMes, $ingresosMesAnterior);
+            $crecimientoGastos = $this->crecimientoPorcentual($gastosMes, $gastosMesAnterior);
+
+            // ================= CHART: VENTAS VS GASTOS (últimos 6 meses) =================
+
+            $mesesEs = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            $labelsMeses = [];
+            $serieVentasMensual = [];
+            $serieGastosMensual = [];
+
+            for ($i = 5; $i >= 0; $i--) {
+                $mesRef = $hoy->copy()->subMonthsNoOverflow($i);
+                $labelsMeses[] = $mesesEs[$mesRef->month - 1];
+
+                $serieVentasMensual[] = round((float) DB::table('venta as v')
+                    ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                    ->where('v.VEN_Status', 1)
+                    ->whereYear('v.created_at', $mesRef->year)
+                    ->whereMonth('v.created_at', $mesRef->month)
+                    ->sum(DB::raw($totalVentaExpr)), 2);
+
+                $serieGastosMensual[] = round((float) DB::table('gasto')
+                    ->where('GAS_Status', 1)
+                    ->whereYear('GAS_Fecha', $mesRef->year)
+                    ->whereMonth('GAS_Fecha', $mesRef->month)
+                    ->sum('GAS_Monto'), 2);
+            }
+
+            // ================= CHART: MÉTODOS DE PAGO (mes actual) =================
+
+            $metodosPago = DB::table('venta as v')
+                ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
+                ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                ->where('v.VEN_Status', 1)
+                ->whereYear('v.created_at', $hoy->year)
+                ->whereMonth('v.created_at', $hoy->month)
+                ->select('mp.MEP_Pago', DB::raw("SUM($totalVentaExpr) as total"))
+                ->groupBy('mp.MEP_Id', 'mp.MEP_Pago')
+                ->orderByDesc('total')
+                ->get();
+
+            $metodosPagoLabels = $metodosPago->pluck('MEP_Pago')->values();
+            $metodosPagoData = $metodosPago->pluck('total')->map(fn ($v) => round((float) $v, 2))->values();
+
+            // ================= ÚLTIMOS MOVIMIENTOS (últimas ventas) =================
+
+            $ultimasVentas = DB::table('venta as v')
+                ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
+                ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                ->select(
+                    'v.VEN_Id',
+                    'c.CLI_Nombre',
+                    'v.VEN_Status',
+                    'v.created_at',
+                    DB::raw("SUM($totalVentaExpr) as total")
+                )
+                ->groupBy('v.VEN_Id', 'c.CLI_Nombre', 'v.VEN_Status', 'v.created_at')
+                ->orderByDesc('v.VEN_Id')
+                ->limit(6)
+                ->get();
+
+            // ================= TOP PRODUCTOS =================
+
+            $topProductos = DB::table('detalle_venta as dv')
+                ->join('venta as v', 'v.VEN_Id', '=', 'dv.VEN_Id')
+                ->join('producto as p', 'p.PRO_Id', '=', 'dv.PRO_Id')
+                ->where('v.VEN_Status', 1)
+                ->select('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Imagen', DB::raw('SUM(dv.DEV_Cantidad) as unidades'))
+                ->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Imagen')
+                ->orderByDesc('unidades')
+                ->limit(3)
+                ->get();
+
+            $maxUnidadesTop = (float) ($topProductos->max('unidades') ?: 1);
+
+            $data += compact(
+                'ventasHoy',
+                'crecimientoVentas',
+                'ingresosMes',
+                'crecimientoIngresos',
+                'gastosMes',
+                'crecimientoGastos',
+                'stockBajo',
+                'labelsMeses',
+                'serieVentasMensual',
+                'serieGastosMensual',
+                'metodosPagoLabels',
+                'metodosPagoData',
+                'ultimasVentas',
+                'topProductos',
+                'maxUnidadesTop'
+            );
         }
-
-        // ================= CHART: MÉTODOS DE PAGO (mes actual) =================
-
-        $metodosPago = DB::table('venta as v')
-            ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
-            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
-            ->where('v.VEN_Status', 1)
-            ->whereYear('v.created_at', $hoy->year)
-            ->whereMonth('v.created_at', $hoy->month)
-            ->select('mp.MEP_Pago', DB::raw("SUM($totalVentaExpr) as total"))
-            ->groupBy('mp.MEP_Id', 'mp.MEP_Pago')
-            ->orderByDesc('total')
-            ->get();
-
-        $metodosPagoLabels = $metodosPago->pluck('MEP_Pago')->values();
-        $metodosPagoData = $metodosPago->pluck('total')->map(fn ($v) => round((float) $v, 2))->values();
-
-        // ================= ÚLTIMOS MOVIMIENTOS (últimas ventas) =================
-
-        $ultimasVentas = DB::table('venta as v')
-            ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
-            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
-            ->select(
-                'v.VEN_Id',
-                'c.CLI_Nombre',
-                'v.VEN_Status',
-                'v.created_at',
-                DB::raw("SUM($totalVentaExpr) as total")
-            )
-            ->groupBy('v.VEN_Id', 'c.CLI_Nombre', 'v.VEN_Status', 'v.created_at')
-            ->orderByDesc('v.VEN_Id')
-            ->limit(6)
-            ->get();
-
-        // ================= TOP PRODUCTOS =================
-
-        $topProductos = DB::table('detalle_venta as dv')
-            ->join('venta as v', 'v.VEN_Id', '=', 'dv.VEN_Id')
-            ->join('producto as p', 'p.PRO_Id', '=', 'dv.PRO_Id')
-            ->where('v.VEN_Status', 1)
-            ->select('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Imagen', DB::raw('SUM(dv.DEV_Cantidad) as unidades'))
-            ->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Imagen')
-            ->orderByDesc('unidades')
-            ->limit(3)
-            ->get();
-
-        $maxUnidadesTop = (float) ($topProductos->max('unidades') ?: 1);
-
-        $data = compact(
-            'tenantid',
-            'tiponegocio',
-            'ventasHoy',
-            'crecimientoVentas',
-            'ingresosMes',
-            'crecimientoIngresos',
-            'gastosMes',
-            'crecimientoGastos',
-            'stockBajo',
-            'labelsMeses',
-            'serieVentasMensual',
-            'serieGastosMensual',
-            'metodosPagoLabels',
-            'metodosPagoData',
-            'ultimasVentas',
-            'topProductos',
-            'maxUnidadesTop'
-        );
 
         // ================= KPIs PROPIOS DEL TALLER DE MOTOS =================
 
@@ -225,12 +233,15 @@ class HomeController extends Controller
             $plan = tenant('plan');
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
             if ($plan == 'start') {
-                $colorview = $empresa->tipo_tema;
+                $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
-            } else if ($plan == 'basic') {
-                $colorview = $empresa->tipo_tema;
+            }
 
-                // 1. Query Base para Productos con Lotes acumulados
+            // basic, plus y empresarial comparten la web completa (multi-página).
+            $colorview = $empresa->tipo_tema ?? 'dark';
+
+            if (tenant_has_module('productos')) {
+                // Plus/Empresarial: Query Base para Productos con Lotes acumulados
                 $queryProductos = DB::table('producto as pd')
                     ->join('categoria as ct', 'pd.CAT_Id', '=', 'ct.CAT_Id')
                     ->join('lote as lt', 'pd.PRO_Id', '=', 'lt.PRO_Id')
@@ -256,12 +267,13 @@ class HomeController extends Controller
                         'ct.CAT_Nombre'
                     );
 
-
                 // Paginación de 12 en 12 productos (Mantiene la query con string del buscador si aplica)
                 $dataProductos = $queryProductos->paginate(4)->withQueryString();
-                dd($dataProductos);
-                return view('tenant_' . $tiponegocio . '.landing.index', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview','dataProductos'));
+            } else {
+                // Basic: sin catálogo de productos habilitado.
+                $dataProductos = null;
             }
+            return view('tenant_' . $tiponegocio . '.landing.index', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'dataProductos'));
         } else {
             $tenantid = null;
             return view('welcome', compact('tenantid'));
@@ -276,12 +288,12 @@ class HomeController extends Controller
             $plan = tenant('plan');
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
             if ($plan == 'start') {
-                $colorview = $empresa->tipo_tema;
+                $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
-            } else if ($plan == 'basic') {
-                $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.landing.page.servicio', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview'));
             }
+
+            $colorview = $empresa->tipo_tema ?? 'dark';
+            return view('tenant_' . $tiponegocio . '.landing.page.servicio', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview'));
         } else {
             $tenantid = null;
             return view('welcome', compact('tenantid'));
@@ -408,12 +420,12 @@ class HomeController extends Controller
             }
 
             if ($plan == 'start') {
-                $colorview = $empresa->tipo_tema;
+                $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview', 'locales', 'localFirst', 'idlocal', 'turnos', 'totalBahias', 'semana', 'bahias', 'reservas', 'horarioprogramado', 'fechaInicial', 'fechaFinal', 'fechaSeleccionada'));
-            } else if ($plan == 'basic') {
-                $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.landing.page.reservar', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'locales', 'localFirst', 'idlocal', 'turnos', 'totalBahias', 'semana', 'bahias', 'reservas', 'horarioprogramado', 'fechaInicial', 'fechaFinal', 'fechaSeleccionada'));
             }
+
+            $colorview = $empresa->tipo_tema ?? 'dark';
+            return view('tenant_' . $tiponegocio . '.landing.page.reservar', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'locales', 'localFirst', 'idlocal', 'turnos', 'totalBahias', 'semana', 'bahias', 'reservas', 'horarioprogramado', 'fechaInicial', 'fechaFinal', 'fechaSeleccionada'));
         } else {
             $tenantid = null;
             return view('welcome',  compact('tenantid'));
@@ -651,11 +663,7 @@ class HomeController extends Controller
             return view("tenant_{$tiponegocio}.welcome", compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview', 'data'));
         }
 
-        if ($plan === 'basic') {
-            return view("tenant_{$tiponegocio}.landing.page.historial", compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'data'));
-        }
-
-        return redirect()->back();
+        return view("tenant_{$tiponegocio}.landing.page.historial", compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'data'));
     }
 
     public function catalogo(Request $request)
@@ -665,6 +673,11 @@ class HomeController extends Controller
             $tiponegocio = tenant('tipo_negocio');
             $plan = tenant('plan');
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+            // El catálogo de productos solo está habilitado en planes Plus/Empresarial.
+            if (! tenant_has_module('productos')) {
+                return redirect()->route('web.servicios');
+            }
 
             // 1. Query Base para Productos con Lotes acumulados
             $queryProductos = DB::table('producto as pd')
@@ -739,14 +752,7 @@ class HomeController extends Controller
                 })
                 ->get();
 
-            // 5. Retorno según el plan del Tenant
-            if ($plan == 'start') {
-                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'tiponegocio', 'plan', 'empresa', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
-            } else if ($plan == 'basic') {
-                return view('tenant_' . $tiponegocio . '.landing.page.catalogo', compact('tenantid', 'tiponegocio', 'empresa', 'plan', 'tiponegocio', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
-            }
-
-            // Fallback por si hay otro plan configurado
+            // Solo llegan aquí planes con módulo "productos" habilitado (Plus/Empresarial).
             return view('tenant_' . $tiponegocio . '.landing.page.catalogo', compact('tenantid', 'tiponegocio', 'empresa', 'plan', 'tiponegocio', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
         } else {
             $tenantid = null;
@@ -763,12 +769,12 @@ class HomeController extends Controller
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
             
             if ($plan == 'start') {
-                $colorview = $empresa->tipo_tema;
+                $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
-            } else if ($plan == 'basic') {
-                $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.landing.page.nosotros', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview'));
             }
+
+            $colorview = $empresa->tipo_tema ?? 'dark';
+            return view('tenant_' . $tiponegocio . '.landing.page.nosotros', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview'));
         } else {
             $tenantid = null;
             return view('welcome', compact('tenantid'));
@@ -783,12 +789,12 @@ class HomeController extends Controller
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
             $sede = Almacen::where('ALM_Status', 1)->get();
             if ($plan == 'start') {
-                $colorview = $empresa->tipo_tema;
+                $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
-            } else if ($plan == 'basic') {
-                $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.landing.page.contacto', compact('tenantid', 'empresa', 'sede', 'plan', 'colorview'));
             }
+
+            $colorview = $empresa->tipo_tema ?? 'dark';
+            return view('tenant_' . $tiponegocio . '.landing.page.contacto', compact('tenantid', 'empresa', 'sede', 'plan', 'tiponegocio', 'colorview'));
         } else {
             $tenantid = null;
             return view('welcome', compact('tenantid'));
