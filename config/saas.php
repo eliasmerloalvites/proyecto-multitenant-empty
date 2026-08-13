@@ -2,9 +2,26 @@
 
 return [
 
+    /*
+    |--------------------------------------------------------------------------
+    | COBROS
+    |--------------------------------------------------------------------------
+    | Política del comando `cobros:procesar` (programado a diario).
+    */
+    'cobros' => [
+        // Días de atraso (desde la fecha de cobro del ciclo) antes de
+        // suspender automáticamente al cliente/tenant por falta de pago.
+        'dias_gracia_suspension' => 5,
+    ],
+
     'plans' => [
 
         'start' => [
+
+            /* PRECIO DE REFERENCIA (S/ / mes) — usado para estimar MRR en el
+             * dashboard central. Plus/Empresarial pueden variar por acuerdo
+             * comercial; este valor es solo el piso publicado en la web. */
+            'price' => 59,
 
             /* LIMITES */
             'max_users' => 3,
@@ -46,6 +63,8 @@ return [
 
         'basic' => [
 
+            'price' => 99,
+
             'max_users' => 5,
             'max_images' => 10,
             'storage_limit_mb' => 1500,
@@ -82,6 +101,8 @@ return [
 
         'plus' => [
 
+            'price' => 199,
+
             'max_users' => 15,
             'max_images' => 50,
             'storage_limit_mb' => 5000,
@@ -117,6 +138,8 @@ return [
         ],
 
         'empresarial' => [
+
+            'price' => 300,
 
             'max_users' => 50,
             'max_images' => 200,

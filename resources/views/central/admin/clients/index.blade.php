@@ -334,6 +334,12 @@
                                 <input type="text" name="razon_social" id="edit_razon_social" class="form-control" required>
                             </div>
 
+                            <div class="col-md-6 mb-3">
+                                <label>Email de Facturación</label>
+                                <input type="email" name="email" id="edit_email" class="form-control"
+                                    placeholder="A este correo se envían los avisos de cobro">
+                            </div>
+
                             <div class="col-md-4 mb-3">
                                 <label>Plan SaaS</label>
                                 <select class="form-control" name="plan" id="edit_plan">
@@ -426,6 +432,10 @@
                                 <div class="col-md-6">
                                     <small class="text-muted d-block">Razón Social</small>
                                     <div class="fw-semibold" id="ver_razon_social"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">Email de Facturación</small>
+                                    <div class="fw-semibold" id="ver_email"></div>
                                 </div>
                                 <div class="col-md-6">
                                     <small class="text-muted d-block">Tipo de Negocio</small>
@@ -660,6 +670,7 @@
                         $('#edit_info_domain').text(data.domain);
                         $('#edit_ruc').val(data.ruc);
                         $('#edit_razon_social').val(data.razon_social);
+                        $('#edit_email').val(data.email);
                         $('#edit_plan').val(data.plan);
                         $('#edit_billing_day').val(data.billing_day);
                         $('#edit_next_payment_date').val(data.next_payment_date);
@@ -718,6 +729,7 @@
                         $('#ver_id').text(data.id);
                         $('#ver_ruc').text(data.ruc || '—');
                         $('#ver_razon_social').text(data.razon_social);
+                        $('#ver_email').text(data.email || '—');
                         $('#ver_tipo_negocio').text(data.tipo_negocio);
                         $('#ver_domain').text(data.domain);
                         $('#ver_plan').text(String(data.plan).toUpperCase());

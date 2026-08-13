@@ -3,19 +3,109 @@
 namespace App\Http\Controllers\Central;
 
 use App\Http\Controllers\Controller;
+use App\Models\Client;
+use App\Models\Tenant;
 use App\Models\Tenant\EmpresaFacturacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Spatie\Permission\Models\Permission;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        // dd(Permission::where('name','admin.clients.index')->first()->guard_name);
+        $hoy = Carbon::now('America/Lima');
 
-        return view('central.menu.home');
+        // ================= KPIs =================
+
+        $totalTenants = Tenant::count();
+        $tenantsActivos = Tenant::where('status', 'activo')->count();
+        $tenantsSuspendidos = Tenant::where('status', 'suspendido')->count();
+        $tenantsCancelados = Tenant::where('status', 'cancelado')->count();
+
+        // MRR estimado: suma del precio de referencia de cada plan (config/saas.php)
+        // por cada tenant activo en ese plan. Es un piso estimado, no una cifra
+        // de facturación real (Plus/Empresarial pueden tener acuerdos distintos).
+        $tenantsPorPlan = Tenant::where('status', 'activo')
+            ->select('plan', DB::raw('count(*) as total'))
+            ->groupBy('plan')
+            ->pluck('total', 'plan');
+
+        $planesConfig = saas_plans_config();
+        $mrrEstimado = 0;
+        foreach ($tenantsPorPlan as $plan => $cantidad) {
+            $mrrEstimado += ($planesConfig[$plan]['price'] ?? 0) * $cantidad;
+        }
+
+        $planLabels = ['start' => 'Start', 'basic' => 'Basic', 'plus' => 'Plus', 'empresarial' => 'Empresarial'];
+        $tenantsPorPlanLabels = [];
+        $tenantsPorPlanData = [];
+        foreach ($planLabels as $key => $label) {
+            $tenantsPorPlanLabels[] = $label;
+            $tenantsPorPlanData[] = $tenantsPorPlan[$key] ?? 0;
+        }
+
+        // ================= NUEVOS TENANTS (últimos 6 meses) =================
+
+        $mesesEs = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        $labelsMeses = [];
+        $serieNuevosTenants = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $mesRef = $hoy->copy()->subMonthsNoOverflow($i);
+            $labelsMeses[] = $mesesEs[$mesRef->month - 1];
+
+            $serieNuevosTenants[] = Tenant::whereYear('created_at', $mesRef->year)
+                ->whereMonth('created_at', $mesRef->month)
+                ->count();
+        }
+
+        // ================= COBROS DE LA SEMANA (vencidos + por vencer en 7 días) =================
+        // El cobro es recurrente por día del mes (billing_day). Se excluyen los
+        // ciclos que ya tienen un Pago registrado para el mes actual, y se
+        // muestran tanto los vencidos (ya pasó el día y no se pagó) como los
+        // que vencen dentro de los próximos 7 días.
+
+        $proximosVencimientos = Client::where('status', 'activo')
+            ->whereNotNull('billing_day')
+            ->with(['pagos' => fn ($q) => $q->where('periodo', $hoy->format('Y-m'))])
+            ->get()
+            ->map(function ($cliente) use ($hoy) {
+                $cliente->estado_ciclo = $cliente->estadoCicloActual($hoy);
+                $cliente->fecha_cobro = $cliente->fechaCicloActual($hoy);
+
+                return $cliente;
+            })
+            ->filter(fn ($cliente) => in_array($cliente->estado_ciclo, ['vencido', 'por_vencer']))
+            ->sortBy('fecha_cobro')
+            ->values()
+            ->take(8);
+
+        // ================= ÚLTIMOS CLIENTES REGISTRADOS =================
+
+        $ultimosClientes = Client::orderByDesc('created_at')->limit(6)->get();
+
+        // Plan y tipo_negocio de cada tenant asociado a los últimos clientes,
+        // para no golpear la BD tenant por tenant dentro de la vista.
+        $tenantsIndex = Tenant::whereIn('id', $ultimosClientes->pluck('tenant_id'))->get()->keyBy('id');
+
+        return view('central.menu.home', compact(
+            'hoy',
+            'totalTenants',
+            'tenantsActivos',
+            'tenantsSuspendidos',
+            'tenantsCancelados',
+            'mrrEstimado',
+            'tenantsPorPlanLabels',
+            'tenantsPorPlanData',
+            'labelsMeses',
+            'serieNuevosTenants',
+            'proximosVencimientos',
+            'ultimosClientes',
+            'tenantsIndex'
+        ));
     }
     public function inicio()
     {

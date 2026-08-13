@@ -151,7 +151,7 @@ class ClientController extends Controller
             'custom_domain' => ['nullable', 'string'],
         ]);
 
-        $plans = config('saas.plans');
+        $plans = saas_plans_config();
         $planConfig = $plans[$validated['plan']];
 
         try {
@@ -197,6 +197,7 @@ class ClientController extends Controller
                 'tenant_id'    => $tenant->id,
                 'razon_social' => $validated['razon_social'],
                 'ruc'          => $validated['ruc'],
+                'email'        => $validated['email'],
                 'billing_day'  => $validated['billing_day'],
                 'domain_id'    => $domain->id,
                 'status'       => 'activo',
@@ -266,6 +267,7 @@ class ClientController extends Controller
                 'id'                => $client->id,
                 'ruc'               => $client->ruc,
                 'razon_social'      => $client->razon_social,
+                'email'             => $client->email,
                 'billing_day'       => $client->billing_day,
                 'next_payment_date' => optional($client->next_payment_date)->format('Y-m-d'),
                 'status'            => $client->status,
@@ -289,6 +291,7 @@ class ClientController extends Controller
                 'id'                    => $client->id,
                 'ruc'                   => $client->ruc,
                 'razon_social'          => $client->razon_social,
+                'email'                 => $client->email,
                 'billing_day'           => $client->billing_day,
                 'next_payment_date'     => optional($client->next_payment_date)->format('Y-m-d'),
                 'status'                => $client->status,
@@ -317,6 +320,7 @@ class ClientController extends Controller
         $validated = $request->validate([
             'ruc'               => 'nullable|string|max:20',
             'razon_social'      => 'required|string|max:255',
+            'email'             => 'nullable|email',
             'billing_day'       => 'required|integer|min:1|max:28',
             'next_payment_date' => 'nullable|date',
             'plan'              => 'required|in:start,basic,plus,empresarial',
@@ -329,6 +333,7 @@ class ClientController extends Controller
             $client->update([
                 'ruc'               => $validated['ruc'] ?? null,
                 'razon_social'      => $validated['razon_social'],
+                'email'             => $validated['email'] ?? null,
                 'billing_day'       => $validated['billing_day'],
                 'next_payment_date' => $validated['next_payment_date'] ?? null,
                 'status'            => $validated['status'],
@@ -343,7 +348,7 @@ class ClientController extends Controller
                 $tenant->plan = $validated['plan'];
 
                 if ($planChanged) {
-                    $planConfig = config('saas.plans')[$validated['plan']];
+                    $planConfig = saas_plans_config()[$validated['plan']];
                     $tenant->max_users = $planConfig['max_users'];
                     $tenant->max_images = $planConfig['max_images'];
                     $tenant->storage_limit_mb = $planConfig['storage_limit_mb'];

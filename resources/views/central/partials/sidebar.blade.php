@@ -43,6 +43,26 @@
                             </a>
                         </li>
                     @endcan
+                    @can('admin.cobros.index')
+                        <li class="nav-item">
+                            <a href="{{ route('admin.cobros.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.cobros*') ? 'active' : '' }}"
+                                id="idSegCobros">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Cobros</p>
+                            </a>
+                        </li>
+                    @endcan
+                    @can('admin.planes.index')
+                        <li class="nav-item">
+                            <a href="{{ route('admin.planes.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.planes*') ? 'active' : '' }}"
+                                id="idSegPlanes">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Planes</p>
+                            </a>
+                        </li>
+                    @endcan
                 </ul>
             </li>
         @endcan

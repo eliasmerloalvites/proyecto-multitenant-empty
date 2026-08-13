@@ -51,6 +51,12 @@ class RoleAndPermissionSeeder extends Seeder
             ['admin.clients.edit',    'Clientes', 'Editar Clientes',    'Editar Clientes'],
             ['admin.clients.show',    'Clientes', 'Ver Cliente',        'Ver Cliente'],
             ['admin.clients.destroy', 'Clientes', 'Eliminar Clientes',  'Eliminar Clientes'],
+
+            // Cobros
+            ['admin.cobros.index', 'Cobros', 'Ver Cobros', 'Listar cobros y registrar pagos'],
+
+            // Planes
+            ['admin.planes.index', 'Planes', 'Ver Planes', 'Ver y editar los planes comerciales (Start/Basic/Plus/Empresarial)'],
         ];
 
         foreach ($permissions as [$name, $group, $nombre, $description]) {
@@ -112,6 +118,10 @@ class RoleAndPermissionSeeder extends Seeder
             'admin.clients.edit',
             'admin.clients.show',
             'admin.clients.destroy',
+
+            'admin.cobros.index',
+
+            'admin.planes.index',
         ]);
 
         $gerenteRole->givePermissionTo([
