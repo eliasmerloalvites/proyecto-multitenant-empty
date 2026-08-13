@@ -3,7 +3,7 @@
     <a href="/tenant/home" class="brand-link navbar-light">
         <img id="avatarImageHeader" class="brand-image img-circle elevation-3" alt="User Image">
         <span class="brand-text font-weight-light">
-            <img src="{{ asset_root('/adminlte/dist/img/logo.png') }}" alt="AdminLTE Logo" style="height:30px"> </span>
+            <img src="{{ !empty($empresa->logo_pdf) ? asset_root($empresa->logo_pdf) : asset_root('images/icono.jpg') }}" alt="AdminLTE Logo" style="height:30px"> </span>
     </a>
 
     <!-- Sidebar -->
@@ -24,8 +24,8 @@
                     </a>
                 </li>
 
-                <!-- RESERVAS -->
-                
+                <!-- RESERVAS (parte del flujo de Mantenimientos) -->
+                @if(tenant_has_module('mantenimientos'))
                 <li class="nav-item has-treeview
                     {{ request()->routeIs('tenant.reservaciones.administracion*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->routeIs('tenant.reservaciones.administracion*') ? 'active': '' }}">
@@ -56,6 +56,7 @@
 
                     </ul>
                 </li>
+                @endif
 
                 <!-- REPORTES -->
                 @can('tenant.reportes.listageneral')
@@ -83,6 +84,7 @@
                 </li>
                 @endcan
 
+                @if(tenant_has_module('mantenimientos'))
                 @canany([
                     'tenant.mantenimientos.generalinyectada.index',
                     'tenant.mantenimientos.generalcarburada.index',
@@ -164,8 +166,10 @@
                     </ul>
                 </li>
                 @endcanany
+                @endif
 
                 <!-- ACTIVIDADES -->
+                @if(tenant_has_module('mantenimientos'))
                 @can('tenant.actividades.mantenimientoactividadvariada.index')
                 <li
                     class="nav-item has-treeview 
@@ -199,7 +203,9 @@
                     </ul>
                 </li>
                 @endcan
+                @endif
 
+                @if(tenant_has_module('inventario') || tenant_has_module('productos'))
                 @canany([
                     'tenant.inventario.clase.index',
                     'tenant.inventario.categoria.index',
@@ -269,6 +275,9 @@
                         </ul>
                     </li>
                 @endcanany
+                @endif
+
+                @if(tenant_has_module('compras'))
                 @canany([
                     'tenant.compras.compra.index',
                     'tenant.compras.proveedor.index',
@@ -338,7 +347,9 @@
                         </ul>
                     </li>
                 @endcanany
+                @endif
 
+                @if(tenant_has_module('ventas'))
                 @canany([
                     'tenant.ventas.metodopago.index',
                     'tenant.ventas.cliente.index',
@@ -395,6 +406,7 @@
                         </ul>
                     </li>
                 @endcanany
+                @endif
                 <!-- CONFIGURACIÓN -->
                 
                 @canany([

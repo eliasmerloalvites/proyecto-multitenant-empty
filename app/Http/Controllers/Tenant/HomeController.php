@@ -12,16 +12,267 @@ use App\Models\TenantTallerMotos\Reservacion;
 use App\Models\TenantTallerMotos\Turno;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 use ReflectionFunction;
 
 class HomeController extends Controller
 {
+    /**
+     * Umbral (unidades totales en almacén) bajo el cual un producto se
+     * considera "stock bajo" en el dashboard. Ajustable si lo necesitas.
+     */
+    const STOCK_BAJO_LIMITE = 5;
+
     public function index()
     {
-
         $tenantid = tenant('id');
         $tiponegocio = tenant('tipo_negocio');
-        return view('tenant_' . $tiponegocio . '.menu.home');
+
+        $hoy = Carbon::now('America/Lima');
+
+        // El dashboard comercial (ventas, gastos, stock, top productos) solo
+        // aplica a planes con Productos/Inventario/Compras/Ventas habilitados
+        // (Plus/Empresarial). Start/Basic no pueden realizar esas acciones,
+        // así que ni se consultan esas tablas ni se muestran esas tarjetas.
+        $mostrarVentas = tenant_has_module('ventas') || tenant_has_module('inventario') || tenant_has_module('compras');
+
+        $data = compact('tenantid', 'tiponegocio', 'mostrarVentas');
+
+        if ($mostrarVentas) {
+            // Expresión reutilizada en todo el dashboard para el importe real
+            // de una línea de venta (misma fórmula que usa VentaController).
+            $totalVentaExpr = '(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento';
+
+            // ================= KPIs =================
+
+            $ventasHoy = (float) DB::table('venta as v')
+                ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                ->where('v.VEN_Status', 1)
+                ->whereDate('v.created_at', $hoy->toDateString())
+                ->sum(DB::raw($totalVentaExpr));
+
+            $ventasAyer = (float) DB::table('venta as v')
+                ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                ->where('v.VEN_Status', 1)
+                ->whereDate('v.created_at', $hoy->copy()->subDay()->toDateString())
+                ->sum(DB::raw($totalVentaExpr));
+
+            $ingresosMes = (float) DB::table('venta as v')
+                ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                ->where('v.VEN_Status', 1)
+                ->whereYear('v.created_at', $hoy->year)
+                ->whereMonth('v.created_at', $hoy->month)
+                ->sum(DB::raw($totalVentaExpr));
+
+            $mesAnterior = $hoy->copy()->subMonthNoOverflow();
+            $ingresosMesAnterior = (float) DB::table('venta as v')
+                ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                ->where('v.VEN_Status', 1)
+                ->whereYear('v.created_at', $mesAnterior->year)
+                ->whereMonth('v.created_at', $mesAnterior->month)
+                ->sum(DB::raw($totalVentaExpr));
+
+            // GAS_Fecha es nullable en BD, por eso se filtra directo sobre ella
+            // (gasto no tiene timestamps habilitados).
+            $gastosMes = (float) DB::table('gasto')
+                ->where('GAS_Status', 1)
+                ->whereYear('GAS_Fecha', $hoy->year)
+                ->whereMonth('GAS_Fecha', $hoy->month)
+                ->sum('GAS_Monto');
+
+            $gastosMesAnterior = (float) DB::table('gasto')
+                ->where('GAS_Status', 1)
+                ->whereYear('GAS_Fecha', $mesAnterior->year)
+                ->whereMonth('GAS_Fecha', $mesAnterior->month)
+                ->sum('GAS_Monto');
+
+            $stockBajo = DB::table('producto as p')
+                ->leftJoin('lote as l', 'l.PRO_Id', '=', 'p.PRO_Id')
+                ->where('p.PRO_Status', 1)
+                ->selectRaw('p.PRO_Id')
+                ->groupBy('p.PRO_Id')
+                ->havingRaw('COALESCE(SUM(l.LOT_CantidadReal), 0) <= ?', [self::STOCK_BAJO_LIMITE])
+                ->get()
+                ->count();
+
+            $crecimientoVentas = $this->crecimientoPorcentual($ventasHoy, $ventasAyer);
+            $crecimientoIngresos = $this->crecimientoPorcentual($ingresosMes, $ingresosMesAnterior);
+            $crecimientoGastos = $this->crecimientoPorcentual($gastosMes, $gastosMesAnterior);
+
+            // ================= CHART: VENTAS VS GASTOS (últimos 6 meses) =================
+
+            $mesesEs = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            $labelsMeses = [];
+            $serieVentasMensual = [];
+            $serieGastosMensual = [];
+
+            for ($i = 5; $i >= 0; $i--) {
+                $mesRef = $hoy->copy()->subMonthsNoOverflow($i);
+                $labelsMeses[] = $mesesEs[$mesRef->month - 1];
+
+                $serieVentasMensual[] = round((float) DB::table('venta as v')
+                    ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                    ->where('v.VEN_Status', 1)
+                    ->whereYear('v.created_at', $mesRef->year)
+                    ->whereMonth('v.created_at', $mesRef->month)
+                    ->sum(DB::raw($totalVentaExpr)), 2);
+
+                $serieGastosMensual[] = round((float) DB::table('gasto')
+                    ->where('GAS_Status', 1)
+                    ->whereYear('GAS_Fecha', $mesRef->year)
+                    ->whereMonth('GAS_Fecha', $mesRef->month)
+                    ->sum('GAS_Monto'), 2);
+            }
+
+            // ================= CHART: MÉTODOS DE PAGO (mes actual) =================
+
+            $metodosPago = DB::table('venta as v')
+                ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
+                ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                ->where('v.VEN_Status', 1)
+                ->whereYear('v.created_at', $hoy->year)
+                ->whereMonth('v.created_at', $hoy->month)
+                ->select('mp.MEP_Pago', DB::raw("SUM($totalVentaExpr) as total"))
+                ->groupBy('mp.MEP_Id', 'mp.MEP_Pago')
+                ->orderByDesc('total')
+                ->get();
+
+            $metodosPagoLabels = $metodosPago->pluck('MEP_Pago')->values();
+            $metodosPagoData = $metodosPago->pluck('total')->map(fn ($v) => round((float) $v, 2))->values();
+
+            // ================= ÚLTIMOS MOVIMIENTOS (últimas ventas) =================
+
+            $ultimasVentas = DB::table('venta as v')
+                ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
+                ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+                ->select(
+                    'v.VEN_Id',
+                    'c.CLI_Nombre',
+                    'v.VEN_Status',
+                    'v.created_at',
+                    DB::raw("SUM($totalVentaExpr) as total")
+                )
+                ->groupBy('v.VEN_Id', 'c.CLI_Nombre', 'v.VEN_Status', 'v.created_at')
+                ->orderByDesc('v.VEN_Id')
+                ->limit(6)
+                ->get();
+
+            // ================= TOP PRODUCTOS =================
+
+            $topProductos = DB::table('detalle_venta as dv')
+                ->join('venta as v', 'v.VEN_Id', '=', 'dv.VEN_Id')
+                ->join('producto as p', 'p.PRO_Id', '=', 'dv.PRO_Id')
+                ->where('v.VEN_Status', 1)
+                ->select('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Imagen', DB::raw('SUM(dv.DEV_Cantidad) as unidades'))
+                ->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Imagen')
+                ->orderByDesc('unidades')
+                ->limit(3)
+                ->get();
+
+            $maxUnidadesTop = (float) ($topProductos->max('unidades') ?: 1);
+
+            $data += compact(
+                'ventasHoy',
+                'crecimientoVentas',
+                'ingresosMes',
+                'crecimientoIngresos',
+                'gastosMes',
+                'crecimientoGastos',
+                'stockBajo',
+                'labelsMeses',
+                'serieVentasMensual',
+                'serieGastosMensual',
+                'metodosPagoLabels',
+                'metodosPagoData',
+                'ultimasVentas',
+                'topProductos',
+                'maxUnidadesTop'
+            );
+        }
+
+        // ================= KPIs Y REPORTES PROPIOS DEL TALLER DE MOTOS =================
+        // Disponibles en todos los planes: Mantenimientos + Reservas es el
+        // módulo base que incluyen Start, Basic, Plus y Empresarial.
+
+        if ($tiponegocio === 'tallermoto') {
+            // Tabla, prefijo de columnas y etiqueta legible de cada tipo de mantenimiento.
+            $tiposMantenimiento = [
+                ['tabla' => 'mantenimiento_general_inyectada', 'prefix' => 'MGI', 'label' => 'General Inyectada'],
+                ['tabla' => 'mantenimiento_general_carburada', 'prefix' => 'MGC', 'label' => 'General Carburada'],
+                ['tabla' => 'mantenimiento_preventivo_inyectada', 'prefix' => 'MPI', 'label' => 'Preventivo Inyectada'],
+                ['tabla' => 'mantenimiento_preventivo_carburada', 'prefix' => 'MPC', 'label' => 'Preventivo Carburada'],
+                ['tabla' => 'mantenimiento_actividad_variadas', 'prefix' => 'MAV', 'label' => 'Actividad Variada'],
+            ];
+
+            $data['reservasHoy'] = Reservacion::whereDate('RES_FechaProgramada', $hoy->toDateString())
+                ->where('RES_Estado', 'ACT')
+                ->where('RES_State', 'APROBADO')
+                ->count();
+
+            $data['bahiasActivas'] = Bahia::where('BAH_Estado', 'ACT')->count();
+
+            $data['mantenimientosPendientes'] = 0;
+            $data['mantenimientosAprobados'] = 0;
+            $data['mantenimientosObservados'] = 0;
+            $data['mantenimientosPorTipoLabels'] = [];
+            $data['mantenimientosPorTipoData'] = [];
+
+            foreach ($tiposMantenimiento as $tipo) {
+                $estadoCol = "{$tipo['prefix']}_Estado";
+
+                $data['mantenimientosPendientes'] += DB::table($tipo['tabla'])->where($estadoCol, 'PENDIENTE')->count();
+                $data['mantenimientosAprobados'] += DB::table($tipo['tabla'])->where($estadoCol, 'APROBADO')->count();
+                $data['mantenimientosObservados'] += DB::table($tipo['tabla'])->where($estadoCol, 'OBSERVADO')->count();
+
+                $data['mantenimientosPorTipoLabels'][] = $tipo['label'];
+                $data['mantenimientosPorTipoData'][] = DB::table($tipo['tabla'])->count();
+            }
+
+            // ============ RESERVAS DE LOS ÚLTIMOS 7 DÍAS ============
+
+            $labelsReservas7d = [];
+            $serieReservas7d = [];
+
+            for ($i = 6; $i >= 0; $i--) {
+                $dia = $hoy->copy()->subDays($i);
+                $labelsReservas7d[] = $dia->translatedFormat('d M');
+
+                $serieReservas7d[] = Reservacion::whereDate('RES_FechaProgramada', $dia->toDateString())
+                    ->where('RES_State', '!=', 'RECHAZADO')
+                    ->count();
+            }
+
+            $data['labelsReservas7d'] = $labelsReservas7d;
+            $data['serieReservas7d'] = $serieReservas7d;
+
+            // ============ PRÓXIMAS RESERVAS (agenda) ============
+
+            $data['proximasReservas'] = Reservacion::join('bahia as b', 'b.BAH_Id', '=', 'reservacion.BAH_Id')
+                ->join('turno as t', 't.TUR_Id', '=', 'reservacion.TUR_Id')
+                ->where('reservacion.RES_Estado', 'ACT')
+                ->where('reservacion.RES_State', '!=', 'RECHAZADO')
+                ->whereDate('reservacion.RES_FechaProgramada', '>=', $hoy->toDateString())
+                ->orderBy('reservacion.RES_FechaProgramada')
+                ->orderBy('t.TUR_Id')
+                ->select('reservacion.*', 'b.BAH_Nombre', 't.TUR_Nombre')
+                ->limit(6)
+                ->get();
+        }
+
+        return view('tenant_' . $tiponegocio . '.menu.home', $data);
+    }
+
+    /**
+     * % de variación entre dos montos. Si el punto de referencia es 0,
+     * se evita la división entre cero.
+     */
+    private function crecimientoPorcentual(float $actual, float $anterior): float
+    {
+        if ($anterior <= 0.0) {
+            return $actual > 0 ? 100.0 : 0.0;
+        }
+
+        return round((($actual - $anterior) / $anterior) * 100, 1);
     }
 
 
@@ -33,12 +284,15 @@ class HomeController extends Controller
             $plan = tenant('plan');
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
             if ($plan == 'start') {
-                $colorview = $empresa->tipo_tema;
+                $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
-            } else if ($plan == 'basic') {
-                $colorview = $empresa->tipo_tema;
+            }
 
-                // 1. Query Base para Productos con Lotes acumulados
+            // basic, plus y empresarial comparten la web completa (multi-página).
+            $colorview = $empresa->tipo_tema ?? 'dark';
+
+            if (tenant_has_module('productos')) {
+                // Plus/Empresarial: Query Base para Productos con Lotes acumulados
                 $queryProductos = DB::table('producto as pd')
                     ->join('categoria as ct', 'pd.CAT_Id', '=', 'ct.CAT_Id')
                     ->join('lote as lt', 'pd.PRO_Id', '=', 'lt.PRO_Id')
@@ -64,12 +318,13 @@ class HomeController extends Controller
                         'ct.CAT_Nombre'
                     );
 
-
                 // Paginación de 12 en 12 productos (Mantiene la query con string del buscador si aplica)
                 $dataProductos = $queryProductos->paginate(4)->withQueryString();
-                dd($dataProductos);
-                return view('tenant_' . $tiponegocio . '.landing.index', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview','dataProductos'));
+            } else {
+                // Basic: sin catálogo de productos habilitado.
+                $dataProductos = null;
             }
+            return view('tenant_' . $tiponegocio . '.landing.index', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'dataProductos'));
         } else {
             $tenantid = null;
             return view('welcome', compact('tenantid'));
@@ -84,12 +339,12 @@ class HomeController extends Controller
             $plan = tenant('plan');
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
             if ($plan == 'start') {
-                $colorview = $empresa->tipo_tema;
+                $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
-            } else if ($plan == 'basic') {
-                $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.landing.page.servicio', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview'));
             }
+
+            $colorview = $empresa->tipo_tema ?? 'dark';
+            return view('tenant_' . $tiponegocio . '.landing.page.servicio', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview'));
         } else {
             $tenantid = null;
             return view('welcome', compact('tenantid'));
@@ -216,12 +471,12 @@ class HomeController extends Controller
             }
 
             if ($plan == 'start') {
-                $colorview = $empresa->tipo_tema;
+                $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview', 'locales', 'localFirst', 'idlocal', 'turnos', 'totalBahias', 'semana', 'bahias', 'reservas', 'horarioprogramado', 'fechaInicial', 'fechaFinal', 'fechaSeleccionada'));
-            } else if ($plan == 'basic') {
-                $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.landing.page.reservar', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'locales', 'localFirst', 'idlocal', 'turnos', 'totalBahias', 'semana', 'bahias', 'reservas', 'horarioprogramado', 'fechaInicial', 'fechaFinal', 'fechaSeleccionada'));
             }
+
+            $colorview = $empresa->tipo_tema ?? 'dark';
+            return view('tenant_' . $tiponegocio . '.landing.page.reservar', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'locales', 'localFirst', 'idlocal', 'turnos', 'totalBahias', 'semana', 'bahias', 'reservas', 'horarioprogramado', 'fechaInicial', 'fechaFinal', 'fechaSeleccionada'));
         } else {
             $tenantid = null;
             return view('welcome',  compact('tenantid'));
@@ -247,7 +502,36 @@ class HomeController extends Controller
 
     public function reservar_store(Request $request)
     {
-        $Reservacion = Reservacion::create($request->all());
+        $validated = $request->validate([
+            'ALM_Id' => 'required|integer|exists:almacen,ALM_Id',
+            'TUR_Id' => 'required|integer|exists:turno,TUR_Id',
+            'BAH_Id' => 'required|integer|exists:bahia,BAH_Id',
+            'RES_FechaProgramada' => 'required|string',
+            'RES_Placa' => 'required|string|max:20',
+            'RES_Moto' => 'required|string|max:150',
+            'RES_Cliente' => 'required|string|max:120',
+            'RES_Celular' => 'required|string|max:12',
+            'RES_Detalle' => 'nullable|string|max:250',
+            'RES_Adicional' => 'nullable|string|max:250',
+        ]);
+
+        // Pre-chequeo: da un mensaje inmediato en el caso normal (sin carrera).
+        if (Reservacion::slotEstaOcupado($validated['BAH_Id'], $validated['TUR_Id'], $validated['RES_FechaProgramada'])) {
+            return $this->reservaOcupadaResponse($request);
+        }
+
+        try {
+            $Reservacion = Reservacion::create($validated);
+        } catch (QueryException $e) {
+            // Protección real contra condición de carrera: si dos personas
+            // reservaron el mismo slot casi al mismo tiempo, el índice único
+            // de BD rechaza el segundo INSERT y caemos aquí.
+            if (Reservacion::esConflictoDeSlot($e)) {
+                return $this->reservaOcupadaResponse($request);
+            }
+            throw $e;
+        }
+
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
@@ -256,6 +540,17 @@ class HomeController extends Controller
         }
 
         return redirect()->back()->with('success', 'Reserva realizada con éxito');
+    }
+
+    private function reservaOcupadaResponse(Request $request)
+    {
+        $mensaje = 'Ese horario acaba de ser reservado por otra persona. Por favor elige otra bahía u otro turno.';
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => false, 'message' => $mensaje], 409);
+        }
+
+        return redirect()->back()->withInput()->with('error', $mensaje);
     }
 
     public function historial(Request $request)
@@ -419,11 +714,7 @@ class HomeController extends Controller
             return view("tenant_{$tiponegocio}.welcome", compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview', 'data'));
         }
 
-        if ($plan === 'basic') {
-            return view("tenant_{$tiponegocio}.landing.page.historial", compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'data'));
-        }
-
-        return redirect()->back();
+        return view("tenant_{$tiponegocio}.landing.page.historial", compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'data'));
     }
 
     public function catalogo(Request $request)
@@ -433,6 +724,11 @@ class HomeController extends Controller
             $tiponegocio = tenant('tipo_negocio');
             $plan = tenant('plan');
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+            // El catálogo de productos solo está habilitado en planes Plus/Empresarial.
+            if (! tenant_has_module('productos')) {
+                return redirect()->route('web.servicios');
+            }
 
             // 1. Query Base para Productos con Lotes acumulados
             $queryProductos = DB::table('producto as pd')
@@ -507,14 +803,7 @@ class HomeController extends Controller
                 })
                 ->get();
 
-            // 5. Retorno según el plan del Tenant
-            if ($plan == 'start') {
-                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'tiponegocio', 'plan', 'empresa', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
-            } else if ($plan == 'basic') {
-                return view('tenant_' . $tiponegocio . '.landing.page.catalogo', compact('tenantid', 'tiponegocio', 'empresa', 'plan', 'tiponegocio', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
-            }
-
-            // Fallback por si hay otro plan configurado
+            // Solo llegan aquí planes con módulo "productos" habilitado (Plus/Empresarial).
             return view('tenant_' . $tiponegocio . '.landing.page.catalogo', compact('tenantid', 'tiponegocio', 'empresa', 'plan', 'tiponegocio', 'colorview', 'dataProductos', 'dataCategoria', 'dataClase'));
         } else {
             $tenantid = null;
@@ -531,12 +820,12 @@ class HomeController extends Controller
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
             
             if ($plan == 'start') {
-                $colorview = $empresa->tipo_tema;
+                $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
-            } else if ($plan == 'basic') {
-                $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.landing.page.nosotros', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview'));
             }
+
+            $colorview = $empresa->tipo_tema ?? 'dark';
+            return view('tenant_' . $tiponegocio . '.landing.page.nosotros', compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview'));
         } else {
             $tenantid = null;
             return view('welcome', compact('tenantid'));
@@ -551,12 +840,12 @@ class HomeController extends Controller
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
             $sede = Almacen::where('ALM_Status', 1)->get();
             if ($plan == 'start') {
-                $colorview = $empresa->tipo_tema;
+                $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
-            } else if ($plan == 'basic') {
-                $colorview = $empresa->tipo_tema;
-                return view('tenant_' . $tiponegocio . '.landing.page.contacto', compact('tenantid', 'empresa', 'sede', 'plan', 'colorview'));
             }
+
+            $colorview = $empresa->tipo_tema ?? 'dark';
+            return view('tenant_' . $tiponegocio . '.landing.page.contacto', compact('tenantid', 'empresa', 'sede', 'plan', 'tiponegocio', 'colorview'));
         } else {
             $tenantid = null;
             return view('welcome', compact('tenantid'));

@@ -251,6 +251,32 @@
         font-size:12px;
     }
 
+    .badge-soft-warning{
+        background:rgba(245,158,11,.12);
+        color:#D97706;
+        padding:6px 10px;
+        border-radius:30px;
+        font-size:12px;
+    }
+
+    .kpi-growth-negative{
+        color:#EF4444;
+        background:rgba(239,68,68,.08);
+    }
+
+    .empty-state{
+        color:#94A3B8;
+        text-align:center;
+        padding:30px 10px;
+    }
+
+    .section-subtitle{
+        font-size:15px;
+        font-weight:700;
+        color:#1E293B;
+        margin:10px 0 15px;
+    }
+
 </style>
 
 <div class="dashboard-wrapper">
@@ -268,8 +294,9 @@
 
 </div>
 
-{{-- KPI CARDS --}}
+{{-- KPI CARDS (Ventas/Inventario/Compras: solo Plus/Empresarial) --}}
 
+@if($mostrarVentas)
 <div class="row mb-4">
 
     <div class="col-lg-3 col-md-6 mb-3">
@@ -288,11 +315,11 @@
 
             </div>
 
-            <div class="kpi-value">S/ 12,580</div>
+            <div class="kpi-value">S/ {{ number_format($ventasHoy, 2) }}</div>
 
-            <div class="kpi-growth">
-                <i class="fas fa-arrow-up"></i>
-                +12.5%
+            <div class="kpi-growth {{ $crecimientoVentas < 0 ? 'kpi-growth-negative' : '' }}">
+                <i class="fas {{ $crecimientoVentas >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i>
+                {{ $crecimientoVentas >= 0 ? '+' : '' }}{{ $crecimientoVentas }}% vs ayer
             </div>
 
         </div>
@@ -315,11 +342,11 @@
 
             </div>
 
-            <div class="kpi-value">S/ 45,920</div>
+            <div class="kpi-value">S/ {{ number_format($ingresosMes, 2) }}</div>
 
-            <div class="kpi-growth">
-                <i class="fas fa-arrow-up"></i>
-                +8.2%
+            <div class="kpi-growth {{ $crecimientoIngresos < 0 ? 'kpi-growth-negative' : '' }}">
+                <i class="fas {{ $crecimientoIngresos >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i>
+                {{ $crecimientoIngresos >= 0 ? '+' : '' }}{{ $crecimientoIngresos }}% vs mes anterior
             </div>
 
         </div>
@@ -342,11 +369,11 @@
 
             </div>
 
-            <div class="kpi-value">S/ 8,420</div>
+            <div class="kpi-value">S/ {{ number_format($gastosMes, 2) }}</div>
 
-            <div class="kpi-growth">
-                <i class="fas fa-arrow-up"></i>
-                +3.1%
+            <div class="kpi-growth {{ $crecimientoGastos > 0 ? 'kpi-growth-negative' : '' }}">
+                <i class="fas {{ $crecimientoGastos > 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i>
+                {{ $crecimientoGastos >= 0 ? '+' : '' }}{{ $crecimientoGastos }}% vs mes anterior
             </div>
 
         </div>
@@ -369,11 +396,11 @@
 
             </div>
 
-            <div class="kpi-value">18</div>
+            <div class="kpi-value">{{ $stockBajo }}</div>
 
-            <div class="kpi-growth">
-                <i class="fas fa-exclamation-circle"></i>
-                Atención
+            <div class="kpi-growth {{ $stockBajo > 0 ? 'kpi-growth-negative' : '' }}">
+                <i class="fas {{ $stockBajo > 0 ? 'fa-exclamation-circle' : 'fa-check-circle' }}"></i>
+                {{ $stockBajo > 0 ? 'Atención' : 'Todo en orden' }}
             </div>
 
         </div>
@@ -381,9 +408,196 @@
     </div>
 
 </div>
+@endif
 
-{{-- CHARTS --}}
+{{-- KPI TALLER --}}
 
+<div class="section-subtitle">
+    <i class="fas fa-motorcycle mr-1"></i>
+    Taller
+</div>
+
+<div class="row mb-4">
+
+    <div class="col-lg-4 col-md-6 mb-3">
+
+        <div class="kpi-card kpi-primary">
+
+            <div class="kpi-header">
+
+                <div>
+                    <div class="kpi-title">Reservas de Hoy</div>
+                </div>
+
+                <div class="kpi-icon bg-primary-gradient">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+
+            </div>
+
+            <div class="kpi-value">{{ $reservasHoy }}</div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-3">
+
+        <div class="kpi-card kpi-warning">
+
+            <div class="kpi-header">
+
+                <div>
+                    <div class="kpi-title">Mantenimientos Pendientes</div>
+                </div>
+
+                <div class="kpi-icon bg-warning-gradient">
+                    <i class="fas fa-tools"></i>
+                </div>
+
+            </div>
+
+            <div class="kpi-value">{{ $mantenimientosPendientes }}</div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-3">
+
+        <div class="kpi-card kpi-success">
+
+            <div class="kpi-header">
+
+                <div>
+                    <div class="kpi-title">Bahías Activas</div>
+                </div>
+
+                <div class="kpi-icon bg-success-gradient">
+                    <i class="fas fa-warehouse"></i>
+                </div>
+
+            </div>
+
+            <div class="kpi-value">{{ $bahiasActivas }}</div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{{-- REPORTES DE RESERVAS Y MANTENIMIENTOS (Taller: todos los planes) --}}
+
+<div class="row mb-4">
+
+    <div class="col-lg-7 mb-3">
+
+        <div class="dashboard-card mb-0" style="height:100%;">
+
+            <div class="dashboard-card-title">
+                Reservas de los Últimos 7 Días
+            </div>
+
+            <div class="chart-container" style="height:280px;">
+                <canvas id="reservasChart"></canvas>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-5 mb-3">
+
+        <div class="dashboard-card mb-0" style="height:100%;">
+
+            <div class="dashboard-card-title">
+                Mantenimientos por Estado
+            </div>
+
+            @if($mantenimientosPendientes + $mantenimientosAprobados + $mantenimientosObservados == 0)
+                <div class="empty-state">
+                    <i class="fas fa-tools fa-2x mb-2"></i>
+                    <p class="mb-0">Aún no hay mantenimientos registrados.</p>
+                </div>
+            @else
+                <div class="donut-container" style="height:280px;">
+                    <canvas id="mantenimientoEstadoChart"></canvas>
+                </div>
+            @endif
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="row mb-4">
+
+    <div class="col-lg-7 mb-3">
+
+        <div class="dashboard-card mb-0" style="height:100%;">
+
+            <div class="dashboard-card-title">
+                Mantenimientos por Tipo
+            </div>
+
+            <div class="chart-container" style="height:280px;">
+                <canvas id="mantenimientoTipoChart"></canvas>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-5 mb-3">
+
+        <div class="dashboard-card mb-0" style="height:100%;">
+
+            <div class="dashboard-card-title">
+                Próximas Reservas
+            </div>
+
+            @forelse($proximasReservas as $reserva)
+                <div class="top-product" style="align-items:flex-start;">
+
+                    <div class="kpi-icon bg-primary-gradient" style="width:44px;height:44px;font-size:15px;flex-shrink:0;">
+                        <i class="fas fa-motorcycle"></i>
+                    </div>
+
+                    <div class="flex-grow-1">
+
+                        <div class="top-product-name">{{ $reserva->RES_Cliente }}</div>
+
+                        <div class="top-product-sales">
+                            {{ \Carbon\Carbon::parse($reserva->RES_FechaProgramada)->translatedFormat('d M Y') }}
+                            &middot; {{ $reserva->TUR_Nombre }}
+                            &middot; {{ $reserva->BAH_Nombre }}
+                        </div>
+
+                    </div>
+
+                    <span class="badge-soft-{{ $reserva->RES_State === 'APROBADO' ? 'success' : 'warning' }}">
+                        {{ $reserva->RES_State === 'APROBADO' ? 'Aprobado' : 'Pendiente' }}
+                    </span>
+
+                </div>
+            @empty
+                <div class="empty-state">
+                    <i class="fas fa-calendar-check fa-2x mb-2"></i>
+                    <p class="mb-0">No hay reservas próximas.</p>
+                </div>
+            @endforelse
+
+        </div>
+
+    </div>
+
+</div>
+
+{{-- CHARTS (Ventas/Inventario/Compras: solo Plus/Empresarial) --}}
+
+@if($mostrarVentas)
 <div class="row">
 
     <div class="col-lg-8">
@@ -407,21 +621,30 @@
         <div class="dashboard-card">
 
             <div class="dashboard-card-title">
-                Métodos de Pago
+                Métodos de Pago (mes actual)
             </div>
 
-            <div class="donut-container">
-                <canvas id="paymentChart"></canvas>
-            </div>
+            @if($metodosPagoLabels->isEmpty())
+                <div class="empty-state">
+                    <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                    <p class="mb-0">Aún no hay ventas este mes.</p>
+                </div>
+            @else
+                <div class="donut-container">
+                    <canvas id="paymentChart"></canvas>
+                </div>
+            @endif
 
         </div>
 
     </div>
 
 </div>
+@endif
 
-{{-- TABLE + PRODUCTS --}}
+{{-- TABLE + PRODUCTS (Ventas/Inventario/Compras: solo Plus/Empresarial) --}}
 
+@if($mostrarVentas)
 <div class="row">
 
     <div class="col-lg-8">
@@ -447,38 +670,24 @@
 
                     <tbody>
 
-                        <tr>
-                            <td>Juan Perez</td>
-                            <td>12/05/2026</td>
-                            <td>S/ 250.00</td>
-                            <td>
-                                <span class="badge-soft-success">
-                                    Completado
-                                </span>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>Maria Lopez</td>
-                            <td>12/05/2026</td>
-                            <td>S/ 120.00</td>
-                            <td>
-                                <span class="badge-soft-success">
-                                    Completado
-                                </span>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>Carlos Diaz</td>
-                            <td>11/05/2026</td>
-                            <td>S/ 580.00</td>
-                            <td>
-                                <span class="badge-soft-danger">
-                                    Pendiente
-                                </span>
-                            </td>
-                        </tr>
+                        @forelse($ultimasVentas as $mov)
+                            <tr>
+                                <td>{{ $mov->CLI_Nombre }}</td>
+                                <td>{{ \Carbon\Carbon::parse($mov->created_at)->format('d/m/Y') }}</td>
+                                <td>S/ {{ number_format($mov->total, 2) }}</td>
+                                <td>
+                                    @if($mov->VEN_Status == 1)
+                                        <span class="badge-soft-success">Completado</span>
+                                    @else
+                                        <span class="badge-soft-danger">Anulado</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="empty-state">Aún no hay ventas registradas.</td>
+                            </tr>
+                        @endforelse
 
                     </tbody>
 
@@ -498,66 +707,44 @@
                 Top Productos
             </div>
 
-            <div class="top-product">
+            @forelse($topProductos as $index => $prod)
+                @php
+                    $porcentajeTop = $maxUnidadesTop > 0 ? round(($prod->unidades / $maxUnidadesTop) * 100) : 0;
+                    $coloresTop = ['bg-primary', 'bg-success', 'bg-warning'];
+                    $imagenTop = $prod->PRO_Imagen
+                        ? '/storage/' . tenant('tipo_negocio') . '/' . tenant('id') . '/archivos/producto/' . $prod->PRO_Imagen
+                        : '/images/imagen_default.png';
+                @endphp
+                <div class="top-product">
 
-                <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=300&auto=format&fit=crop" alt="">
+                    <img src="{{ $imagenTop }}" alt="{{ $prod->PRO_Nombre }}">
 
-                <div class="flex-grow-1">
+                    <div class="flex-grow-1">
 
-                    <div class="top-product-name">iPhone 15 Pro</div>
+                        <div class="top-product-name">{{ $prod->PRO_Nombre }}</div>
 
-                    <div class="top-product-sales">120 ventas</div>
+                        <div class="top-product-sales">{{ (int) $prod->unidades }} unidades vendidas</div>
 
-                    <div class="progress">
-                        <div class="progress-bar bg-primary" style="width:85%"></div>
+                        <div class="progress">
+                            <div class="progress-bar {{ $coloresTop[$index % 3] }}" style="width:{{ $porcentajeTop }}%"></div>
+                        </div>
+
                     </div>
 
                 </div>
-
-            </div>
-
-            <div class="top-product">
-
-                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=300&auto=format&fit=crop" alt="">
-
-                <div class="flex-grow-1">
-
-                    <div class="top-product-name">Nike Air Max</div>
-
-                    <div class="top-product-sales">95 ventas</div>
-
-                    <div class="progress">
-                        <div class="progress-bar bg-success" style="width:70%"></div>
-                    </div>
-
+            @empty
+                <div class="empty-state">
+                    <i class="fas fa-box-open fa-2x mb-2"></i>
+                    <p class="mb-0">Aún no hay ventas de productos.</p>
                 </div>
-
-            </div>
-
-            <div class="top-product">
-
-                <img src="https://images.unsplash.com/photo-1517336714739-489689fd1ca8?q=80&w=300&auto=format&fit=crop" alt="">
-
-                <div class="flex-grow-1">
-
-                    <div class="top-product-name">Macbook Pro</div>
-
-                    <div class="top-product-sales">75 ventas</div>
-
-                    <div class="progress">
-                        <div class="progress-bar bg-warning" style="width:55%"></div>
-                    </div>
-
-                </div>
-
-            </div>
+            @endforelse
 
         </div>
 
     </div>
 
 </div>
-```
+@endif
 
 </div>
 
@@ -567,6 +754,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+{{-- Colores de texto/rejilla que se adaptan al tema claro/oscuro del panel --}}
+<script>
+    const chartTextColor = getComputedStyle(document.body).getPropertyValue('--text-muted').trim() || '#64748B';
+    const chartGridColor = getComputedStyle(document.body).getPropertyValue('--bg-main').trim() === '#0F172A'
+        ? 'rgba(255,255,255,.06)'
+        : 'rgba(148,163,184,.15)';
+</script>
+
+@if($mostrarVentas)
 <script>
 
     // ======================================================
@@ -581,12 +777,12 @@
 
         data: {
 
-            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+            labels: @json($labelsMeses),
 
             datasets: [
                 {
                     label: 'Ventas',
-                    data: [12000, 19000, 15000, 24000, 21000, 28000],
+                    data: @json($serieVentasMensual),
                     borderColor: '#2563EB',
                     backgroundColor: 'rgba(37,99,235,.10)',
                     fill: true,
@@ -595,7 +791,7 @@
                 },
                 {
                     label: 'Gastos',
-                    data: [8000, 12000, 10000, 14000, 12000, 16000],
+                    data: @json($serieGastosMensual),
                     borderColor: '#EF4444',
                     backgroundColor: 'rgba(239,68,68,.08)',
                     fill: true,
@@ -637,38 +833,179 @@
 
     const paymentCtx = document.getElementById('paymentChart');
 
-    new Chart(paymentCtx, {
+    if (paymentCtx) {
+        new Chart(paymentCtx, {
 
-        type: 'doughnut',
+            type: 'doughnut',
 
+            data: {
+
+                labels: @json($metodosPagoLabels),
+
+                datasets: [{
+
+                    data: @json($metodosPagoData),
+
+                    backgroundColor: [
+                        '#2563EB',
+                        '#22C55E',
+                        '#F59E0B',
+                        '#A855F7',
+                        '#EF4444'
+                    ],
+
+                    borderWidth: 0
+                }]
+            },
+
+            options: {
+
+                responsive: true,
+                maintainAspectRatio: false,
+
+                cutout: '70%',
+
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+
+</script>
+@endif
+
+<script>
+
+    // ======================================================
+    // RESERVAS ÚLTIMOS 7 DÍAS
+    // ======================================================
+
+    new Chart(document.getElementById('reservasChart'), {
+        type: 'bar',
         data: {
-
-            labels: ['Yape', 'Efectivo', 'Tarjeta'],
-
+            labels: @json($labelsReservas7d),
             datasets: [{
-
-                data: [45, 30, 25],
-
-                backgroundColor: [
-                    '#2563EB',
-                    '#22C55E',
-                    '#F59E0B'
-                ],
-
-                borderWidth: 0
+                label: 'Reservas',
+                data: @json($serieReservas7d),
+                backgroundColor: 'rgba(37,99,235,.65)',
+                borderRadius: 8,
+                maxBarThickness: 40
             }]
         },
-
         options: {
-
             responsive: true,
             maintainAspectRatio: false,
-
-            cutout: '70%',
-
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0,
+                        color: chartTextColor
+                    },
+                    grid: {
+                        color: chartGridColor
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: chartTextColor
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // ======================================================
+    // MANTENIMIENTOS POR ESTADO
+    // ======================================================
+
+    const mantenimientoEstadoCtx = document.getElementById('mantenimientoEstadoChart');
+
+    if (mantenimientoEstadoCtx) {
+        new Chart(mantenimientoEstadoCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pendiente', 'Aprobado', 'Observado'],
+                datasets: [{
+                    data: [
+                        {{ $mantenimientosPendientes }},
+                        {{ $mantenimientosAprobados }},
+                        {{ $mantenimientosObservados }}
+                    ],
+                    backgroundColor: ['#F59E0B', '#22C55E', '#EF4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: chartTextColor
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // ======================================================
+    // MANTENIMIENTOS POR TIPO
+    // ======================================================
+
+    new Chart(document.getElementById('mantenimientoTipoChart'), {
+        type: 'bar',
+        data: {
+            labels: @json($mantenimientosPorTipoLabels),
+            datasets: [{
+                label: 'Mantenimientos',
+                data: @json($mantenimientosPorTipoData),
+                backgroundColor: 'rgba(124,58,237,.65)',
+                borderRadius: 8,
+                maxBarThickness: 40
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0,
+                        color: chartTextColor
+                    },
+                    grid: {
+                        color: chartGridColor
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: chartTextColor
+                    },
+                    grid: {
+                        display: false
+                    }
                 }
             }
         }

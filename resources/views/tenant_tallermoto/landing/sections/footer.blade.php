@@ -233,9 +233,11 @@
                 <li><a href="/reservar"
                         class="{{ $colorview == 'dark' ? 'hover:text-white' : 'hover:text-gray-900' }} transition">Estación
                         de Reservas</a></li>
+                @if(tenant_has_module('productos'))
                 <li><a href="/catalogo"
                         class="{{ $colorview == 'dark' ? 'hover:text-white' : 'hover:text-gray-900' }} transition">Catálogo
                         de Repuestos</a></li>
+                @endif
             </ul>
         </div>
 

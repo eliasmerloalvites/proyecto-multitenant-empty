@@ -619,6 +619,9 @@
                     background: '#0f172a',
                     color: '#fff',
                     confirmButtonColor: '#ef4444'
+                }).then(() => {
+                    // Recargar para reflejar el panorama actual (por ejemplo, si el slot ya fue tomado)
+                    window.location.reload();
                 });
             }
         } catch (error) {

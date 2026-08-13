@@ -27,19 +27,48 @@
     <link href="{{ asset_root('plugins/select2/css/select2.min.css') }}" rel="stylesheet">
     <link href="{{ asset_root('plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}" rel="stylesheet">
     {{-- <link rel="stylesheet" href="{{ asset_root('csskael/bootstrap.min.css') }}"> --}}
-    <link rel="stylesheet" href="{{ asset_root('csskael/kael-light.css') }}">
+    @php
+        $temaPanel = ($empresa->tipo_tema ?? null) === 'dark' ? 'dark' : 'light';
+    @endphp
+    <link rel="stylesheet" href="{{ asset_root('csskael/kael-' . $temaPanel . '.css') }}">
+    <style>
+        .preloader {
+            background: var(--bg-main);
+            transition: opacity .25s ease;
+        }
+
+        .preloader-spinner {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 4px solid rgba(37, 99, 235, .15);
+            border-top-color: var(--primary);
+            animation: preloader-spin .8s linear infinite;
+        }
+
+        .preloader-text {
+            margin-top: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: .02em;
+        }
+
+        @keyframes preloader-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
     @yield('head')
 </head>
 
-<body class="hold-transition sidebar-mini   ">
+<body class="hold-transition sidebar-mini tema-{{ $temaPanel }}">
     <div class="wrapper">
         {{-- Preloader --}}
         <div class="preloader flex-column justify-content-center align-items-center">
-            <img class="animation__shake"
-                src="{{ asset_root('adminlte/dist/img/AdminLTELogo.png') }}"
-                alt="AdminLTELogo"
-                height="60"
-                width="60">
+            <div class="preloader-spinner"></div>
+            <div class="preloader-text">Cargando...</div>
         </div>
 
         {{-- Navbar --}}

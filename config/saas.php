@@ -2,9 +2,26 @@
 
 return [
 
+    /*
+    |--------------------------------------------------------------------------
+    | COBROS
+    |--------------------------------------------------------------------------
+    | Política del comando `cobros:procesar` (programado a diario).
+    */
+    'cobros' => [
+        // Días de atraso (desde la fecha de cobro del ciclo) antes de
+        // suspender automáticamente al cliente/tenant por falta de pago.
+        'dias_gracia_suspension' => 5,
+    ],
+
     'plans' => [
 
         'start' => [
+
+            /* PRECIO DE REFERENCIA (S/ / mes) — usado para estimar MRR en el
+             * dashboard central. Plus/Empresarial pueden variar por acuerdo
+             * comercial; este valor es solo el piso publicado en la web. */
+            'price' => 59,
 
             /* LIMITES */
             'max_users' => 3,
@@ -23,11 +40,16 @@ return [
                     'primary_color' => '#0B63CE',
                 ],
 
+                // mantenimientos incluye el flujo de reservas (agenda de servicios)
                 'modules' => [
-                    'agenda' => true,
+                    'mantenimientos' => true,
+                    'productos' => false,
+                    'inventario' => false,
+                    'compras' => false,
+                    'ventas' => false,
                     'reports' => false,
-                    'inventory' => true,
-                    'sales' => true,
+                    'analytics' => false,
+                    'api_access' => false,
                 ],
 
                 'limits' => [
@@ -40,6 +62,8 @@ return [
         ],
 
         'basic' => [
+
+            'price' => 99,
 
             'max_users' => 5,
             'max_images' => 10,
@@ -56,10 +80,14 @@ return [
                 ],
 
                 'modules' => [
-                    'agenda' => true,
+                    'mantenimientos' => true,
+                    'productos' => false,
+                    'inventario' => false,
+                    'compras' => false,
+                    'ventas' => false,
                     'reports' => true,
-                    'inventory' => true,
-                    'sales' => true,
+                    'analytics' => false,
+                    'api_access' => false,
                 ],
 
                 'limits' => [
@@ -72,6 +100,8 @@ return [
         ],
 
         'plus' => [
+
+            'price' => 199,
 
             'max_users' => 15,
             'max_images' => 50,
@@ -88,11 +118,14 @@ return [
                 ],
 
                 'modules' => [
-                    'agenda' => true,
+                    'mantenimientos' => true,
+                    'productos' => true,
+                    'inventario' => true,
+                    'compras' => true,
+                    'ventas' => true,
                     'reports' => true,
-                    'inventory' => true,
-                    'sales' => true,
                     'analytics' => true,
+                    'api_access' => false,
                 ],
 
                 'limits' => [
@@ -100,6 +133,49 @@ return [
                     'warehouses' => 10,
                     'cash_registers' => 10,
                 ],
+
+            ],
+        ],
+
+        'empresarial' => [
+
+            'price' => 300,
+
+            'max_users' => 50,
+            'max_images' => 200,
+            'storage_limit_mb' => 20000,
+
+            'custom_domain_enabled' => true,
+            'custom_branding' => true,
+
+            'data' => [
+
+                'branding' => [
+                    'logo' => null,
+                    'primary_color' => '#0B63CE',
+                ],
+
+                'modules' => [
+                    'mantenimientos' => true,
+                    'productos' => true,
+                    'inventario' => true,
+                    'compras' => true,
+                    'ventas' => true,
+                    'reports' => true,
+                    'analytics' => true,
+                    'api_access' => true,
+                ],
+
+                'limits' => [
+                    'branches' => 20,
+                    'warehouses' => 50,
+                    'cash_registers' => 50,
+                ],
+
+                // Plan Empresarial: base para personalizaciones específicas por cliente.
+                // Sobrescribir/añadir claves aquí a nivel de tenant (tenant.data) según
+                // lo que se acuerde con cada cliente, sin tocar este config global.
+                'customizable' => true,
 
             ],
         ],

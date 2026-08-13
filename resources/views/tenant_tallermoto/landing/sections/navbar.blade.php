@@ -14,8 +14,8 @@
 
         <nav class="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest">
             @php
-                
-                if ($tiponegocio == 'plus'){
+
+                if (tenant_has_module('productos')){
                     $links = [
                             'Inicio' => ['route' => 'central.inicio', 'url' => '/'],
                             'Servicios' => ['route' => 'web.servicios', 'url' => '/servicios'],

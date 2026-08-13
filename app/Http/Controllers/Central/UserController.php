@@ -20,6 +20,10 @@ class UserController extends Controller
      */
     public function showlogin()
     {
+        if (Auth::guard('central')->check()) {
+            return redirect()->route('central.home');
+        }
+
         return view('central.login');
     }
 

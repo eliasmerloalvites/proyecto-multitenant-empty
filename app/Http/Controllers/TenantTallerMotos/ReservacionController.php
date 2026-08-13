@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Redirect;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\QueryException;
 
 class ReservacionController extends Controller
 {
@@ -334,7 +335,35 @@ class ReservacionController extends Controller
 
 	public function store (Request $request)
 	{
-        $Reservacion = Reservacion::create($request->all());
+        $validated = $request->validate([
+            'ALM_Id' => 'required|integer|exists:almacen,ALM_Id',
+            'TUR_Id' => 'required|integer|exists:turno,TUR_Id',
+            'BAH_Id' => 'required|integer|exists:bahia,BAH_Id',
+            'RES_FechaProgramada' => 'required|string',
+            'RES_Placa' => 'required|string|max:20',
+            'RES_Moto' => 'required|string|max:150',
+            'RES_Cliente' => 'required|string|max:120',
+            'RES_Celular' => 'required|string|max:12',
+            'RES_Detalle' => 'nullable|string|max:250',
+            'RES_Adicional' => 'nullable|string|max:250',
+        ]);
+
+        // Pre-chequeo: mensaje inmediato en el caso normal (sin carrera).
+        if (Reservacion::slotEstaOcupado($validated['BAH_Id'], $validated['TUR_Id'], $validated['RES_FechaProgramada'])) {
+            return response()->json(['success' => false, 'message' => 'Esa bahía y turno ya están reservados para esa fecha. Elige otro horario.'], 409);
+        }
+
+        try {
+            $Reservacion = Reservacion::create($validated);
+        } catch (QueryException $e) {
+            // Protección real ante condición de carrera: el índice único de BD
+            // rechazó un segundo INSERT casi simultáneo para el mismo slot.
+            if (Reservacion::esConflictoDeSlot($e)) {
+                return response()->json(['success' => false, 'message' => 'Esa bahía y turno acaban de ser reservados por otra persona. Elige otro horario.'], 409);
+            }
+            throw $e;
+        }
+
         return response()->json(['success' => 'Reservacion Registrado Exitosamente.']);
 	}
 	
@@ -344,7 +373,33 @@ class ReservacionController extends Controller
         $idusu = 1;
         $idper = 1;
 
-        $Reservacion = Reservacion::create($request->all());
+        $request->validate([
+            'ALM_Id' => 'required|integer|exists:almacen,ALM_Id',
+            'TUR_Id' => 'required|integer|exists:turno,TUR_Id',
+            'BAH_Id' => 'required|integer|exists:bahia,BAH_Id',
+            'RES_FechaProgramada' => 'required|string',
+            'RES_Placa' => 'required|string|max:20',
+            'RES_Moto' => 'required|string|max:150',
+            'RES_Cliente' => 'required|string|max:120',
+            'RES_Celular' => 'required|string|max:12',
+        ]);
+
+        // Pre-chequeo: mensaje inmediato en el caso normal (sin carrera).
+        if (Reservacion::slotEstaOcupado($request->BAH_Id, $request->TUR_Id, $request->RES_FechaProgramada)) {
+            return response()->json(['success' => false, 'message' => 'Esa bahía y turno ya están reservados para esa fecha. Elige otro horario.'], 409);
+        }
+
+        try {
+            $Reservacion = Reservacion::create($request->all());
+        } catch (QueryException $e) {
+            // Protección real ante condición de carrera: el índice único de BD
+            // rechazó un segundo INSERT casi simultáneo para el mismo slot.
+            if (Reservacion::esConflictoDeSlot($e)) {
+                return response()->json(['success' => false, 'message' => 'Esa bahía y turno acaban de ser reservados por otra persona. Elige otro horario.'], 409);
+            }
+            throw $e;
+        }
+
         $TipoMantenimiento = $request->TIP_Mantenimiento;
         $CambioAceite = $request->CAM_Aceite;
         $Aceite = $request->aceite;
@@ -532,7 +587,26 @@ class ReservacionController extends Controller
 	public function update(Request $request,$id)
 	{
 		$Reservacion=Reservacion::findOrFail($id);
-		$Reservacion->update($request->all());
+
+		// Solo se re-chequea disponibilidad si el cambio realmente puede
+		// mover la reserva a otro slot (aprobar/rechazar no toca estos campos).
+		$BAH_Id = $request->get('BAH_Id', $Reservacion->BAH_Id);
+		$TUR_Id = $request->get('TUR_Id', $Reservacion->TUR_Id);
+		$RES_FechaProgramada = $request->get('RES_FechaProgramada', $Reservacion->RES_FechaProgramada);
+
+		if (Reservacion::slotEstaOcupado($BAH_Id, $TUR_Id, $RES_FechaProgramada, $Reservacion->RES_Id)) {
+			return response()->json(['success' => false, 'message' => 'Esa bahía y turno ya están reservados para esa fecha. Elige otro horario.'], 409);
+		}
+
+		try {
+			$Reservacion->update($request->all());
+		} catch (QueryException $e) {
+			if (Reservacion::esConflictoDeSlot($e)) {
+				return response()->json(['success' => false, 'message' => 'Esa bahía y turno acaban de ser reservados por otra persona. Elige otro horario.'], 409);
+			}
+			throw $e;
+		}
+
 		return response()->json(['success' => 'Reservacion Editado Exitosamente.']);
 	}
 

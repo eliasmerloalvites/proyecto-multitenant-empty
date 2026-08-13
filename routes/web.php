@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Central\ClientController;
 use App\Http\Controllers\Central\HomeController;
+use App\Http\Controllers\Central\PagoController;
+use App\Http\Controllers\Central\PlanController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
@@ -49,6 +51,15 @@ Route::middleware([
       'destroy' => 'admin.clients.destroy',
       'show' => 'admin.clients.show'
     ]);
+    Route::patch('admin/clients/{client}/toggle-status', [ClientController::class, 'toggleStatus'])
+      ->name('admin.clients.toggleStatus');
+
+    Route::get('admin/cobros', [PagoController::class, 'index'])->name('admin.cobros.index');
+    Route::post('admin/cobros/{client}', [PagoController::class, 'store'])->name('admin.cobros.store');
+    Route::get('admin/cobros/{client}/historial', [PagoController::class, 'historial'])->name('admin.cobros.historial');
+
+    Route::get('admin/planes', [PlanController::class, 'index'])->name('admin.planes.index');
+    Route::put('admin/planes/{plan}', [PlanController::class, 'update'])->name('admin.planes.update');
   });
 });
 Route::get('/__who', fn () => dd('CENTRAL', tenant()));
