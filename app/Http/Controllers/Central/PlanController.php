@@ -45,6 +45,8 @@ class PlanController extends Controller
             $modules[$clave] = in_array($clave, $modulosMarcados, true);
         }
 
+        $precioAnterior = $plan->price;
+
         $plan->update([
             'nombre' => $validated['nombre'],
             'price' => $validated['price'],
@@ -61,6 +63,12 @@ class PlanController extends Controller
                 'cash_registers' => $validated['cash_registers'],
             ],
         ]);
+
+        \App\Models\AuditLog::registrar(
+            'plan.actualizado',
+            'Actualizó el plan "' . $plan->nombre . '"' . ($precioAnterior != $validated['price'] ? ' (precio S/' . $precioAnterior . ' → S/' . $validated['price'] . ')' : ''),
+            ['plan' => $plan->key, 'precio_anterior' => $precioAnterior, 'precio_nuevo' => $validated['price'], 'modules' => $modules]
+        );
 
         return response()->json(['success' => 'Plan "' . $plan->nombre . '" actualizado correctamente.']);
     }

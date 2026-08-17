@@ -116,7 +116,7 @@ class HomeController extends Controller
             $plan = tenant('plan');
             $dataProductos = [];
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
-            if ($plan == 'start') {
+            if ($plan == 'start' || $tiponegocio !== 'tallermoto') {
                 $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
             }

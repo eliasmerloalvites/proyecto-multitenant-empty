@@ -4,6 +4,8 @@ use App\Http\Controllers\Central\ClientController;
 use App\Http\Controllers\Central\HomeController;
 use App\Http\Controllers\Central\PagoController;
 use App\Http\Controllers\Central\PlanController;
+use App\Http\Controllers\Central\RegistroController;
+use App\Http\Controllers\Central\AuditLogController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
@@ -25,6 +27,12 @@ Route::middleware([
     return redirect()->route('central-usuarios.index')->with('datos', 'Acción Cancelada...!');
   })->name('central.usuario.cancelar');
   Route::post('/logout', [UserController::class, 'logout'])->name('central.logout');
+
+  Route::get('/crear-empresa', [RegistroController::class, 'show'])->name('central.registro.show');
+  Route::post('/crear-empresa', [RegistroController::class, 'store'])
+    ->middleware('throttle:5,10') // máx. 5 intentos cada 10 minutos por IP
+    ->name('central.registro.store');
+  Route::get('/crear-empresa/verificar/{token}', [RegistroController::class, 'verificar'])->name('central.registro.verificar');
 
   
 
@@ -60,6 +68,8 @@ Route::middleware([
 
     Route::get('admin/planes', [PlanController::class, 'index'])->name('admin.planes.index');
     Route::put('admin/planes/{plan}', [PlanController::class, 'update'])->name('admin.planes.update');
+
+    Route::get('admin/auditoria', [AuditLogController::class, 'index'])->name('admin.auditoria.index');
   });
 });
 Route::get('/__who', fn () => dd('CENTRAL', tenant()));

@@ -68,6 +68,13 @@ Route::middleware([
     Route::get('/contacto', [HomeController::class, 'contacto'])->name('web.contacto');
     Route::get('/tenant/login', [UserController::class, 'showlogin'])->name('tenant.login');
     Route::post('/tenant/login', [UserController::class, 'login'])->name('tenant.login.post');
+
+    Route::middleware('throttle:5,10')->group(function () {
+        Route::get('/tenant/password/olvide', [\App\Http\Controllers\Tenant\PasswordResetController::class, 'show'])->name('tenant.password.request');
+        Route::post('/tenant/password/olvide', [\App\Http\Controllers\Tenant\PasswordResetController::class, 'enviar'])->name('tenant.password.email');
+        Route::get('/tenant/password/restablecer/{token}', [\App\Http\Controllers\Tenant\PasswordResetController::class, 'showReset'])->name('tenant.password.reset');
+        Route::post('/tenant/password/restablecer', [\App\Http\Controllers\Tenant\PasswordResetController::class, 'actualizar'])->name('tenant.password.update');
+    });
     Route::get('/tenant/seguridad/cancelarusuario',   function () {
         return redirect()->route('tenant.seguridad.usuarios.index')->with('datos', 'Acción Cancelada...!');
     })->name('tenant.seguridad.usuario.cancelar');

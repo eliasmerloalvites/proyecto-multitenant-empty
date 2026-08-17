@@ -3,7 +3,7 @@
     <a href="/tenant/home" class="brand-link navbar-light">
       <img id="avatarImageHeader" class="brand-image img-circle elevation-3" alt="User Image">
       <span class="brand-text font-weight-light">
-          <img src="{{asset_root('/adminlte/dist/img/logo.png') }}" alt="AdminLTE Logo" style="height:30px"> </span>
+          <img src="{{ !empty($empresa->logo_pdf) ? asset_root($empresa->logo_pdf) : asset_root('images/icono.jpg') }}" alt="AdminLTE Logo" style="height:30px"> </span>
     </a>
 
     <!-- Sidebar -->
@@ -22,8 +22,9 @@
               </p>
             </a>
           </li>
+            @if(tenant_has_module('inventario') || tenant_has_module('productos'))
             @can('tenant.inventario.clase.index')
-            <li class="nav-item has-treeview 
+            <li class="nav-item has-treeview
                 {{ request()->routeIs('tenant.inventario.clase*') || 
                 request()->routeIs('tenant.inventario.categoria*') || 
                 request()->routeIs('tenant.inventario.almacen*') ||
@@ -81,6 +82,8 @@
                 </ul>
             </li>
             @endcan
+            @endif
+            @if(tenant_has_module('compras'))
             @can('tenant.compras.tipogasto.index')
             <li class="nav-item has-treeview 
                 {{ request()->routeIs('tenant.compras.compra*') ||
@@ -140,7 +143,9 @@
                 </ul>
             </li>
             @endcan
+            @endif
 
+            @if(tenant_has_module('ventas'))
             @can('tenant.ventas.metodopago.index')
             <li class="nav-item has-treeview 
                 {{ request()->routeIs('tenant.ventas.metodopago*') ||
@@ -188,13 +193,14 @@
                 </ul>
             </li>
             @endcan
+            @endif
 
             <!-- CONFIGURACIÓN -->
                 
-            @can('tenant.configuracion.sede.index')
-                <li class="nav-item has-treeview 
-                    {{ request()->routeIs('tenant.configuracion.sede*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->routeIs('tenant.configuracion.sede*') ? 'active' : '' }}">
+            @canany(['tenant.configuracion.sede.index', 'tenant.configuracion.empresa.index'])
+                <li class="nav-item has-treeview
+                    {{ request()->routeIs('tenant.configuracion.sede*') || request()->routeIs('tenant.configuracion.empresa*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('tenant.configuracion.sede*') || request()->routeIs('tenant.configuracion.empresa*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-cogs"></i>
                         <p>
                             CONFIGURACIÓN
@@ -202,18 +208,28 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
+                        <!-- EMPRESA -->
+                        @can('tenant.configuracion.empresa.index')
+                        <li class="nav-item">
+                            <a href="{{ tenant_url('tenant.configuracion.empresa.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.configuracion.empresa*') ? 'active' : '' }}">
+                                <i class="fas fa-building nav-icon"></i>
+                                <p>Empresa</p>
+                            </a>
+                        </li>
+                        @endcan
                         <!-- SEDES -->
                         <li class="nav-item">
-                            <a href="{{ tenant_url('tenant.configuracion.sede.index') }}" 
+                            <a href="{{ tenant_url('tenant.configuracion.sede.index') }}"
                                 class="nav-link  {{ request()->routeIs('tenant.configuracion.sede*') ? 'active' : '' }}">
                                 <i class="fas fa-store nav-icon"></i>
                                 <p>Sedes</p>
                             </a>
                         </li>
                     </ul>
-                </li>   
-            @endcan
-        
+                </li>
+            @endcanany
+
           @can('tenant.seguridad.users.index')
             <li class="nav-item has-treeview {{ request()->routeIs('tenant.seguridad.usuario*') || request()->routeIs('tenant.seguridad.permiso*') || request()->routeIs('tenant.seguridad.rol*') ? 'menu-open' : '' }}"
                 id="idCabSeguridad">

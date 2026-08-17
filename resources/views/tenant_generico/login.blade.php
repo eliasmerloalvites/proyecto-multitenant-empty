@@ -1,175 +1,208 @@
-<html style="" class=" js no-touch csstransforms3d csstransitions">
+<!DOCTYPE html>
+<html lang="es" class="dark">
 
 <head>
-    <meta http-equiv="content-type" content="text/html;charset=UTF-8">
     <meta charset="utf-8">
-    <title>Acceso al Sistema :: MTC</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso al Sistema :: SAAS KAEL</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-touch-fullscreen" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta content="" name="description">
-    <meta content="" name="author">
-    <link href="/pluginlogin/pace-theme-flash.css" rel="stylesheet"
-        type="text/css"> {{-- DESCARGADO --}}
-    <link type="text/css" rel="stylesheet" href="{{ asset_root('assets/libs/bootstrap-3.3.5/css/bootstrap.css') }}"
-        rel="stylesheet" type="text/css">
-    <link type="text/css" rel="stylesheet"
-            href="{{ asset_root('assets/font/font-icon/font-awesome-4.4.0/css/font-awesome.css') }}">
-    <link class="main-stylesheet" href="/pluginlogin/pages.css" rel="stylesheet"
-        type="text/css"> {{-- DESCARGADO --}}
-    <link rel="stylesheet" type="text/css" href="/pluginlogin/style.css"> {{-- DESCARGADO --}}
-    <script src="/pluginlogin/jquery/jquery-1.11.1.min.js" type="text/javascript"></script>
-    <script src="/pluginlogin/modernizr.custom.js" type="text/javascript">
-    </script>{{-- DESCARGADO --}}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- <script type="text/javascript">
-        window.onload = function() {
-            // fix for windows 8
-            if (navigator.appVersion.indexOf("Windows NT 6.2") != -1)
-                document.head.innerHTML +=
-                '<link rel="stylesheet" type="text/css" href="~/Content/login/pages/css/windows.chrome.fix.css" />';
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#E52320',
+                            redHover: '#C81B18',
+                            darkBg: '#0B0F17',
+                            cardBg: '#131924',
+                            inputBg: '#1A2232',
+                            border: '#2A3548'
+                        }
+                    }
+                }
+            }
         }
-    </script> --}}
-    {{--libreria Toastr--}}
-    {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" integrity="sha512-vKMx8UnXk60zUwyUnUPM3HbQo8QfmNx7+ltw8Pm5zLusl1XIfwcxo8DbWCqMGKaWeNxWA8yrx5v3SaVpMvR3CA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js" integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> --}}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" integrity="sha512-3pIirOrwegjM6erE5gPSwkUzO+3cTjpnV9lexlNZqvupR64iZBnOOTiiLPb9M36zpMScbmUNIcHUqKD47M719g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    {{--libreria sweetalert2--}}
+    </script>
+
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    {{--JQUERY--}}
-    <script src="https://code.jquery.com/jquery-3.6.3.js" integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+
+    <style>
+        .glow-effect:focus-within {
+            box-shadow: 0 0 15px rgba(229, 35, 32, 0.25);
+        }
+    </style>
 </head>
 
-<body class="fixed-header  pace-done">
-    <div class="pace  pace-inactive">
-        <div class="pace-progress" data-progress-text="100%" data-progress="99" style="width: 100%;">
-            <div class="pace-progress-inner"></div>
-        </div>
-        <div class="pace-activity"></div>
-    </div>
+<body class="bg-brand-darkBg text-gray-100 min-h-screen flex items-center justify-center font-sans relative overflow-hidden">
 
-    <div class="login-wrapper">
-        <div class="bg-pic">
-            <img src="/images/login/fondologinweb.jpg" data-src="/images/login/fondologinweb.png"
-                data-src-retina="/images/login/fondologinweb.png" alt="" height="20%" class="lazy" />
-            {{-- s --}}
-        </div>
-        <div class="login-container bg-white">
-            <div class="p-l-50 m-l-20 p-r-50 m-r-20 p-t-50 m-t-30 sm-p-l-15 sm-p-r-15 sm-p-t-40">
-                <img style="margin-left: 0" src="/images/login/logo.png" alt="logo" width="" height="70" />
+    <!-- Fondo dinámico con brillo de neón -->
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-red opacity-10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-600 opacity-10 rounded-full blur-3xl pointer-events-none"></div>
 
-                <style>
-                    .zocial-link {
-                        margin: 1px !important;
-                        width: 87px;
-                    }
+    <!-- Contenedor Principal -->
+    <div class="w-full max-w-md p-6 relative z-10">
 
-                    #notify-message .alert {
-                        margin-bottom: 0;
-                        margin-top: 10px;
-                    }
+        <!-- Card de Login -->
+        <div class="bg-brand-cardBg border border-brand-border/60 rounded-2xl shadow-2xl p-8 backdrop-blur-md">
 
-                </style>
-
-                <div class="login-box">
-
-                    <form  id="LoginForm" name="LoginForm" >
-                        @csrf
-                        <div class="p-t-25">
-
-                            <div class="form-group form-group-default">
-                                <label>Login</label>
-                                <div class="controls">
-                                    <input type="text" name="email" placeholder="Usuario" id="email"
-                                        class="form-control @error('email') is-invalid @enderror login-form-field" value="{{old('email')}}" required tabindex="1" />
-                                    <input type="hidden" name="user"  value="1" />
-                                    @error('email') 
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{$message}}</strong>
-                                    </span>
-                    		@enderror
-                                </div>
-                            </div>
-                            <div class="form-group form-group-default">
-                                <label>Contraseña</label>
-                                <div class="controls">
-                                    <input type="password"  class="form-control @error('password') is-invalid @enderror login-form-field" value="{{old('password')}}" id="password"
-                                        name="password" placeholder="Credenciales" required tabindex="2" />
-                                        @error('password') 
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{$message}}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                            </div>
-                            @if(session()->has('danger'))
-                                <div class="alert alert-danger col-md-12">{{ session()->get('danger') }}</div>
-                            @endif
-                            <div class="row" >
-                                <div class="col-md-6">
-                                    <div class="checkbox">
-                                        <input type="checkbox" id="remember-me" class="login-form-field" tabindex="3" />
-                                        <label for="remember-me">No cerrar sesión.</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6" align="right"  >
-                                <button class="btn btn-success btn-cons m-t-10  float-right" id="saveBtn" name="saveBtn" >
-                                    Ingresar
-                                </button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="pull-bottom sm-pull-bottom">
-                    <div class="m-b-30 p-r-80 sm-m-t-20 sm-p-r-15 sm-p-b-20 clearfix">
-                        <div class="col-sm-12 no-padding m-t-10">
-                            <p>
-                                <small>
-                                    Ingresa a la Intranet con tus credenciales del
-                                    <i class="fa fa-desktop fa-fw fa-lg"></i>
-                                    <b>ERP </b>.<br />Soporte al anexo
-                                    <i class="fas fa-info-circle"></i> <a href="https://wa.me/51929386665/?text=Hola%20Necesito%20ayuda" target="_blank"><b>A1E9M9A8</b>.</a>
-                                </small>
-                            </p>
-                        </div>
-                    </div>
-                </div>
+            <!-- Logo y Encabezado -->
+            <div class="text-center mb-8">
+                <img src="{{ !empty($empresa->logo_pdf) ? asset_root($empresa->logo_pdf) : asset_root('images/icono.jpg') }}" alt="KAEL Logo" class="h-14 mx-auto mb-3 object-contain" />
+                <span class="inline-block px-3 py-1 bg-brand-red/10 text-brand-red text-xs font-semibold rounded-full border border-brand-red/20 uppercase tracking-wider">
+                    Panel Administrativo
+                </span>
             </div>
+
+            <!-- Formulario -->
+            <form id="LoginForm" name="LoginForm" class="space-y-5">
+                @csrf
+
+                <!-- Campo Usuario / Email -->
+                <div>
+                    <label for="email" class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                        Usuario o Correo
+                    </label>
+                    <div class="relative flex items-center rounded-xl bg-brand-inputBg border border-brand-border focus-within:border-brand-red transition-all duration-200 glow-effect">
+                        <span class="pl-4 text-gray-500">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                        <input type="text" name="email" id="email"
+                            class="w-full bg-transparent py-3 px-3 text-sm text-white placeholder-gray-500 focus:outline-none @error('email') border-red-500 @enderror"
+                            placeholder="Ej. admin@kael.com"
+                            value="{{ old('email') }}" required tabindex="1" />
+                    </div>
+                    <input type="hidden" name="user" value="1" />
+                    @error('email')
+                        <span class="text-red-500 text-xs mt-1 block">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+
+                <!-- Campo Contraseña -->
+                <div>
+                    <label for="password" class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                        Contraseña
+                    </label>
+                    <div class="relative flex items-center rounded-xl bg-brand-inputBg border border-brand-border focus-within:border-brand-red transition-all duration-200 glow-effect">
+                        <span class="pl-4 text-gray-500">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input type="password" name="password" id="password"
+                            class="w-full bg-transparent py-3 px-3 text-sm text-white placeholder-gray-500 focus:outline-none @error('password') border-red-500 @enderror"
+                            placeholder="••••••••" required tabindex="2" />
+                        <button type="button" id="togglePassword" class="pr-4 text-gray-500 hover:text-gray-300 focus:outline-none">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    @error('password')
+                        <span class="text-red-500 text-xs mt-1 block">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+
+                <!-- Mensaje Alerta de Sesión (Laravel) -->
+                @if(session()->has('danger'))
+                    <div class="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl">
+                        {{ session()->get('danger') }}
+                    </div>
+                @endif
+
+                <!-- Checkbox y Recordar -->
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center cursor-pointer text-gray-400 hover:text-gray-300">
+                        <input type="checkbox" id="remember-me" tabindex="3"
+                            class="w-4 h-4 rounded bg-brand-inputBg border-brand-border text-brand-red focus:ring-brand-red focus:ring-offset-brand-darkBg">
+                        <span class="ml-2 text-xs">No cerrar sesión</span>
+                    </label>
+                    <a href="{{ tenant_url('tenant.password.request') }}" class="text-xs text-gray-400 hover:text-brand-red">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
+
+                <!-- Botón de Ingreso -->
+                <button type="button" id="saveBtn" name="saveBtn"
+                    class="w-full py-3.5 px-4 bg-brand-red hover:bg-brand-redHover text-white font-semibold rounded-xl shadow-lg shadow-brand-red/30 hover:shadow-brand-red/50 transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer">
+                    <span>Ingresar al Sistema</span>
+                    <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </form>
+
+            <!-- Footer con link de soporte -->
+            <div class="mt-8 pt-6 border-t border-brand-border/40 text-center text-xs text-gray-500">
+                <p class="flex items-center justify-center gap-1.5 mb-1">
+                    <i class="fa-solid fa-desktop text-gray-400"></i>
+                    <span>Acceso Intranet ERP</span>
+                </p>
+                <p>
+                    ¿Necesitas ayuda?
+                    <a href="https://wa.me/51929386665/?text=Hola%20Necesito%20ayuda" target="_blank"
+                       class="text-brand-red hover:underline font-semibold inline-flex items-center gap-1">
+                        Soporte Anexo A1E9M9A8 <i class="fa-brands fa-whatsapp text-xs"></i>
+                    </a>
+                </p>
+            </div>
+
         </div>
+
+        <p class="text-center text-xs text-gray-600 mt-6">
+            &copy; {{ date('Y') }} SAAS KAEL. Todos los derechos reservados.
+        </p>
     </div>
 
-
-    <script src="/pluginlogin/pace.min.js" type="text/javascript"></script> {{-- DESCARGADO --}}
-    <script src="/pluginlogin/jquery.scrollTo.js" type="text/javascript"></script> {{-- DESCARGADO --}}
-    <script src="{{ asset_root('assets/libs/bootstrap-3.3.5/js/bootstrap.min.js') }}"></script>
-    <script src="/pluginlogin/jquery.blockUI.js" type="text/javascript"></script> {{-- DESCARGADO --}}
-    <script src="/pluginlogin/bootstrap-dialog.min.js"
-        type="text/javascript"></script> {{-- DESCARGADO --}}
-    <script src="/pluginlogin/simple.tools.core.js" type="text/javascript"></script> {{-- DESCARGADO --}}
-    <script type="text/javascript">
-        App.BaseURL("");
-    </script>
+    <!-- Script para Manejo de Mostrar/Ocultar Password y Petición AJAX -->
     <script>
         $(document).ready(function() {
+            // Configuración del Token CSRF para AJAX
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
+
+            // Toggle para ver contraseña
+            $('#togglePassword').click(function() {
+                const passwordInput = $('#password');
+                const icon = $(this).find('i');
+                if (passwordInput.attr('type') === 'password') {
+                    passwordInput.attr('type', 'text');
+                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                } else {
+                    passwordInput.attr('type', 'password');
+                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            });
+
+            // SweetAlert2 Toast Config
             const Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
-                timer: 3000
+                timer: 3000,
+                background: '#131924',
+                color: '#fff'
             });
-            
+
+            // Evento Click Submit AJAX
             $('#saveBtn').click(function(e) {
                 e.preventDefault();
+
+                const btn = $(this);
+                btn.prop('disabled', true).addClass('opacity-75');
 
                 $.ajax({
                     data: $('#LoginForm').serialize(),
@@ -177,27 +210,25 @@
                     type: "POST",
                     dataType: 'json',
                     success: function(data) {
-                        console.log('Success:', data);
                         Toast.fire({
-                            type: 'success',
-                            title: data.success
-                        })
-                        window.location.href = "/tenant/home";
-                        $('#LoginForm').trigger("reset");
+                            icon: 'success',
+                            title: data.success || '¡Acceso concedido!'
+                        });
+                        setTimeout(function() {
+                            window.location.href = "/tenant/home";
+                        }, 800);
                     },
                     error: function(data) {
-                        console.log('Error:', data);
+                        btn.prop('disabled', false).removeClass('opacity-75');
                         Toast.fire({
-                            type: 'error',
+                            icon: 'error',
                             title: 'Credenciales incorrectas'
-                            
-                        })
+                        });
                     }
                 });
             });
         });
     </script>
-
 </body>
 
 </html>

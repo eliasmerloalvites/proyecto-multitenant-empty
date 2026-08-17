@@ -694,13 +694,13 @@
 
                             {{-- Botón --}}
                             <div class="mt-7 mt-auto pt-7">
-                                <button
-                                    class="w-full py-3.5 rounded-xl font-bold shadow-xl transition
+                                <a href="{{ $plan['key'] === 'empresarial' ? url('/') . '#contacto' : route('central.registro.show', ['plan' => $plan['key']]) }}"
+                                    class="block text-center w-full py-3.5 rounded-xl font-bold shadow-xl transition
                                     {{ $plan['ctaDark']
                                         ? 'bg-gradient-to-r ' . $plan['gradient'] . ' text-slate-900 ' . $plan['gradientHover']
                                         : 'bg-gradient-to-r ' . $plan['gradient'] . ' text-white ' . $plan['gradientHover'] }}">
                                     {{ $plan['cta'] }}
-                                </button>
+                                </a>
                             </div>
 
                         </div>

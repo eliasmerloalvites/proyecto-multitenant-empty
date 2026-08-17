@@ -279,8 +279,9 @@
 
 </div>
 
-{{-- KPI CARDS --}}
+{{-- KPI CARDS (Ventas/Inventario/Compras: solo Plus/Empresarial) --}}
 
+@if($mostrarVentas)
 <div class="row mb-4">
 
     <div class="col-lg-3 col-md-6 mb-3">
@@ -392,9 +393,11 @@
     </div>
 
 </div>
+@endif
 
-{{-- CHARTS --}}
+{{-- CHARTS (Ventas/Inventario/Compras: solo Plus/Empresarial) --}}
 
+@if($mostrarVentas)
 <div class="row">
 
     <div class="col-lg-8">
@@ -437,9 +440,11 @@
     </div>
 
 </div>
+@endif
 
-{{-- TABLE + PRODUCTS --}}
+{{-- TABLE + PRODUCTS (Ventas/Inventario/Compras: solo Plus/Empresarial) --}}
 
+@if($mostrarVentas)
 <div class="row">
 
     <div class="col-lg-8">
@@ -539,6 +544,14 @@
     </div>
 
 </div>
+@else
+<div class="dashboard-card">
+    <div class="empty-state">
+        <i class="fas fa-chart-line fa-2x mb-2"></i>
+        <p class="mb-0">El resumen de ventas, inventario y compras está disponible en los planes Plus y Empresarial.</p>
+    </div>
+</div>
+@endif
 
 </div>
 
@@ -546,6 +559,7 @@
 
 @section('script')
 
+@if($mostrarVentas)
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
@@ -660,5 +674,6 @@
     }
 
 </script>
+@endif
 
 @endsection

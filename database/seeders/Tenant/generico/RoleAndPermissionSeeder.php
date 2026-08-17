@@ -66,6 +66,9 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.inventario.producto.show',    'Productos', 'Ver Producto',        'Ver Producto'],
             ['tenant.inventario.producto.destroy', 'Productos', 'Eliminar Productos',  'Eliminar Productos'],
             
+            // Empresa (Configuración general: logo, datos, tema, colores)
+            ['tenant.configuracion.empresa.index', 'Empresa', 'Ver Configuración Empresa', 'Ver/editar los datos generales de la empresa'],
+
             // Almacen || Sede
             ['tenant.configuracion.sede.index',   'Sedes', 'Ver Lista Sedes', 'Listar Sedes'],
             ['tenant.configuracion.sede.create',  'Sedes', 'Crear Sedes',     'Crear Sedes'],
@@ -196,6 +199,8 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.inventario.producto.show',
             'tenant.inventario.producto.destroy',
 
+            'tenant.configuracion.empresa.index',
+
             'tenant.configuracion.sede.index',
             'tenant.configuracion.sede.create',
             'tenant.configuracion.sede.edit',
@@ -268,6 +273,8 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.inventario.producto.edit',
             'tenant.inventario.producto.show',
             'tenant.inventario.producto.destroy',
+
+            'tenant.configuracion.empresa.index',
 
             'tenant.configuracion.sede.index',
             'tenant.configuracion.sede.create',

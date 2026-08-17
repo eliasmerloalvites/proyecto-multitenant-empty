@@ -130,7 +130,7 @@
                         sm:flex-row
                         gap-4">
 
-                            <a href="#planes"
+                            <a href="{{ route('central.registro.show') }}"
                                 class="px-8
                             py-4
                             rounded-xl

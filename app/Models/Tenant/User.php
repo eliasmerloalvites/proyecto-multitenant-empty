@@ -61,4 +61,20 @@ class User extends Authenticatable
         return $this->belongsTo(Personal::class, 'PER_Id', 'PER_Id');
     }
 
+    /**
+     * Reemplaza la notificación default de Laravel (que apunta a una ruta
+     * 'password.reset' que no existe en esta app) por un correo con estilo
+     * propio, enlazando a la ruta real del panel tenant.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $url = route('tenant.password.reset', [
+            'token' => $token,
+            'email' => $this->email,
+        ]);
+
+        \Illuminate\Support\Facades\Mail::to($this->email)
+            ->send(new \App\Mail\ResetPasswordMail($this->name, $url));
+    }
+
 }

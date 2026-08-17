@@ -101,6 +101,12 @@ class PagoController extends Controller
             'registrado_por' => Auth::guard('central')->id(),
         ]);
 
+        \App\Models\AuditLog::registrar(
+            'pago.registrado',
+            'Registró un pago de S/ ' . number_format($validated['monto'], 2) . ' de "' . $client->razon_social . '" (periodo ' . $periodo . ')',
+            ['client_id' => $client->id, 'periodo' => $periodo, 'monto' => $validated['monto'], 'metodo_pago' => $validated['metodo_pago']]
+        );
+
         return response()->json([
             'success' => 'Pago registrado correctamente.',
             'pago' => $pago,

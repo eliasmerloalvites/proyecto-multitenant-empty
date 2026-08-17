@@ -283,7 +283,11 @@ class HomeController extends Controller
             $tiponegocio = tenant('tipo_negocio');
             $plan = tenant('plan');
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
-            if ($plan == 'start') {
+            // La web multi-página (landing/page/*) solo existe para tallermoto por
+            // ahora; el resto de verticales (generico, etc.) usan la web de una
+            // sola página (welcome) sin importar el plan, hasta que se construyan
+            // sus propias páginas dedicadas.
+            if ($plan == 'start' || $tiponegocio !== 'tallermoto') {
                 $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
             }
@@ -338,7 +342,7 @@ class HomeController extends Controller
             $tiponegocio = tenant('tipo_negocio');
             $plan = tenant('plan');
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
-            if ($plan == 'start') {
+            if ($plan == 'start' || $tiponegocio !== 'tallermoto') {
                 $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
             }
@@ -358,6 +362,15 @@ class HomeController extends Controller
             $tiponegocio = tenant('tipo_negocio');
             $plan = tenant('plan');
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+            // El sistema de reservas por bahía/turno es específico de tallermoto
+            // (usa tablas que no existen en otros tipos de negocio). El resto de
+            // verticales no tiene "Reservar" habilitado todavía.
+            if ($tiponegocio !== 'tallermoto') {
+                $colorview = $empresa->tipo_tema ?? 'dark';
+
+                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
+            }
 
             $fechaSeleccionada = $request->query('fecha', \Carbon\Carbon::now()->format('Y-m-d'));
             $idlocal = $request->query('almacen', 1);
@@ -564,6 +577,15 @@ class HomeController extends Controller
         $tiponegocio = tenant('tipo_negocio');
         $plan = tenant('plan');
         $empresa = EmpresaFacturacion::where('tenant_id', $tenantid)->first();
+
+        // El historial de mantenimientos por placa es específico de tallermoto
+        // (consulta tablas que no existen en otros tipos de negocio).
+        if ($tiponegocio !== 'tallermoto') {
+            $colorview = $empresa->tipo_tema ?? 'dark';
+
+            return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
+        }
+
         $placaSeleccionada = strtoupper(trim($request->query('Placa', '')));
         $ultimoMtto = null;
         //dd($placaSeleccionada);
@@ -730,6 +752,14 @@ class HomeController extends Controller
                 return redirect()->route('web.servicios');
             }
 
+            // La página de catálogo (landing/page/catalogo + su partial AJAX)
+            // solo existe para tallermoto por ahora.
+            if ($tiponegocio !== 'tallermoto') {
+                $colorview = $empresa->tipo_tema ?? 'dark';
+
+                return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
+            }
+
             // 1. Query Base para Productos con Lotes acumulados
             $queryProductos = DB::table('producto as pd')
                 ->join('categoria as ct', 'pd.CAT_Id', '=', 'ct.CAT_Id')
@@ -818,8 +848,8 @@ class HomeController extends Controller
             $tiponegocio = tenant('tipo_negocio');
             $plan = tenant('plan');
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
-            
-            if ($plan == 'start') {
+
+            if ($plan == 'start' || $tiponegocio !== 'tallermoto') {
                 $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
             }
@@ -839,7 +869,7 @@ class HomeController extends Controller
             $plan = tenant('plan');
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
             $sede = Almacen::where('ALM_Status', 1)->get();
-            if ($plan == 'start') {
+            if ($plan == 'start' || $tiponegocio !== 'tallermoto') {
                 $colorview = $empresa->tipo_tema ?? 'dark';
                 return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
             }

@@ -129,6 +129,9 @@
                             class="w-4 h-4 rounded bg-brand-inputBg border-brand-border text-brand-red focus:ring-brand-red focus:ring-offset-brand-darkBg">
                         <span class="ml-2 text-xs">No cerrar sesión</span>
                     </label>
+                    <a href="{{ tenant_url('tenant.password.request') }}" class="text-xs text-gray-400 hover:text-brand-red">
+                        ¿Olvidaste tu contraseña?
+                    </a>
                 </div>
 
                 <!-- Botón de Ingreso -->

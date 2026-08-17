@@ -79,6 +79,15 @@ class ProcesarCobrosCommand extends Command
                         }
 
                         $this->notificarUnaVez($cliente, $periodo, 'suspension', $fechaCobro, $monto, false, $enviados, $sinEmail);
+
+                        \App\Models\AuditLog::create([
+                            'user_id' => null,
+                            'user_name' => 'Sistema (cobros:procesar)',
+                            'accion' => 'cliente.suspendido.auto',
+                            'descripcion' => 'Suspendió automáticamente a "' . $cliente->razon_social . '" por ' . $diasAtraso . ' días de atraso',
+                            'datos' => ['client_id' => $cliente->id, 'periodo' => $periodo, 'dias_atraso' => $diasAtraso],
+                            'created_at' => now(),
+                        ]);
                     }
                 }
             }

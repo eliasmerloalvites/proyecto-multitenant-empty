@@ -65,6 +65,15 @@ if (! function_exists('tenant_has_module')) {
             return false;
         }
 
+        // El vertical Genérico es un POS: productos/inventario/compras/ventas
+        // son su funcionalidad base, no un add-on premium como en Tallermoto
+        // (donde el negocio es mantenimientos/reservas y ventas es un extra
+        // de planes altos). Por eso, para Genérico estos módulos están
+        // disponibles desde el plan Start, sin pasar por el gate de plan.
+        if (tenant('tipo_negocio') === 'generico' && in_array($module, ['productos', 'inventario', 'compras', 'ventas'], true)) {
+            return true;
+        }
+
         $modules = tenant('modules');
 
         if (is_array($modules) && array_key_exists($module, $modules)) {

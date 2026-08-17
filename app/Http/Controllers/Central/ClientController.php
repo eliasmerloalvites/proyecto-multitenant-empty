@@ -136,7 +136,7 @@ class ClientController extends Controller
 
 
 
-    public function store(Request $request)
+    public function store(Request $request, \App\Services\TenantProvisioningService $provisioning)
     {
         $validated = $request->validate([
             'ruc' => 'required',
@@ -151,104 +151,21 @@ class ClientController extends Controller
             'custom_domain' => ['nullable', 'string'],
         ]);
 
-        $plans = saas_plans_config();
-        $planConfig = $plans[$validated['plan']];
+        if ($validated['domain_type'] === 'custom_domain') {
+            $validated['custom_domain'] = $validated['custom_domain'] ?? null;
+        }
 
         try {
-            // Validando Dominio
-            if ($validated['domain_type'] === 'custom_domain') {
-                $fullDomain = $validated['custom_domain'];
-            } else {
-                $fullDomain = $validated['subdomain'] . '.' . config('app.central_domain');
-            }
-            if (Domain::where('domain', $fullDomain)->exists()) {
-                return response()->json(['error' => 'El dominio ya existe.'], 422);
-            }
-            // dd($validated['plan']);
-            // 1️Crear TENANT (DB + dominio)
-            $tenantId = $validated['tipo_negocio'] . '_' . Str::slug($validated['subdomain']);
-            $tenant = Tenant::create([
-                'id' => $tenantId,
-                'tipo_negocio' => $validated['tipo_negocio'],
-                'plan' => $validated['plan'],
-                'status' => 'activo',
+            $provisioning->provision($validated);
 
-                'max_users' => $planConfig['max_users'],
-                'max_images' => $planConfig['max_images'],
-                'storage_limit_mb' => $planConfig['storage_limit_mb'],
-
-                'custom_domain_enabled' => $planConfig['custom_domain_enabled'],
-                'custom_branding' => $planConfig['custom_branding'],
-            ]);
-            // Refrescar tenant
-            $tenant->refresh();
-
-            foreach ($planConfig['data'] as $key => $value) {
-                $tenant->{$key} = $value;
-            }
-            $tenant->save();
-
-            
-
-            $domain = $tenant->domains()->create(['domain' => $fullDomain]);
-
-            // 2️⃣ Crear CLIENTE (DB CENTRAL)
-            Client::create([
-                'tenant_id'    => $tenant->id,
-                'razon_social' => $validated['razon_social'],
-                'ruc'          => $validated['ruc'],
-                'email'        => $validated['email'],
-                'billing_day'  => $validated['billing_day'],
-                'domain_id'    => $domain->id,
-                'status'       => 'activo',
-            ]);
-
-            $tenantid = $tenant->id;
-
-            // 3️⃣ Crear USUARIO ADMIN dentro del TENANT
-            $tenant->run(function () use ($validated, $tenantid) {
-                // Ejecutamos las migraciones EXTRA (ej: database/migrations/tenant/optica)
-                $extraPath = "database/migrations/tenant/" . $validated['tipo_negocio'];
-                if (is_dir(base_path($extraPath))) {
-                    Artisan::call('migrate', [
-                        '--path' => $extraPath,
-                        '--force' => true,
-                    ]);
-                }
-                // 2. Ejecutar Seeders Maestros (Datos fijos: categorías, configuraciones, etc.)
-                // Usamos el namespace completo de tu seeder seccionado
-                Artisan::call('db:seed', [
-                    '--class' => "Database\Seeders\Tenant\\" . $validated['tipo_negocio'] . "\DatabaseSeeder",
-                    '--force' => true,
-                ]);
-                $user = User::create([
-                    'name'              => 'Admin ' . $validated['razon_social'],
-                    'email'             => $validated['email'],
-                    'password'          => Hash::make($validated['password']),
-                    'email_verified_at' => now(),
-                    'estadousuario'     => 1,
-                    'tipousuario'       => 0,
-                    'avatar'            => '',
-                    'PER_Id'            => 1, // Asignar un PER_Id válido según tu lógica
-                ]);
-
-                if ($user) {
-                    $user->assignRole('Gerente');
-                }
-
-                $empresa = EmpresaFacturacion::create([
-                    'tenant_id'         => $tenantid,
-                    'ruc'               => $validated['ruc'],
-                    'razon_social'      => $validated['razon_social']
-                ]);
-            });
+            \App\Models\AuditLog::registrar(
+                'cliente.creado',
+                'Creó el cliente "' . $validated['razon_social'] . '" (plan ' . strtoupper($validated['plan']) . ')',
+                ['razon_social' => $validated['razon_social'], 'plan' => $validated['plan'], 'tipo_negocio' => $validated['tipo_negocio']]
+            );
 
             return response()->json(['success' => 'Cliente y entorno creados correctamente.']);
-        } catch (\Exception $e) {
-            if (isset($tenant)) {
-                $tenant->delete(); // elimina tenant + DB
-            }
-
+        } catch (\Throwable $e) {
             return response()->json(['error' => 'Error en DB Central: ' . $e->getMessage()], 500);
         }
     }
@@ -327,6 +244,9 @@ class ClientController extends Controller
             'status'            => 'required|in:activo,suspendido,cancelado',
         ]);
 
+        $planAnterior = null;
+        $statusAnterior = $client->status;
+
         try {
             DB::beginTransaction();
 
@@ -342,6 +262,7 @@ class ClientController extends Controller
             $tenant = Tenant::find($client->tenant_id);
 
             if ($tenant) {
+                $planAnterior = $tenant->plan;
                 $planChanged = $tenant->plan !== $validated['plan'];
 
                 $tenant->status = $validated['status'];
@@ -372,6 +293,20 @@ class ClientController extends Controller
 
             DB::commit();
 
+            $cambios = [];
+            if ($planAnterior && $planAnterior !== $validated['plan']) {
+                $cambios[] = 'plan ' . strtoupper($planAnterior) . ' → ' . strtoupper($validated['plan']);
+            }
+            if ($statusAnterior !== $validated['status']) {
+                $cambios[] = 'estado ' . $statusAnterior . ' → ' . $validated['status'];
+            }
+
+            \App\Models\AuditLog::registrar(
+                'cliente.actualizado',
+                'Actualizó a "' . $client->razon_social . '"' . ($cambios ? ' (' . implode(', ', $cambios) . ')' : ''),
+                ['client_id' => $client->id, 'plan_anterior' => $planAnterior, 'plan_nuevo' => $validated['plan'], 'status_anterior' => $statusAnterior, 'status_nuevo' => $validated['status']]
+            );
+
             return response()->json(['success' => 'Cliente actualizado correctamente.']);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -396,6 +331,12 @@ class ClientController extends Controller
             $tenant->status = $newStatus;
             $tenant->save();
         }
+
+        \App\Models\AuditLog::registrar(
+            $newStatus === 'activo' ? 'cliente.reactivado' : 'cliente.suspendido',
+            ($newStatus === 'activo' ? 'Reactivó' : 'Dio de baja') . ' a "' . $client->razon_social . '"',
+            ['client_id' => $client->id]
+        );
 
         $mensaje = $newStatus === 'activo'
             ? 'Cliente reactivado correctamente.'

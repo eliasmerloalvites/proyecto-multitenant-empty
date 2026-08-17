@@ -57,6 +57,9 @@ class RoleAndPermissionSeeder extends Seeder
 
             // Planes
             ['admin.planes.index', 'Planes', 'Ver Planes', 'Ver y editar los planes comerciales (Start/Basic/Plus/Empresarial)'],
+
+            // Auditoría
+            ['admin.auditoria.index', 'Auditoría', 'Ver Auditoría', 'Ver el historial de acciones del staff en el panel'],
         ];
 
         foreach ($permissions as [$name, $group, $nombre, $description]) {
@@ -122,6 +125,8 @@ class RoleAndPermissionSeeder extends Seeder
             'admin.cobros.index',
 
             'admin.planes.index',
+
+            'admin.auditoria.index',
         ]);
 
         $gerenteRole->givePermissionTo([

@@ -63,6 +63,16 @@
                             </a>
                         </li>
                     @endcan
+                    @can('admin.auditoria.index')
+                        <li class="nav-item">
+                            <a href="{{ route('admin.auditoria.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.auditoria*') ? 'active' : '' }}"
+                                id="idSegAuditoria">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Auditoría</p>
+                            </a>
+                        </li>
+                    @endcan
                 </ul>
             </li>
         @endcan

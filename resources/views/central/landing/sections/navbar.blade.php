@@ -74,7 +74,7 @@ shadow-lg shadow-slate-900/5">
 
                 </a>
 
-                <a href="#planes-pos"
+                <a href="{{ route('central.registro.show') }}"
                     class="px-6 py-3 rounded-xl
                 bg-gradient-to-r from-blue-600 to-cyan-500
                 hover:from-blue-700 hover:to-cyan-600

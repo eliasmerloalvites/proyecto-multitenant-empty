@@ -86,7 +86,7 @@
                     <div class="flex items-center gap-4 mb-8">
 
                         <!-- BTN -->
-                        <a href="#planes"
+                        <a href="{{ route('central.registro.show') }}"
                             class="group px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r
                                 from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 shadow-xl shadow-blue-600/30 transition-all duration-300
                                 hover:-translate-y-1">
