@@ -15,6 +15,7 @@ class RegistroVerificacion extends Model
         'email',
         'password',
         'subdomain',
+        'tipo_negocio',
         'plan',
         'expira_en',
         'verificado_en',

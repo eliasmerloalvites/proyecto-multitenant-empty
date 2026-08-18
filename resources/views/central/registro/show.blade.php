@@ -15,11 +15,11 @@
 
             <div class="text-center mb-8">
                 <span class="inline-flex items-center gap-2 bg-white/10 border border-white/15 backdrop-blur-xl px-5 py-2 rounded-full text-white text-sm font-semibold mb-6">
-                    <i class="fa-solid fa-motorcycle"></i>
-                    Kael Moto
+                    <i class="fa-solid fa-rocket"></i>
+                    Kael Tech
                 </span>
                 <h1 class="text-3xl md:text-4xl font-black text-white leading-tight">
-                    Crea tu taller
+                    Crea tu empresa
                     <span class="bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent">en minutos</span>
                 </h1>
                 <p class="text-slate-300 mt-3">
@@ -48,12 +48,36 @@
                         <input type="text" name="website" id="website" tabindex="-1" autocomplete="off">
                     </div>
 
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">¿Qué tipo de negocio manejas?</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="tipo_negocio" value="tallermoto" class="peer sr-only"
+                                    {{ old('tipo_negocio', 'tallermoto') === 'tallermoto' ? 'checked' : '' }}>
+                                <div class="border-2 border-slate-200 peer-checked:border-blue-600 peer-checked:bg-blue-50 rounded-xl p-4 text-center transition">
+                                    <i class="fa-solid fa-motorcycle text-2xl text-blue-600 mb-1"></i>
+                                    <div class="font-bold text-slate-900 text-sm">Taller de Motos</div>
+                                    <div class="text-slate-400 text-[11px]">Reservas, mantenimientos y bahías</div>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="tipo_negocio" value="generico" class="peer sr-only"
+                                    {{ old('tipo_negocio') === 'generico' ? 'checked' : '' }}>
+                                <div class="border-2 border-slate-200 peer-checked:border-blue-600 peer-checked:bg-blue-50 rounded-xl p-4 text-center transition">
+                                    <i class="fa-solid fa-boxes-stacked text-2xl text-blue-600 mb-1"></i>
+                                    <div class="font-bold text-slate-900 text-sm">Negocio Genérico</div>
+                                    <div class="text-slate-400 text-[11px]">Ventas, inventario y compras (POS)</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="grid md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre del taller</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre de la empresa</label>
                             <input type="text" name="razon_social" value="{{ old('razon_social') }}"
                                 class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Taller Los Motores SAC" required>
+                                placeholder="Mi Empresa SAC" required>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">RUC</label>
@@ -64,16 +88,16 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Subdominio de tu taller</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Subdominio de tu empresa</label>
                         <div class="flex items-stretch">
                             <input type="text" name="subdomain" value="{{ old('subdomain') }}"
                                 class="flex-1 border border-slate-300 rounded-l-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="mitaller" pattern="[a-z0-9\-]+" required>
+                                placeholder="miempresa" pattern="[a-z0-9\-]+" required>
                             <span class="inline-flex items-center px-4 bg-slate-100 border border-l-0 border-slate-300 rounded-r-xl text-slate-500 text-sm">
                                 .{{ config('app.central_domain') }}
                             </span>
                         </div>
-                        <p class="text-xs text-slate-400 mt-1">Así vas a acceder a tu panel: mitaller.{{ config('app.central_domain') }}</p>
+                        <p class="text-xs text-slate-400 mt-1">Así vas a acceder a tu panel: miempresa.{{ config('app.central_domain') }}</p>
                     </div>
 
                     <div class="grid md:grid-cols-2 gap-4 mb-4">
@@ -120,7 +144,7 @@
 
                     <button type="submit"
                         class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-bold shadow-xl transition">
-                        Crear mi taller ahora
+                        Crear mi empresa ahora
                     </button>
 
                     <p class="text-center text-xs text-slate-400 mt-4">

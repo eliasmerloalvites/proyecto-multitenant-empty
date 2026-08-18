@@ -28,8 +28,8 @@ use Stancl\Tenancy\Database\Models\Domain;
  */
 class RegistroController extends Controller
 {
-    // Único tipo de negocio habilitado para autoregistro por ahora.
-    private const TIPO_NEGOCIO = 'tallermoto';
+    // Verticales habilitados para autoregistro público.
+    private const TIPOS_NEGOCIO = ['tallermoto', 'generico'];
 
     private const MINUTOS_VIGENCIA = 30;
 
@@ -60,6 +60,7 @@ class RegistroController extends Controller
             'email' => 'required|email',
             'password' => 'required|min:8|confirmed',
             'subdomain' => ['required', 'alpha_dash', 'min:3', 'max:40'],
+            'tipo_negocio' => ['required', 'in:' . implode(',', self::TIPOS_NEGOCIO)],
             'plan' => 'required|in:start,basic,plus',
         ]);
 
@@ -89,6 +90,7 @@ class RegistroController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'subdomain' => $subdomain,
+            'tipo_negocio' => $validated['tipo_negocio'],
             'plan' => $validated['plan'],
             'expira_en' => now()->addMinutes(self::MINUTOS_VIGENCIA),
         ]);
@@ -132,7 +134,7 @@ class RegistroController extends Controller
 
         try {
             $tenant = $provisioning->provision([
-                'tipo_negocio' => self::TIPO_NEGOCIO,
+                'tipo_negocio' => $verificacion->tipo_negocio,
                 'plan' => $verificacion->plan,
                 'subdomain' => $verificacion->subdomain,
                 'razon_social' => $verificacion->razon_social,
