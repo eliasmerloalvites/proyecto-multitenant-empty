@@ -2281,7 +2281,7 @@
 
 
         function calculateChange() {
-            let total = 120.00;
+            let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
             let payment = parseFloat($('#inputPago').val()) || 0;
             let change = payment - total;
 

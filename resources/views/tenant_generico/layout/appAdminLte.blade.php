@@ -178,6 +178,118 @@
             });
 
         }
+
+        function seleccionarCaja(cajaId) {
+            $.ajax({
+                url: "{{ tenant_url('tenant.caja-sesion.seleccionar') }}",
+                type: "POST",
+                data: { caja_id: cajaId },
+                dataType: 'json',
+                success: function() {
+                    window.location.reload();
+                },
+                error: function(xhr) {
+                    const msg = xhr.responseJSON && xhr.responseJSON.error
+                        ? xhr.responseJSON.error
+                        : 'No se pudo cambiar de caja.';
+                    Swal.fire({ icon: 'error', title: msg, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                }
+            });
+        }
+
+        $('body').on('click', '.seleccionarCaja', function(e) {
+            e.preventDefault();
+            seleccionarCaja($(this).data('caja-id'));
+        });
+
+        $('body').on('click', '.aperturarCajaNavbar', function(e) {
+            e.preventDefault();
+            var cajaId = $(this).data('id');
+            var nombre = $(this).data('nombre');
+            var montoDefault = $(this).data('monto');
+
+            Swal.fire({
+                title: 'Aperturar "' + nombre + '"',
+                input: 'number',
+                inputLabel: 'Monto de apertura (S/)',
+                inputValue: montoDefault,
+                inputAttributes: { step: '0.01', min: '0' },
+                showCancelButton: true,
+                confirmButtonText: 'Aperturar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+                $.ajax({
+                    url: "{{ tenant_url('tenant.caja-sesion.abrir') }}",
+                    type: 'POST',
+                    data: { caja_id: cajaId, monto_apertura: result.value },
+                    dataType: 'json',
+                    success: function() { window.location.reload(); },
+                    error: function(xhr) {
+                        const msg = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'No se pudo aperturar la caja.';
+                        Swal.fire({ icon: 'error', title: msg, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                    }
+                });
+            });
+        });
+
+        $('body').on('click', '.cerrarCajaNavbar', function(e) {
+            e.preventDefault();
+            var cajaId = $(this).data('id');
+            var nombre = $(this).data('nombre');
+
+            Swal.fire({
+                title: 'Cerrar "' + nombre + '"',
+                input: 'number',
+                inputLabel: 'Monto real contado en caja (S/)',
+                inputAttributes: { step: '0.01', min: '0' },
+                showCancelButton: true,
+                confirmButtonText: 'Cerrar caja',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+                $.ajax({
+                    url: "{{ tenant_url('tenant.caja-sesion.cerrar') }}",
+                    type: 'POST',
+                    data: { caja_id: cajaId, monto_real: result.value },
+                    dataType: 'json',
+                    success: function(data) {
+                        window.location.reload();
+                    },
+                    error: function(xhr) {
+                        const msg = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'No se pudo cerrar la caja.';
+                        Swal.fire({ icon: 'error', title: msg, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                    }
+                });
+            });
+        });
+
+        @if ($requiereSeleccionCaja ?? false)
+            Swal.fire({
+                icon: 'question',
+                title: '¿Con qué caja vas a trabajar?',
+                html: `
+                    <div class="d-flex flex-column" style="gap:8px;">
+                        @foreach ($cajasDisponibles->filter(fn($cj) => $cj->sesionAbierta) as $cj)
+                            <button type="button" class="btn btn-outline-primary btn-block seleccionar-caja-modal" data-caja-id="{{ $cj->CAJ_Id }}">
+                                <i class="fas fa-cash-register mr-1"></i> {{ $cj->CAJ_Nombre }}
+                            </button>
+                        @endforeach
+                    </div>
+                `,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    document.querySelectorAll('.seleccionar-caja-modal').forEach(function(btn) {
+                        btn.addEventListener('click', function() {
+                            Swal.close();
+                            seleccionarCaja(this.dataset.cajaId);
+                        });
+                    });
+                }
+            });
+        @endif
     </script>
 
 </body>

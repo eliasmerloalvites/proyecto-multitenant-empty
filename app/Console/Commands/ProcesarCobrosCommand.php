@@ -23,14 +23,14 @@ class ProcesarCobrosCommand extends Command
         $dryRun = (bool) $this->option('dry-run');
         $diasGracia = (int) config('saas.cobros.dias_gracia_suspension', 5);
 
-        $planesConfig = saas_plans_config();
+        $planesConfig = [];
 
         $clientes = Client::where('clients.status', 'activo')
             ->whereNotNull('billing_day')
             ->with(['pagos' => fn ($q) => $q->where('periodo', $periodo)])
             ->join('domains as d', 'clients.domain_id', '=', 'd.id')
             ->join('tenants as t', 'd.tenant_id', '=', 't.id')
-            ->select('clients.*', 't.plan')
+            ->select('clients.*', 't.plan', 't.tipo_negocio')
             ->get();
 
         $enviados = ['recordatorio' => 0, 'vencido' => 0, 'suspension' => 0];
@@ -44,7 +44,8 @@ class ProcesarCobrosCommand extends Command
             }
 
             $fechaCobro = $cliente->fechaCicloActual($hoy);
-            $monto = $planesConfig[$cliente->plan]['price'] ?? 0;
+            $planesConfig[$cliente->tipo_negocio] ??= saas_plans_config($cliente->tipo_negocio);
+            $monto = $planesConfig[$cliente->tipo_negocio][$cliente->plan]['price'] ?? 0;
 
             // ---------- RECORDATORIO (por vencer, dentro de 7 días) ----------
             if ($estado === 'por_vencer') {

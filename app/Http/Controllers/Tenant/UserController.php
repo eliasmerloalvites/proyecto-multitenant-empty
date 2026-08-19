@@ -128,6 +128,13 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $totalUsuarios = User::where('estadousuario', 1)->count();
+        $limiteUsuarios = (int) tenant('max_users');
+        if ($limiteUsuarios > 0 && $totalUsuarios >= $limiteUsuarios) {
+            return response()->json([
+                'error' => 'Tu plan alcanzó el límite de ' . $limiteUsuarios . ' usuario(s). Actualiza tu plan para agregar más.'
+            ], 422);
+        }
 
         $query = User::where('email', '=', $request->get('email'))->get();
         if ($query->count() != 0) //si lo encuentra, osea si no esta vacia

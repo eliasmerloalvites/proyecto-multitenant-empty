@@ -25,24 +25,168 @@ if (! function_exists('tenant_url')) {
 if (! function_exists('saas_plans_config')) {
 
     /**
-     * Los 4 planes (start/basic/plus/empresarial), leídos desde la tabla
-     * `planes` (editable desde el panel central) y devueltos con la misma
-     * forma que antes tenía config('saas.plans'), para que todo el código
-     * que ya consumía ese array (ClientController, dashboards, etc.) no
-     * tuviera que cambiar de estructura al migrar de config a BD.
+     * Los 4 planes (start/basic/plus/empresarial) de un tipo_negocio dado,
+     * leídos desde la tabla `planes` (editable desde el panel central) y
+     * devueltos con la misma forma que antes tenía config('saas.plans'),
+     * para que todo el código que ya consumía ese array (ClientController,
+     * dashboards, etc.) no tuviera que cambiar de estructura al migrar de
+     * config a BD. Cada vertical (tallermoto, generico, ...) tiene su
+     * propio precio/límites/módulos por plan, por eso siempre requiere
+     * tipo_negocio explícito — no existe un plan "global".
      *
-     * Memoizado por request: esto se llama potencialmente muchas veces por
-     * página (una vez por @if(tenant_has_module(...)) en el sidebar).
+     * Memoizado por request y por tipo_negocio: esto se llama potencialmente
+     * muchas veces por página (una vez por @if(tenant_has_module(...)) en
+     * el sidebar).
      */
-    function saas_plans_config(): array
+    function saas_plans_config(string $tipoNegocio): array
     {
-        static $plans = null;
+        static $plans = [];
 
-        if ($plans === null) {
-            $plans = Plan::all()->keyBy('key')->map->toConfigArray()->toArray();
+        if (! isset($plans[$tipoNegocio])) {
+            $plans[$tipoNegocio] = Plan::paraNegocio($tipoNegocio)->get()->keyBy('key')->map->toConfigArray()->toArray();
         }
 
-        return $plans;
+        return $plans[$tipoNegocio];
+    }
+}
+
+if (! function_exists('tenant_storage_usado_mb')) {
+
+    /**
+     * Suma en MB de todos los archivos que el tenant actual tiene en su
+     * carpeta del disco 'public' (storage/app/public/{tipo_negocio}/{id}/...
+     * — mismo árbol que usan tanto los uploads vía Storage::disk('public')
+     * como los que se mueven directo con $file->move(public_path('storage/...')),
+     * porque 'storage/' en public_path() es el symlink a storage/app/public).
+     * Se usa para hacer cumplir storage_limit_mb del plan antes de aceptar
+     * una subida nueva.
+     */
+    function tenant_storage_usado_mb(): float
+    {
+        if (! tenant()) {
+            return 0.0;
+        }
+
+        $carpeta = tenant('tipo_negocio') . '/' . tenant('id');
+        $disco = \Illuminate\Support\Facades\Storage::disk('public');
+
+        if (! $disco->exists($carpeta)) {
+            return 0.0;
+        }
+
+        $bytes = collect($disco->allFiles($carpeta))->sum(fn ($archivo) => $disco->size($archivo));
+
+        return round($bytes / 1024 / 1024, 2);
+    }
+}
+
+if (! function_exists('tenant_caja_activa_id')) {
+
+    /**
+     * Caja con la que el usuario está operando en esta sesión. Solo cuentan
+     * las cajas que tienen un turno ABIERTO ahora mismo (caja_sesion) — una
+     * caja activa (CAJ_Status=1) pero sin aperturar no sirve para vender
+     * todavía, primero hay que aperturarla. Reglas:
+     * - Sin cajas con turno abierto → null (nada que elegir; el layout
+     *   ofrece aperturar en vez de seleccionar).
+     * - Una sola caja con turno abierto → esa, siempre.
+     * - Varias con turno abierto → la que el usuario eligió (sesión); null
+     *   si todavía no eligió, lo que dispara el modal de selección.
+     */
+    function tenant_caja_activa_id(): ?int
+    {
+        $abiertas = tenant_cajas_con_turno_abierto();
+
+        if ($abiertas->isEmpty()) {
+            return null;
+        }
+
+        if ($abiertas->count() === 1) {
+            return $abiertas->first()->CAJ_Id;
+        }
+
+        $sesionId = session('caja_activa_id');
+
+        if ($sesionId && $abiertas->contains('CAJ_Id', (int) $sesionId)) {
+            return (int) $sesionId;
+        }
+
+        return null;
+    }
+}
+
+if (! function_exists('tenant_cajas_con_turno_abierto')) {
+
+    /**
+     * Cajas (CAJ_Status=1) que tienen un turno abierto ahora mismo, con la
+     * sesión abierta precargada (->sesionAbierta) para no repetir consultas.
+     */
+    function tenant_cajas_con_turno_abierto(): \Illuminate\Support\Collection
+    {
+        if (! tenant()) {
+            return collect();
+        }
+
+        return \App\Models\Tenant\Caja::where('CAJ_Status', 1)
+            ->whereHas('sesionAbierta')
+            ->with('sesionAbierta')
+            ->get();
+    }
+}
+
+if (! function_exists('tenant_caja_sesion_activa_id')) {
+
+    /**
+     * CS_Id (turno de caja abierto) contra el que se deben registrar
+     * ventas/compras/gastos ahora mismo. Null si no hay caja operando (el
+     * tenant no usa cajas, o hay varias abiertas y aún no se eligió una).
+     */
+    function tenant_caja_sesion_activa_id(): ?int
+    {
+        $cajaId = tenant_caja_activa_id();
+
+        if (! $cajaId) {
+            return null;
+        }
+
+        $caja = tenant_cajas_con_turno_abierto()->firstWhere('CAJ_Id', $cajaId);
+
+        return $caja?->sesionAbierta?->CS_Id;
+    }
+}
+
+if (! function_exists('tenant_requiere_apertura_caja')) {
+
+    /**
+     * true cuando el tenant SÍ usa cajas (tiene al menos una activa) pero
+     * ninguna está aperturada ahora mismo — momento en el que Ventas,
+     * Compras y Gastos deben bloquear la pantalla de creación y pedir
+     * aperturar antes de dejar seguir. false si el tenant no usa cajas
+     * (comportamiento de siempre, sin bloqueo) o si ya hay una operando.
+     */
+    function tenant_requiere_apertura_caja(): bool
+    {
+        return \App\Models\Tenant\Caja::where('CAJ_Status', 1)->exists() && ! tenant_caja_sesion_activa_id();
+    }
+}
+
+if (! function_exists('tenant_caja_activa_almacen_id')) {
+
+    /**
+     * ALM_Id de la sede/almacén ligado a la caja con la que se está
+     * operando ahora mismo (Caja.ALM_Id). Null si no hay caja activa o la
+     * caja no tiene almacén asignado — en ese caso el caller debe caer a
+     * su propio fallback (ej. el almacén principal).
+     */
+    function tenant_caja_activa_almacen_id(): ?int
+    {
+        $cajaId = tenant_caja_activa_id();
+
+        if (! $cajaId) {
+            return null;
+        }
+
+        return \App\Models\Tenant\Caja::where('CAJ_Id', $cajaId)->value('ALM_Id');
     }
 }
 
@@ -82,6 +226,6 @@ if (! function_exists('tenant_has_module')) {
 
         $plan = $tenant->plan ?? 'start';
 
-        return (bool) (saas_plans_config()[$plan]['data']['modules'][$module] ?? false);
+        return (bool) (saas_plans_config(tenant('tipo_negocio'))[$plan]['data']['modules'][$module] ?? false);
     }
 }

@@ -51,6 +51,13 @@ class AlmacenController extends Controller
      */
     public function store(Request $request)
     {
+        // Mismo límite de plan que SedeController (misma tabla `almacen`).
+        $totalSedes = Almacen::count();
+        $limiteSedes = (int) (tenant('limits')['branches'] ?? 1);
+        if ($totalSedes >= $limiteSedes) {
+            return response()->json(['error' => 'Tu plan alcanzó el límite de ' . $limiteSedes . ' local(es)/sede(s)/almacén(es). Actualiza tu plan para agregar más.'], 422);
+        }
+
         $query=Almacen::where('ALM_NombreAlmacen','=',$request->get('ALM_NombreAlmacen'))
         ->where('EMP_Id', $request->get('EMP_Id'))
         ->first();

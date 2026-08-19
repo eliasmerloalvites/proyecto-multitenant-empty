@@ -46,7 +46,11 @@ class GastoController extends Controller
         $metodo_pago = DB::table('metodo_pago')->orderBy('MEP_Pago', 'asc')->get();
         $tipo_gasto = DB::table('tipo_gasto')->orderBy('TG_Descripcion', 'asc')->get();
         $proveedor = Proveedor::all();
-        return view('tenant_'.tenant('tipo_negocio').'.compras.gasto.index',compact('metodo_pago','tipo_gasto','proveedor'));
+        $requiereAperturarCaja = tenant_requiere_apertura_caja();
+        $cajasCerradas = $requiereAperturarCaja
+            ? \App\Models\Tenant\Caja::where('CAJ_Status', 1)->whereDoesntHave('sesionAbierta')->get()
+            : collect();
+        return view('tenant_'.tenant('tipo_negocio').'.compras.gasto.index',compact('metodo_pago','tipo_gasto','proveedor','requiereAperturarCaja','cajasCerradas'));
     }
 
     /**
@@ -62,6 +66,10 @@ class GastoController extends Controller
      */
     public function store(Request $request)
     {
+        if (tenant_requiere_apertura_caja()) {
+            return response()->json(['error' => 'No hay ninguna caja aperturada. Abre una caja antes de registrar el gasto.'], 422);
+        }
+
         try {
             DB::beginTransaction();
 
@@ -70,7 +78,9 @@ class GastoController extends Controller
             $mytime = Carbon::now('America/Lima');
             $horaactual = $mytime->toTimeString();
             $request->merge([
-                'ALM_Id' => 1,
+                'ALM_Id' => tenant_caja_activa_almacen_id() ?? 1,
+                'CAJ_Id' => tenant_caja_activa_id(),
+                'CS_Id' => tenant_caja_sesion_activa_id(),
                 'GAS_Status' => 1,
                 'USU_Id' => $idusu,
                 'GAS_Fecha' =>  $fecha.' '.$horaactual

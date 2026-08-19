@@ -35,12 +35,14 @@ class RegistroController extends Controller
 
     public function show()
     {
-        $planes = Plan::where('key', '!=', 'empresarial')
+        $planesPorNegocio = Plan::whereIn('tipo_negocio', self::TIPOS_NEGOCIO)
+            ->where('key', '!=', 'empresarial')
             ->orderByRaw("FIELD(`key`, 'start', 'basic', 'plus')")
-            ->get();
+            ->get()
+            ->groupBy('tipo_negocio');
 
         return view('central.registro.show', [
-            'planes' => $planes,
+            'planesPorNegocio' => $planesPorNegocio,
             'planSeleccionado' => request('plan', 'basic'),
         ]);
     }
@@ -73,6 +75,11 @@ class RegistroController extends Controller
 
         if (! $this->rucParecevalido($validated['ruc'])) {
             return back()->withInput()->withErrors(['ruc' => 'No pudimos validar ese RUC. Verifícalo e intenta de nuevo.']);
+        }
+
+        $planExiste = Plan::paraNegocio($validated['tipo_negocio'])->where('key', $validated['plan'])->exists();
+        if (! $planExiste) {
+            return back()->withInput()->withErrors(['plan' => 'Ese plan no está disponible para el tipo de negocio elegido.']);
         }
 
         // Limpia intentos anteriores no confirmados del mismo correo/subdominio
@@ -132,6 +139,13 @@ class RegistroController extends Controller
             ]);
         }
 
+        // 7 días de prueba gratis (config('saas.cobros.dias_prueba_gratis'))
+        // antes de que arranque el primer ciclo de cobro. El primer ciclo
+        // cae en el día del mes en que termina el trial (no el día del
+        // registro), para que el cliente tenga la prueba completa antes de
+        // que el sistema empiece a marcarlo como vencido.
+        $trialEndsAt = now()->addDays((int) config('saas.cobros.dias_prueba_gratis', 7));
+
         try {
             $tenant = $provisioning->provision([
                 'tipo_negocio' => $verificacion->tipo_negocio,
@@ -144,7 +158,8 @@ class RegistroController extends Controller
                 // hashear con Hash::make, así que le pasamos una contraseña
                 // aleatoria interna y actualizamos el hash real después.
                 'password' => Str::random(40),
-                'billing_day' => min((int) now()->day, 28),
+                'billing_day' => min($trialEndsAt->day, 28),
+                'trial_ends_at' => $trialEndsAt->toDateString(),
             ]);
         } catch (\Throwable $e) {
             report($e);

@@ -291,6 +291,14 @@ class MantenimientoGeneralCarburadaController extends Controller
                 'msg' => 'Tu plan alcanzó el límite de imágenes.'
             ], 422);
         }
+
+        $limiteStorage = (float) tenant('storage_limit_mb');
+        if ($limiteStorage > 0 && tenant_storage_usado_mb() + ($request->file('file')->getSize() / 1024 / 1024) > $limiteStorage) {
+            return response()->json([
+                'status' => 0,
+                'msg' => 'Tu plan alcanzó el límite de almacenamiento (' . $limiteStorage . ' MB).'
+            ], 422);
+        }
         $ultimoItem = MgcImagen::where('MGC_Id', $mantenimientoId)->max('MGCI_Item');
         $item = $ultimoItem ? $ultimoItem + 1 : 1;
 

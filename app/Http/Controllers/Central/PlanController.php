@@ -8,13 +8,25 @@ use Illuminate\Http\Request;
 
 class PlanController extends Controller
 {
+    // Etiquetas legibles de cada vertical, en el orden que se muestran las pestañas.
+    private const TIPOS_NEGOCIO = [
+        'tallermoto' => 'Taller de Motos',
+        'generico' => 'Negocio Genérico',
+    ];
+
     public function index()
     {
-        $planes = Plan::orderByRaw("FIELD(`key`, 'start', 'basic', 'plus', 'empresarial')")->get();
+        $planesPorNegocio = Plan::orderByRaw("FIELD(`key`, 'start', 'basic', 'plus', 'empresarial')")
+            ->get()
+            ->groupBy('tipo_negocio');
+
+        $modulosPorNegocio = collect(array_keys(self::TIPOS_NEGOCIO))
+            ->mapWithKeys(fn ($tipo) => [$tipo => Plan::modulosPara($tipo)]);
 
         return view('central.admin.planes.index', [
-            'planes' => $planes,
-            'modulos' => Plan::MODULOS,
+            'tiposNegocio' => self::TIPOS_NEGOCIO,
+            'planesPorNegocio' => $planesPorNegocio,
+            'modulosPorNegocio' => $modulosPorNegocio,
         ]);
     }
 
@@ -32,16 +44,18 @@ class PlanController extends Controller
             'modules' => 'nullable|array',
             'modules.*' => 'string|in:' . implode(',', array_keys(Plan::MODULOS)),
             'branches' => 'required|integer|min:1',
-            'warehouses' => 'required|integer|min:1',
             'cash_registers' => 'required|integer|min:1',
         ]);
 
-        // El form solo manda los checkboxes marcados; se reconstruye el mapa
-        // completo (todas las claves posibles, true solo las marcadas) para
-        // que tenant_has_module() siga funcionando con array_key_exists().
+        // El form solo manda los checkboxes marcados, y solo lista los
+        // módulos editables para el vertical de este plan (Plan::modulosPara).
+        // Se reconstruye ese subconjunto (true solo los marcados) sin tocar
+        // otras claves que ya tuviera guardadas (ej. 'mantenimientos' de un
+        // plan viejo), para que tenant_has_module() siga funcionando con
+        // array_key_exists().
         $modulosMarcados = $validated['modules'] ?? [];
-        $modules = [];
-        foreach (array_keys(Plan::MODULOS) as $clave) {
+        $modules = $plan->modules ?? [];
+        foreach (array_keys(Plan::modulosPara($plan->tipo_negocio)) as $clave) {
             $modules[$clave] = in_array($clave, $modulosMarcados, true);
         }
 
@@ -57,17 +71,20 @@ class PlanController extends Controller
             'custom_branding' => $request->boolean('custom_branding'),
             'customizable' => $request->boolean('customizable'),
             'modules' => $modules,
+            // 'branches' es el único límite de "locales" — Locales/Sedes y
+            // Almacenes son la misma tabla/recurso en el sistema hoy (ver
+            // SedeController/AlmacenController), así que ya no se guarda un
+            // 'warehouses' separado que nunca se llegó a distinguir de él.
             'limits' => [
                 'branches' => $validated['branches'],
-                'warehouses' => $validated['warehouses'],
                 'cash_registers' => $validated['cash_registers'],
             ],
         ]);
 
         \App\Models\AuditLog::registrar(
             'plan.actualizado',
-            'Actualizó el plan "' . $plan->nombre . '"' . ($precioAnterior != $validated['price'] ? ' (precio S/' . $precioAnterior . ' → S/' . $validated['price'] . ')' : ''),
-            ['plan' => $plan->key, 'precio_anterior' => $precioAnterior, 'precio_nuevo' => $validated['price'], 'modules' => $modules]
+            'Actualizó el plan "' . $plan->nombre . '" (' . (self::TIPOS_NEGOCIO[$plan->tipo_negocio] ?? $plan->tipo_negocio) . ')' . ($precioAnterior != $validated['price'] ? ' — precio S/' . $precioAnterior . ' → S/' . $validated['price'] : ''),
+            ['plan' => $plan->key, 'tipo_negocio' => $plan->tipo_negocio, 'precio_anterior' => $precioAnterior, 'precio_nuevo' => $validated['price'], 'modules' => $modules]
         );
 
         return response()->json(['success' => 'Plan "' . $plan->nombre . '" actualizado correctamente.']);

@@ -15,6 +15,8 @@ class Gasto extends Model
         'MEP_Id',
         'TG_Id',
         'ALM_Id',
+        'CAJ_Id',
+        'CS_Id',
         'USU_Id',
         'GAS_Descripcion',
         'GAS_Monto',

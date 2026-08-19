@@ -353,19 +353,22 @@
                 @canany([
                     'tenant.ventas.metodopago.index',
                     'tenant.ventas.cliente.index',
+                    'tenant.ventas.caja.index',
                     'tenant.ventas.venta.index'
                 ])
                     <li
-                        class="nav-item has-treeview 
+                        class="nav-item has-treeview
                             {{ request()->routeIs('tenant.ventas.metodopago*') ||
                             request()->routeIs('tenant.ventas.cliente*') ||
+                            request()->routeIs('tenant.ventas.caja*') ||
                             request()->routeIs('tenant.ventas.venta*')
                                 ? 'menu-open'
                                 : '' }}">
                         <a href="#"
-                            class="nav-link 
+                            class="nav-link
                                 {{ request()->routeIs('tenant.ventas.metodopago*') ||
                                 request()->routeIs('tenant.ventas.cliente*') ||
+                                request()->routeIs('tenant.ventas.caja*') ||
                                 request()->routeIs('tenant.ventas.venta*')
                                     ? 'active'
                                     : '' }}">
@@ -400,6 +403,15 @@
                                         class="nav-link {{ request()->routeIs('tenant.ventas.metodopago*') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Métodos de Pago</p>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('tenant.ventas.caja.index')
+                                <li class="nav-item">
+                                    <a href="{{ tenant_url('tenant.ventas.caja.index') }}"
+                                        class="nav-link {{ request()->routeIs('tenant.ventas.caja*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Cajas</p>
                                     </a>
                                 </li>
                             @endcan

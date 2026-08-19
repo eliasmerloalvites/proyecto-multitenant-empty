@@ -12,6 +12,10 @@ return [
         // Días de atraso (desde la fecha de cobro del ciclo) antes de
         // suspender automáticamente al cliente/tenant por falta de pago.
         'dias_gracia_suspension' => 5,
+
+        // Días de prueba gratis desde el registro (autoregistro o carga
+        // manual por staff) antes de que arranque el primer ciclo de cobro.
+        'dias_prueba_gratis' => 7,
     ],
 
     'plans' => [
@@ -54,7 +58,6 @@ return [
 
                 'limits' => [
                     'branches' => 1,
-                    'warehouses' => 1,
                     'cash_registers' => 1,
                 ],
 
@@ -92,7 +95,6 @@ return [
 
                 'limits' => [
                     'branches' => 1,
-                    'warehouses' => 2,
                     'cash_registers' => 2,
                 ],
 
@@ -130,7 +132,6 @@ return [
 
                 'limits' => [
                     'branches' => 5,
-                    'warehouses' => 10,
                     'cash_registers' => 10,
                 ],
 
@@ -168,7 +169,6 @@ return [
 
                 'limits' => [
                     'branches' => 20,
-                    'warehouses' => 50,
                     'cash_registers' => 50,
                 ],
 

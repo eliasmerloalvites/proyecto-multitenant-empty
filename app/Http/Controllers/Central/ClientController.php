@@ -269,7 +269,7 @@ class ClientController extends Controller
                 $tenant->plan = $validated['plan'];
 
                 if ($planChanged) {
-                    $planConfig = saas_plans_config()[$validated['plan']];
+                    $planConfig = saas_plans_config($tenant->tipo_negocio)[$validated['plan']];
                     $tenant->max_users = $planConfig['max_users'];
                     $tenant->max_images = $planConfig['max_images'];
                     $tenant->storage_limit_mb = $planConfig['storage_limit_mb'];

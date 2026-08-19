@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Tenant\EmpresaFacturacion;
+use App\Models\Tenant\Caja;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\Mailer\Bridge\Brevo\Transport\BrevoTransportFactory;
 use Symfony\Component\Mailer\Transport\Dsn;
 
@@ -71,6 +73,38 @@ class AppServiceProvider extends ServiceProvider
             }
 
             $view->with('empresa', $view->empresa ?? $empresa);
+        });
+
+        // Caja con la que opera el usuario logueado: el layout usa esto para
+        // el indicador de la barra superior y para forzar el modal de
+        // selección cuando hay más de una caja activa y todavía no eligió
+        // ninguna. Ver tenant_caja_activa_id() en app/helpers.php.
+        View::composer([
+            'tenant_tallermoto.layout.appAdminLte',
+            'tenant_generico.layout.appAdminLte',
+        ], function ($view) {
+            if (! tenant() || ! Auth::guard('tenant')->check()) {
+                $view->with(['cajaActiva' => null, 'cajasDisponibles' => collect(), 'requiereSeleccionCaja' => false]);
+
+                return;
+            }
+
+            // Todas las cajas activas (para ofrecer "aperturar" las que estén
+            // cerradas), con su sesión abierta precargada si la tienen.
+            $cajasDisponibles = Caja::where('CAJ_Status', 1)->with('sesionAbierta')->orderBy('CAJ_Nombre')->get();
+            $cajasAbiertas = $cajasDisponibles->filter(fn ($c) => $c->sesionAbierta !== null);
+
+            $cajaActivaId = tenant_caja_activa_id();
+            $cajaActiva = $cajaActivaId ? $cajasDisponibles->firstWhere('CAJ_Id', $cajaActivaId) : null;
+
+            $view->with([
+                'cajaActiva' => $cajaActiva,
+                'cajasDisponibles' => $cajasDisponibles,
+                // Modal obligatorio solo cuando hay 2+ cajas YA aperturadas
+                // y todavía no se eligió con cuál operar (si solo hay una
+                // abierta se autoselecciona sola, sin pedir nada).
+                'requiereSeleccionCaja' => $cajasAbiertas->count() > 1 && ! $cajaActiva,
+            ]);
         });
     }
 }

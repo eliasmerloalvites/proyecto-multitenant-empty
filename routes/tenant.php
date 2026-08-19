@@ -14,6 +14,8 @@ use App\Http\Controllers\Tenant\CompraController;
 use App\Http\Controllers\Tenant\GastoController;
 use App\Http\Controllers\Tenant\HomeController;
 use App\Http\Controllers\Tenant\MetodoPagoController;
+use App\Http\Controllers\Tenant\CajaController;
+use App\Http\Controllers\Tenant\CajaSesionController;
 use App\Http\Controllers\Tenant\ProductoController;
 use App\Http\Controllers\Tenant\ProveedorController;
 use App\Http\Controllers\Tenant\SedeController;
@@ -103,9 +105,14 @@ Route::middleware([
 
 
 
-    Route::middleware(['auth:tenant'])->group(function(){  
+    Route::middleware(['auth:tenant'])->group(function(){
         Route::get('/tenant/home', [HomeController::class,'index'])->name('tenant.home');
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');
+        Route::post('/tenant/caja-sesion/seleccionar', [CajaSesionController::class, 'seleccionar'])->name('tenant.caja-sesion.seleccionar');
+        Route::post('/tenant/caja-sesion/abrir', [CajaSesionController::class, 'abrir'])->name('tenant.caja-sesion.abrir');
+        Route::post('/tenant/caja-sesion/cerrar', [CajaSesionController::class, 'cerrar'])->name('tenant.caja-sesion.cerrar');
+        Route::get('/tenant/ventas/caja/historial', [CajaSesionController::class, 'historial'])->name('tenant.ventas.caja.historial');
+        Route::get('/tenant/ventas/caja/historial/{id}', [CajaSesionController::class, 'detalle'])->name('tenant.ventas.caja.historial.detalle');
         
         //REPORTES
         Route::get('/tenant/reportes/listageneral',[ReportesController::class, 'listageneral'])->name('tenant.reportes.listageneral');
@@ -287,6 +294,18 @@ Route::middleware([
                 'show' => 'tenant.ventas.metodopago.show'
             ])->parameters([
                 'metodopago' => 'metodopago'
+            ]);
+
+            Route::resource('/tenant/ventas/caja', CajaController::class)->names([
+                'index' => 'tenant.ventas.caja.index',
+                'create' => 'tenant.ventas.caja.create',
+                'store' => 'tenant.ventas.caja.store',
+                'edit' => 'tenant.ventas.caja.edit',
+                'update' => 'tenant.ventas.caja.update',
+                'destroy' => 'tenant.ventas.caja.destroy',
+                'show' => 'tenant.ventas.caja.show'
+            ])->parameters([
+                'caja' => 'caja'
             ]);
         });
 

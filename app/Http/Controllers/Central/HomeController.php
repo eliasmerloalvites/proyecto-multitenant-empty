@@ -33,10 +33,18 @@ class HomeController extends Controller
             ->groupBy('plan')
             ->pluck('total', 'plan');
 
-        $planesConfig = saas_plans_config();
+        // El MRR se calcula por tipo_negocio + plan porque cada vertical tiene
+        // su propio precio por plan (ej: Start de Tallermoto ≠ Start de Genérico).
+        $tenantsPorNegocioYPlan = Tenant::where('status', 'activo')
+            ->select('tipo_negocio', 'plan', DB::raw('count(*) as total'))
+            ->groupBy('tipo_negocio', 'plan')
+            ->get();
+
+        $planesConfigPorNegocio = [];
         $mrrEstimado = 0;
-        foreach ($tenantsPorPlan as $plan => $cantidad) {
-            $mrrEstimado += ($planesConfig[$plan]['price'] ?? 0) * $cantidad;
+        foreach ($tenantsPorNegocioYPlan as $fila) {
+            $planesConfigPorNegocio[$fila->tipo_negocio] ??= saas_plans_config($fila->tipo_negocio);
+            $mrrEstimado += ($planesConfigPorNegocio[$fila->tipo_negocio][$fila->plan]['price'] ?? 0) * $fila->total;
         }
 
         $planLabels = ['start' => 'Start', 'basic' => 'Basic', 'plus' => 'Plus', 'empresarial' => 'Empresarial'];

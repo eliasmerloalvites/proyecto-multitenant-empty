@@ -122,6 +122,42 @@
         <i class="fas fa-th-large"></i>
       </a>
     </li> --}}
+    @if (($cajasDisponibles ?? collect())->isNotEmpty())
+      <li class="nav-item dropdown">
+        <a id="cajaDropdown" class="nav-link dropdown-toggle" href="#" role="button"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-cash-register mr-1"></i>
+            <span id="cajaActivaLabel">{{ $cajaActiva->CAJ_Nombre ?? 'Sin caja abierta' }}</span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="cajaDropdown">
+            @if ($cajaActiva)
+                <a href="#" class="dropdown-item cerrarCajaNavbar" data-id="{{ $cajaActiva->CAJ_Id }}" data-nombre="{{ $cajaActiva->CAJ_Nombre }}">
+                    <i class="fas fa-lock mr-2 text-danger"></i>Cerrar "{{ $cajaActiva->CAJ_Nombre }}"
+                </a>
+                <div class="dropdown-divider"></div>
+            @endif
+            @php $cajasAbiertas = $cajasDisponibles->filter(fn($cj) => $cj->sesionAbierta); @endphp
+            @if ($cajasAbiertas->count() > 1)
+                <span class="dropdown-item dropdown-header">Cambiar a otra caja abierta</span>
+                @foreach ($cajasAbiertas as $cj)
+                    <a href="#" class="dropdown-item seleccionarCaja {{ ($cajaActiva && $cajaActiva->CAJ_Id === $cj->CAJ_Id) ? 'active' : '' }}" data-caja-id="{{ $cj->CAJ_Id }}">
+                        <i class="fas fa-cash-register mr-2"></i>{{ $cj->CAJ_Nombre }}
+                    </a>
+                @endforeach
+                <div class="dropdown-divider"></div>
+            @endif
+            @php $cajasCerradas = $cajasDisponibles->filter(fn($cj) => ! $cj->sesionAbierta); @endphp
+            @if ($cajasCerradas->isNotEmpty())
+                <span class="dropdown-item dropdown-header">Aperturar caja</span>
+                @foreach ($cajasCerradas as $cj)
+                    <a href="#" class="dropdown-item aperturarCajaNavbar" data-id="{{ $cj->CAJ_Id }}" data-nombre="{{ $cj->CAJ_Nombre }}" data-monto="{{ $cj->CAJ_MontoApertura }}">
+                        <i class="fas fa-unlock mr-2 text-success"></i>{{ $cj->CAJ_Nombre }}
+                    </a>
+                @endforeach
+            @endif
+        </div>
+      </li>
+    @endif
     <li class="nav-item dropdown ">
       <a id="navbarDropdown" onclick="CerrarSession()" class="nav-link dropdown-toggle" href="#"
           role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>

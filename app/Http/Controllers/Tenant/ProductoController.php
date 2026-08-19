@@ -85,6 +85,11 @@ class ProductoController extends Controller
 
                 $file = $request->file('file');
                 if($file){
+                    $limiteStorage = (float) tenant('storage_limit_mb');
+                    if ($limiteStorage > 0 && tenant_storage_usado_mb() + ($file->getSize() / 1024 / 1024) > $limiteStorage) {
+                        throw new Exception('Tu plan alcanzó el límite de almacenamiento (' . $limiteStorage . ' MB). Actualiza tu plan para subir más archivos.');
+                    }
+
                     // Crear carpeta si no existe
                     if (!file_exists($path)) {
                         mkdir($path, 0777, true);
@@ -93,7 +98,7 @@ class ProductoController extends Controller
                     $extension = $file->getClientOriginalExtension();
                     $fileName = $producto->PRO_Id . '.' . $extension;
                     $file->move($path, $fileName);
-                    
+
                     $updateproducto = DB::table('producto')
                     ->where('PRO_Id', $producto->PRO_Id)
                     ->update(['PRO_Imagen' => $fileName]);
@@ -103,9 +108,8 @@ class ProductoController extends Controller
             DB::commit();
         } catch (Exception $e)
         {
-            dd($e);
             DB::rollback();
-            return response()->json(['success' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()], 422);
         }
         return response()->json(['success' => 'Producto Registrado Exitosamente!', compact('producto')]);
     }
@@ -381,6 +385,11 @@ class ProductoController extends Controller
             $path = public_path('storage/' .$ubicacionNegocio .'/' .$id .'/archivos/producto/');
             $file = $request->file('file');
             if($file){
+                $limiteStorage = (float) tenant('storage_limit_mb');
+                if ($limiteStorage > 0 && tenant_storage_usado_mb() + ($file->getSize() / 1024 / 1024) > $limiteStorage) {
+                    throw new Exception('Tu plan alcanzó el límite de almacenamiento (' . $limiteStorage . ' MB). Actualiza tu plan para subir más archivos.');
+                }
+
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
                 }
@@ -388,7 +397,7 @@ class ProductoController extends Controller
                 $extension = $file->getClientOriginalExtension();
                 $fileName = $producto->PRO_Id . '.' . $extension;
                 $file->move($path, $fileName);
-                
+
                 $producto = DB::table('producto')
                 ->where('PRO_Id', $producto->PRO_Id)
                 ->update(['PRO_Imagen' => $fileName]);
@@ -398,6 +407,7 @@ class ProductoController extends Controller
         } catch (Exception $e)
         {
             DB::rollback();
+            return response()->json(['error' => $e->getMessage()], 422);
         }
 
         return response()->json(['success' => 'Producto Editado Exitosamente.',compact('producto')]);

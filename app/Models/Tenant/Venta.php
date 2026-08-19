@@ -18,6 +18,8 @@ class Venta extends Model
         'USU_Id',
         'CLI_Id',
         'ALM_Id',
+        'CAJ_Id',
+        'CS_Id',
         'VEN_Status',
         'VEN_FechaEnvio',
     ];

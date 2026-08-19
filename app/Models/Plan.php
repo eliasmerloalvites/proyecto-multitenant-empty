@@ -15,14 +15,9 @@ class Plan extends Model
 
     protected $table = 'planes';
 
-    protected $primaryKey = 'key';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
-
     protected $fillable = [
         'key',
+        'tipo_negocio',
         'nombre',
         'price',
         'max_users',
@@ -53,6 +48,15 @@ class Plan extends Model
      * Módulos disponibles en el panel de un tenant, con su etiqueta legible.
      * Fuente única para no repetir esta lista en cada formulario/seeder.
      */
+    public function scopeParaNegocio($query, string $tipoNegocio)
+    {
+        return $query->where('tipo_negocio', $tipoNegocio);
+    }
+
+    /**
+     * Unión de todos los módulos que existen en cualquier vertical, usada
+     * solo para validar el input del formulario (PlanController::update).
+     */
     public const MODULOS = [
         'mantenimientos' => 'Mantenimientos (incluye Reservas)',
         'productos' => 'Productos',
@@ -63,6 +67,37 @@ class Plan extends Model
         'analytics' => 'Analíticas avanzadas',
         'api_access' => 'Acceso a API',
     ];
+
+    /**
+     * Módulos que sí tiene sentido activar/desactivar por plan en cada
+     * vertical. 'productos'/'inventario'/'compras'/'ventas' no aparecen acá
+     * para Genérico porque tenant_has_module() ya los fuerza a true siempre
+     * en ese vertical (ver app/helpers.php) — ahí ES el negocio, no un
+     * addon de planes altos como en Tallermoto. 'mantenimientos' tampoco
+     * aplica a Genérico: es exclusivo del flujo de reservas de Tallermoto.
+     */
+    public const MODULOS_POR_NEGOCIO = [
+        'tallermoto' => [
+            'mantenimientos' => 'Mantenimientos (incluye Reservas)',
+            'productos' => 'Productos',
+            'inventario' => 'Inventario',
+            'compras' => 'Compras',
+            'ventas' => 'Ventas',
+            'reports' => 'Reportes',
+            'analytics' => 'Analíticas avanzadas',
+            'api_access' => 'Acceso a API',
+        ],
+        'generico' => [
+            'reports' => 'Reportes',
+            'analytics' => 'Analíticas avanzadas',
+            'api_access' => 'Acceso a API',
+        ],
+    ];
+
+    public static function modulosPara(string $tipoNegocio): array
+    {
+        return self::MODULOS_POR_NEGOCIO[$tipoNegocio] ?? self::MODULOS;
+    }
 
     /**
      * Representa el plan con la misma forma que antes tenía

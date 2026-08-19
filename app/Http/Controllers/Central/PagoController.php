@@ -22,19 +22,20 @@ class PagoController extends Controller
         if ($request->ajax()) {
             $hoy = Carbon::now('America/Lima');
             $periodo = $hoy->format('Y-m');
-            $planesConfig = saas_plans_config();
+            $planesConfig = [];
 
             $data = Client::where('clients.status', 'activo')
                 ->whereNotNull('billing_day')
                 ->join('domains as d', 'clients.domain_id', '=', 'd.id')
                 ->join('tenants as t', 'd.tenant_id', '=', 't.id')
-                ->select('clients.*', 't.plan')
+                ->select('clients.*', 't.plan', 't.tipo_negocio')
                 ->with(['pagos' => fn ($q) => $q->where('periodo', $periodo)])
                 ->get()
-                ->map(function ($cliente) use ($hoy, $planesConfig) {
+                ->map(function ($cliente) use ($hoy, &$planesConfig) {
                     $cliente->estado_ciclo = $cliente->estadoCicloActual($hoy);
                     $cliente->fecha_cobro = $cliente->fechaCicloActual($hoy);
-                    $cliente->monto_esperado = $planesConfig[$cliente->plan]['price'] ?? 0;
+                    $planesConfig[$cliente->tipo_negocio] ??= saas_plans_config($cliente->tipo_negocio);
+                    $cliente->monto_esperado = $planesConfig[$cliente->tipo_negocio][$cliente->plan]['price'] ?? 0;
 
                     return $cliente;
                 });
@@ -46,6 +47,7 @@ class PagoController extends Controller
                 ->addColumn('monto', fn ($row) => 'S/ ' . number_format($row->monto_esperado, 2))
                 ->addColumn('estado', function ($row) {
                     $estilos = [
+                        'en_prueba' => ['label' => 'EN PRUEBA', 'color' => '#2563EB', 'bg' => 'rgba(37,99,235,.1)'],
                         'pagado' => ['label' => 'PAGADO', 'color' => '#16A34A', 'bg' => 'rgba(34,197,94,.1)'],
                         'vencido' => ['label' => 'VENCIDO', 'color' => '#DC2626', 'bg' => 'rgba(239,68,68,.1)'],
                         'por_vencer' => ['label' => 'POR VENCER', 'color' => '#D97706', 'bg' => 'rgba(245,158,11,.1)'],
@@ -57,6 +59,11 @@ class PagoController extends Controller
                     return '<span style="color:' . $e['color'] . ';background:' . $e['bg'] . ';padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;display:inline-block;">' . $e['label'] . '</span>';
                 })
                 ->addColumn('action', function ($row) {
+                    if ($row->estado_ciclo === 'en_prueba') {
+                        return '<span class="text-muted small">Prueba hasta ' . $row->trial_ends_at->format('d/m/Y') . '</span>
+                                <button class="btn btn-sm btn-outline-secondary verHistorial" data-id="' . $row->id . '" data-nombre="' . e($row->razon_social) . '" title="Ver historial"><i class="fa fa-eye"></i></button>';
+                    }
+
                     if ($row->estado_ciclo === 'pagado') {
                         return '<button class="btn btn-sm btn-outline-secondary verHistorial" data-id="' . $row->id . '" data-nombre="' . e($row->razon_social) . '" title="Ver historial"><i class="fa fa-eye"></i></button>';
                     }

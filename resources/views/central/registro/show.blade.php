@@ -123,19 +123,24 @@
 
                     <div class="mb-8">
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Elige tu plan</label>
-                        <div class="grid grid-cols-3 gap-3">
-                            @foreach ($planes as $plan)
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="plan" value="{{ $plan->key }}" class="peer sr-only"
-                                        {{ old('plan', $planSeleccionado) === $plan->key ? 'checked' : '' }}>
-                                    <div class="border-2 border-slate-200 peer-checked:border-blue-600 peer-checked:bg-blue-50 rounded-xl p-3 text-center transition">
-                                        <div class="font-bold text-slate-900 text-sm">{{ $plan->nombre }}</div>
-                                        <div class="text-blue-600 font-black text-lg">S/{{ number_format($plan->price, 0) }}</div>
-                                        <div class="text-slate-400 text-[11px]">/mes</div>
-                                    </div>
-                                </label>
-                            @endforeach
-                        </div>
+
+                        @foreach ($planesPorNegocio as $tipo => $planes)
+                            <div class="planes-grupo grid grid-cols-3 gap-3 {{ $loop->first ? '' : 'hidden' }}" data-tipo-negocio="{{ $tipo }}">
+                                @foreach ($planes as $plan)
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="plan" value="{{ $plan->key }}" class="peer sr-only"
+                                            {{ old('plan', $planSeleccionado) === $plan->key ? 'checked' : '' }}
+                                            {{ $loop->parent->first ? '' : 'disabled' }}>
+                                        <div class="border-2 border-slate-200 peer-checked:border-blue-600 peer-checked:bg-blue-50 rounded-xl p-3 text-center transition">
+                                            <div class="font-bold text-slate-900 text-sm">{{ $plan->nombre }}</div>
+                                            <div class="text-blue-600 font-black text-lg">S/{{ number_format($plan->price, 0) }}</div>
+                                            <div class="text-slate-400 text-[11px]">/mes</div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        @endforeach
+
                         <p class="text-xs text-slate-400 mt-2">
                             ¿Necesitas múltiples sucursales o algo a medida?
                             <a href="{{ route('central.inicio') }}#contacto" class="text-blue-600 font-semibold">Habla con nosotros sobre el plan Empresarial</a>.
@@ -158,5 +163,31 @@
         </div>
 
     </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function actualizarPlanesVisibles() {
+                var seleccionado = document.querySelector('input[name="tipo_negocio"]:checked');
+                if (! seleccionado) return;
+
+                document.querySelectorAll('.planes-grupo').forEach(function (grupo) {
+                    var activo = grupo.dataset.tipoNegocio === seleccionado.value;
+                    grupo.classList.toggle('hidden', !activo);
+                    grupo.querySelectorAll('input[type=radio]').forEach(function (radio) {
+                        radio.disabled = !activo;
+                        if (activo && !document.querySelector('.planes-grupo:not(.hidden) input[type=radio]:checked')) {
+                            radio.checked = true;
+                        }
+                    });
+                });
+            }
+
+            document.querySelectorAll('input[name="tipo_negocio"]').forEach(function (radio) {
+                radio.addEventListener('change', actualizarPlanesVisibles);
+            });
+
+            actualizarPlanesVisibles();
+        });
+    </script>
 
 @endsection

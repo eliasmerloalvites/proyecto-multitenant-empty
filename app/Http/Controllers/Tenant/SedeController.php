@@ -95,6 +95,18 @@ class SedeController extends Controller
             'ALM_Longitud.between'     => 'La longitud debe ser un rango válido entre -180 y 180.',
         ]);
 
+        // 'Sede' (aquí) y 'Almacén' (AlmacenController) son literalmente la
+        // misma tabla `almacen` — por eso se valida contra el mismo límite
+        // de plan (limits.branches) en ambos controllers, para que no se
+        // pueda pasar el límite creando desde la otra pantalla.
+        $totalSedes = DB::table('almacen')->count();
+        $limiteSedes = (int) (tenant('limits')['branches'] ?? 1);
+        if ($totalSedes >= $limiteSedes) {
+            return response()->json([
+                'error' => 'Tu plan alcanzó el límite de ' . $limiteSedes . ' local(es)/sede(s). Actualiza tu plan para agregar más.'
+            ], 422);
+        }
+
         try {
             $almacen = DB::transaction(function () use ($request, $validated) {
 

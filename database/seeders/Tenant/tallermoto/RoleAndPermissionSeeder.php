@@ -90,6 +90,13 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.ventas.metodopago.show',    'MetodoPagos', 'Ver MetodoPago',        'Ver MetodoPago'],
             ['tenant.ventas.metodopago.destroy', 'MetodoPagos', 'Eliminar MetodoPagos',  'Eliminar MetodoPagos'],
 
+            //Caja
+            ['tenant.ventas.caja.index',   'Cajas', 'Ver Lista Cajas', 'Listar Cajas'],
+            ['tenant.ventas.caja.create',  'Cajas', 'Crear Cajas',     'Crear Cajas'],
+            ['tenant.ventas.caja.edit',    'Cajas', 'Editar Cajas',    'Editar Cajas'],
+            ['tenant.ventas.caja.show',    'Cajas', 'Ver Caja',        'Ver Caja'],
+            ['tenant.ventas.caja.destroy', 'Cajas', 'Eliminar Cajas',  'Eliminar Cajas'],
+
             //Proveedor
             ['tenant.compras.proveedor.index',   'Proveedores', 'Ver Lista Proveedores', 'Listar Proveedores'],
             ['tenant.compras.proveedor.create',  'Proveedores', 'Crear Proveedores',     'Crear Proveedores'],
@@ -307,10 +314,16 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.compras.gasto.destroy',
 
             'tenant.ventas.metodopago.index',
-            'tenant.ventas.metodopago.create',  
+            'tenant.ventas.metodopago.create',
             'tenant.ventas.metodopago.edit',
             'tenant.ventas.metodopago.show',
             'tenant.ventas.metodopago.destroy',
+
+            'tenant.ventas.caja.index',
+            'tenant.ventas.caja.create',
+            'tenant.ventas.caja.edit',
+            'tenant.ventas.caja.show',
+            'tenant.ventas.caja.destroy',
 
             'tenant.ventas.cliente.index',
             'tenant.ventas.cliente.create',  
@@ -436,10 +449,16 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.compras.tipogasto.destroy',
 
             'tenant.ventas.metodopago.index',
-            'tenant.ventas.metodopago.create',  
+            'tenant.ventas.metodopago.create',
             'tenant.ventas.metodopago.edit',
             'tenant.ventas.metodopago.show',
             'tenant.ventas.metodopago.destroy',
+
+            'tenant.ventas.caja.index',
+            'tenant.ventas.caja.create',
+            'tenant.ventas.caja.edit',
+            'tenant.ventas.caja.show',
+            'tenant.ventas.caja.destroy',
 
             'tenant.compras.proveedor.index',
             'tenant.compras.proveedor.create',

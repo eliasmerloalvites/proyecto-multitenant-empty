@@ -16,6 +16,8 @@ class Compra extends Model
         'COM_TipoPago',
         'MEP_Id',
         'PROV_Id',
+        'CAJ_Id',
+        'CS_Id',
         'USU_Id',
         'COM_Status'
     ];

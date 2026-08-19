@@ -489,7 +489,7 @@
                         'titleLine1' => 'Digitaliza y organiza',
                         'titleAccent' => 'tus mantenimientos',
                         'desc' => 'El plan ideal para talleres que quieren digitalizar y organizar sus mantenimientos desde el primer día.',
-                        'price' => '59',
+                        'price' => '49',
                         'priceNote' => null,
                         'gradient' => 'from-blue-600 to-cyan-500',
                         'gradientHover' => 'hover:from-blue-700 hover:to-cyan-600',

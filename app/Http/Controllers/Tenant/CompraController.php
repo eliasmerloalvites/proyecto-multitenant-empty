@@ -61,7 +61,16 @@ class CompraController extends Controller
      * Show the form for creating a new resource.
      */
     public function create(Request $request)
-    {        
+    {
+        if (tenant_requiere_apertura_caja()) {
+            $cajasCerradas = \App\Models\Tenant\Caja::where('CAJ_Status', 1)->whereDoesntHave('sesionAbierta')->get();
+
+            return view('tenant_' . tenant('tipo_negocio') . '.partials.caja-requerida', [
+                'accion' => 'una compra',
+                'cajasCerradas' => $cajasCerradas,
+            ]);
+        }
+
         $proveedor = Proveedor::all();
         $metodo_pago = MetodoPago::all();
         $detalleCompra = DetalleCompra::all();
@@ -72,7 +81,8 @@ class CompraController extends Controller
             ->get();
 
         $categoria = Categoria::all();
-        return view('tenant_'.tenant('tipo_negocio').'.compras.compra.create', compact('proveedor', 'metodo_pago', 'detalleCompra', 'almacen', 'producto', 'categoria'));
+        $almacenCajaActiva = tenant_caja_activa_almacen_id();
+        return view('tenant_'.tenant('tipo_negocio').'.compras.compra.create', compact('proveedor', 'metodo_pago', 'detalleCompra', 'almacen', 'producto', 'categoria', 'almacenCajaActiva'));
     }
 
     /**
@@ -80,6 +90,10 @@ class CompraController extends Controller
      */
     public function store(Request $request)
     {
+        if (tenant_requiere_apertura_caja()) {
+            return response()->json(['error' => 'No hay ninguna caja aperturada. Abre una caja antes de registrar la compra.'], 422);
+        }
+
         DB::beginTransaction(); // Inicia una transacción para asegurar que ambos registros se completen
 
         try {
@@ -92,6 +106,8 @@ class CompraController extends Controller
             $compra->COM_TipoPago = $request->COM_TipoPago;
             $compra->MEP_Id = $request->MEP_Id;
             $compra->PROV_Id = $request->PROV_Id;
+            $compra->CAJ_Id = tenant_caja_activa_id();
+            $compra->CS_Id = tenant_caja_sesion_activa_id();
             $compra->USU_Id = $idUsuario;
             $compra->COM_Status = 1;
             $compra->save();

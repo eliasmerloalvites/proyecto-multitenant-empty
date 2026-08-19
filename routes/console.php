@@ -15,3 +15,11 @@ Schedule::command('cobros:procesar')
     ->dailyAt('08:00')
     ->timezone('America/Lima')
     ->withoutOverlapping();
+
+// Apertura/cierre automático de cajas con CAJ_ProgramacionActiva activada.
+// Corre cada minuto para poder disparar en la hora exacta configurada por
+// cada caja (CAJ_HoraApertura / CAJ_HoraCierre).
+Schedule::command('caja:programacion')
+    ->everyMinute()
+    ->timezone('America/Lima')
+    ->withoutOverlapping();

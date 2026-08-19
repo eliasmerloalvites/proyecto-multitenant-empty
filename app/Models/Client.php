@@ -14,6 +14,7 @@ class Client extends Model
         'email',
         'tipo_negocio',
         'billing_day',
+        'trial_ends_at',
         'domain_id',
         'status',
         'next_payment_date',
@@ -21,8 +22,14 @@ class Client extends Model
 
     protected $casts = [
         'billing_day' => 'integer',
+        'trial_ends_at' => 'date',
         'next_payment_date' => 'date',
     ];
+
+    public function enPeriodoDePrueba(Carbon $hoy): bool
+    {
+        return $this->trial_ends_at !== null && $hoy->copy()->startOfDay()->lt($this->trial_ends_at->copy()->startOfDay());
+    }
 
     public function pagos()
     {
@@ -65,6 +72,8 @@ class Client extends Model
 
     /**
      * Estado de cobro del ciclo actual (mes de $hoy):
+     * - 'en_prueba': todavía dentro de los días de prueba gratis, no se
+     *   evalúa vencimiento ni se cobra nada.
      * - 'pagado': ya existe un Pago con periodo = mes de $hoy.
      * - 'vencido': billing_day de este mes ya pasó y no está pagado.
      * - 'por_vencer': billing_day de este mes cae dentro de los próximos 7 días.
@@ -72,6 +81,10 @@ class Client extends Model
      */
     public function estadoCicloActual(Carbon $hoy): string
     {
+        if ($this->enPeriodoDePrueba($hoy)) {
+            return 'en_prueba';
+        }
+
         $periodo = $hoy->format('Y-m');
 
         if ($this->relationLoaded('pagos')) {

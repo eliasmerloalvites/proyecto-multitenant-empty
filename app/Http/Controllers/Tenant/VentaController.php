@@ -178,6 +178,15 @@ class VentaController extends Controller
      */
     public function create()
     {
+        if (tenant_requiere_apertura_caja()) {
+            $cajasCerradas = \App\Models\Tenant\Caja::where('CAJ_Status', 1)->whereDoesntHave('sesionAbierta')->get();
+
+            return view('tenant_' . tenant('tipo_negocio') . '.partials.caja-requerida', [
+                'accion' => 'una venta',
+                'cajasCerradas' => $cajasCerradas,
+            ]);
+        }
+
         $clase = DB::table('clase')->orderBy('CLA_Nombre', 'asc')->get();
         $categoria = DB::table('categoria')->orderBy('CAT_Nombre', 'asc')->get();
         $clientes = DB::table('cliente')->orderBy('CLI_NumDocumento', 'asc')->get();
@@ -385,6 +394,10 @@ class VentaController extends Controller
      */
     public function store(Request $request)
     {
+        if (tenant_requiere_apertura_caja()) {
+            return response()->json(['error' => 'No hay ninguna caja aperturada. Abre una caja antes de registrar la venta.'], 422);
+        }
+
         DB::beginTransaction();
         try {
 
@@ -392,7 +405,11 @@ class VentaController extends Controller
             $fechaactual = $mytime->toDateString();
             $horaactual = $mytime->toTimeString();
 
-            $idAlmacen = 1;
+            // Antes estaba fijo en 1 (siempre descontaba del primer
+            // almacén, sin importar la sede/caja real). Ahora usa el
+            // almacén ligado a la caja con la que se está operando, y solo
+            // cae a 1 si el tenant no usa cajas todavía.
+            $idAlmacen = tenant_caja_activa_almacen_id() ?? 1;
             $idUsuario = Auth::user()->id;
             $idCliente = $request->get('cliente_id') ? $request->get('cliente_id') : 1;
 
@@ -404,6 +421,8 @@ class VentaController extends Controller
             $venta->USU_Id = $idUsuario;
             $venta->CLI_Id = $idCliente;
             $venta->ALM_Id = $idAlmacen;
+            $venta->CAJ_Id = tenant_caja_activa_id();
+            $venta->CS_Id = tenant_caja_sesion_activa_id();
             $venta->VEN_FechaEnvio = $fechaactual . ' ' . $horaactual;
             $venta->save();
 

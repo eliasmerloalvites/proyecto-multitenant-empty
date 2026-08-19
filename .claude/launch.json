@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "manuales-tecnicos",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd /d C:\\xampp\\htdocs\\Proyectos-Laravel-12\\ManualesTecnicos && php artisan serve --port=8010"],
+      "port": 8010
+    }
+  ]
+}

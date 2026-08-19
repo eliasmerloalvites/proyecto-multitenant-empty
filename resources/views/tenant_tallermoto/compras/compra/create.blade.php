@@ -130,7 +130,7 @@
                             <select class="form-control" id="Almacenid" required>
                                 <option value="">Seleccione Almacén</option>
                                 @foreach ($almacen as $itemAlmacen)
-                                    <option value="{{ $itemAlmacen->ALM_Id }}">
+                                    <option value="{{ $itemAlmacen->ALM_Id }}" {{ ($almacenCajaActiva ?? null) == $itemAlmacen->ALM_Id ? 'selected' : '' }}>
                                         {{ $itemAlmacen->ALM_NombreAlmacen }}
                                     </option>
                                 @endforeach

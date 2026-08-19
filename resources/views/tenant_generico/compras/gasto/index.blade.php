@@ -3,6 +3,25 @@
 @section('contenido')
 
     @can('tenant.compras.gasto.create')
+        @if ($requiereAperturarCaja ?? false)
+            <div class="col-12 col-md-4">
+                <div class="card">
+                    <div class="card-body text-center py-4">
+                        <i class="fas fa-cash-register fa-2x text-warning mb-2"></i>
+                        <h6 class="font-weight-bold mb-1">No hay caja abierta</h6>
+                        <p class="text-muted small mb-3">Aperture una caja para poder registrar gastos.</p>
+                        @forelse ($cajasCerradas ?? [] as $cj)
+                            <button type="button" class="btn btn-success btn-block btn-sm mb-1 aperturarCajaNavbar"
+                                data-id="{{ $cj->CAJ_Id }}" data-nombre="{{ $cj->CAJ_Nombre }}" data-monto="{{ $cj->CAJ_MontoApertura }}">
+                                <i class="fas fa-unlock mr-1"></i> Aperturar "{{ $cj->CAJ_Nombre }}"
+                            </button>
+                        @empty
+                            <p class="text-danger small">No tienes ninguna caja creada.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        @else
         <div class="col-12 col-md-4">
             <div class="card">
                 <div class="card-body">
@@ -156,6 +175,7 @@
                 </div>
             </div>
         </div>
+        @endif
     @endcan
 
     @can('tenant.compras.gasto.index')

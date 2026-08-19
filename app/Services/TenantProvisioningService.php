@@ -6,6 +6,8 @@ use App\Mail\BienvenidaTenantMail;
 use App\Models\Client;
 use App\Models\Plan;
 use App\Models\Tenant;
+use App\Models\Tenant\Almacen;
+use App\Models\Tenant\Caja;
 use App\Models\Tenant\EmpresaFacturacion;
 use App\Models\Tenant\User;
 use Illuminate\Support\Facades\Artisan;
@@ -42,7 +44,7 @@ class TenantProvisioningService
             throw new \RuntimeException('El dominio ya existe.');
         }
 
-        $planConfig = saas_plans_config()[$data['plan']];
+        $planConfig = saas_plans_config($data['tipo_negocio'])[$data['plan']];
 
         $tenant = null;
 
@@ -77,6 +79,10 @@ class TenantProvisioningService
                 'ruc' => $data['ruc'] ?? null,
                 'email' => $data['email'],
                 'billing_day' => $data['billing_day'],
+                // Solo lo trae el autoregistro público (RegistroController);
+                // cuando staff carga un cliente manualmente desde el panel no
+                // hay trial, el ciclo de cobro arranca según lo acordado.
+                'trial_ends_at' => $data['trial_ends_at'] ?? null,
                 'domain_id' => $domain->id,
                 'status' => 'activo',
             ]);
@@ -110,10 +116,27 @@ class TenantProvisioningService
 
                 $user->assignRole('Gerente');
 
-                EmpresaFacturacion::create([
+                $empresa = EmpresaFacturacion::create([
                     'tenant_id' => $tenantId,
                     'ruc' => $data['ruc'] ?? null,
                     'razon_social' => $data['razon_social'],
+                ]);
+
+                // Sede/Almacén y caja por defecto: así el tenant nace listo
+                // para vender (con al menos 1 caja) sin que el dueño tenga
+                // que configurar nada antes de su primera venta.
+                $almacen = Almacen::create([
+                    'EMP_Id' => $empresa->id,
+                    'ALM_NombreAlmacen' => 'Sede Principal',
+                    'ALM_EsPrincipal' => true,
+                    'ALM_Status' => 1,
+                ]);
+
+                Caja::create([
+                    'ALM_Id' => $almacen->ALM_Id,
+                    'CAJ_Nombre' => 'Caja Principal',
+                    'CAJ_MontoApertura' => 0,
+                    'CAJ_Status' => 1,
                 ]);
             });
 
@@ -137,7 +160,7 @@ class TenantProvisioningService
     private function enviarBienvenida(Tenant $tenant, Domain $domain, array $data): void
     {
         try {
-            $planNombre = Plan::find($data['plan'])->nombre ?? ucfirst($data['plan']);
+            $planNombre = Plan::paraNegocio($data['tipo_negocio'])->where('key', $data['plan'])->value('nombre') ?? ucfirst($data['plan']);
 
             Mail::to($data['email'])->send(new BienvenidaTenantMail(
                 $data['razon_social'],
