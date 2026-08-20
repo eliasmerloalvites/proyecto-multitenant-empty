@@ -280,6 +280,19 @@
 </style>
 
 <div class="dashboard-wrapper">
+
+@if (($bahiasActivas ?? 0) == 0)
+<div class="mb-4" style="background:linear-gradient(135deg,#E52320,#C81B18); border-radius:14px; padding:1.5rem 1.8rem; color:#fff; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+    <div>
+        <h5 style="font-weight:800; margin-bottom:.3rem;"><i class="fas fa-wand-magic-sparkles mr-1"></i> Tu taller todavía no tiene bahías ni horarios</h5>
+        <p style="opacity:.92; margin-bottom:0;">Configúralos en 30 segundos para poder empezar a recibir reservas.</p>
+    </div>
+    <a href="{{ tenant_url('tenant.configuracion.asistente.index') }}" class="btn btn-light font-weight-bold">
+        Configurar ahora <i class="fas fa-arrow-right ml-1"></i>
+    </a>
+</div>
+@endif
+
 {{-- HEADER --}}
 
 <div class="mb-4">

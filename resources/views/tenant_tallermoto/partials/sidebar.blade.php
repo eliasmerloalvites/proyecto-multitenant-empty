@@ -24,6 +24,17 @@
                     </a>
                 </li>
 
+                @if(tenant_has_module('mantenimientos'))
+                <li class="nav-item">
+                    <a href="{{ tenant_url('tenant.motos.index') }}" class="nav-link {{ request()->routeIs('tenant.motos*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-motorcycle"></i>
+                        <p>
+                            Motos Atendidas
+                        </p>
+                    </a>
+                </li>
+                @endif
+
                 <!-- RESERVAS (parte del flujo de Mantenimientos) -->
                 @if(tenant_has_module('mantenimientos'))
                 <li class="nav-item has-treeview
@@ -446,9 +457,17 @@
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
+                            <!-- ASISTENTE -->
+                            <li class="nav-item">
+                                <a href="{{ tenant_url('tenant.configuracion.asistente.index') }}"
+                                    class="nav-link  {{ request()->routeIs('tenant.configuracion.asistente*') ? 'active' : '' }}">
+                                    <i class="fas fa-wand-magic-sparkles nav-icon"></i>
+                                    <p>Asistente de Configuración</p>
+                                </a>
+                            </li>
                             <!-- EMPRESA -->
                             <li class="nav-item">
-                                <a href="{{ tenant_url('tenant.configuracion.empresa.index') }}" 
+                                <a href="{{ tenant_url('tenant.configuracion.empresa.index') }}"
                                     class="nav-link  {{ request()->routeIs('tenant.configuracion.empresa*') ? 'active' : '' }}">
                                     <i class="fas fa-building nav-icon"></i>
                                     <p>Empresa</p>
