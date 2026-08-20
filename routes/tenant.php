@@ -25,6 +25,8 @@ use App\Http\Controllers\Tenant\TipoGastoController;
 use App\Http\Controllers\Tenant\UserController;
 use App\Http\Controllers\Tenant\VentaController;
 use App\Http\Controllers\TenantTallerMotos\BahiaController;
+use App\Http\Controllers\TenantTallerMotos\AsistenteConfiguracionController;
+use App\Http\Controllers\TenantTallerMotos\MotoController;
 use App\Http\Controllers\TenantTallerMotos\HorarioController;
 use App\Http\Controllers\TenantTallerMotos\MantenimientoActividadVariadaController;
 use App\Http\Controllers\TenantTallerMotos\MantenimientoGeneralInyectadaController;
@@ -211,6 +213,12 @@ Route::middleware([
         ]);
 
     });
+
+        Route::get('/tenant/configuracion/asistente', [AsistenteConfiguracionController::class, 'index'])->name('tenant.configuracion.asistente.index');
+        Route::post('/tenant/configuracion/asistente', [AsistenteConfiguracionController::class, 'generar'])->name('tenant.configuracion.asistente.generar');
+
+        Route::get('/tenant/motos', [MotoController::class, 'index'])->name('tenant.motos.index');
+        Route::get('/tenant/motos/{placa}', [MotoController::class, 'detalle'])->name('tenant.motos.detalle');
 
         Route::put('/tenant/configuracion/horario/{horario}/activar', [HorarioController::class, 'activar'])->name('tenant.configuracion.horario.activar');
         Route::resource('/tenant/configuracion/horario', HorarioController::class)->names([
