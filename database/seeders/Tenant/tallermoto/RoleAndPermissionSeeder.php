@@ -417,7 +417,7 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.seguridad.users.edit',
             'tenant.seguridad.users.show',
             
-            /* 'tenant.inventario.clase.index',
+            'tenant.inventario.clase.index',
             'tenant.inventario.clase.create',
             'tenant.inventario.clase.edit',
             'tenant.inventario.clase.show',
@@ -432,7 +432,7 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.inventario.producto.create',
             'tenant.inventario.producto.edit',
             'tenant.inventario.producto.show',
-            'tenant.inventario.producto.destroy', */
+            'tenant.inventario.producto.destroy',
 
             'tenant.configuracion.empresa.index',
 
@@ -442,7 +442,7 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.configuracion.sede.show',
             'tenant.configuracion.sede.destroy',
 
-            /* 'tenant.compras.tipogasto.index',
+            'tenant.compras.tipogasto.index',
             'tenant.compras.tipogasto.create',
             'tenant.compras.tipogasto.edit',
             'tenant.compras.tipogasto.show',
@@ -488,7 +488,7 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.ventas.venta.create',  
             'tenant.ventas.venta.edit',
             'tenant.ventas.venta.show',
-            'tenant.ventas.venta.destroy', */
+            'tenant.ventas.venta.destroy',
 
             'tenant.configuracion.turno.index',
             'tenant.configuracion.turno.create',

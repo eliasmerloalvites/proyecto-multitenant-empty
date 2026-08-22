@@ -20,6 +20,7 @@ use App\Http\Controllers\Tenant\ProductoController;
 use App\Http\Controllers\Tenant\ProveedorController;
 use App\Http\Controllers\Tenant\SedeController;
 use App\Http\Controllers\Tenant\EmpresaFacturacionController;
+use App\Http\Controllers\Tenant\ComprobanteSunatController;
 use App\Http\Controllers\Tenant\TestFacturacionController;
 use App\Http\Controllers\Tenant\TipoGastoController;
 use App\Http\Controllers\Tenant\UserController;
@@ -291,6 +292,14 @@ Route::middleware([
             Route::get('/tenant/ventas/venta/{id}/pdf', [VentaController::class,'pdf'] )->name('tenant.ventas.venta.pdf');
             Route::get('/tenant/ventas/venta/filtro/{filtro}', [VentaController::class,'filtro'] )->name('tenant.ventas.venta.filtro');
             Route::get('/tenant/ventas/venta/{id}/ticket-imagen',[VentaController::class, 'ticketImagen'])->name('tenant.ventas.venta.ticket-imagen');
+
+            Route::get('/tenant/ventas/venta/{id}/ticket-whatsapp',[VentaController::class, 'ticketWhatsapp'])->name('tenant.ventas.venta.ticket-whatsapp');
+
+            /* Acciones de SUNAT sobre un comprobante ya emitido */
+            Route::get('/tenant/ventas/venta/{id}/sunat/xml', [ComprobanteSunatController::class, 'xml'])->name('tenant.ventas.venta.sunat.xml');
+            Route::get('/tenant/ventas/venta/{id}/sunat/cdr', [ComprobanteSunatController::class, 'cdr'])->name('tenant.ventas.venta.sunat.cdr');
+            Route::get('/tenant/ventas/venta/{id}/sunat/consultar', [ComprobanteSunatController::class, 'consultar'])->name('tenant.ventas.venta.sunat.consultar');
+            Route::post('/tenant/ventas/venta/{id}/sunat/reenviar', [ComprobanteSunatController::class, 'reenviar'])->name('tenant.ventas.venta.sunat.reenviar');
 
             Route::resource('/tenant/ventas/metodopago', MetodoPagoController::class)->names([
                 'index' => 'tenant.ventas.metodopago.index',

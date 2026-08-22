@@ -186,7 +186,7 @@ body{
             </div>
 
             <div class="direccion">
-                LA LIBERTAD - PACASMAYO
+                {{ trim(($datosalmacen->ALM_Departamento ?? '') . ' - ' . ($datosalmacen->ALM_Provincia ?? ''), ' -') ?: '-' }}
             </div>
 
             <div class="direccion">

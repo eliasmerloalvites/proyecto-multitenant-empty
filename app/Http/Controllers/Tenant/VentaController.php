@@ -16,6 +16,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Browsershot\Browsershot;
+use App\Models\Tenant\EmpresaFacturacion;
+use App\Services\Facturacion\DocumentoVentaService;
 use App\Services\Facturacion\SunatService;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,11 +28,30 @@ class VentaController extends Controller
      */
 
     protected $sunatService;
+    protected $documentoVentaService;
 
     public function __construct(
-        SunatService $sunatService
+        SunatService $sunatService,
+        DocumentoVentaService $documentoVentaService
     ) {
         $this->sunatService = $sunatService;
+        $this->documentoVentaService = $documentoVentaService;
+    }
+
+    /**
+     * Datos de facturacion del tenant actual.
+     */
+    private function empresaFacturacion(): EmpresaFacturacion
+    {
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+        if (!$empresa) {
+            throw new Exception(
+                'Esta empresa todavia no tiene configurados sus datos de facturacion electronica.'
+            );
+        }
+
+        return $empresa;
     }
 
     public function index(Request $request)
@@ -91,16 +112,69 @@ class VentaController extends Controller
                     return $btn;
                 })
                 ->addColumn('whatsapp', function ($row) {
-                    $btn = '<a title="WHATSAPP" target="_blank" href="/tenant/ventas/venta/' . $row->VEN_Id . '/ticket-imagen"  data-original-title="Ver" class="btn btn-success btn-sm envioWhatsapp"><i class="fab fa-whatsapp" aria-hidden="true"></i></a>';
+                    $btn = '<button type="button" title="Enviar ticket por WhatsApp" data-id="' . $row->VEN_Id . '" class="btn btn-success btn-sm envioWhatsapp"><i class="fab fa-whatsapp" aria-hidden="true"></i></button>';
 
                     return $btn;
                 })
+                ->addColumn('sunat', fn ($row) => $this->columnaSunat($row))
 
-                ->rawColumns(['action1', 'action2', 'action3', 'ticket', 'pdf', 'whatsapp'])
+                ->rawColumns(['action1', 'action2', 'action3', 'ticket', 'pdf', 'whatsapp', 'sunat'])
                 ->make(true);
         }
 
-        return view('tenant_' . tenant('tipo_negocio') . '.ventas.venta.index');
+        return view('tenant_' . tenant('tipo_negocio') . '.ventas.venta.index', [
+            // La columna de SUNAT solo tiene sentido si ya hay certificado.
+            'mostrarSunat' => tenant_tiene_certificado(),
+        ]);
+    }
+
+    /**
+     * Contenido de la columna SUNAT: el estado del comprobante y las acciones
+     * para revisarlo o reintentar el envio.
+     */
+    private function columnaSunat($row): string
+    {
+        // Las notas de venta no van a SUNAT.
+        if (!in_array($row->DOV_Tipo, ['BOL', 'FAC'], true)) {
+            return '<span class="text-muted">&mdash;</span>';
+        }
+
+        $estados = [
+            'ACEPTADO'  => ['success', 'Aceptado por SUNAT'],
+            'OBSERVADO' => ['warning', 'Aceptado con observaciones'],
+            'RECHAZADO' => ['danger',  'Rechazado por SUNAT'],
+            'ERROR'     => ['danger',  'No se pudo enviar'],
+            'PENDIENTE' => ['secondary', 'Aun no enviado'],
+        ];
+
+        [$color, $titulo] = $estados[$row->estadoDocVenta] ?? ['secondary', $row->estadoDocVenta];
+
+        $id = $row->VEN_Id;
+
+        // OBSERVADO tambien significa que SUNAT lo acepto, solo que con
+        // observaciones: reenviarlo lo duplicaria.
+        $yaEnSunat = in_array($row->estadoDocVenta, ComprobanteSunatController::ESTADOS_EN_SUNAT, true);
+
+        $html = '<span class="badge badge-' . $color . '" title="' . e($titulo) . '">'
+              . e($row->estadoDocVenta) . '</span> ';
+
+        $html .= '<div class="btn-group btn-group-sm ml-1" role="group">';
+
+        // XML y CDR solo existen si el comprobante llego a SUNAT.
+        if ($yaEnSunat) {
+            $html .= '<a class="btn btn-outline-info btn-sm" title="Descargar XML" href="/tenant/ventas/venta/' . $id . '/sunat/xml"><i class="fa fa-file-code"></i></a>';
+            $html .= '<a class="btn btn-outline-info btn-sm" title="Descargar CDR (zip)" href="/tenant/ventas/venta/' . $id . '/sunat/cdr"><i class="fa fa-file-archive"></i></a>';
+        }
+
+        $html .= '<button type="button" class="btn btn-outline-primary btn-sm sunatConsultar" data-id="' . $id . '" title="Consultar estado en SUNAT"><i class="fa fa-search"></i></button>';
+
+        if (!$yaEnSunat) {
+            $html .= '<button type="button" class="btn btn-outline-warning btn-sm sunatReenviar" data-id="' . $id . '" title="Reintentar envio a SUNAT"><i class="fa fa-paper-plane"></i></button>';
+        }
+
+        $html .= '</div>';
+
+        return $html;
     }
 
     public function filtro(Request $request, $fecharange)
@@ -163,7 +237,7 @@ class VentaController extends Controller
                     return $btn;
                 })
                 ->addColumn('whatsapp', function ($row) {
-                    $btn = '<a title="WHATSAPP" target="_blank" href="/tenant/ventas/venta/' . $row->VEN_Id . '/ticket-imagen"  data-original-title="Ver" class="btn btn-success btn-sm envioWhatsapp"><i class="fab fa-whatsapp" aria-hidden="true"></i></a>';
+                    $btn = '<button type="button" title="Enviar ticket por WhatsApp" data-id="' . $row->VEN_Id . '" class="btn btn-success btn-sm envioWhatsapp"><i class="fab fa-whatsapp" aria-hidden="true"></i></button>';
 
                     return $btn;
                 })
@@ -192,7 +266,27 @@ class VentaController extends Controller
         $clientes = DB::table('cliente')->orderBy('CLI_NumDocumento', 'asc')->get();
         $metodo_pago = DB::table('metodo_pago')->orderBy('MEP_Pago', 'asc')->get();
 
-        return view('tenant_' . tenant('tipo_negocio') . '.ventas.venta.create', compact('clase', 'categoria', 'clientes', 'metodo_pago'));
+        // Si faltan datos de facturacion, el punto de venta esconde Boleta y
+        // Factura y explica que hay que completar.
+        $problemasFacturacion = tenant_problemas_facturacion();
+        $puedeFacturar = $problemasFacturacion === [];
+
+        // En el ambiente de pruebas de SUNAT el comprobante no tiene validez,
+        // asi que no se ofrece para imprimir.
+        $facturacionEnPruebas = tenant_facturacion_en_pruebas();
+
+        return view(
+            'tenant_' . tenant('tipo_negocio') . '.ventas.venta.create',
+            compact(
+                'clase',
+                'categoria',
+                'clientes',
+                'metodo_pago',
+                'puedeFacturar',
+                'problemasFacturacion',
+                'facturacionEnPruebas'
+            )
+        );
     }
 
     public function getProductos(Request $request)
@@ -414,7 +508,10 @@ class VentaController extends Controller
             $idCliente = $request->get('cliente_id') ? $request->get('cliente_id') : 1;
 
             $venta = new Venta;
-            $venta->VEN_TipoPago = $request->get('VEN_TipoPago');
+            // El punto de venta cobra siempre al contado (pide pago recibido y
+            // calcula vuelto). Antes no se enviaba nada y quedaba en null, con
+            // lo que el ticket lo imprimia como CREDITO. 1 = contado.
+            $venta->VEN_TipoPago = $request->get('VEN_TipoPago', 1) ?: 1;
             $venta->VEN_Vuelto = $request->get('vuelto');
             $venta->VEN_Pagado = $request->get('pago_recibido');
             $venta->MEP_Id = $request->get('metodo_pago');
@@ -432,6 +529,25 @@ class VentaController extends Controller
                 // $folio = self::CrearDocumentoDetalle($CLI_Cod, $venta->VEN_Id, $idEmpleado, $idubicacion->UBI_Id, $idalmacen1, $CLI_Cod, 2, $documentodescuento);
             } else if ($VentaTipo == "NOTA") {
                 $DocumentoVenta = self::CrearDocumentoDetalleVentaLibre($venta->VEN_Id, $idAlmacen);
+            } else if ($this->documentoVentaService->esComprobanteElectronico($VentaTipo)) {
+                // La interfaz esconde Boleta y Factura cuando faltan datos, pero
+                // la peticion puede llegar igual: se vuelve a comprobar aqui.
+                $problemas = tenant_problemas_facturacion();
+
+                if ($problemas) {
+                    throw new Exception(
+                        'No se puede emitir ' . strtolower($VentaTipo) . ' electronica. ' .
+                        implode(' ', $problemas)
+                    );
+                }
+
+                // Boleta y factura llevan su propia serie y correlativo, tomados
+                // de la configuracion de facturacion de la empresa.
+                $DocumentoVenta = $this->documentoVentaService->crear(
+                    $venta->VEN_Id,
+                    $VentaTipo,
+                    $this->empresaFacturacion()
+                );
             }
 
             $cont = 0;
@@ -461,33 +577,29 @@ class VentaController extends Controller
             $movi->idcv = $venta->VEN_Id;
             $movi->save();
 
-            $ventagenerado = DB::table('documento_venta as dov')
-                ->join('venta as v', 'v.VEN_Id', '=', 'dov.VEN_Id')
-                ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
-                ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
-                ->join('almacen as a', 'a.ALM_Id', '=', 'v.ALM_Id')
-                ->join('users as u', 'u.id', '=', 'v.USU_Id')
-                ->select('dov.*', 'v.*', 'mp.*', 'a.*', 'u.*')
-                ->where('v.VEN_Id', '=', $venta->VEN_Id)
-                ->orderby('dov.DOV_Id', 'desc')
-                ->first();
-
             DB::commit();
 
-            if($VentaTipo == "BOLETA" || $VentaTipo == "FACTURA"){
-                $this->sunatService->enviarVentaLibre($venta->VEN_Id);
+            // El envio a SUNAT corre en segundo plano: la caja no espera al
+            // servicio externo, y si falla se reintenta sin perder la venta.
+            if ($this->documentoVentaService->esComprobanteElectronico($VentaTipo)) {
+                EnviarVentaSunatJob::dispatch(
+                    $venta->VEN_Id,
+                    tenant('id'),
+                    tenant('tipo_negocio')
+                );
             }
-            return response()->json(['success' => true, 'venta_id' => $venta->VEN_Id]);
-            //EnviarVentaSunatJob::dispatch($venta->VEN_Id,tenant('id'),tenant('tipo_negocio'));
-            /* $responseSunat = $this->sunatService->enviarVenta($venta->VEN_Id);
-            self::ticketImagen($venta->VEN_Id); */
-        } catch (Exception $e) {
-            DB::rollback();
-            $e->getMessage();
-            return response()->json(['error' => $e->getMessage(),]);
-        }
 
-        return response()->json(['success' => 'Venta Registrado Exitosamente!', compact('ventagenerado')]);
+            return response()->json(['success' => true, 'venta_id' => $venta->VEN_Id]);
+        } catch (\Throwable $e) {
+            DB::rollback();
+
+            // Con codigo 200 el navegador daba la venta por buena y mostraba
+            // "Venta Generada" aunque no se hubiera guardado nada.
+            return response()->json([
+                'success' => false,
+                'error'   => $e->getMessage(),
+            ], 422);
+        }
     }
 
     function ticket(string $idventa)
@@ -649,8 +761,12 @@ class VentaController extends Controller
             ->distinct()
             ->first();
 
-        $datosalmacen = DB::table('almacen')
-            ->where('ALM_Id', '=', $ventae->ALM_Id)
+        // Se une con empresa_facturacion igual que en ticket() y pdf(): el RUC
+        // y la razon social que imprime el ticket viven ahi, no en el almacen.
+        $datosalmacen = DB::table('almacen as al')
+            ->join('empresa_facturacion as emp', 'al.EMP_Id', '=', 'emp.id')
+            ->where('emp.tenant_id', tenant('id'))
+            ->where('al.ALM_Id', '=', $ventae->ALM_Id)
             ->first();
 
         $Subtotal = 0.00;
@@ -735,14 +851,52 @@ class VentaController extends Controller
         $fileName = $ventae->pdf . '.png';
         $rutaCompleta = $path . $fileName;
 
-        Browsershot::html($html)
-            ->timeout(120)
-            ->windowSize(900, 1200)
-            ->save($rutaCompleta);
+        // Se rehace solo si no existe: generarla cuesta abrir un navegador.
+        if (!is_file($rutaCompleta)) {
+            Browsershot::html($html)
+                ->timeout(120)
+                ->windowSize(900, 1200)
+                ->save($rutaCompleta);
+        }
 
-        /* Browsershot::html($html)
-    ->format('A4')
-    ->pdf(); */
+        // url() y no asset(): con asset_helper_tenancy activo, asset() devuelve
+        // una ruta /tenancy/assets/... que da 404, porque el ticket se guarda
+        // bajo public/storage.
+        return url('storage/' . $ubicacionNegocio . '/' . $id . '/archivos/tickets/' . $fileName);
+    }
+
+    /**
+     * Genera (si hace falta) la imagen del ticket y devuelve su enlace, para
+     * compartirla por WhatsApp.
+     *
+     * La imagen no se crea al vender: solo cuando alguien la pide, para no
+     * llenar el disco con tickets que nadie mira.
+     */
+    public function ticketWhatsapp(string $idventa)
+    {
+        try {
+            $url = self::ticketImagen($idventa);
+
+            $cliente = DB::table('venta as v')
+                ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
+                ->join('documento_venta as dov', 'dov.VEN_Id', '=', 'v.VEN_Id')
+                ->where('v.VEN_Id', $idventa)
+                ->select('c.CLI_Nombre', 'c.CLI_Celular', 'dov.DOV_Serie', 'dov.DOV_Numero')
+                ->first();
+
+            return response()->json([
+                'success'   => true,
+                'url'       => $url,
+                'documento' => $cliente ? $cliente->DOV_Serie . '-' . $cliente->DOV_Numero : '',
+                'celular'   => $cliente->CLI_Celular ?? '',
+                'cliente'   => $cliente->CLI_Nombre ?? '',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success'     => false,
+                'descripcion' => 'No se pudo generar la imagen del ticket: ' . $e->getMessage(),
+            ], 422);
+        }
     }
 
 

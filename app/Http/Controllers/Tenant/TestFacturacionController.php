@@ -20,8 +20,14 @@ class TestFacturacionController extends Controller
     {
 
         // CERTIFICADO
-        $rutaCertificado = storage_path('app/tenant/' .tenant('tipo_negocio') .'/' .tenant('id') .
-            '/sunat/certificado/' .$this->empresa->certificado);
+        $rutaCertificado = $this->empresa?->rutaCertificado();
+
+        if (!$rutaCertificado) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'No hay un certificado digital cargado para esta empresa.',
+            ], 422);
+        }
 
         $certificadoBase64 = base64_encode(file_get_contents($rutaCertificado));
 

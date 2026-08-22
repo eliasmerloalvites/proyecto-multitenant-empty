@@ -84,6 +84,9 @@
                                 <th scope="col">Met. Pago</th>
                                 <th scope="col">Importe</th>
                                 <th scope="col">Fecha</th>
+                                @if ($mostrarSunat ?? false)
+                                    <th scope="col">SUNAT</th>
+                                @endif
                                 <th scope="col">Opciones</th>
                             </tr>
                         </thead>
@@ -465,6 +468,15 @@
                         name: 'fecha',
                         className: 'text-start'
                     },
+                    @if ($mostrarSunat ?? false)
+                    {
+                        data: 'sunat',
+                        name: 'sunat',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-start text-nowrap'
+                    },
+                    @endif
                     {
                         data: null,
                         name: '',
@@ -479,6 +491,77 @@
                         }
                     }
                 ],
+            });
+
+
+            /* ============ ACCIONES DE SUNAT ============ */
+
+            // Consultar el estado del comprobante directamente en SUNAT.
+            $('body').on('click', '.sunatConsultar', function() {
+                var id = $(this).data('id');
+                Swal.fire({
+                    title: 'Consultando a SUNAT...',
+                    allowOutsideClick: false,
+                    didOpen: function() { Swal.showLoading(); }
+                });
+
+                $.get('/tenant/ventas/venta/' + id + '/sunat/consultar')
+                    .done(function(r) {
+                        Swal.fire({
+                            icon: r.success ? 'success' : 'info',
+                            title: r.success ? 'Respuesta de SUNAT' : 'No se pudo consultar',
+                            html: (r.codigo ? '<b>Codigo ' + r.codigo + '</b><br>' : '') + (r.descripcion || '')
+                        });
+                    })
+                    .fail(function(xhr) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'No se pudo consultar',
+                            text: (xhr.responseJSON && xhr.responseJSON.descripcion) || 'Error de conexion.'
+                        });
+                    });
+            });
+
+            // Reintentar el envio de un comprobante que no llego a SUNAT.
+            $('body').on('click', '.sunatReenviar', function() {
+                var id = $(this).data('id');
+                Swal.fire({
+                    icon: 'question',
+                    title: 'Reenviar a SUNAT?',
+                    text: 'Se volvera a enviar este comprobante.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Si, reenviar',
+                    cancelButtonText: 'Cancelar'
+                }).then(function(res) {
+                    if (!res.isConfirmed) return;
+
+                    Swal.fire({
+                        title: 'Enviando...',
+                        allowOutsideClick: false,
+                        didOpen: function() { Swal.showLoading(); }
+                    });
+
+                    $.ajax({
+                        url: '/tenant/ventas/venta/' + id + '/sunat/reenviar',
+                        method: 'POST',
+                        data: { _token: $('meta[name="csrf-token"]').attr('content') }
+                    }).done(function(r) {
+                        Swal.fire({
+                            icon: r.success ? 'success' : 'error',
+                            title: r.success ? 'Estado: ' + r.estado : 'No se pudo reenviar',
+                            text: r.descripcion || ''
+                        }).then(function() { table.ajax.reload(null, false); });
+                    }).fail(function(xhr) {
+                        var r = xhr.responseJSON || {};
+                        // 409: SUNAT ya tenia el comprobante y se evito duplicarlo.
+                        var duplicado = xhr.status === 409 || r.ya_en_sunat;
+                        Swal.fire({
+                            icon: duplicado ? 'info' : 'error',
+                            title: duplicado ? 'No hacia falta reenviar' : 'No se pudo reenviar',
+                            text: r.descripcion || 'Error de conexion.'
+                        }).then(function() { if (duplicado) table.ajax.reload(null, false); });
+                    });
+                });
             });
 
             $('body').on('click', '.eyeVenta', function() {
@@ -568,55 +651,66 @@
                     })
             });
 
-            $('body').on('click', '.envioWhatsapp', function () {
-                console.log("click en whatsapp")
+            $('body').on('click', '.envioWhatsapp', function (e) {
+                e.preventDefault();
                 let Venta_id_ver = $(this).data('id');
 
                 $('#ventaWhatsappId').val(Venta_id_ver);
+                $('#numeroWhatsapp').val('');
+
+                // Se precarga el celular del cliente si lo tiene registrado.
+                $.get('/tenant/ventas/venta/' + Venta_id_ver + '/ticket-whatsapp')
+                    .done(function (r) {
+                        if (r.celular) {
+                            $('#numeroWhatsapp').val(String(r.celular).replace(/\D/g, '').slice(-9));
+                        }
+                    });
 
                 $('#modalWhatsapp').modal('show');
-
             });
 
-            $('#btnEnviarWhatsapp').click(async function () {
+            $('#btnEnviarWhatsapp').click(function () {
+                let numero = ($('#numeroWhatsapp').val() || '').replace(/\D/g, '');
+                let ventaId = $('#ventaWhatsappId').val();
 
-                let numero = $('#numeroWhatsapp').val();
-
-                if(numero.length !== 9){
-
-                    alert('Ingrese un número válido');
-
+                if (numero.length !== 9) {
+                    Swal.fire({ icon: 'warning', title: 'Numero invalido', text: 'Ingrese los 9 digitos del celular.' });
                     return;
                 }
 
-                // GENERAR IMAGEN
-                const ticket = document.getElementById('ticket');
+                var $btn = $(this).prop('disabled', true);
+                var textoOriginal = $btn.html();
+                $btn.html('Preparando ticket...');
 
-                const canvas = await html2canvas(ticket, {
-                    scale: 3,
-                    backgroundColor: '#ffffff'
+                // La imagen se genera aqui, no al vender: solo se crea la de
+                // los tickets que realmente se envian.
+                $.get('/tenant/ventas/venta/' + ventaId + '/ticket-whatsapp')
+                    .done(function (r) {
+                        if (!r.success) {
+                            Swal.fire({ icon: 'error', title: 'No se pudo preparar', text: r.descripcion || '' });
+                            return;
+                        }
 
-                });
+                        var mensaje = encodeURIComponent(
+                            'Hola' + (r.cliente ? ' ' + r.cliente : '') + ' 😊\n' +
+                            'Gracias por su compra.\n' +
+                            'Su comprobante ' + r.documento + ' esta aqui:\n' + r.url
+                        );
 
-                const imagen = canvas.toDataURL('image/png');
-
-                // DESCARGAR AUTOMÁTICAMENTE
-                const link = document.createElement('a');
-
-                link.href = imagen;
-
-                link.download = 'ticket.png';
-
-                link.click();
-
-                // MENSAJE
-                let mensaje = encodeURIComponent(
-                    'Hola 😊\nGracias por su compra.\nAdjuntamos su ticket.'
-                );
-
-                // ABRIR WHATSAPP
-                window.open(`https://wa.me/51${numero}?text=${mensaje}`,'_blank');
-
+                        window.open('https://wa.me/51' + numero + '?text=' + mensaje, '_blank');
+                        $('#modalWhatsapp').modal('hide');
+                    })
+                    .fail(function (xhr) {
+                        var r = xhr.responseJSON || {};
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'No se pudo preparar el ticket',
+                            text: r.descripcion || 'Error de conexion.'
+                        });
+                    })
+                    .always(function () {
+                        $btn.prop('disabled', false).html(textoOriginal);
+                    });
             });
 
         })
@@ -687,6 +781,15 @@
                         name: 'fecha',
                         className: 'text-start'
                     },
+                    @if ($mostrarSunat ?? false)
+                    {
+                        data: 'sunat',
+                        name: 'sunat',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-start text-nowrap'
+                    },
+                    @endif
                     {
                         data: null,
                         name: '',

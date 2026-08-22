@@ -454,6 +454,83 @@ select.form-control option {
     color: var(--text-main);
 }
 
+
+/* =======================================================
+   GRUPOS DE ENTRADA (etiquetas pegadas a los campos)
+
+   Bootstrap pinta .input-group-text en #e9ecef, y varias
+   vistas ademas traen un style="background:#EDEDED" en linea.
+   Por eso el fondo va con !important: es la unica forma de
+   ganarle a un estilo en linea desde la hoja de estilos.
+
+   .input-group-addon es una clase de Bootstrap 3 que quedo en
+   el marcado (compras, gastos); en Bootstrap 4 no existe, asi
+   que esos elementos se quedaban con la apariencia nativa del
+   navegador, es decir blancos.
+======================================================= */
+
+.input-group-text,
+.input-group-addon {
+    background-color: #172033 !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    color: var(--text-muted) !important;
+}
+
+/* iconos dentro de la etiqueta */
+.input-group-text i,
+.input-group-addon i {
+    color: var(--text-muted) !important;
+}
+
+/* el <select> que quedo con la clase de Bootstrap 3 se comporta
+   como un campo mas, no como una etiqueta */
+select.input-group-addon {
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    padding: .375rem .5rem;
+}
+
+select.input-group-addon option {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+}
+
+/* =======================================================
+   SELECTS NATIVOS
+
+   Los <select> sin clase .form-control (o con clases de
+   Bootstrap 3) conservan los colores del sistema.
+======================================================= */
+
+.custom-select {
+    background-color: var(--bg-card) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    color: var(--text-main) !important;
+}
+
+.custom-select option,
+.custom-select optgroup {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+}
+
+/* la flecha del select nativo tambien es oscura por defecto */
+select.form-control,
+.custom-select {
+    /* se deja que el navegador dibuje la flecha con el color del texto */
+    color-scheme: dark;
+}
+
+/* =======================================================
+   CAMPOS DESHABILITADOS Y SOLO LECTURA
+======================================================= */
+
+.form-control:disabled,
+.form-control[readonly] {
+    background-color: rgba(255, 255, 255, .04) !important;
+    color: var(--text-muted) !important;
+}
+
 /* USER PANEL */
 .user-panel {
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -518,6 +595,101 @@ select.form-control option {
 
 .table tbody tr:hover {
     background: rgba(59, 130, 246, 0.08);
+}
+
+
+/* =======================================================
+   TABLAS CON BORDE
+
+   Bootstrap pinta los bordes de .table-bordered en #dee2e6.
+   Sobre fondo oscuro esa rejilla clara se lee como un bloque
+   blanco, sobre todo en tablas compactas.
+
+   Las reglas NO exigen la clase .table porque varias vistas
+   (compras/compra create y edit) usan solo los modificadores.
+======================================================= */
+
+.table-bordered,
+.table-bordered thead th,
+.table-bordered thead td,
+.table-bordered tbody th,
+.table-bordered tbody td,
+.table-bordered tfoot th,
+.table-bordered tfoot td {
+    border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* encabezado, aunque la tabla no lleve la clase .table */
+.table-bordered thead th,
+.table-striped thead th,
+.table-hover thead th {
+    background-color: #172033 !important;
+    color: var(--text-muted) !important;
+}
+
+/* celdas */
+.table-bordered td,
+.table-striped td,
+.table-hover td {
+    color: var(--text-main);
+}
+
+/* filas alternas y hover sin la clase .table */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, .03) !important;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.10) !important;
+    color: var(--text-main);
+}
+
+/* =======================================================
+   BARRAS DE DESPLAZAMIENTO
+
+   Los contenedores con overflow propio (el detalle de compra
+   usa overflow-y:scroll) muestran la barra nativa del sistema,
+   que es clara y resalta sobre el panel oscuro.
+======================================================= */
+
+.table-responsive::-webkit-scrollbar,
+.card-body::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-track,
+.card-body::-webkit-scrollbar-track,
+.modal-body::-webkit-scrollbar-track {
+    background: var(--bg-card);
+}
+
+.table-responsive::-webkit-scrollbar-thumb,
+.card-body::-webkit-scrollbar-thumb,
+.modal-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, .14);
+    border-radius: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover,
+.card-body::-webkit-scrollbar-thumb:hover,
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, .22);
+}
+
+.table-responsive::-webkit-scrollbar-corner,
+.card-body::-webkit-scrollbar-corner,
+.modal-body::-webkit-scrollbar-corner {
+    background: var(--bg-card);
+}
+
+/* Firefox */
+.table-responsive,
+.card-body,
+.modal-body {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, .18) var(--bg-card);
 }
 
 /* DATATABLES */
@@ -738,16 +910,157 @@ table.dataTable tbody tr:hover {
     text-shadow: none;
 }
 
-/* SELECT2 */
-.select2-container--bootstrap4 .select2-selection,
-.select2-container--bootstrap4 .select2-dropdown {
-    background: #1E293B !important;
-    color: var(--text-main) !important;
+/* =======================================================
+   SELECT2
+
+   El proyecto inicializa Select2 de dos formas:
+     $('.select2').select2()                    -> .select2-container--default
+     $('.select2bs4').select2({theme:'bootstrap4'}) -> .select2-container--bootstrap4
+
+   Las reglas cubren ambas. El panel desplegable se cuelga
+   del <body>, no del contenedor, asi que se estiliza por su
+   propia clase (.select2-dropdown) y no como descendiente
+   del control.
+======================================================= */
+
+/* --- control cerrado --- */
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple,
+.select2-container--bootstrap4 .select2-selection {
+    background-color: var(--bg-card) !important;
     border-color: rgba(255, 255, 255, 0.10) !important;
+    color: var(--text-main) !important;
 }
 
+.select2-container--default .select2-selection--single .select2-selection__rendered,
+.select2-container--bootstrap4 .select2-selection__rendered {
+    color: var(--text-main) !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__placeholder,
+.select2-container--bootstrap4 .select2-selection__placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* flecha */
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: var(--text-muted) transparent transparent transparent !important;
+}
+
+.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+    border-color: transparent transparent var(--text-muted) transparent !important;
+}
+
+/* control enfocado / abierto */
+.select2-container--default.select2-container--open .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--multiple,
+.select2-container--bootstrap4.select2-container--focus .select2-selection {
+    border-color: var(--primary) !important;
+}
+
+/* --- panel desplegable --- */
+.select2-dropdown {
+    background-color: var(--bg-card) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: var(--text-main) !important;
+}
+
+/* --- buscador dentro del panel --- */
+.select2-search--dropdown {
+    background-color: var(--bg-card) !important;
+}
+
+.select2-search--dropdown .select2-search__field {
+    background-color: var(--bg-main) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: var(--text-main) !important;
+}
+
+.select2-search--dropdown .select2-search__field:focus {
+    border-color: var(--primary) !important;
+    outline: none !important;
+}
+
+.select2-search--dropdown .select2-search__field::placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* buscador del select multiple (va dentro del control) */
+.select2-container--default .select2-search--inline .select2-search__field {
+    color: var(--text-main) !important;
+}
+
+/* --- opciones --- */
+.select2-results__option {
+    background-color: transparent !important;
+    color: var(--text-main) !important;
+}
+
+.select2-container--default .select2-results__option[aria-selected=true],
+.select2-container--default .select2-results__option[data-selected=true],
+.select2-container--bootstrap4 .select2-results__option[aria-selected=true] {
+    background-color: rgba(255, 255, 255, .06) !important;
+    color: var(--text-main) !important;
+}
+
+/* la fila activa debe ganarle a la ya seleccionada, por eso va despues */
+.select2-container--default .select2-results__option--highlighted[aria-selected],
+.select2-container--default .select2-results__option--highlighted[data-selected],
 .select2-container--bootstrap4 .select2-results__option--highlighted[aria-selected] {
-    background-color: rgba(59, 130, 246, .25) !important;
+    background-color: rgba(59, 130, 246, .28) !important;
+    color: var(--text-main) !important;
+}
+
+/* opcion deshabilitada y mensajes ("Sin resultados", "Cargando...") */
+.select2-container--default .select2-results__option[aria-disabled=true],
+.select2-results__message {
+    color: var(--text-muted) !important;
+}
+
+/* agrupadores */
+.select2-results__group {
+    color: var(--text-muted) !important;
+}
+
+/* --- seleccion multiple: etiquetas --- */
+.select2-container--default .select2-selection--multiple .select2-selection__choice,
+.select2-container--bootstrap4 .select2-selection--multiple .select2-selection__choice {
+    background-color: rgba(59, 130, 246, .22) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: var(--text-main) !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: var(--text-muted) !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: var(--danger) !important;
+}
+
+/* --- control deshabilitado --- */
+.select2-container--disabled .select2-selection,
+.select2-container--default .select2-selection--single[aria-disabled=true] {
+    background-color: rgba(255, 255, 255, .04) !important;
+    color: var(--text-muted) !important;
+}
+
+/* --- barra de desplazamiento de la lista --- */
+.select2-results__options::-webkit-scrollbar {
+    width: 10px;
+}
+
+.select2-results__options::-webkit-scrollbar-track {
+    background: var(--bg-card);
+}
+
+.select2-results__options::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, .14);
+    border-radius: 6px;
+}
+
+.select2-results__options::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, .22);
 }
 
 /* =======================================================
@@ -1199,15 +1512,6 @@ label,
 }
 
 .text-dark {
-    color: var(--text-main) !important;
-}
-
-/* Select2 con etiqueta "Seleccionar..." (placeholder) */
-.select2-container--bootstrap4 .select2-selection__placeholder {
-    color: var(--text-muted) !important;
-}
-
-.select2-container--bootstrap4 .select2-selection__rendered {
     color: var(--text-main) !important;
 }
 
