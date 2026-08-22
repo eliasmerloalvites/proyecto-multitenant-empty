@@ -671,6 +671,51 @@
                             VOUCHER SWITCH
                             ========================================= */
 
+        /* Aviso cuando el tenant aun no puede emitir comprobantes */
+        .facturacion-pendiente {
+            margin-top: 10px;
+            padding: 12px 14px;
+            background: #FEF6E7;
+            border: 1px solid #F0C36D;
+            border-left: 3px solid #D68910;
+            border-radius: 10px;
+        }
+
+        .facturacion-pendiente-titulo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            color: #8A5A12;
+            margin-bottom: 6px;
+        }
+
+        .facturacion-pendiente-texto {
+            margin: 0 0 6px;
+            font-size: 12px;
+            color: #6B5320;
+        }
+
+        .facturacion-pendiente-lista {
+            margin: 0 0 10px;
+            padding-left: 18px;
+            font-size: 12px;
+            color: #6B5320;
+        }
+
+        .facturacion-pendiente-lista li { margin-bottom: 3px; }
+
+        .facturacion-pendiente-enlace {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #8A5A12;
+            text-decoration: underline;
+        }
+
+        .facturacion-pendiente-enlace:hover { color: #5E3D0C; }
+
         .voucher-switch {
 
             background: #F3F4F6;
@@ -1589,13 +1634,36 @@
                                     <button class="voucher-option active" onclick="changeVoucher(this,'NOTA')">
                                         Nota Venta
                                     </button>
-                                    <button class="voucher-option" onclick="changeVoucher(this,'BOLETA')">
-                                        Boleta
-                                    </button>
-                                    <button class="voucher-option" onclick="changeVoucher(this,'FACTURA')">
-                                        Factura
-                                    </button>
+                                    @if ($puedeFacturar)
+                                        <button class="voucher-option" onclick="changeVoucher(this,'BOLETA')">
+                                            Boleta
+                                        </button>
+                                        <button class="voucher-option" onclick="changeVoucher(this,'FACTURA')">
+                                            Factura
+                                        </button>
+                                    @endif
                                 </div>
+
+                                @unless ($puedeFacturar)
+                                    <div class="facturacion-pendiente">
+                                        <div class="facturacion-pendiente-titulo">
+                                            <i class="fa fa-exclamation-triangle"></i>
+                                            Boleta y factura no disponibles
+                                        </div>
+                                        <p class="facturacion-pendiente-texto">
+                                            Para emitir comprobantes electronicos falta completar:
+                                        </p>
+                                        <ul class="facturacion-pendiente-lista">
+                                            @foreach ($problemasFacturacion as $problema)
+                                                <li>{{ $problema }}</li>
+                                            @endforeach
+                                        </ul>
+                                        <a href="{{ route('tenant.configuracion.empresa.index') }}"
+                                           class="facturacion-pendiente-enlace" target="_blank">
+                                            Completar datos de facturacion
+                                        </a>
+                                    </div>
+                                @endunless
                             </div>
                             <div class="checkout-block">
                                 <input type="hidden" id="cliente_id">
@@ -1899,6 +1967,10 @@
         let currentSearch = '';
         let cart = [];
         let voucherType = 'NOTA';
+
+        // Ambiente de facturacion del tenant: en pruebas el comprobante que
+        // devuelve SUNAT no tiene validez tributaria.
+        const FACTURACION_EN_PRUEBAS = @json($facturacionEnPruebas ?? true);
 
         const Toast = Swal.mixin({
             toast: true,
@@ -2351,13 +2423,31 @@
                 data: data,
                 success: function(response){
                     // SUCCESS
+                    // En el ambiente de pruebas de SUNAT el comprobante no
+                    // tiene validez tributaria, asi que no se ofrece el enlace
+                    // de impresion: solo se avisa en que quedo la venta.
+                    var esElectronico = (voucherType === 'BOLETA' || voucherType === 'FACTURA');
+                    var enPruebas = FACTURACION_EN_PRUEBAS;
+                    var pie;
+
+                    if (esElectronico && enPruebas) {
+                        pie = '<span style="color:#B45309;"><i class="fa fa-flask"></i> ' +
+                              'Ambiente de pruebas: el comprobante se envio a SUNAT en modo BETA ' +
+                              'y no tiene validez tributaria, por eso no se puede imprimir.</span>';
+                    } else {
+                        pie = '<a title="TICKET" target="_blank" href="/tenant/ventas/venta/' + response.venta_id +
+                              '/ticket" class="btn btn-danger btn-sm" style="margin-left: 5px;">' +
+                              '<i class="fa fa fa-print"></i> ¿Desea imprimir documento?</a>';
+                    }
+
                     Swal.fire({
                             icon: "success",
                             title: "Venta Generada",
-                            text: "Se realizo el pago correctamente!",
+                            text: esElectronico
+                                ? "Se realizo el pago. El comprobante se esta enviando a SUNAT."
+                                : "Se realizo el pago correctamente!",
                             confirmButtonText: "Aceptar",
-                            footer: '<a title="TICKET" target="_blank"  href="/tenant/ventas/venta/' + response
-                                .venta_id +'/ticket" class="btn btn-danger btn-sm" style="margin-left: 5px;"><i class="fa fa fa-print"></i> ¿Desea imprimir documento?</a>',
+                            footer: pie,
                             allowOutsideClick: false, // Deshabilita clics fuera del alert
                             allowEscapeKey: false
                         }).then((result) => {
@@ -2378,8 +2468,18 @@
                     // OPCIONAL
                     // imprimirTicket(response.id);
                 },
-                error: function(){
-                    showToast('error', 'Error al registrar venta');
+                error: function(xhr){
+                    // El servidor explica por que no se pudo registrar
+                    // (cliente sin RUC, caja cerrada, sin stock...).
+                    var motivo = (xhr.responseJSON && xhr.responseJSON.error)
+                        ? xhr.responseJSON.error
+                        : 'Error al registrar venta';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'No se registro la venta',
+                        text: motivo,
+                        confirmButtonText: 'Entendido'
+                    });
                 },
                 complete: function(){
                     $('.btn-finish-sale').prop('disabled', false).html(`FINALIZAR VENTA`);

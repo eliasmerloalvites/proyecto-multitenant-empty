@@ -491,7 +491,7 @@
 
             <div class="company-subtitle">
 
-                SOLUCIONES Y SERVICIOS GENERALES
+                {{ $datosalmacen->nombre_comercial ?? $datosalmacen->razon_social ?? '' }}
 
             </div>
 
@@ -517,7 +517,7 @@
 
                     <strong>Ciudad:</strong>
 
-                    LA LIBERTAD - PACASMAYO
+                    {{ trim(($datosalmacen->ALM_Departamento ?? '') . ' - ' . ($datosalmacen->ALM_Provincia ?? ''), ' -') ?: '-' }}
 
                 </div>
 

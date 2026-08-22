@@ -39,9 +39,14 @@ class GreenterService
 
         /* RUTA CERTIFICADO */
 
-        $certPath = storage_path('app/tenant/' .tenant('tipo_negocio') .'/' .tenant('id') .
-            '/sunat/certificado/' .$this->empresa->certificado);
-        
+        $certPath = $this->empresa?->rutaCertificado();
+
+        if (!$certPath) {
+            throw new \RuntimeException(
+                'No hay un certificado digital cargado para esta empresa.'
+            );
+        }
+
         /* CERTIFICADO PEM */
         $see->setCertificate(file_get_contents($certPath));
 

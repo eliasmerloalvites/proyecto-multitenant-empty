@@ -229,3 +229,79 @@ if (! function_exists('tenant_has_module')) {
         return (bool) (saas_plans_config(tenant('tipo_negocio'))[$plan]['data']['modules'][$module] ?? false);
     }
 }
+
+if (! function_exists('tenant_problemas_facturacion')) {
+
+    /**
+     * Qué le falta al tenant actual para poder emitir boletas y facturas
+     * electrónicas. Arreglo vacío = está listo.
+     *
+     * @return string[]
+     */
+    function tenant_problemas_facturacion(): array
+    {
+        $empresa = \App\Models\Tenant\EmpresaFacturacion::delTenantActual();
+
+        if (! $empresa) {
+            return ['Aun no se han registrado los datos de facturacion de la empresa.'];
+        }
+
+        $problemas = $empresa->problemasDeConfiguracion();
+
+        // El domicilio, el codigo de local y las series viven en la sede: cada
+        // una es un establecimiento anexo ante SUNAT. Se valida la sede con la
+        // que se esta operando ahora mismo.
+        $sedeId = tenant_caja_activa_almacen_id();
+
+        $sede = $sedeId
+            ? \App\Models\Tenant\Almacen::find($sedeId)
+            : \App\Models\Tenant\Almacen::principal()->first();
+
+        if (! $sede) {
+            $problemas[] = 'No hay una sede configurada desde la cual emitir.';
+        } else {
+            $problemas = array_merge($problemas, $sede->problemasDeConfiguracion());
+        }
+
+        return $problemas;
+    }
+}
+
+if (! function_exists('tenant_puede_facturar')) {
+
+    /**
+     * true cuando el tenant puede emitir comprobantes electrónicos. Se usa
+     * para ocultar las opciones de Boleta y Factura en el punto de venta.
+     */
+    function tenant_puede_facturar(): bool
+    {
+        return tenant_problemas_facturacion() === [];
+    }
+}
+
+if (! function_exists('tenant_facturacion_en_pruebas')) {
+
+    /**
+     * true cuando el tenant emite contra el ambiente de pruebas de SUNAT.
+     *
+     * Lo que se emite ahi no tiene validez tributaria, asi que el punto de
+     * venta no debe ofrecer el comprobante como si fuera imprimible.
+     */
+    function tenant_facturacion_en_pruebas(): bool
+    {
+        return \App\Models\Tenant\EmpresaFacturacion::delTenantActual()?->esBeta() ?? true;
+    }
+}
+
+if (! function_exists('tenant_tiene_certificado')) {
+
+    /**
+     * true cuando el tenant ya cargó su certificado digital y el archivo
+     * existe. Se usa para mostrar la columna de SUNAT en la lista de ventas:
+     * sin certificado no hay comprobantes electrónicos que revisar.
+     */
+    function tenant_tiene_certificado(): bool
+    {
+        return (bool) \App\Models\Tenant\EmpresaFacturacion::delTenantActual()?->rutaCertificado();
+    }
+}

@@ -84,4 +84,75 @@ class Almacen extends Model
     {
         return $query->where('ALM_EsPrincipal', true);
     }
+
+    /* =========================================================================
+     | FACTURACION ELECTRONICA
+     |
+     | Para SUNAT cada sede es un establecimiento anexo: tiene su domicilio,
+     | su codigo de local y su propia numeracion. Por eso el comprobante toma
+     | estos datos de la sede donde se hizo la venta, no de la empresa.
+     | ========================================================================= */
+
+    /** Campos de la sede sin los cuales SUNAT no acepta el comprobante. */
+    const CAMPOS_REQUERIDOS = [
+        'ALM_Ubigeo'       => 'el ubigeo',
+        'ALM_Direccion'    => 'la direccion',
+        'ALM_Departamento' => 'el departamento',
+        'ALM_Provincia'    => 'la provincia',
+        'ALM_Distrito'     => 'el distrito',
+    ];
+
+    /** Tipo de documento interno => columna con su serie. */
+    const SERIES = [
+        EmpresaFacturacion::TIPO_BOLETA  => 'ALM_SerieBoleta',
+        EmpresaFacturacion::TIPO_FACTURA => 'ALM_SerieFactura',
+    ];
+
+    /**
+     * Serie configurada en esta sede para un tipo de documento (BOL / FAC).
+     */
+    public function seriePara(string $tipo): ?string
+    {
+        $columna = self::SERIES[$tipo]
+            ?? throw new \InvalidArgumentException("Tipo de documento no soportado: $tipo");
+
+        $serie = trim((string) $this->{$columna});
+
+        return $serie !== '' ? strtoupper($serie) : null;
+    }
+
+    /**
+     * Que le falta a esta sede para poder emitir comprobantes electronicos.
+     *
+     * @return string[]
+     */
+    public function problemasDeConfiguracion(): array
+    {
+        $problemas = [];
+        $nombre = $this->ALM_NombreAlmacen ?: 'la sede';
+
+        $faltantes = [];
+        foreach (self::CAMPOS_REQUERIDOS as $campo => $etiqueta) {
+            if (blank($this->{$campo})) {
+                $faltantes[] = $etiqueta;
+            }
+        }
+
+        if ($faltantes) {
+            $problemas[] = 'A "' . $nombre . '" le falta ' . implode(', ', $faltantes) . '.';
+        }
+
+        $sinSerie = [];
+        foreach (['Boleta' => EmpresaFacturacion::TIPO_BOLETA, 'Factura' => EmpresaFacturacion::TIPO_FACTURA] as $label => $tipo) {
+            if (!$this->seriePara($tipo)) {
+                $sinSerie[] = $label;
+            }
+        }
+
+        if ($sinSerie) {
+            $problemas[] = 'A "' . $nombre . '" le falta la serie de ' . implode(' y ', $sinSerie) . '.';
+        }
+
+        return $problemas;
+    }
 }
