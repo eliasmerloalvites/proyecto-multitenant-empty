@@ -35,7 +35,7 @@ class PagoController extends Controller
                     $cliente->estado_ciclo = $cliente->estadoCicloActual($hoy);
                     $cliente->fecha_cobro = $cliente->fechaCicloActual($hoy);
                     $planesConfig[$cliente->tipo_negocio] ??= saas_plans_config($cliente->tipo_negocio);
-                    $cliente->monto_esperado = $planesConfig[$cliente->tipo_negocio][$cliente->plan]['price'] ?? 0;
+                    $cliente->monto_esperado = $cliente->montoEsperado($planesConfig[$cliente->tipo_negocio]);
 
                     return $cliente;
                 });

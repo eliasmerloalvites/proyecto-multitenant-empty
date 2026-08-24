@@ -12,8 +12,9 @@ class Client extends Model
         'razon_social',
         'ruc',
         'email',
-        'tipo_negocio',
+        'telefono',
         'billing_day',
+        'precio_personalizado',
         'trial_ends_at',
         'domain_id',
         'status',
@@ -22,9 +23,37 @@ class Client extends Model
 
     protected $casts = [
         'billing_day' => 'integer',
+        'precio_personalizado' => 'decimal:2',
         'trial_ends_at' => 'date',
         'next_payment_date' => 'date',
     ];
+
+    /**
+     * Monto a cobrarle a este cliente en su ciclo actual: su precio
+     * negociado si tiene uno (ej. le subimos límites sin cambiarlo de
+     * plan), o si no el precio estándar del plan. Única fuente de verdad
+     * para "cuánto se le cobra" — la usan PagoController, ProcesarCobrosCommand
+     * y (a futuro) la pasarela de pago, para no calcular el monto en 3
+     * sitios distintos y que diverjan.
+     *
+     * $planConfigDelNegocio es el resultado de saas_plans_config($tipo_negocio)
+     * (el llamador ya lo tiene cacheado por tipo_negocio, ver
+     * ProcesarCobrosCommand::handle()). $plan es opcional: por defecto usa
+     * $this->plan, presente cuando el cliente viene de un query con join a
+     * `tenants` (ProcesarCobrosCommand, PagoController::index); si no,
+     * pásalo explícito (ej. ClientController::show(), que carga el Tenant
+     * aparte).
+     */
+    public function montoEsperado(array $planConfigDelNegocio, ?string $plan = null): float
+    {
+        if ($this->precio_personalizado !== null) {
+            return (float) $this->precio_personalizado;
+        }
+
+        $plan ??= $this->plan;
+
+        return (float) ($planConfigDelNegocio[$plan]['price'] ?? 0);
+    }
 
     public function enPeriodoDePrueba(Carbon $hoy): bool
     {

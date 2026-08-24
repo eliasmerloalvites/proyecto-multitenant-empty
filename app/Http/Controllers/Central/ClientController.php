@@ -185,8 +185,10 @@ class ClientController extends Controller
                 'ruc'               => $client->ruc,
                 'razon_social'      => $client->razon_social,
                 'email'             => $client->email,
+                'telefono'          => $client->telefono,
                 'billing_day'       => $client->billing_day,
                 'next_payment_date' => optional($client->next_payment_date)->format('Y-m-d'),
+                'precio_personalizado' => $client->precio_personalizado,
                 'status'            => $client->status,
                 'plan'              => $tenant->plan ?? null,
                 'tipo_negocio'      => $tenant->tipo_negocio ?? null,
@@ -211,6 +213,10 @@ class ClientController extends Controller
                 'email'                 => $client->email,
                 'billing_day'           => $client->billing_day,
                 'next_payment_date'     => optional($client->next_payment_date)->format('Y-m-d'),
+                'precio_personalizado'  => $client->precio_personalizado,
+                'monto_esperado'        => $tenant
+                    ? $client->montoEsperado(saas_plans_config($tenant->tipo_negocio), $tenant->plan)
+                    : null,
                 'status'                => $client->status,
                 'created_at'            => $client->created_at,
                 'updated_at'            => $client->updated_at,
@@ -238,14 +244,17 @@ class ClientController extends Controller
             'ruc'               => 'nullable|string|max:20',
             'razon_social'      => 'required|string|max:255',
             'email'             => 'nullable|email',
+            'telefono'          => 'nullable|string|max:20',
             'billing_day'       => 'required|integer|min:1|max:28',
             'next_payment_date' => 'nullable|date',
+            'precio_personalizado' => 'nullable|numeric|min:0',
             'plan'              => 'required|in:start,basic,plus,empresarial',
             'status'            => 'required|in:activo,suspendido,cancelado',
         ]);
 
         $planAnterior = null;
         $statusAnterior = $client->status;
+        $precioAnterior = $client->precio_personalizado;
 
         try {
             DB::beginTransaction();
@@ -254,8 +263,10 @@ class ClientController extends Controller
                 'ruc'               => $validated['ruc'] ?? null,
                 'razon_social'      => $validated['razon_social'],
                 'email'             => $validated['email'] ?? null,
+                'telefono'          => $validated['telefono'] ?? null,
                 'billing_day'       => $validated['billing_day'],
                 'next_payment_date' => $validated['next_payment_date'] ?? null,
+                'precio_personalizado' => $validated['precio_personalizado'] ?? null,
                 'status'            => $validated['status'],
             ]);
 
@@ -299,6 +310,11 @@ class ClientController extends Controller
             }
             if ($statusAnterior !== $validated['status']) {
                 $cambios[] = 'estado ' . $statusAnterior . ' → ' . $validated['status'];
+            }
+            $precioNuevo = $validated['precio_personalizado'] ?? null;
+            if ((float) $precioAnterior !== (float) $precioNuevo) {
+                $cambios[] = 'precio personalizado ' . ($precioAnterior !== null ? 'S/' . $precioAnterior : 'estándar del plan')
+                    . ' → ' . ($precioNuevo !== null ? 'S/' . $precioNuevo : 'estándar del plan');
             }
 
             \App\Models\AuditLog::registrar(

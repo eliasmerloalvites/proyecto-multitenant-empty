@@ -145,7 +145,7 @@
 
                             </a>
 
-                            <a href="#demos"
+                            <a href="#demos" data-open-demo
                                 class="px-8
                             py-4
                             rounded-xl
@@ -234,7 +234,7 @@
                             class="text-slate-400
                         leading-8
                         max-w-md
-                        mb-8">
+                        mb-4">
 
                             Plataforma SaaS diseñada para automatizar la gestión
                             de negocios modernos, con tecnología en la nube,
@@ -242,11 +242,15 @@
 
                         </p>
 
+                        <p class="text-slate-500 text-sm mb-8">
+                            KAEL DEL VALLE S.A.C. — RUC 20616106865
+                        </p>
+
                         <!-- Redes -->
 
                         <div class="flex gap-4">
 
-                            <a href="#"
+                            <a href="https://www.facebook.com/KaelTech/" target="_blank" rel="noopener"
                                 class="w-12 h-12 rounded-xl
                             bg-white/5
                             border
@@ -262,22 +266,7 @@
 
                             </a>
 
-                            <a href="#"
-                                class="w-12 h-12 rounded-xl
-                            bg-white/5
-                            border
-                            border-white/10
-                            flex
-                            items-center
-                            justify-center
-                            hover:bg-pink-600
-                            transition">
-
-                                <i class="fab fa-instagram"></i>
-
-                            </a>
-
-                            <a href="#"
+                            <a href="https://www.tiktok.com/@datavalle" target="_blank" rel="noopener"
                                 class="w-12 h-12 rounded-xl
                             bg-white/5
                             border
@@ -289,21 +278,6 @@
                             transition">
 
                                 <i class="fab fa-tiktok"></i>
-
-                            </a>
-
-                            <a href="#"
-                                class="w-12 h-12 rounded-xl
-                            bg-white/5
-                            border
-                            border-white/10
-                            flex
-                            items-center
-                            justify-center
-                            hover:bg-red-600
-                            transition">
-
-                                <i class="fab fa-youtube"></i>
 
                             </a>
 
@@ -437,7 +411,7 @@
 
                                     <p class="text-slate-400">
 
-                                        +51 987 654 321
+                                        +51 953 765 418
 
                                     </p>
 
@@ -464,7 +438,7 @@
 
                                     <p class="text-slate-400">
 
-                                        hola@kael.pe
+                                        contacto@kael.pe
 
                                     </p>
 
@@ -491,7 +465,7 @@
 
                                     <p class="text-slate-400">
 
-                                        Lima - Perú
+                                        Pacasmayo, La Libertad - Perú
 
                                     </p>
 
@@ -590,15 +564,15 @@
 
                         <div class="flex flex-wrap justify-center gap-6 text-sm">
 
-                            <a href="#" class="text-slate-500 hover:text-cyan-400 transition">
+                            <a href="{{ route('central.privacidad') }}" class="text-slate-500 hover:text-cyan-400 transition">
                                 Política de privacidad
                             </a>
 
-                            <a href="#" class="text-slate-500 hover:text-cyan-400 transition">
+                            <a href="{{ route('central.terminos') }}" class="text-slate-500 hover:text-cyan-400 transition">
                                 Términos y condiciones
                             </a>
 
-                            <a href="#" class="text-slate-500 hover:text-cyan-400 transition">
+                            <a href="mailto:contacto@kael.pe" class="text-slate-500 hover:text-cyan-400 transition">
                                 Soporte
                             </a>
 

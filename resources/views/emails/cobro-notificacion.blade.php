@@ -41,6 +41,19 @@
                 </div>
             </div>
 
+            @if ($orden && $tipo !== 'suspension')
+                <div style="text-align:center;margin:24px 0;">
+                    <a href="{{ $orden->qr_url ?? '#' }}" style="background:#2563EB;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;display:inline-block;">
+                        Pagar ahora
+                    </a>
+                    @if ($orden->payment_code)
+                        <p style="color:#94A3B8;font-size:12px;margin-top:12px;">
+                            O paga con el código <strong>{{ $orden->payment_code }}</strong> en agentes/bodegas afiliadas (PagoEfectivo).
+                        </p>
+                    @endif
+                </div>
+            @endif
+
             <p style="color:#94A3B8;font-size:12px;margin-top:30px;">
                 Si ya realizaste el pago, ignora este mensaje o contáctanos para confirmarlo.
             </p>

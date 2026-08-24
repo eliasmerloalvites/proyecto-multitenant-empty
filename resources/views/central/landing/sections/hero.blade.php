@@ -104,8 +104,8 @@
                         </a>
 
                         <!-- BTN -->
-                        <a href="#demos"
-                            class="group px-8 py-4 rounded-xl border border-white/15 
+                        <a href="#demos" data-open-demo
+                            class="group px-8 py-4 rounded-xl border border-white/15
                                 bg-white/5 hover:bg-white/10 backdrop-blur-xl text-white transition-all duration-300 hover:border-cyan-400/40">
 
                             <span class="flex items-center gap-3">
