@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Mail\CobroNotificacionMail;
 use App\Models\Client;
 use App\Models\Tenant;
+use App\Services\CulqiOrderService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -15,6 +16,11 @@ class ProcesarCobrosCommand extends Command
     protected $signature = 'cobros:procesar {--dry-run : Solo mostrar qué haría, sin enviar correos ni suspender}';
 
     protected $description = 'Revisa el ciclo de facturación de cada cliente activo: envía recordatorios, avisos de vencido y suspende por mora.';
+
+    public function __construct(private CulqiOrderService $culqiOrders)
+    {
+        parent::__construct();
+    }
 
     public function handle(): int
     {
@@ -45,7 +51,7 @@ class ProcesarCobrosCommand extends Command
 
             $fechaCobro = $cliente->fechaCicloActual($hoy);
             $planesConfig[$cliente->tipo_negocio] ??= saas_plans_config($cliente->tipo_negocio);
-            $monto = $planesConfig[$cliente->tipo_negocio][$cliente->plan]['price'] ?? 0;
+            $monto = $cliente->montoEsperado($planesConfig[$cliente->tipo_negocio]);
 
             // ---------- RECORDATORIO (por vencer, dentro de 7 días) ----------
             if ($estado === 'por_vencer') {
@@ -135,7 +141,20 @@ class ProcesarCobrosCommand extends Command
             return;
         }
 
-        Mail::to($cliente->email)->send(new CobroNotificacionMail($cliente, $tipo, $fechaCobro, $monto));
+        $orden = null;
+        if (in_array($tipo, ['recordatorio', 'vencido'], true)) {
+            try {
+                $orden = $this->culqiOrders->ordenParaCicloActual($cliente, $periodo, $monto);
+            } catch (\Throwable $e) {
+                // No se pudo generar el link de pago (Culqi caído, llaves mal
+                // configuradas, etc.) — el aviso se manda igual, solo sin
+                // botón de pago. No debe frenar el resto del proceso.
+                report($e);
+                Log::warning("cobros:procesar — no se pudo generar orden Culqi para {$cliente->razon_social}: {$e->getMessage()}");
+            }
+        }
+
+        Mail::to($cliente->email)->send(new CobroNotificacionMail($cliente, $tipo, $fechaCobro, $monto, $orden));
 
         $cliente->notificacionesCobro()->create([
             'periodo' => $periodo,

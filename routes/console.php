@@ -23,3 +23,12 @@ Schedule::command('caja:programacion')
     ->everyMinute()
     ->timezone('America/Lima')
     ->withoutOverlapping();
+
+// Detecta tenants que quedaron por encima de su límite (usuarios, sedes,
+// cajas) tras un downgrade de plan. El enforcement normal solo bloquea la
+// creación de registros nuevos, no audita a los que ya existían — esto
+// cubre ese hueco. Semanal porque es una auditoría, no algo urgente.
+Schedule::command('plan:auditar-limites')
+    ->weeklyOn(1, '07:00')
+    ->timezone('America/Lima')
+    ->withoutOverlapping();

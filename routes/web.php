@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Central\ClientController;
+use App\Http\Controllers\Central\CulqiWebhookController;
 use App\Http\Controllers\Central\HomeController;
 use App\Http\Controllers\Central\PagoController;
 use App\Http\Controllers\Central\PlanController;
@@ -34,7 +35,16 @@ Route::middleware([
     ->name('central.registro.store');
   Route::get('/crear-empresa/verificar/{token}', [RegistroController::class, 'verificar'])->name('central.registro.verificar');
 
-  
+  Route::view('/terminos-y-condiciones', 'central.legal.terminos')->name('central.terminos');
+  Route::view('/politica-de-privacidad', 'central.legal.privacidad')->name('central.privacidad');
+
+  // Culqi llama a este endpoint server-a-server (sin sesión, sin CSRF —
+  // ver bootstrap/app.php). No confía en el body: vuelve a consultar el
+  // evento contra la API de Culqi antes de procesar nada (ver
+  // CulqiWebhookController).
+  Route::post('/webhooks/culqi', [CulqiWebhookController::class, 'handle'])->name('webhooks.culqi');
+
+
 
   Route::middleware(['auth:central'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('central.home');

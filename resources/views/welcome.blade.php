@@ -9,4 +9,5 @@
     @include('central.landing.sections.moto')
     @include('central.landing.sections.clientes')
     @include('central.landing.sections.footer')
+    @include('central.landing.sections.demo-modal')
 @endsection

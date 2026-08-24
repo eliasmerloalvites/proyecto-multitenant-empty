@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    // Pasarela de pago (cobros:procesar genera un link de pago por Culqi
+    // para cada cliente en vez de solo avisar por correo). Llaves de prueba
+    // llevan el prefijo pk_test_/sk_test_, las de producción pk_live_/sk_live_.
+    'culqi' => [
+        'public_key' => env('CULQI_PUBLIC_KEY'),
+        'secret_key' => env('CULQI_SECRET_KEY'),
+    ],
+
 ];

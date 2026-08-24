@@ -37,16 +37,22 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        /* $this->loadMigrationsFrom([
-            database_path('migrations/central')
-        ]);
-        // Si la conexión es la central, llama a los de central
+        /* Si la conexión es la central, llama a los de central
         if (config('database.default') === 'central') {
             $this->call(\Database\Seeders\Central\DatabaseSeeder::class);
         } else {
             // Si no, llama a los de tenant
             $this->call(\Database\Seeders\Tenant\DatabaseSeeder::class);
         } */
+
+        // Los Feature tests solo cubren el lado central (Plan, Client,
+        // Pago, Tenant, etc.) contra la BD dedicada
+        // proyecto_multitenant_empty_test (ver phpunit.xml). Registrar esto
+        // solo en 'testing' evita tocar el flujo normal de migrate en local
+        // /producción, donde ya se corre manualmente con --path.
+        if ($this->app->environment('testing')) {
+            $this->loadMigrationsFrom(database_path('migrations/central'));
+        }
         /* if(env('app.env') !== 'local') {
         URL::forceScheme('https');
         } */

@@ -17,6 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Culqi llama a /webhooks/culqi server-a-server, sin sesión ni
+        // token CSRF (no es un form del navegador). La autenticidad se
+        // valida aparte, reconsultando el evento contra la API de Culqi
+        // (ver CulqiWebhookController) en vez de depender de CSRF.
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/culqi',
+        ]);
+
         $middleware->alias([
             'no-tenant' => PreventAccessFromTenant::class,
             'tenant.active' => EnsureTenantIsActive::class,

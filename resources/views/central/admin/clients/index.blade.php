@@ -340,6 +340,12 @@
                                     placeholder="A este correo se envían los avisos de cobro">
                             </div>
 
+                            <div class="col-md-6 mb-3">
+                                <label>Teléfono</label>
+                                <input type="text" name="telefono" id="edit_telefono" class="form-control"
+                                    placeholder="Requerido para generar links de pago (Culqi)">
+                            </div>
+
                             <div class="col-md-4 mb-3">
                                 <label>Plan SaaS</label>
                                 <select class="form-control" name="plan" id="edit_plan">
@@ -358,6 +364,15 @@
                             <div class="col-md-4 mb-3">
                                 <label>Próximo Pago</label>
                                 <input type="date" name="next_payment_date" id="edit_next_payment_date" class="form-control">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label>Precio Personalizado (S/)</label>
+                                <input type="number" step="0.01" min="0" name="precio_personalizado"
+                                    id="edit_precio_personalizado" class="form-control"
+                                    placeholder="Vacío = precio estándar del plan">
+                                <small class="form-text text-muted">Úsalo cuando este cliente tiene límites o
+                                    condiciones distintas a las del plan estándar.</small>
                             </div>
 
                             <div class="col-md-12 mb-3">
@@ -456,6 +471,10 @@
                                 <div class="col-md-4">
                                     <small class="text-muted d-block">Próximo Pago</small>
                                     <div class="fw-semibold" id="ver_next_payment_date"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">Monto de Cobro (por ciclo)</small>
+                                    <div class="fw-semibold" id="ver_monto_esperado"></div>
                                 </div>
                             </div>
 
@@ -671,9 +690,11 @@
                         $('#edit_ruc').val(data.ruc);
                         $('#edit_razon_social').val(data.razon_social);
                         $('#edit_email').val(data.email);
+                        $('#edit_telefono').val(data.telefono);
                         $('#edit_plan').val(data.plan);
                         $('#edit_billing_day').val(data.billing_day);
                         $('#edit_next_payment_date').val(data.next_payment_date);
+                        $('#edit_precio_personalizado').val(data.precio_personalizado);
                         $('#edit_status').val(data.status);
                         $('#modalEditarCliente').modal('show');
                     }
@@ -735,6 +756,10 @@
                         $('#ver_plan').text(String(data.plan).toUpperCase());
                         $('#ver_billing_day').text(data.billing_day);
                         $('#ver_next_payment_date').text(data.next_payment_date || 'Sin programar');
+                        $('#ver_monto_esperado').text(
+                            'S/ ' + Number(data.monto_esperado ?? 0).toFixed(2) +
+                            (data.precio_personalizado ? ' (personalizado)' : ' (estándar del plan)')
+                        );
                         $('#ver_max_users').text(data.max_users ?? '—');
                         $('#ver_max_images').text(data.max_images ?? '—');
                         $('#ver_storage_limit_mb').text(data.storage_limit_mb ?? '—');
