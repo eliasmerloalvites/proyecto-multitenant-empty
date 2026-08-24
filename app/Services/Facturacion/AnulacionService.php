@@ -5,6 +5,7 @@ namespace App\Services\Facturacion;
 use App\Models\Tenant\Almacen;
 use App\Models\Tenant\DocumentoVenta;
 use App\Models\Tenant\EmpresaFacturacion;
+use App\Models\Tenant\Lote;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -51,7 +52,7 @@ class AnulacionService
      *
      * Devuelve siempre un arreglo con 'success'; nunca lanza.
      */
-    public function solicitarBaja(int $ventaId, string $motivo): array
+    public function solicitarBaja(int $ventaId, string $motivo, bool $devolverStock = false): array
     {
         try {
             $documento = $this->documento($ventaId);
@@ -96,6 +97,14 @@ class AnulacionService
                 'DOV_FechaSolicitudBaja'  => now(),
                 'DOV_FechaRespuestaBaja'  => null,
             ]);
+
+            // Se devuelve recien aqui, con el ticket ya guardado: si la
+            // llamada a la API hubiera fallado antes, un reintento no
+            // duplicaria la devolucion (verificarPuedeAnularse ya bloquea
+            // pedir otra baja mientras esta quede PENDIENTE).
+            if ($devolverStock) {
+                $this->devolverStockDelComprobante($documento);
+            }
 
             return ['success' => true, 'estado' => 'PENDIENTE', 'ticket' => $data['ticket']];
         } catch (\Throwable $e) {
@@ -227,6 +236,28 @@ class AnulacionService
     | DATOS
     |--------------------------------------------------------------------------
     */
+
+    /**
+     * Devuelve al stock todos los items de la venta que se esta anulando.
+     *
+     * A diferencia de la nota de credito, aqui no hay seleccion por item:
+     * anular es todo el comprobante, asi que se devuelve integro. Solo
+     * tiene sentido para boleta/factura, que SI descontaron stock al
+     * venderse (una nota de credito no descuenta stock al crearse, por eso
+     * no participa de esto).
+     */
+    private function devolverStockDelComprobante(DocumentoVenta $documento): void
+    {
+        if (!in_array($documento->DOV_Tipo, [EmpresaFacturacion::TIPO_BOLETA, EmpresaFacturacion::TIPO_FACTURA], true)) {
+            return;
+        }
+
+        $detalle = DB::table('detalle_venta')->where('VEN_Id', $documento->VEN_Id)->get(['LOT_Id', 'DEV_Cantidad']);
+
+        foreach ($detalle as $linea) {
+            Lote::devolver($linea->LOT_Id, (float) $linea->DEV_Cantidad);
+        }
+    }
 
     private function documento(int $ventaId): DocumentoVenta
     {

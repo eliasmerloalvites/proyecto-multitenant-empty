@@ -189,7 +189,7 @@ class VentaController extends Controller
         // Anular: solo sobre un comprobante aceptado, que no este ya anulado
         // ni con una baja en curso (evita pedir dos veces lo mismo).
         if ($yaEnSunat && !$anulado && !$bajaEnCurso) {
-            $html .= '<button type="button" class="btn btn-outline-danger btn-sm anularComprobante" data-id="' . $id . '" title="Anular este comprobante"><i class="fa fa-ban"></i></button>';
+            $html .= '<button type="button" class="btn btn-outline-danger btn-sm anularComprobante" data-id="' . $id . '" data-tipo="' . $row->DOV_Tipo . '" title="Anular este comprobante"><i class="fa fa-ban"></i></button>';
         }
 
         // Mientras la baja este en tramite, se ofrece consultarla aparte

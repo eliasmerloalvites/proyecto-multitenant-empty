@@ -170,7 +170,7 @@ class NotaCreditoController extends Controller
                 $detalle->save();
 
                 if ($devolverStock) {
-                    $this->devolverStock($linea->LOT_Id, $linea->DEV_Cantidad);
+                    Lote::devolver($linea->LOT_Id, $linea->DEV_Cantidad);
                 }
             }
 
@@ -204,15 +204,7 @@ class NotaCreditoController extends Controller
      * Aumenta el stock del lote de origen; si ya no existe, no revienta la
      * nota por eso, solo lo deja constando para revisarlo a mano.
      */
-    private function devolverStock($lotId, float $cantidad): void
-    {
-        $lote = Lote::find($lotId);
 
-        if ($lote) {
-            $lote->LOT_CantidadReal = $lote->LOT_CantidadReal + $cantidad;
-            $lote->save();
-        }
-    }
 
     private function documentoOriginal($ventaId): DocumentoVenta
     {

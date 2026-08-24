@@ -566,18 +566,37 @@
             // Anular un comprobante ya aceptado por SUNAT.
             $('body').on('click', '.anularComprobante', function() {
                 var id = $(this).data('id');
+                var tipo = $(this).data('tipo');
+                // Una nota de credito no descuenta stock al crearse, asi que
+                // no tiene sentido ofrecer devolverlo al anularla.
+                var ofrecerStock = (tipo === 'BOL' || tipo === 'FAC');
 
                 Swal.fire({
                     icon: 'warning',
                     title: 'Anular comprobante',
-                    input: 'text',
-                    inputLabel: 'Motivo de la anulacion',
-                    inputPlaceholder: 'Ej. Error en el RUC del cliente',
+                    html:
+                        '<label for="swalMotivoAnular" class="swal2-input-label" style="display:block;text-align:left;margin-bottom:.25rem">Motivo de la anulacion</label>' +
+                        '<input id="swalMotivoAnular" class="swal2-input" placeholder="Ej. Error en el RUC del cliente" style="margin:0 0 .5rem">' +
+                        (ofrecerStock
+                            ? '<div style="text-align:left;margin-top:.5rem">' +
+                              '<label style="font-weight:normal">' +
+                              '<input type="checkbox" id="swalDevolverStock"> Devolver estos productos al stock del almacen' +
+                              '</label></div>'
+                            : ''),
                     showCancelButton: true,
                     confirmButtonText: 'Enviar anulacion',
                     cancelButtonText: 'Cancelar',
-                    inputValidator: function(valor) {
-                        if (!valor || !valor.trim()) return 'Escribe el motivo.';
+                    focusConfirm: false,
+                    preConfirm: function() {
+                        var motivo = $('#swalMotivoAnular').val();
+                        if (!motivo || !motivo.trim()) {
+                            Swal.showValidationMessage('Escribe el motivo.');
+                            return false;
+                        }
+                        return {
+                            motivo: motivo,
+                            devolverStock: ofrecerStock && $('#swalDevolverStock').is(':checked')
+                        };
                     }
                 }).then(function(res) {
                     if (!res.isConfirmed) return;
@@ -592,7 +611,8 @@
                         url: '/tenant/ventas/venta/' + id + '/anular',
                         method: 'POST',
                         data: {
-                            motivo: res.value,
+                            motivo: res.value.motivo,
+                            devolver_stock: res.value.devolverStock ? 1 : 0,
                             _token: $('meta[name="csrf-token"]').attr('content')
                         }
                     }).done(function(r) {
