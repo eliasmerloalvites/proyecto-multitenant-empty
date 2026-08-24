@@ -67,8 +67,8 @@ class VentaController extends Controller
                 ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
                 ->join('users as u', 'u.id', '=', 'v.USU_Id')
                 ->join('almacen as a', 'a.ALM_Id', '=', 'v.ALM_Id')
-                ->select('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado as estadoDocVenta', 'v.VEN_Id', 'mp.MEP_Pago', 'u.name as empleado', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id as EMP_Codigo', 'v.VEN_TipoPago as tipopago', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'))
-                ->groupBy('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado', 'v.VEN_Id', 'mp.MEP_Pago', 'u.name', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id', 'v.VEN_TipoPago', 'v.created_at')
+                ->select('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado as estadoDocVenta', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Pago', 'u.name as empleado', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id as EMP_Codigo', 'v.VEN_TipoPago as tipopago', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'))
+                ->groupBy('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Pago', 'u.name', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id', 'v.VEN_TipoPago', 'v.created_at')
                 ->where(DB::raw('DATE(v.created_at)'), '>=', ($fecha))
                 ->where(DB::raw('DATE(v.created_at)'), '<=', ($fecha))
                 ->get();
@@ -150,6 +150,8 @@ class VentaController extends Controller
         [$color, $titulo] = $estados[$row->estadoDocVenta] ?? ['secondary', $row->estadoDocVenta];
 
         $id = $row->VEN_Id;
+        $anulado = (bool) $row->DOV_Anulado;
+        $bajaEnCurso = $row->DOV_EstadoBaja === 'PENDIENTE';
 
         // OBSERVADO tambien significa que SUNAT lo acepto, solo que con
         // observaciones: reenviarlo lo duplicaria.
@@ -157,6 +159,12 @@ class VentaController extends Controller
 
         $html = '<span class="badge badge-' . $color . '" title="' . e($titulo) . '">'
               . e($row->estadoDocVenta) . '</span> ';
+
+        if ($anulado) {
+            $html .= '<span class="badge badge-dark" title="El comprobante fue anulado ante SUNAT">ANULADO</span> ';
+        } elseif ($bajaEnCurso) {
+            $html .= '<span class="badge badge-info" title="La anulacion esta en tramite en SUNAT">BAJA EN TRAMITE</span> ';
+        }
 
         $html .= '<div class="btn-group btn-group-sm ml-1" role="group">';
 
@@ -168,14 +176,27 @@ class VentaController extends Controller
 
         $html .= '<button type="button" class="btn btn-outline-primary btn-sm sunatConsultar" data-id="' . $id . '" title="Consultar estado en SUNAT"><i class="fa fa-search"></i></button>';
 
-        if (!$yaEnSunat) {
+        if (!$yaEnSunat && !$anulado) {
             $html .= '<button type="button" class="btn btn-outline-warning btn-sm sunatReenviar" data-id="' . $id . '" title="Reintentar envio a SUNAT"><i class="fa fa-paper-plane"></i></button>';
         }
 
-        // Solo boleta/factura ya aceptadas pueden generar una nota de credito
-        // (no se le puede emitir una nota a otra nota).
-        if (in_array($row->DOV_Tipo, ['BOL', 'FAC'], true) && $yaEnSunat) {
-            $html .= '<a class="btn btn-outline-secondary btn-sm" title="Emitir nota de credito" href="/tenant/ventas/venta/' . $id . '/nota-credito"><i class="fa fa-rotate-left"></i></a>';
+        // Solo boleta/factura ya aceptadas y no anuladas pueden generar una
+        // nota de credito (no se le puede emitir una nota a otra nota).
+        if (in_array($row->DOV_Tipo, ['BOL', 'FAC'], true) && $yaEnSunat && !$anulado && !$bajaEnCurso) {
+            $html .= '<a class="btn btn-outline-secondary btn-sm" title="Emitir nota de credito" href="/tenant/ventas/venta/' . $id . '/nota-credito"><i class="fa fa-undo"></i></a>';
+        }
+
+        // Anular: solo sobre un comprobante aceptado, que no este ya anulado
+        // ni con una baja en curso (evita pedir dos veces lo mismo).
+        if ($yaEnSunat && !$anulado && !$bajaEnCurso) {
+            $html .= '<button type="button" class="btn btn-outline-danger btn-sm anularComprobante" data-id="' . $id . '" title="Anular este comprobante"><i class="fa fa-ban"></i></button>';
+        }
+
+        // Mientras la baja este en tramite, se ofrece consultarla aparte
+        // (no comparte boton con "Consultar estado en SUNAT", que consulta
+        // el ENVIO del comprobante, no la BAJA).
+        if ($bajaEnCurso) {
+            $html .= '<button type="button" class="btn btn-outline-info btn-sm bajaConsultar" data-id="' . $id . '" title="Consultar resultado de la anulacion"><i class="fa fa-history"></i></button>';
         }
 
         $html .= '</div>';
@@ -198,8 +219,8 @@ class VentaController extends Controller
                 ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
                 ->join('users as u', 'u.id', '=', 'v.USU_Id')
                 ->join('almacen as a', 'a.ALM_Id', '=', 'v.ALM_Id')
-                ->select('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado as estadoDocVenta', 'v.VEN_Id', 'mp.MEP_Pago', 'u.name as empleado', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id as EMP_Codigo', 'v.VEN_TipoPago as tipopago', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'))
-                ->groupBy('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado', 'v.VEN_Id', 'mp.MEP_Pago', 'u.name', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id', 'v.VEN_TipoPago', 'v.created_at')
+                ->select('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado as estadoDocVenta', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Pago', 'u.name as empleado', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id as EMP_Codigo', 'v.VEN_TipoPago as tipopago', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'))
+                ->groupBy('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Pago', 'u.name', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id', 'v.VEN_TipoPago', 'v.created_at')
                 ->where(DB::raw('DATE(v.created_at)'), '>=', ($fechaini))
                 ->where(DB::raw('DATE(v.created_at)'), '<=', ($fechafin))
                 ->get();

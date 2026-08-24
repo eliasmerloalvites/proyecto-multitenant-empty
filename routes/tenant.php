@@ -22,6 +22,7 @@ use App\Http\Controllers\Tenant\SedeController;
 use App\Http\Controllers\Tenant\EmpresaFacturacionController;
 use App\Http\Controllers\Tenant\ComprobanteSunatController;
 use App\Http\Controllers\Tenant\NotaCreditoController;
+use App\Http\Controllers\Tenant\AnulacionController;
 use App\Http\Controllers\Tenant\TestFacturacionController;
 use App\Http\Controllers\Tenant\TipoGastoController;
 use App\Http\Controllers\Tenant\UserController;
@@ -305,6 +306,10 @@ Route::middleware([
             /* Nota de credito sobre una boleta o factura ya aceptada */
             Route::get('/tenant/ventas/venta/{id}/nota-credito', [NotaCreditoController::class, 'create'])->name('tenant.ventas.venta.nota-credito.create');
             Route::post('/tenant/ventas/venta/{id}/nota-credito', [NotaCreditoController::class, 'store'])->name('tenant.ventas.venta.nota-credito.store');
+
+            /* Anulacion de un comprobante ya aceptado (boleta, factura, nota) */
+            Route::post('/tenant/ventas/venta/{id}/anular', [AnulacionController::class, 'solicitar'])->name('tenant.ventas.venta.anular.solicitar');
+            Route::post('/tenant/ventas/venta/{id}/anular/consultar', [AnulacionController::class, 'consultar'])->name('tenant.ventas.venta.anular.consultar');
 
             Route::resource('/tenant/ventas/metodopago', MetodoPagoController::class)->names([
                 'index' => 'tenant.ventas.metodopago.index',

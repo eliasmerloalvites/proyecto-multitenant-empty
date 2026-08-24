@@ -563,6 +563,80 @@
                     });
                 });
             });
+            // Anular un comprobante ya aceptado por SUNAT.
+            $('body').on('click', '.anularComprobante', function() {
+                var id = $(this).data('id');
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Anular comprobante',
+                    input: 'text',
+                    inputLabel: 'Motivo de la anulacion',
+                    inputPlaceholder: 'Ej. Error en el RUC del cliente',
+                    showCancelButton: true,
+                    confirmButtonText: 'Enviar anulacion',
+                    cancelButtonText: 'Cancelar',
+                    inputValidator: function(valor) {
+                        if (!valor || !valor.trim()) return 'Escribe el motivo.';
+                    }
+                }).then(function(res) {
+                    if (!res.isConfirmed) return;
+
+                    Swal.fire({
+                        title: 'Enviando a SUNAT...',
+                        allowOutsideClick: false,
+                        didOpen: function() { Swal.showLoading(); }
+                    });
+
+                    $.ajax({
+                        url: '/tenant/ventas/venta/' + id + '/anular',
+                        method: 'POST',
+                        data: {
+                            motivo: res.value,
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        }
+                    }).done(function(r) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Anulacion enviada',
+                            text: 'SUNAT la esta procesando; el resultado se sabe en unos minutos.'
+                        }).then(function() { table.ajax.reload(null, false); });
+                    }).fail(function(xhr) {
+                        var r = xhr.responseJSON || {};
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'No se pudo anular',
+                            text: r.descripcion || 'Error de conexion.'
+                        });
+                    });
+                });
+            });
+
+            // Consultar el resultado de una anulacion que quedo en tramite.
+            $('body').on('click', '.bajaConsultar', function() {
+                var id = $(this).data('id');
+                Swal.fire({ title: 'Consultando a SUNAT...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+
+                $.ajax({
+                    url: '/tenant/ventas/venta/' + id + '/anular/consultar',
+                    method: 'POST',
+                    data: { _token: $('meta[name="csrf-token"]').attr('content') }
+                }).done(function(r) {
+                    Swal.fire({
+                        icon: r.estado === 'ACEPTADO' ? 'success' : (r.estado === 'RECHAZADO' ? 'error' : 'info'),
+                        title: 'Anulacion: ' + (r.estado || 'sin resultado aun'),
+                        text: r.descripcion || ''
+                    }).then(function() { table.ajax.reload(null, false); });
+                }).fail(function(xhr) {
+                    var r = xhr.responseJSON || {};
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Aun sin resultado',
+                        text: r.descripcion || 'SUNAT todavia no responde; intenta de nuevo en unos minutos.'
+                    });
+                });
+            });
+
 
             $('body').on('click', '.eyeVenta', function() {
                 var Venta_id_ver = $(this).data('id');

@@ -243,7 +243,7 @@ class SunatService
             ],
 
             'cliente' => [
-                'tipo_doc'  => $this->tipoDocumentoSunat($venta->CLI_TipoDocumento),
+                'tipo_doc'  => self::tipoDocumentoSunat($venta->CLI_TipoDocumento),
                 'numero'    => $venta->CLI_NumDocumento,
                 'nombre'    => $venta->CLI_Nombre,
                 'direccion' => $venta->CLI_Direccion,
@@ -345,7 +345,11 @@ class SunatService
         }
     }
 
-    private function tipoDocumentoSunat($tipoDocumento): string
+    /**
+     * Convierte DNI/RUC/CE/PASAPORTE (como se guardan en cliente) al codigo
+     * de SUNAT. Publico y estatico porque tambien lo usa AnulacionService.
+     */
+    public static function tipoDocumentoSunat($tipoDocumento): string
     {
         return match (strtoupper(trim((string) $tipoDocumento))) {
             'DNI' => '1',
