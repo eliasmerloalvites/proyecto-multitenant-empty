@@ -126,6 +126,94 @@ class DocumentoVentaService
         return $documento;
     }
 
+
+    /**
+     * Catalogo 09 de SUNAT: motivos validos para una nota de credito.
+     * Se valida aqui tambien (ademas de en la API) para fallar rapido con un
+     * mensaje claro en vez de gastar el viaje a SUNAT.
+     */
+    const MOTIVOS_NOTA_CREDITO = [
+        '01' => 'Anulacion de la operacion',
+        '02' => 'Anulacion por error en el RUC',
+        '03' => 'Correccion por error en la descripcion',
+        '04' => 'Descuento global',
+        '05' => 'Descuento por item',
+        '06' => 'Devolucion total',
+        '07' => 'Devolucion por item',
+        '08' => 'Bonificacion',
+        '09' => 'Disminucion en el valor',
+    ];
+
+    /**
+     * Crea el documento_venta de una nota de credito que afecta una boleta o
+     * factura ya aceptada por SUNAT.
+     *
+     * A diferencia de crear(), no recibe el VEN_Id de una venta existente:
+     * la nota es su propio "documento" y necesita su propia venta+detalle
+     * (los items que se acreditan), que el llamador ya debe haber creado.
+     *
+     * Debe llamarse dentro de una transaccion: toma un bloqueo sobre las
+     * filas de la serie para que dos notas no reserven el mismo correlativo.
+     */
+    public function crearNotaCredito(
+        int $ventaNotaId,
+        DocumentoVenta $documentoAfectado,
+        Almacen $sede,
+        string $codMotivo,
+        string $desMotivo
+    ): DocumentoVenta {
+        if (!isset(self::MOTIVOS_NOTA_CREDITO[$codMotivo])) {
+            throw new RuntimeException(
+                "Motivo de nota de credito no valido: '$codMotivo'. Debe ser uno del 01 al 09."
+            );
+        }
+
+        if (!in_array($documentoAfectado->DOV_Tipo, [EmpresaFacturacion::TIPO_BOLETA, EmpresaFacturacion::TIPO_FACTURA], true)) {
+            throw new RuntimeException('Solo se pueden emitir notas de credito sobre una boleta o una factura.');
+        }
+
+        if (!in_array($documentoAfectado->DOV_Estado, ['ACEPTADO', 'OBSERVADO'], true)) {
+            throw new RuntimeException(
+                'El comprobante ' . $documentoAfectado->DOV_Nombre . ' aun no fue aceptado por SUNAT; ' .
+                'no se le puede emitir una nota de credito.'
+            );
+        }
+
+        $serie = $sede->seriePara(EmpresaFacturacion::TIPO_NOTA_CREDITO);
+
+        if (!$serie) {
+            throw new RuntimeException(
+                'La sede "' . $sede->ALM_NombreAlmacen . '" no tiene configurada la serie de nota de credito.'
+            );
+        }
+
+        $tipo   = EmpresaFacturacion::TIPO_NOTA_CREDITO;
+        $numero = $this->siguienteCorrelativo($tipo, $serie);
+
+        $tipoDocAfectado = $documentoAfectado->DOV_Tipo === EmpresaFacturacion::TIPO_FACTURA ? '01' : '03';
+        $numDocAfectado  = $documentoAfectado->DOV_Serie . '-' . $documentoAfectado->DOV_Numero;
+
+        $documento = new DocumentoVenta;
+        $documento->DOV_Tipo             = $tipo;
+        $documento->DOV_TipoOriginal     = $tipo;
+        $documento->DOV_CodMotivo        = $codMotivo;
+        $documento->DOV_DesMotivo        = $desMotivo;
+        $documento->DOV_TipoDocAfectado  = $tipoDocAfectado;
+        $documento->DOV_NumDocAfectado   = $numDocAfectado;
+        $documento->DOV_DocAfectadoId    = $documentoAfectado->DOV_Id;
+        $documento->DOV_Serie            = $serie;
+        $documento->DOV_Numero           = $numero;
+        $documento->DOV_Nombre           = $serie . '-' . str_pad((string) $numero, 8, '0', STR_PAD_LEFT);
+        $documento->VEN_Id               = $ventaNotaId;
+        $documento->DOV_Estado           = 'PENDIENTE';
+        $documento->DOV_StateToRes       = 0;
+        $documento->DOV_Pdf              = $this->codigoPublicoUnico();
+        $documento->DOV_Vista            = 1;
+        $documento->save();
+
+        return $documento;
+    }
+
     /**
      * Siguiente numero libre de la serie, bloqueando las filas existentes para
      * que dos ventas simultaneas no obtengan el mismo.

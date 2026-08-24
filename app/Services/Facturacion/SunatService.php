@@ -14,8 +14,9 @@ class SunatService
 {
     /** Tipo interno de documento => endpoint de la API facturadora. */
     const ENDPOINTS = [
-        EmpresaFacturacion::TIPO_BOLETA  => '/api/boleta.php',
-        EmpresaFacturacion::TIPO_FACTURA => '/api/factura.php',
+        EmpresaFacturacion::TIPO_BOLETA       => '/api/boleta.php',
+        EmpresaFacturacion::TIPO_FACTURA      => '/api/factura.php',
+        EmpresaFacturacion::TIPO_NOTA_CREDITO => '/api/nota-credito.php',
     ];
 
     protected $empresa;
@@ -218,7 +219,7 @@ class SunatService
     {
         $empresa = $this->empresa;
 
-        return [
+        $payload = [
             'serie'         => $venta->DOV_Serie,
             'correlativo'   => (string) $venta->DOV_Numero,
             'fecha_emision' => $venta->VEN_FechaEnvio,
@@ -242,7 +243,7 @@ class SunatService
             ],
 
             'cliente' => [
-                'tipo_doc'  => $this->tipoDocumentoSunat($venta->CLI_TipoDocumento),
+                'tipo_doc'  => self::tipoDocumentoSunat($venta->CLI_TipoDocumento),
                 'numero'    => $venta->CLI_NumDocumento,
                 'nombre'    => $venta->CLI_Nombre,
                 'direccion' => $venta->CLI_Direccion,
@@ -254,6 +255,19 @@ class SunatService
             'clave_certificado'     => $empresa->certificado_password,
             'extension_certificado' => $empresa->extensionCertificado(),
         ];
+
+        // La nota de credito necesita ademas el motivo y el documento que
+        // afecta; esos datos viven en el propio documento_venta de la nota.
+        if ($venta->DOV_Tipo === EmpresaFacturacion::TIPO_NOTA_CREDITO) {
+            $payload['cod_motivo'] = $venta->DOV_CodMotivo;
+            $payload['des_motivo'] = $venta->DOV_DesMotivo;
+            $payload['documento_afectado'] = [
+                'tipo_doc' => $venta->DOV_TipoDocAfectado,
+                'numero'   => $venta->DOV_NumDocAfectado,
+            ];
+        }
+
+        return $payload;
     }
 
     /*
@@ -331,7 +345,11 @@ class SunatService
         }
     }
 
-    private function tipoDocumentoSunat($tipoDocumento): string
+    /**
+     * Convierte DNI/RUC/CE/PASAPORTE (como se guardan en cliente) al codigo
+     * de SUNAT. Publico y estatico porque tambien lo usa AnulacionService.
+     */
+    public static function tipoDocumentoSunat($tipoDocumento): string
     {
         return match (strtoupper(trim((string) $tipoDocumento))) {
             'DNI' => '1',

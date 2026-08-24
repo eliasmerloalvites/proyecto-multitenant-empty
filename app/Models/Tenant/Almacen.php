@@ -104,8 +104,9 @@ class Almacen extends Model
 
     /** Tipo de documento interno => columna con su serie. */
     const SERIES = [
-        EmpresaFacturacion::TIPO_BOLETA  => 'ALM_SerieBoleta',
-        EmpresaFacturacion::TIPO_FACTURA => 'ALM_SerieFactura',
+        EmpresaFacturacion::TIPO_BOLETA       => 'ALM_SerieBoleta',
+        EmpresaFacturacion::TIPO_FACTURA      => 'ALM_SerieFactura',
+        EmpresaFacturacion::TIPO_NOTA_CREDITO => 'ALM_SerieNotaCredito',
     ];
 
     /**

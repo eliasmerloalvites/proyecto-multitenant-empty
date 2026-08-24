@@ -563,6 +563,100 @@
                     });
                 });
             });
+            // Anular un comprobante ya aceptado por SUNAT.
+            $('body').on('click', '.anularComprobante', function() {
+                var id = $(this).data('id');
+                var tipo = $(this).data('tipo');
+                // Una nota de credito no descuenta stock al crearse, asi que
+                // no tiene sentido ofrecer devolverlo al anularla.
+                var ofrecerStock = (tipo === 'BOL' || tipo === 'FAC');
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Anular comprobante',
+                    html:
+                        '<label for="swalMotivoAnular" class="swal2-input-label" style="display:block;text-align:left;margin-bottom:.25rem">Motivo de la anulacion</label>' +
+                        '<input id="swalMotivoAnular" class="swal2-input" placeholder="Ej. Error en el RUC del cliente" style="margin:0 0 .5rem">' +
+                        (ofrecerStock
+                            ? '<div style="text-align:left;margin-top:.5rem">' +
+                              '<label style="font-weight:normal">' +
+                              '<input type="checkbox" id="swalDevolverStock"> Devolver estos productos al stock del almacen' +
+                              '</label></div>'
+                            : ''),
+                    showCancelButton: true,
+                    confirmButtonText: 'Enviar anulacion',
+                    cancelButtonText: 'Cancelar',
+                    focusConfirm: false,
+                    preConfirm: function() {
+                        var motivo = $('#swalMotivoAnular').val();
+                        if (!motivo || !motivo.trim()) {
+                            Swal.showValidationMessage('Escribe el motivo.');
+                            return false;
+                        }
+                        return {
+                            motivo: motivo,
+                            devolverStock: ofrecerStock && $('#swalDevolverStock').is(':checked')
+                        };
+                    }
+                }).then(function(res) {
+                    if (!res.isConfirmed) return;
+
+                    Swal.fire({
+                        title: 'Enviando a SUNAT...',
+                        allowOutsideClick: false,
+                        didOpen: function() { Swal.showLoading(); }
+                    });
+
+                    $.ajax({
+                        url: '/tenant/ventas/venta/' + id + '/anular',
+                        method: 'POST',
+                        data: {
+                            motivo: res.value.motivo,
+                            devolver_stock: res.value.devolverStock ? 1 : 0,
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        }
+                    }).done(function(r) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Anulacion enviada',
+                            text: 'SUNAT la esta procesando; el resultado se sabe en unos minutos.'
+                        }).then(function() { table.ajax.reload(null, false); });
+                    }).fail(function(xhr) {
+                        var r = xhr.responseJSON || {};
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'No se pudo anular',
+                            text: r.descripcion || 'Error de conexion.'
+                        });
+                    });
+                });
+            });
+
+            // Consultar el resultado de una anulacion que quedo en tramite.
+            $('body').on('click', '.bajaConsultar', function() {
+                var id = $(this).data('id');
+                Swal.fire({ title: 'Consultando a SUNAT...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+
+                $.ajax({
+                    url: '/tenant/ventas/venta/' + id + '/anular/consultar',
+                    method: 'POST',
+                    data: { _token: $('meta[name="csrf-token"]').attr('content') }
+                }).done(function(r) {
+                    Swal.fire({
+                        icon: r.estado === 'ACEPTADO' ? 'success' : (r.estado === 'RECHAZADO' ? 'error' : 'info'),
+                        title: 'Anulacion: ' + (r.estado || 'sin resultado aun'),
+                        text: r.descripcion || ''
+                    }).then(function() { table.ajax.reload(null, false); });
+                }).fail(function(xhr) {
+                    var r = xhr.responseJSON || {};
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Aun sin resultado',
+                        text: r.descripcion || 'SUNAT todavia no responde; intenta de nuevo en unos minutos.'
+                    });
+                });
+            });
+
 
             $('body').on('click', '.eyeVenta', function() {
                 var Venta_id_ver = $(this).data('id');

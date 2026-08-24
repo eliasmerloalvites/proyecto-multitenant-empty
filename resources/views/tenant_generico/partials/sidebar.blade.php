@@ -201,6 +201,24 @@
                         </a>
                     </li>
                     @endcan
+                    @can('tenant.ventas.venta.index')
+                    <li class="nav-item">
+                        <a href="{{ tenant_url('tenant.ventas.notas-credito.index') }}"
+                            class="nav-link {{ request()->routeIs('tenant.ventas.notas-credito*') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Notas de crédito</p>
+                        </a>
+                    </li>
+                    @endcan
+                    @can('tenant.ventas.venta.index')
+                    <li class="nav-item">
+                        <a href="{{ tenant_url('tenant.ventas.anulaciones.index') }}"
+                            class="nav-link {{ request()->routeIs('tenant.ventas.anulaciones*') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Anulaciones</p>
+                        </a>
+                    </li>
+                    @endcan
                 </ul>
             </li>
             @endcan

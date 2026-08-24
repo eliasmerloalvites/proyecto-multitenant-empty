@@ -24,4 +24,20 @@ class Lote extends Model
     protected $guarded =[
 
     ];
+
+    /**
+     * Devuelve cantidad al lote de origen (nota de credito o anulacion con
+     * devolucion fisica de mercaderia). Si el lote ya no existe (producto
+     * eliminado, etc.) no revienta el flujo que lo llama: solo no hace nada,
+     * para que quede constando y se revise a mano.
+     */
+    public static function devolver($lotId, float $cantidad): void
+    {
+        $lote = self::find($lotId);
+
+        if ($lote) {
+            $lote->LOT_CantidadReal = $lote->LOT_CantidadReal + $cantidad;
+            $lote->save();
+        }
+    }
 }
