@@ -268,8 +268,9 @@ class VentaController extends Controller
 
                     return $btn;
                 })
+                ->addColumn('sunat', fn ($row) => $this->columnaSunat($row))
 
-                ->rawColumns(['action1', 'action2', 'action3', 'ticket', 'pdf', 'whatsapp'])
+                ->rawColumns(['action1', 'action2', 'action3', 'ticket', 'pdf', 'whatsapp', 'sunat'])
                 ->make(true);
         }
     }
