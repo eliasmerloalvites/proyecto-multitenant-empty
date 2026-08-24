@@ -304,10 +304,12 @@ Route::middleware([
             Route::post('/tenant/ventas/venta/{id}/sunat/reenviar', [ComprobanteSunatController::class, 'reenviar'])->name('tenant.ventas.venta.sunat.reenviar');
 
             /* Nota de credito sobre una boleta o factura ya aceptada */
+            Route::get('/tenant/ventas/notas-credito', [NotaCreditoController::class, 'index'])->name('tenant.ventas.notas-credito.index');
             Route::get('/tenant/ventas/venta/{id}/nota-credito', [NotaCreditoController::class, 'create'])->name('tenant.ventas.venta.nota-credito.create');
             Route::post('/tenant/ventas/venta/{id}/nota-credito', [NotaCreditoController::class, 'store'])->name('tenant.ventas.venta.nota-credito.store');
 
             /* Anulacion de un comprobante ya aceptado (boleta, factura, nota) */
+            Route::get('/tenant/ventas/anulaciones', [AnulacionController::class, 'index'])->name('tenant.ventas.anulaciones.index');
             Route::post('/tenant/ventas/venta/{id}/anular', [AnulacionController::class, 'solicitar'])->name('tenant.ventas.venta.anular.solicitar');
             Route::post('/tenant/ventas/venta/{id}/anular/consultar', [AnulacionController::class, 'consultar'])->name('tenant.ventas.venta.anular.consultar');
 

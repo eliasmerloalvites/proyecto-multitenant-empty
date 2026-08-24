@@ -33,6 +33,43 @@ class NotaCreditoController extends Controller
     }
 
     /**
+     * Lista las notas de credito emitidas, mas recientes primero.
+     */
+    public function index()
+    {
+        $notas = DB::table('documento_venta as dov')
+            ->join('venta as v', 'v.VEN_Id', '=', 'dov.VEN_Id')
+            ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
+            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+            ->where('dov.DOV_Tipo', EmpresaFacturacion::TIPO_NOTA_CREDITO)
+            ->select(
+                'dov.DOV_Id',
+                'v.VEN_Id',
+                'dov.DOV_Nombre',
+                'dov.DOV_Estado',
+                'dov.DOV_CodMotivo',
+                'dov.DOV_DesMotivo',
+                'dov.DOV_TipoDocAfectado',
+                'dov.DOV_NumDocAfectado',
+                'c.CLI_Nombre',
+                DB::raw('CAST(sum(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) as decimal(10,2)) as total'),
+                DB::raw('date(v.created_at) as fecha')
+            )
+            ->groupBy(
+                'dov.DOV_Id', 'v.VEN_Id', 'dov.DOV_Nombre', 'dov.DOV_Estado', 'dov.DOV_CodMotivo',
+                'dov.DOV_DesMotivo', 'dov.DOV_TipoDocAfectado', 'dov.DOV_NumDocAfectado',
+                'c.CLI_Nombre', 'v.created_at'
+            )
+            ->orderByDesc('dov.DOV_Id')
+            ->get();
+
+        return view(
+            'tenant_' . tenant('tipo_negocio') . '.ventas.venta.notas-credito',
+            ['notas' => $notas]
+        );
+    }
+
+    /**
      * Formulario: que items del comprobante original se acreditan y por que.
      */
     public function create($ventaId)
