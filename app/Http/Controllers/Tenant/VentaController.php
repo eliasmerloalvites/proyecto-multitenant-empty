@@ -135,7 +135,7 @@ class VentaController extends Controller
     private function columnaSunat($row): string
     {
         // Las notas de venta no van a SUNAT.
-        if (!in_array($row->DOV_Tipo, ['BOL', 'FAC'], true)) {
+        if (!in_array($row->DOV_Tipo, ['BOL', 'FAC', 'NCR'], true)) {
             return '<span class="text-muted">&mdash;</span>';
         }
 
@@ -170,6 +170,12 @@ class VentaController extends Controller
 
         if (!$yaEnSunat) {
             $html .= '<button type="button" class="btn btn-outline-warning btn-sm sunatReenviar" data-id="' . $id . '" title="Reintentar envio a SUNAT"><i class="fa fa-paper-plane"></i></button>';
+        }
+
+        // Solo boleta/factura ya aceptadas pueden generar una nota de credito
+        // (no se le puede emitir una nota a otra nota).
+        if (in_array($row->DOV_Tipo, ['BOL', 'FAC'], true) && $yaEnSunat) {
+            $html .= '<a class="btn btn-outline-secondary btn-sm" title="Emitir nota de credito" href="/tenant/ventas/venta/' . $id . '/nota-credito"><i class="fa fa-rotate-left"></i></a>';
         }
 
         $html .= '</div>';

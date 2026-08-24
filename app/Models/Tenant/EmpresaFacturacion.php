@@ -8,8 +8,9 @@ use Illuminate\Support\Facades\Storage;
 class EmpresaFacturacion extends Model
 {
     /* Tipos de documento internos, tal como se guardan en documento_venta. */
-    const TIPO_BOLETA  = 'BOL';
-    const TIPO_FACTURA = 'FAC';
+    const TIPO_BOLETA       = 'BOL';
+    const TIPO_FACTURA      = 'FAC';
+    const TIPO_NOTA_CREDITO = 'NCR';
 
     protected $table = 'empresa_facturacion';
 

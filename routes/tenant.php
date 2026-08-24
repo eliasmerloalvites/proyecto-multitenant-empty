@@ -21,6 +21,7 @@ use App\Http\Controllers\Tenant\ProveedorController;
 use App\Http\Controllers\Tenant\SedeController;
 use App\Http\Controllers\Tenant\EmpresaFacturacionController;
 use App\Http\Controllers\Tenant\ComprobanteSunatController;
+use App\Http\Controllers\Tenant\NotaCreditoController;
 use App\Http\Controllers\Tenant\TestFacturacionController;
 use App\Http\Controllers\Tenant\TipoGastoController;
 use App\Http\Controllers\Tenant\UserController;
@@ -300,6 +301,10 @@ Route::middleware([
             Route::get('/tenant/ventas/venta/{id}/sunat/cdr', [ComprobanteSunatController::class, 'cdr'])->name('tenant.ventas.venta.sunat.cdr');
             Route::get('/tenant/ventas/venta/{id}/sunat/consultar', [ComprobanteSunatController::class, 'consultar'])->name('tenant.ventas.venta.sunat.consultar');
             Route::post('/tenant/ventas/venta/{id}/sunat/reenviar', [ComprobanteSunatController::class, 'reenviar'])->name('tenant.ventas.venta.sunat.reenviar');
+
+            /* Nota de credito sobre una boleta o factura ya aceptada */
+            Route::get('/tenant/ventas/venta/{id}/nota-credito', [NotaCreditoController::class, 'create'])->name('tenant.ventas.venta.nota-credito.create');
+            Route::post('/tenant/ventas/venta/{id}/nota-credito', [NotaCreditoController::class, 'store'])->name('tenant.ventas.venta.nota-credito.store');
 
             Route::resource('/tenant/ventas/metodopago', MetodoPagoController::class)->names([
                 'index' => 'tenant.ventas.metodopago.index',
