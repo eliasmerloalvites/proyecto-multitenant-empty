@@ -122,7 +122,14 @@
                     </div>
 
                     <div class="mb-8">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Elige tu plan</label>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-semibold text-slate-700">Elige tu plan</label>
+                            <button type="button" id="verDetallePlanesBtn"
+                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700">
+                                <i class="fa-solid fa-circle-info"></i>
+                                Ver qué incluye cada plan
+                            </button>
+                        </div>
 
                         @foreach ($planesPorNegocio as $tipo => $planes)
                             <div class="planes-grupo grid grid-cols-3 gap-3 {{ $loop->first ? '' : 'hidden' }}" data-tipo-negocio="{{ $tipo }}">
@@ -164,6 +171,76 @@
 
     </section>
 
+    <!-- ===================================== -->
+    <!-- MODAL: DETALLE DE PLANES (flotante) -->
+    <!-- No navega fuera del formulario de registro: el usuario no pierde -->
+    <!-- lo que ya llenó por ir a revisar los planes a otra pantalla. -->
+    <!-- ===================================== -->
+
+    <div id="modalDetallePlanes"
+        class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
+        role="dialog" aria-modal="true" aria-label="Detalle de los planes">
+
+        <div class="relative w-full max-w-4xl max-h-[85vh] overflow-y-auto bg-white rounded-3xl shadow-2xl p-6 md:p-8">
+
+            <button type="button" id="cerrarDetallePlanesBtn"
+                class="absolute top-5 right-5 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition"
+                aria-label="Cerrar">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h3 class="text-2xl font-black text-slate-900 mb-1">¿Qué incluye cada plan?</h3>
+            <p class="text-slate-500 text-sm mb-6">Elige el plan que quieras directamente desde aquí, sin salir del formulario.</p>
+
+            @foreach ($planesPorNegocio as $tipo => $planes)
+                <div class="detalle-planes-grupo grid sm:grid-cols-3 gap-4 {{ $loop->first ? '' : 'hidden' }}" data-detalle-tipo-negocio="{{ $tipo }}">
+                    @foreach ($planes as $plan)
+                        @php
+                            $modulosDelPlan = \App\Models\Plan::modulosPara($tipo);
+                        @endphp
+                        <div class="border-2 border-slate-200 rounded-2xl p-5 hover:border-blue-300 transition">
+                            <div class="font-bold text-slate-900">{{ $plan->nombre }}</div>
+                            <div class="text-blue-600 font-black text-2xl mt-1">S/{{ number_format($plan->price, 0) }}<span class="text-sm text-slate-400 font-normal">/mes</span></div>
+
+                            <ul class="space-y-2 mt-4 text-sm">
+                                <li class="flex items-center gap-2 text-slate-700">
+                                    <i class="fa-solid fa-circle-check text-blue-600 text-xs"></i>
+                                    Hasta {{ $plan->max_users }} {{ $plan->max_users == 1 ? 'usuario' : 'usuarios' }}
+                                </li>
+                                <li class="flex items-center gap-2 text-slate-700">
+                                    <i class="fa-solid fa-circle-check text-blue-600 text-xs"></i>
+                                    {{ $plan->limits['branches'] ?? 1 }} {{ ($plan->limits['branches'] ?? 1) == 1 ? 'local' : 'locales' }}
+                                </li>
+                                <li class="flex items-center gap-2 text-slate-700">
+                                    <i class="fa-solid fa-circle-check text-blue-600 text-xs"></i>
+                                    {{ $plan->storage_limit_mb >= 1000 ? number_format($plan->storage_limit_mb / 1000, 1) . ' GB' : $plan->storage_limit_mb . ' MB' }} de almacenamiento
+                                </li>
+                                @foreach ($modulosDelPlan as $clave => $etiqueta)
+                                    <li class="flex items-center gap-2 {{ ($plan->modules[$clave] ?? false) ? 'text-slate-700' : 'text-slate-300' }}">
+                                        <i class="fa-solid {{ ($plan->modules[$clave] ?? false) ? 'fa-circle-check text-blue-600' : 'fa-circle-xmark text-slate-300' }} text-xs"></i>
+                                        {{ $etiqueta }}
+                                    </li>
+                                @endforeach
+                            </ul>
+
+                            <button type="button" data-elegir-plan="{{ $plan->key }}"
+                                class="elegir-plan-btn w-full mt-5 py-2.5 rounded-xl border-2 border-blue-600 text-blue-600 font-bold text-sm hover:bg-blue-600 hover:text-white transition">
+                                Elegir {{ $plan->nombre }}
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+            @endforeach
+
+            <p class="text-xs text-slate-400 mt-6 text-center">
+                ¿Necesitas múltiples sucursales o algo a medida?
+                <a href="{{ route('central.inicio') }}#contacto" class="text-blue-600 font-semibold">Habla con nosotros sobre el plan Empresarial</a>.
+            </p>
+
+        </div>
+
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             function actualizarPlanesVisibles() {
@@ -180,6 +257,12 @@
                         }
                     });
                 });
+
+                // El modal de detalle sigue al mismo tipo de negocio elegido
+                // en el formulario, para no mostrar planes que no aplican.
+                document.querySelectorAll('.detalle-planes-grupo').forEach(function (grupo) {
+                    grupo.classList.toggle('hidden', grupo.dataset.detalleTipoNegocio !== seleccionado.value);
+                });
             }
 
             document.querySelectorAll('input[name="tipo_negocio"]').forEach(function (radio) {
@@ -187,6 +270,51 @@
             });
 
             actualizarPlanesVisibles();
+
+            // ===================================== //
+            // MODAL: DETALLE DE PLANES //
+            // ===================================== //
+
+            var modal = document.getElementById('modalDetallePlanes');
+            var abrirBtn = document.getElementById('verDetallePlanesBtn');
+            var cerrarBtn = document.getElementById('cerrarDetallePlanesBtn');
+
+            function abrirModalPlanes() {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function cerrarModalPlanes() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = '';
+            }
+
+            abrirBtn.addEventListener('click', abrirModalPlanes);
+            cerrarBtn.addEventListener('click', cerrarModalPlanes);
+
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) cerrarModalPlanes();
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && !modal.classList.contains('hidden')) cerrarModalPlanes();
+            });
+
+            // "Elegir [plan]" dentro del modal marca ese radio en el
+            // formulario real y cierra el modal — el usuario elige el plan
+            // sin perder nada de lo que ya llenó.
+            document.querySelectorAll('.elegir-plan-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var planKey = btn.dataset.elegirPlan;
+                    var radio = document.querySelector('input[name="plan"][value="' + planKey + '"]');
+                    if (radio) {
+                        radio.checked = true;
+                    }
+                    cerrarModalPlanes();
+                });
+            });
         });
     </script>
 

@@ -59,7 +59,7 @@
                         </li>
                     </ul>
 
-                    <a href="#planes-pos" class="inline-flex items-center gap-2 mt-8 text-blue-600 font-bold hover:gap-3 transition-all">
+                    <a href="{{ route('central.planes') }}#planes-pos" class="inline-flex items-center gap-2 mt-8 text-blue-600 font-bold hover:gap-3 transition-all">
                         Ver planes Kael POS
                         <i class="fa-solid fa-arrow-right"></i>
                     </a>
@@ -96,7 +96,7 @@
                         </li>
                     </ul>
 
-                    <a href="#planes-moto" class="inline-flex items-center gap-2 mt-8 text-cyan-300 font-bold hover:gap-3 transition-all">
+                    <a href="{{ route('central.planes') }}#planes-moto" class="inline-flex items-center gap-2 mt-8 text-cyan-300 font-bold hover:gap-3 transition-all">
                         Ver planes Kael Moto
                         <i class="fa-solid fa-arrow-right"></i>
                     </a>

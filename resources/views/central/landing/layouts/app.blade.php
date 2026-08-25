@@ -91,6 +91,10 @@
 
     @yield('content')
 
+    {{-- Compartido en todas las páginas: el footer (en cada página) tiene
+         un botón "Ver demostración" que abre este modal. --}}
+    @include('central.landing.sections.demo-modal')
+
     @stack('scripts')
 
 </body>

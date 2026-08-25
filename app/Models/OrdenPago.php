@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\CentralConnection;
 
 class OrdenPago extends Model
 {
+    // Ver Client.php — se consulta también desde el panel del tenant.
+    use CentralConnection;
+
     protected $table = 'orden_pagos';
 
     protected $fillable = [
