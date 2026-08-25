@@ -22,6 +22,15 @@
               </p>
             </a>
           </li>
+
+          <li class="nav-item">
+            <a href="{{ tenant_url('tenant.facturacion.index') }}" class="nav-link {{ request()->routeIs('tenant.facturacion*') ? 'active' : '' }}">
+              <i class="nav-icon fas fa-file-invoice-dollar"></i>
+              <p>
+                Mi Facturación
+              </p>
+            </a>
+          </li>
             @if(tenant_has_module('inventario') || tenant_has_module('productos'))
             @can('tenant.inventario.clase.index')
             <li class="nav-item has-treeview

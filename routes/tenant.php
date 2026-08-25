@@ -111,6 +111,14 @@ Route::middleware([
 
 
     Route::middleware(['auth:tenant'])->group(function(){
+
+        // Fuera de tenant.pagado a propósito: si el ciclo está vencido, es
+        // acá a donde se redirige — necesitan quedar siempre alcanzables.
+        Route::get('/tenant/facturacion', [\App\Http\Controllers\Tenant\FacturacionController::class, 'index'])->name('tenant.facturacion.index');
+        Route::get('/tenant/facturacion/pagar', [\App\Http\Controllers\Tenant\FacturacionController::class, 'pagar'])->name('tenant.facturacion.pagar');
+
+    Route::middleware(['tenant.pagado'])->group(function () {
+
         Route::get('/tenant/home', [HomeController::class,'index'])->name('tenant.home');
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');
         Route::post('/tenant/caja-sesion/seleccionar', [CajaSesionController::class, 'seleccionar'])->name('tenant.caja-sesion.seleccionar');
@@ -494,8 +502,10 @@ Route::middleware([
             'show' => 'tenant.seguridad.role.show'
         ]);
 
+    }); // cierra tenant.pagado
+
     });
-    
+
 });
 
 Route::get('/__debug', function () {

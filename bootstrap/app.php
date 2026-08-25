@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\PreventAccessFromTenant;
 use App\Http\Middleware\EnsureTenantIsActive;
 use App\Http\Middleware\EnsureTenantHasModule;
+use App\Http\Middleware\EnsureClientHasPaidCycle;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'no-tenant' => PreventAccessFromTenant::class,
             'tenant.active' => EnsureTenantIsActive::class,
             'tenant.module' => EnsureTenantHasModule::class,
+            'tenant.pagado' => EnsureClientHasPaidCycle::class,
         ]);
 
         $middleware->redirectGuestsTo(function () {

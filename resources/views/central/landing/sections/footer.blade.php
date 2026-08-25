@@ -300,13 +300,13 @@
                         <ul class="space-y-4">
 
                             <li>
-                                <a href="#planes-pos" class="text-slate-400 hover:text-cyan-400 transition">
+                                <a href="{{ route('central.planes') }}#planes-pos" class="text-slate-400 hover:text-cyan-400 transition">
                                     Sistema POS
                                 </a>
                             </li>
 
                             <li>
-                                <a href="#planes-moto" class="text-slate-400 hover:text-cyan-400 transition">
+                                <a href="{{ route('central.planes') }}#planes-moto" class="text-slate-400 hover:text-cyan-400 transition">
                                     Talleres de Motos
                                 </a>
                             </li>
@@ -345,25 +345,25 @@
                         <ul class="space-y-4">
 
                             <li>
-                                <a href="#inicio" class="text-slate-400 hover:text-cyan-400 transition">
+                                <a href="{{ route('central.inicio') }}" class="text-slate-400 hover:text-cyan-400 transition">
                                     Inicio
                                 </a>
                             </li>
 
                             <li>
-                                <a href="#soluciones" class="text-slate-400 hover:text-cyan-400 transition">
+                                <a href="{{ route('central.soluciones') }}" class="text-slate-400 hover:text-cyan-400 transition">
                                     Soluciones
                                 </a>
                             </li>
 
                             <li>
-                                <a href="#planes-pos" class="text-slate-400 hover:text-cyan-400 transition">
+                                <a href="{{ route('central.planes') }}" class="text-slate-400 hover:text-cyan-400 transition">
                                     Planes
                                 </a>
                             </li>
 
                             <li>
-                                <a href="#clientes" class="text-slate-400 hover:text-cyan-400 transition">
+                                <a href="{{ route('central.clientes') }}" class="text-slate-400 hover:text-cyan-400 transition">
                                     Clientes
                                 </a>
                             </li>

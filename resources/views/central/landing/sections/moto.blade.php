@@ -334,7 +334,9 @@
 
                         <!-- Dashboard -->
 
-                        <img src="{{ asset('/images/web/moto-dashboard.png') }}"
+                        <img src="{{ asset('/images/web/moto-dashboard-real.png') }}"
+                            id="motoHeroImg"
+                            onerror="this.style.display='none'; document.getElementById('motoHeroFallback').style.display='flex';"
                             class="relative
                         z-20
                         w-full
@@ -344,15 +346,29 @@
                         border
                         border-white/10">
 
+                        <div id="motoHeroFallback" style="display:none;"
+                            class="relative z-20 w-full max-w-[500px] aspect-[3/2] rounded-3xl border border-white/10 bg-white/5 backdrop-blur flex-col items-center justify-center text-center p-10 shadow-[0_40px_100px_rgba(0,0,0,.55)]">
+                            <i class="fa-solid fa-motorcycle text-5xl text-cyan-400 mb-4"></i>
+                            <p class="text-white font-semibold text-lg">Panel de Kael Moto</p>
+                            <p class="text-slate-400 text-sm mt-1">Captura próximamente</p>
+                        </div>
+
                         <!-- Celular -->
 
-                        <img src="{{ asset('/images/web/moto-phone.png') }}"
-                            class="absolute
-                        -bottom-8
-                        right-0
-                        w-[220px]
+                        <img src="{{ asset('/images/web/moto-phone-real.png') }}"
+                            id="motoHeroPhoneImg"
+                            onerror="this.style.display='none';"
+                            class="hidden
+                        sm:block
+                        absolute
+                        -bottom-6
+                        -right-4
+                        w-[120px]
+                        rounded-xl
+                        border
+                        border-white/10
                         z-30
-                        drop-shadow-[0_35px_80px_rgba(0,0,0,.7)]
+                        shadow-[0_25px_60px_rgba(0,0,0,.7)]
                         animate-float">
 
                     </div>

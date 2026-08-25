@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Tenant\EmpresaFacturacion;
 use App\Models\Tenant\Caja;
+use App\Models\Client;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\Mailer\Bridge\Brevo\Transport\BrevoTransportFactory;
 use Symfony\Component\Mailer\Transport\Dsn;
@@ -111,6 +113,38 @@ class AppServiceProvider extends ServiceProvider
                 // abierta se autoselecciona sola, sin pedir nada).
                 'requiereSeleccionCaja' => $cajasAbiertas->count() > 1 && ! $cajaActiva,
             ]);
+        });
+
+        // Aviso de "tu pago está por vencer/vencido" en el dashboard del
+        // tenant (banner no bloqueante — el bloqueo real cuando ya está
+        // vencido lo hace el middleware EnsureClientHasPaidCycle). Mismo
+        // Client::estadoCicloActual() que usa cobros:procesar del lado
+        // central, para no tener dos fuentes de verdad sobre el estado del
+        // ciclo de pago.
+        View::composer([
+            'tenant_tallermoto.partials.container',
+            'tenant_generico.partials.container',
+        ], function ($view) {
+            static $resuelto = false;
+            static $datos = ['estadoCicloPago' => null, 'fechaCicloPago' => null];
+
+            if (! $resuelto) {
+                $resuelto = true;
+
+                if (tenant() && Auth::guard('tenant')->check()) {
+                    $client = Client::where('tenant_id', tenant('id'))->first();
+
+                    if ($client) {
+                        $hoy = Carbon::now('America/Lima');
+                        $datos = [
+                            'estadoCicloPago' => $client->estadoCicloActual($hoy),
+                            'fechaCicloPago' => $client->fechaCicloActual($hoy),
+                        ];
+                    }
+                }
+            }
+
+            $view->with($datos);
         });
     }
 }

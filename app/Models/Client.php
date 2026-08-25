@@ -4,9 +4,16 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\CentralConnection;
 
 class Client extends Model
 {
+    // Se consulta también desde dentro del panel de un tenant (ver
+    // Tenant\FacturacionController), donde la conexión por defecto ya
+    // apunta a la BD del tenant — igual que Plan/Tenant, fuerza siempre la
+    // conexión central para que 'clients' se resuelva ahí.
+    use CentralConnection;
+
     protected $fillable = [
         'tenant_id',
         'razon_social',

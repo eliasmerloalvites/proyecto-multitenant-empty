@@ -38,6 +38,13 @@ Route::middleware([
   Route::view('/terminos-y-condiciones', 'central.legal.terminos')->name('central.terminos');
   Route::view('/politica-de-privacidad', 'central.legal.privacidad')->name('central.privacidad');
 
+  // Landing multi-página: cada ítem del menú carga su propia página (solo
+  // esa sección), no un scroll dentro de una sola página larga. El footer
+  // vive en el layout compartido, así que aparece en todas.
+  Route::view('/soluciones', 'central.landing.pages.soluciones')->name('central.soluciones');
+  Route::view('/planes', 'central.landing.pages.planes')->name('central.planes');
+  Route::view('/clientes', 'central.landing.pages.clientes')->name('central.clientes');
+
   // Culqi llama a este endpoint server-a-server (sin sesión, sin CSRF —
   // ver bootstrap/app.php). No confía en el body: vuelve a consultar el
   // evento contra la API de Culqi antes de procesar nada (ver

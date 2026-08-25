@@ -36,14 +36,23 @@ if (! function_exists('saas_plans_config')) {
      *
      * Memoizado por request y por tipo_negocio: esto se llama potencialmente
      * muchas veces por página (una vez por @if(tenant_has_module(...)) en
-     * el sidebar).
+     * el sidebar). Se guarda en el contenedor (no en un `static` de PHP)
+     * a propósito: un `static` sobrevive todo el proceso, lo cual es
+     * indistinguible de "por request" en el ciclo de vida normal de una
+     * request HTTP (proceso nuevo cada vez), pero NO en un proceso de
+     * larga vida — como toda la suite de tests corriendo en un solo
+     * proceso PHP — donde quedaba pegado un resultado viejo/vacío entre
+     * tests. El contenedor sí se recrea en cada test (Laravel llama a
+     * refreshApplication() en cada uno), así que memoizar ahí replica la
+     * intención original sin ese efecto secundario.
      */
     function saas_plans_config(string $tipoNegocio): array
     {
-        static $plans = [];
+        $plans = app()->bound('saas_plans_config.cache') ? app('saas_plans_config.cache') : [];
 
         if (! isset($plans[$tipoNegocio])) {
             $plans[$tipoNegocio] = Plan::paraNegocio($tipoNegocio)->get()->keyBy('key')->map->toConfigArray()->toArray();
+            app()->instance('saas_plans_config.cache', $plans);
         }
 
         return $plans[$tipoNegocio];

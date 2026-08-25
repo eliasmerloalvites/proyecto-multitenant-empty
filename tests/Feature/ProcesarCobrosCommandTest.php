@@ -138,6 +138,15 @@ test('el aviso incluye la orden de pago de Culqi cuando la generación funciona'
             'qr' => 'https://checkout.culqi.com/qr/fake',
         ], 201),
     ]);
+    // Sin esto, precio_personalizado null + ningún Plan 'basic' en la BD de
+    // test => montoEsperado() = 0 => ordenParaCicloActual() ni intenta
+    // llamar a Culqi (0 no genera orden de pago).
+    \App\Models\Plan::create([
+        'key' => 'basic', 'tipo_negocio' => 'tallermoto', 'nombre' => 'Basic',
+        'price' => 49.9, 'max_users' => 3, 'max_images' => 5, 'storage_limit_mb' => 200,
+        'custom_domain_enabled' => false, 'custom_branding' => false, 'customizable' => false,
+        'modules' => [], 'limits' => [], 'branding' => null,
+    ]);
     $client = clientConTenant(['billing_day' => 28]); // por_vencer
 
     $this->artisan('cobros:procesar')->assertSuccessful();

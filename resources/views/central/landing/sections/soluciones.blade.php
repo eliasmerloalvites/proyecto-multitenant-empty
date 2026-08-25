@@ -71,7 +71,7 @@
 
                     <div class="p-6 h-full">
 
-                        <div class="grid grid-cols-[1fr_1fr] gap-6 items-center h-full">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center h-full">
 
                             <!-- ================================= -->
                             <!-- TEXTO -->
@@ -183,7 +183,7 @@
 
                                 <!-- Botón -->
 
-                                <a href="#planes-pos"
+                                <a href="{{ route('central.planes') }}#como-funciona-pos"
                                     class="inline-flex items-center gap-3 px-7 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold shadow-xl shadow-blue-600/20 hover:shadow-blue-600/40 hover:scale-105 transition">
 
                                     Conocer más
@@ -206,8 +206,8 @@
                                     class="absolute w-[320px] h-[320px] rounded-full bg-blue-400/15 blur-[90px] group-hover:scale-110 transition duration-500">
                                 </div>
 
-                                <img src="{{ asset('/images/web/pos-system.png') }}"
-                                    class="relative z-20 w-full max-w-[420px] object-contain transition duration-500 group-hover:scale-105">
+                                <img src="{{ asset('/images/web/dashboard-web.png') }}"
+                                    class="relative z-20 w-full max-w-[420px] object-contain rounded-2xl border border-slate-200 shadow-2xl transition duration-500 group-hover:scale-105">
 
                             </div>
 
@@ -231,7 +231,7 @@
 
                     <div class="p-6 h-full">
 
-                        <div class="grid grid-cols-[1fr_1fr] gap-6 items-center h-full">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center h-full">
 
                             <!-- ================================= -->
                             <!-- TEXTO -->
@@ -344,7 +344,7 @@
 
                                 <!-- Botón -->
 
-                                <a href="#planes-moto"
+                                <a href="{{ route('central.planes') }}#como-funciona-moto"
                                     class="inline-flex items-center gap-3
                                 px-7 py-4
                                 rounded-xl
@@ -387,15 +387,28 @@
                                 duration-500">
                                 </div>
 
-                                <img src="{{ asset('/images/web/moto-system.png') }}"
+                                <img src="{{ asset('/images/web/moto-dashboard-real.png') }}"
+                                    id="solMotoImg"
+                                    onerror="this.style.display='none'; document.getElementById('solMotoFallback').style.display='flex';"
                                     class="relative
                                 z-20
                                 w-full
                                 max-w-[430px]
                                 object-contain
+                                rounded-2xl
+                                border
+                                border-slate-700
+                                shadow-2xl
                                 transition
                                 duration-500
                                 group-hover:scale-105">
+
+                                <div id="solMotoFallback" style="display:none;"
+                                    class="relative z-20 w-full max-w-[430px] aspect-[4/3] rounded-2xl border border-slate-700 bg-white/5 backdrop-blur flex-col items-center justify-center text-center p-8">
+                                    <i class="fa-solid fa-motorcycle text-5xl text-cyan-400 mb-4"></i>
+                                    <p class="text-slate-200 font-semibold">Panel de Kael Moto</p>
+                                    <p class="text-slate-400 text-sm mt-1">Captura próximamente</p>
+                                </div>
 
                             </div>
 
