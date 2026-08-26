@@ -53,7 +53,7 @@ class ProcesarCobrosCommand extends Command
             $planesConfig[$cliente->tipo_negocio] ??= saas_plans_config($cliente->tipo_negocio);
             $monto = $cliente->montoEsperado($planesConfig[$cliente->tipo_negocio]);
 
-            // ---------- RECORDATORIO (por vencer, dentro de 7 días) ----------
+            // ---------- RECORDATORIO (por vencer, dentro de 2 días) ----------
             if ($estado === 'por_vencer') {
                 $this->notificarUnaVez($cliente, $periodo, 'recordatorio', $fechaCobro, $monto, $dryRun, $enviados, $sinEmail);
 

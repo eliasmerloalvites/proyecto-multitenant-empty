@@ -11,6 +11,47 @@
                 </a>
             </div>
 
+            <form method="GET" action="{{ tenant_url('tenant.ventas.notas-credito.index') }}" class="row g-2 mb-3">
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <select name="estado" class="form-control">
+                        <option value="">Estado: Todos</option>
+                        @foreach (['ACEPTADO' => 'Aceptado', 'OBSERVADO' => 'Aceptado con obs.', 'RECHAZADO' => 'Rechazado', 'ERROR' => 'No enviado (error)', 'PENDIENTE' => 'Aun no enviado'] as $valor => $etiqueta)
+                            <option value="{{ $valor }}" @selected(($filtros['estado'] ?? '') === $valor)>{{ $etiqueta }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-6">
+                    <select name="cod_motivo" class="form-control">
+                        <option value="">Motivo: Todos</option>
+                        @foreach ($motivos ?? [] as $codigo => $descripcion)
+                            <option value="{{ $codigo }}" @selected(($filtros['cod_motivo'] ?? '') === (string) $codigo)>{{ $codigo }} - {{ $descripcion }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <input type="date" name="fecha_inicio" class="form-control" placeholder="Desde"
+                        value="{{ $filtros['fecha_inicio'] ?? '' }}">
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <input type="date" name="fecha_fin" class="form-control" placeholder="Hasta"
+                        value="{{ $filtros['fecha_fin'] ?? '' }}">
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <input type="text" name="cliente" class="form-control" placeholder="Cliente: nombre o documento"
+                        value="{{ $filtros['cliente'] ?? '' }}">
+                </div>
+                <div class="col-lg-1 col-md-2 col-sm-6">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fa fa-search"></i></button>
+                </div>
+                @if (array_filter($filtros ?? []))
+                    <div class="col-12">
+                        <a href="{{ tenant_url('tenant.ventas.notas-credito.index') }}" class="btn btn-light btn-sm">
+                            <i class="fa fa-eraser"></i> Quitar filtros
+                        </a>
+                    </div>
+                @endif
+            </form>
+
             <div class="table-responsive">
                 <table class="table table-sm table-bordered table-hover" id="tablaNotas">
                     <thead>

@@ -400,6 +400,11 @@
                                             name="MAV_ProximoServicio" maxlength="50" placeholder="#### KM" required
                                             onkeyup="this.value=this.value.toUpperCase();">
                                     </div>
+                                    <div class="form-group col-md-6">
+                                        <label>FECHA Y HORA DE TÉRMINO</label>
+                                        <input type="datetime-local" class="form-control" id="MAV_FechaTermino"
+                                            name="MAV_FechaTermino">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -803,6 +808,7 @@
             $('#MAV_CorrecionObservacion').val(`<?php echo $datos->MAV_CorrecionObservacion; ?>`);
             $('#MAV_ProximoCambioAceite').val(`<?php echo $datos->MAV_ProximoCambioAceite; ?>`);
             $('#MAV_ProximoServicio').val(`<?php echo $datos->MAV_ProximoServicio; ?>`);
+            $('#MAV_FechaTermino').val(`<?php echo $datos->MAV_FechaTermino ? \Carbon\Carbon::parse($datos->MAV_FechaTermino)->format('Y-m-d\TH:i') : ''; ?>`);
 
             <?php foreach ($detalle as $dev): ?>
                 var descripcion = `<?php echo $dev->MAVD_Descripcion; ?>`;

@@ -305,6 +305,19 @@
                                 <input type="password" class="form-control" value="{{ $empresa->sol_password ?? '' }}" id="sol_password" name="sol_password">
                             </div>
 
+                            <div class="form-group">
+                                <label for="gre_client_id">Client ID API GRE (guía de remisión)</label>
+                                <input type="text" class="form-control" value="{{ $empresa->gre_client_id ?? '' }}" id="gre_client_id" name="gre_client_id">
+                                <small class="form-text text-muted">
+                                    Se genera en el menú SOL, distinto del usuario/clave SOL de arriba. Necesario solo para emitir guías de remisión.
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="gre_client_secret">Client Secret API GRE</label>
+                                <input type="password" class="form-control" value="{{ $empresa->gre_client_secret ?? '' }}" id="gre_client_secret" name="gre_client_secret">
+                            </div>
+
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">

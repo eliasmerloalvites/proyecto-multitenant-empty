@@ -8,9 +8,12 @@ use Illuminate\Support\Facades\Storage;
 class EmpresaFacturacion extends Model
 {
     /* Tipos de documento internos, tal como se guardan en documento_venta. */
-    const TIPO_BOLETA       = 'BOL';
-    const TIPO_FACTURA      = 'FAC';
-    const TIPO_NOTA_CREDITO = 'NCR';
+    const TIPO_BOLETA        = 'BOL';
+    const TIPO_FACTURA       = 'FAC';
+    const TIPO_NOTA_CREDITO  = 'NCR';
+    /* La guia de remision no vive en documento_venta (tabla propia guia_remision),
+       pero comparte el mismo tipo interno para reusar Almacen::SERIES. */
+    const TIPO_GUIA_REMISION = 'GRE';
 
     protected $table = 'empresa_facturacion';
 
@@ -45,6 +48,10 @@ class EmpresaFacturacion extends Model
         'sol_usuario',
         'sol_password',
 
+        // GRE (guia de remision - OAuth2, distinto del SOL clasico)
+        'gre_client_id',
+        'gre_client_secret',
+
         // CERTIFICADO
         'certificado_ruta',
         'certificado_password',
@@ -73,6 +80,11 @@ class EmpresaFacturacion extends Model
 
         // ESTADO
         'activo',
+
+        // NOTIFICACION DE RESERVAS (recordatorio del dia siguiente por WhatsApp)
+        'reserva_notif_activo',
+        'reserva_notif_hora',
+        'reserva_notif_mensaje',
     ];
 
     protected $casts = [
@@ -84,7 +96,22 @@ class EmpresaFacturacion extends Model
         'certificado_vencimiento' => 'date',
 
         'decimales' => 'integer',
+
+        'reserva_notif_activo' => 'boolean',
     ];
+
+    /**
+     * Mensaje predeterminado del recordatorio, con marcadores que se
+     * reemplazan por los datos de cada reserva antes de armar el link de
+     * WhatsApp. Se usa cuando el tenant todavia no personalizo el suyo.
+     */
+    const MENSAJE_RESERVA_DEFECTO =
+        "Hola {cliente}, te recordamos tu cita mañana {fecha} ({turno}) para tu {moto} (placa {placa}) en {empresa}. ¡Te esperamos!";
+
+    public function mensajeNotificacionReserva(): string
+    {
+        return $this->reserva_notif_mensaje ?: self::MENSAJE_RESERVA_DEFECTO;
+    }
 
     /*
     |--------------------------------------------------------------------------

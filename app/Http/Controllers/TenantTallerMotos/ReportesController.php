@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\TenantTallerMotos;
 
+use App\Http\Controllers\Concerns\ResuelvePeriodo;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Personal;
@@ -13,6 +14,8 @@ use Carbon\Carbon;
 
 class ReportesController extends Controller
 {
+    use ResuelvePeriodo;
+
     public function __construct() {}
 
     public function listageneral(Request $request)
@@ -476,6 +479,7 @@ class ReportesController extends Controller
                 "$alias.{$prefijo}_ProximoCambioAceite as ProximoCambioAceite",
                 "$alias.{$prefijo}_ProximoServicio as ProximoServicio",
                 "$alias.{$prefijo}_FechaCreacion as FechaCreacion",
+                "$alias.{$prefijo}_FechaTermino as FechaTermino",
                 DB::raw('CONCAT(u.name) as personal')
             );
 
@@ -509,6 +513,95 @@ class ReportesController extends Controller
 
             return $item;
         });
+    }
+
+    /**
+     * Rendimiento de mecánicos: cuántos mantenimientos terminó cada uno en
+     * un periodo (hoy/semana/mes/personalizado), con desglose por tipo y
+     * tiempo promedio de atención — para evaluar carga de trabajo/incentivos.
+     */
+    public function rendimientoMecanicos(Request $request)
+    {
+        if (!$request->ajax()) {
+            return view('tenant_' . tenant('tipo_negocio') . '.reportes.rendimientomecanicos');
+        }
+
+        [$fechaInicio, $fechaFin] = $this->resolverPeriodo($request);
+
+        $configuraciones = [
+            ['tabla' => 'mantenimiento_general_carburada',    'alias' => 'mgc', 'prefijo' => 'MGC', 'tipo' => 'MTTO GENERAL CARBURADAS'],
+            ['tabla' => 'mantenimiento_general_inyectada',    'alias' => 'mgi', 'prefijo' => 'MGI', 'tipo' => 'MTTO GENERAL INYECTADAS'],
+            ['tabla' => 'mantenimiento_preventivo_carburada', 'alias' => 'mpc', 'prefijo' => 'MPC', 'tipo' => 'MTTO PREVENTIVOS CARBURADAS'],
+            ['tabla' => 'mantenimiento_preventivo_inyectada', 'alias' => 'mpi', 'prefijo' => 'MPI', 'tipo' => 'MTTO PREVENTIVOS INYECTADAS'],
+            ['tabla' => 'mantenimiento_actividad_variadas',   'alias' => 'mav', 'prefijo' => 'MAV', 'tipo' => 'ACTIVIDADES VARIADAS'],
+        ];
+
+        $filas = collect();
+        foreach ($configuraciones as $config) {
+            $filas = $filas->merge(
+                $this->obtenerRendimientoPorTabla(
+                    $config['tabla'],
+                    $config['alias'],
+                    $config['prefijo'],
+                    $config['tipo'],
+                    $fechaInicio,
+                    $fechaFin
+                )
+            );
+        }
+
+        $porMecanico = $filas
+            ->groupBy('PER_Id')
+            ->map(function ($grupo) {
+                $totalCantidad = $grupo->sum('cantidad');
+                $totalMinutos  = $grupo->sum('minutos_totales');
+
+                return [
+                    'PER_Id'         => $grupo->first()->PER_Id,
+                    'personal'       => $grupo->first()->personal,
+                    'total'          => $totalCantidad,
+                    'horas_promedio' => $totalCantidad > 0 ? round(($totalMinutos / $totalCantidad) / 60, 1) : 0,
+                    'por_tipo'       => $grupo->mapWithKeys(fn ($fila) => [$fila->tipo => $fila->cantidad])->toArray(),
+                ];
+            })
+            ->sortByDesc('total')
+            ->values();
+
+        return response()->json([
+            'periodo' => [
+                'inicio' => $fechaInicio->toDateString(),
+                'fin'    => $fechaFin->toDateString(),
+            ],
+            'totalGeneral' => $porMecanico->sum('total'),
+            'mecanicos'    => $porMecanico,
+        ]);
+    }
+
+    private function obtenerRendimientoPorTabla(
+        string $tabla,
+        string $alias,
+        string $prefijo,
+        string $tipo,
+        Carbon $fechaInicio,
+        Carbon $fechaFin
+    ) {
+        return DB::table("$tabla as $alias")
+            ->join('users as u', 'u.id', '=', "$alias.PER_Id")
+            ->whereNotNull("$alias.{$prefijo}_FechaTermino")
+            ->whereBetween("$alias.{$prefijo}_FechaTermino", [$fechaInicio, $fechaFin])
+            ->groupBy("$alias.PER_Id", 'u.name')
+            ->select(
+                "$alias.PER_Id",
+                DB::raw('u.name as personal'),
+                DB::raw('COUNT(*) as cantidad'),
+                DB::raw("SUM(GREATEST(TIMESTAMPDIFF(MINUTE, {$alias}.{$prefijo}_FechaCreacion, {$alias}.{$prefijo}_FechaTermino), 0)) as minutos_totales")
+            )
+            ->get()
+            ->map(function ($fila) use ($tipo) {
+                $fila->tipo = $tipo;
+                $fila->minutos_totales = (int) ($fila->minutos_totales ?? 0);
+                return $fila;
+            });
     }
 
     public function index1(Request $request)

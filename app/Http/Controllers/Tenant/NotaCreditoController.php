@@ -35,7 +35,7 @@ class NotaCreditoController extends Controller
     /**
      * Lista las notas de credito emitidas, mas recientes primero.
      */
-    public function index()
+    public function index(Request $request)
     {
         $notas = DB::table('documento_venta as dov')
             ->join('venta as v', 'v.VEN_Id', '=', 'dov.VEN_Id')
@@ -60,12 +60,27 @@ class NotaCreditoController extends Controller
                 'dov.DOV_DesMotivo', 'dov.DOV_TipoDocAfectado', 'dov.DOV_NumDocAfectado',
                 'c.CLI_Nombre', 'v.created_at'
             )
+            ->when($request->filled('estado'), fn ($q) => $q->where('dov.DOV_Estado', $request->input('estado')))
+            ->when($request->filled('cod_motivo'), fn ($q) => $q->where('dov.DOV_CodMotivo', $request->input('cod_motivo')))
+            ->when($request->filled('fecha_inicio'), fn ($q) => $q->where(DB::raw('date(v.created_at)'), '>=', $request->input('fecha_inicio')))
+            ->when($request->filled('fecha_fin'), fn ($q) => $q->where(DB::raw('date(v.created_at)'), '<=', $request->input('fecha_fin')))
+            ->when($request->filled('cliente'), function ($q) use ($request) {
+                $busqueda = $request->input('cliente');
+                $q->where(function ($qq) use ($busqueda) {
+                    $qq->where('c.CLI_Nombre', 'like', '%' . $busqueda . '%')
+                       ->orWhere('c.CLI_NumDocumento', 'like', '%' . $busqueda . '%');
+                });
+            })
             ->orderByDesc('dov.DOV_Id')
             ->get();
 
         return view(
             'tenant_' . tenant('tipo_negocio') . '.ventas.venta.notas-credito',
-            ['notas' => $notas]
+            [
+                'notas' => $notas,
+                'motivos' => DocumentoVentaService::MOTIVOS_NOTA_CREDITO,
+                'filtros' => $request->only(['estado', 'cod_motivo', 'fecha_inicio', 'fecha_fin', 'cliente']),
+            ]
         );
     }
 

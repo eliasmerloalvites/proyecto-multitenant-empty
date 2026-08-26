@@ -132,6 +132,11 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.ventas.venta.show',    'Ventas', 'Ver Venta',        'Ver Venta'],
             ['tenant.ventas.venta.destroy', 'Ventas', 'Eliminar Ventas',  'Eliminar Ventas'],
 
+            // Guia de Remision
+            ['tenant.ventas.guiaremision.index',  'GuiaRemision', 'Ver Lista Guias de Remision', 'Listar Guias de Remision'],
+            ['tenant.ventas.guiaremision.create', 'GuiaRemision', 'Emitir Guia de Remision',     'Emitir Guia de Remision'],
+            ['tenant.ventas.guiaremision.show',   'GuiaRemision', 'Ver Guia de Remision',         'Ver Guia de Remision'],
+
             // Turno
             ['tenant.configuracion.turno.index',   'Turnos', 'Ver Lista Turnos', 'Listar Turnos'],
             ['tenant.configuracion.turno.create',  'Turnos', 'Crear Turnos',     'Crear Turnos'],
@@ -203,15 +208,22 @@ class RoleAndPermissionSeeder extends Seeder
             
             // Reportes
             ['tenant.reportes.listageneral',   'Reportes', 'Ver Lista de General', 'Lista General de Mantenimientos'],
+            ['tenant.reportes.rendimientomecanicos', 'Reportes', 'Ver Rendimiento de Mecánicos', 'Reporte de mantenimientos completados por mecánico y periodo'],
+            ['tenant.reportes.rentabilidad', 'Reportes', 'Ver Rentabilidad', 'Ingresos, costo de venta, gastos y utilidad neta por periodo'],
+            ['tenant.reportes.inventario', 'Reportes', 'Ver Inventario Valorizado', 'Valor del stock actual y productos sin movimiento'],
+            ['tenant.reportes.comprasGastos', 'Reportes', 'Ver Compras y Gastos', 'Compras por proveedor y gastos por tipo en un periodo'],
+            ['tenant.reportes.clientes', 'Reportes', 'Ver Reporte de Clientes', 'Clientes que mas compran y clientes nuevos por periodo'],
+            ['tenant.reportes.caja', 'Reportes', 'Ver Reporte de Caja', 'Cuadre de caja acumulado por cajero y periodo'],
+            ['tenant.reportes.operacionTaller', 'Reportes', 'Ver Operacion del Taller', 'Cumplimiento de reservas y ocupacion de bahias/turnos'],
 
             // Reservaciones
-            ['tenant.reservaciones.administracion.index',   'Mtto General Inyectadas', 'Ver Lista Mtto General Inyectadas', 'Listar Mtto General Inyectadas'],
-            ['tenant.reservaciones.administracion.create',  'Mtto General Inyectadas', 'Crear Mtto General Inyectadas',     'Crear Mtto General Inyectadas'],
-            ['tenant.reservaciones.administracion.edit',    'Mtto General Inyectadas', 'Editar Mtto General Inyectadas',    'Editar Mtto General Inyectadas'],
-            ['tenant.reservaciones.administracion.show',    'Mtto General Inyectadas', 'Ver Mtto General Inyectada',        'Ver Mtto General Inyectada'],
-            ['tenant.reservaciones.administracion.destroy', 'Mtto General Inyectadas', 'Eliminar Mtto General Inyectadas',  'Eliminar Mtto General Inyectadas'],
-            ['tenant.reservaciones.administracion.aprobar', 'Mtto General Inyectadas', 'Aprobar Mtto General Inyectadas',  'Aprobar Mtto General Inyectadas'],
-            ['tenant.reservaciones.administracion.notificar', 'Mtto General Inyectadas', 'Notificar Mtto General Inyectadas',  'Notificar Mtto General Inyectadas'],
+            ['tenant.reservaciones.administracion.index',   'Reservaciones', 'Ver Lista Reservaciones', 'Listar Reservaciones'],
+            ['tenant.reservaciones.administracion.create',  'Reservaciones', 'Crear Reservaciones',     'Crear Reservaciones'],
+            ['tenant.reservaciones.administracion.edit',    'Reservaciones', 'Editar Reservaciones',    'Editar Reservaciones'],
+            ['tenant.reservaciones.administracion.show',    'Reservaciones', 'Ver Reservacion',        'Ver Reservacion'],
+            ['tenant.reservaciones.administracion.destroy', 'Reservaciones', 'Eliminar Reservaciones',  'Eliminar Reservaciones'],
+            ['tenant.reservaciones.administracion.aprobar', 'Reservaciones', 'Aprobar Reservaciones',  'Aprobar Reservaciones'],
+            ['tenant.reservaciones.administracion.notificar', 'Reservaciones', 'Notificar Reservaciones',  'Notificar Reservaciones'],
             
         ];
 
@@ -338,10 +350,14 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.compras.compra.destroy',
 
             'tenant.ventas.venta.index',
-            'tenant.ventas.venta.create',  
+            'tenant.ventas.venta.create',
             'tenant.ventas.venta.edit',
             'tenant.ventas.venta.show',
             'tenant.ventas.venta.destroy',
+
+            'tenant.ventas.guiaremision.index',
+            'tenant.ventas.guiaremision.create',
+            'tenant.ventas.guiaremision.show',
 
             'tenant.configuracion.turno.index',
             'tenant.configuracion.turno.create',
@@ -402,13 +418,20 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.mantenimientos.generalinyectada.notificar',
 
             'tenant.reportes.listageneral',
+            'tenant.reportes.rendimientomecanicos',
+            'tenant.reportes.rentabilidad',
+            'tenant.reportes.inventario',
+            'tenant.reportes.comprasGastos',
+            'tenant.reportes.clientes',
+            'tenant.reportes.caja',
+            'tenant.reportes.operacionTaller',
 
             'tenant.reservaciones.administracion.index',
             'tenant.reservaciones.administracion.create',
             'tenant.reservaciones.administracion.edit',
             'tenant.reservaciones.administracion.show',
             'tenant.reservaciones.administracion.destroy'
-            
+
         ]);
 
         $gerenteRole->givePermissionTo([
@@ -485,10 +508,14 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.compras.compra.destroy',
 
             'tenant.ventas.venta.index',
-            'tenant.ventas.venta.create',  
+            'tenant.ventas.venta.create',
             'tenant.ventas.venta.edit',
             'tenant.ventas.venta.show',
             'tenant.ventas.venta.destroy',
+
+            'tenant.ventas.guiaremision.index',
+            'tenant.ventas.guiaremision.create',
+            'tenant.ventas.guiaremision.show',
 
             'tenant.configuracion.turno.index',
             'tenant.configuracion.turno.create',
@@ -550,7 +577,14 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.mantenimientos.generalinyectada.notificar',
 
             'tenant.reportes.listageneral',
-            
+            'tenant.reportes.rendimientomecanicos',
+            'tenant.reportes.rentabilidad',
+            'tenant.reportes.inventario',
+            'tenant.reportes.comprasGastos',
+            'tenant.reportes.clientes',
+            'tenant.reportes.caja',
+            'tenant.reportes.operacionTaller',
+
             'tenant.reservaciones.administracion.index',
             'tenant.reservaciones.administracion.create',
             'tenant.reservaciones.administracion.edit',

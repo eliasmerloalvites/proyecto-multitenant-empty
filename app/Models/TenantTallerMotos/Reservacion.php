@@ -25,10 +25,17 @@ class Reservacion extends Model
     	'RES_FechaProgramada',
     	'RES_State',
     	'RES_Estado',
+    	'RES_Notificado',
+    	'RES_NotificadoEn',
     ];
 
     protected $guarded =[
 
+    ];
+
+    protected $casts = [
+        'RES_Notificado' => 'boolean',
+        'RES_NotificadoEn' => 'datetime',
     ];
 
     /**

@@ -22,6 +22,7 @@ use App\Http\Controllers\Tenant\SedeController;
 use App\Http\Controllers\Tenant\EmpresaFacturacionController;
 use App\Http\Controllers\Tenant\ComprobanteSunatController;
 use App\Http\Controllers\Tenant\NotaCreditoController;
+use App\Http\Controllers\Tenant\GuiaRemisionController;
 use App\Http\Controllers\Tenant\AnulacionController;
 use App\Http\Controllers\Tenant\TestFacturacionController;
 use App\Http\Controllers\Tenant\TipoGastoController;
@@ -37,6 +38,9 @@ use App\Http\Controllers\TenantTallerMotos\MantenimientoGeneralCarburadaControll
 use App\Http\Controllers\TenantTallerMotos\MantenimientoPreventivoInyectadaController;
 use App\Http\Controllers\TenantTallerMotos\MantenimientoPreventivoCarburadaController;
 use App\Http\Controllers\TenantTallerMotos\ReportesController;
+use App\Http\Controllers\TenantTallerMotos\BahiaVentaController;
+use App\Http\Controllers\TenantTallerMotos\ReportesFinancierosController;
+use App\Http\Controllers\TenantTallerMotos\NotificacionReservaController;
 use App\Http\Controllers\TenantTallerMotos\ReservacionController;
 use App\Http\Controllers\TenantTallerMotos\TurnoController;
 use App\Services\Facturacion\GreenterService;
@@ -130,6 +134,13 @@ Route::middleware([
         //REPORTES
         Route::get('/tenant/reportes/listageneral',[ReportesController::class, 'listageneral'])->name('tenant.reportes.listageneral');
         Route::post('/tenant/reportes/listageneral1',[ReportesController::class, 'listageneral1'])->name('tenant.reportes.listageneral1');
+        Route::get('/tenant/reportes/rendimientomecanicos',[ReportesController::class, 'rendimientoMecanicos'])->name('tenant.reportes.rendimientomecanicos')->middleware('tenant.module:mantenimientos');
+        Route::get('/tenant/reportes/rentabilidad',[ReportesFinancierosController::class, 'rentabilidad'])->name('tenant.reportes.rentabilidad');
+        Route::get('/tenant/reportes/inventario',[ReportesFinancierosController::class, 'inventario'])->name('tenant.reportes.inventario');
+        Route::get('/tenant/reportes/compras-gastos',[ReportesFinancierosController::class, 'comprasGastos'])->name('tenant.reportes.comprasGastos');
+        Route::get('/tenant/reportes/clientes',[ReportesFinancierosController::class, 'clientes'])->name('tenant.reportes.clientes');
+        Route::get('/tenant/reportes/caja',[ReportesFinancierosController::class, 'caja'])->name('tenant.reportes.caja');
+        Route::get('/tenant/reportes/operacion-taller',[ReportesFinancierosController::class, 'operacionTaller'])->name('tenant.reportes.operacionTaller')->middleware('tenant.module:mantenimientos');
 
     Route::middleware(['tenant.module:mantenimientos'])->group(function () {
 
@@ -145,6 +156,11 @@ Route::middleware([
         ])->parameters([
             'reservacion' => 'reservacion'
         ]);
+
+        // Recordatorio de reservas del dia siguiente por WhatsApp (manual).
+        Route::get('/tenant/reservaciones/notificaciones', [NotificacionReservaController::class, 'index'])->name('tenant.reservaciones.notificaciones.index');
+        Route::post('/tenant/reservaciones/notificaciones/configuracion', [NotificacionReservaController::class, 'guardarConfiguracion'])->name('tenant.reservaciones.notificaciones.configuracion');
+        Route::post('/tenant/reservaciones/notificaciones/{id}/marcar', [NotificacionReservaController::class, 'marcarNotificado'])->name('tenant.reservaciones.notificaciones.marcar');
 
         Route::post('/tenant/mantenimientos/preventivocarburada/{preventivocarburada}/crop',[MantenimientoPreventivoCarburadaController::class, 'crop'])->name('tenant.mantenimientos.preventivocarburada.crop');
         Route::delete('/tenant/mantenimientos/preventivocarburada/crop/{preventivocarburada}/{item}',[MantenimientoPreventivoCarburadaController::class, 'destroyimagen'])->name('tenant.mantenimientos.preventivocarburada.destroyimagen');
@@ -274,6 +290,22 @@ Route::middleware([
             Route::get('/tenant/ventas/venta/productos',[VentaController::class, 'getProductos'])->name('tenant.ventas.venta.productos');
             Route::get('/tenant/ventas/venta/searchClientes',[VentaController::class, 'searchClientes'])->name('tenant.ventas.venta.searchClientes');
             Route::post('/tenant/ventas/venta/createCliente',[VentaController::class, 'createCliente'])->name('tenant.ventas.venta.createCliente');
+            Route::post('/tenant/ventas/venta/producto-rapido',[VentaController::class, 'crearProductoRapido'])->name('tenant.ventas.venta.productoRapido');
+
+            // Ventas por Bahia: tablero de bahias del dia con cuenta acumulable
+            // por reserva (requiere el modulo de mantenimientos, de donde salen
+            // las tablas bahia/reservacion).
+            Route::middleware(['tenant.module:mantenimientos'])->prefix('tenant/ventas/bahias')->name('tenant.ventas.bahias.')->group(function () {
+                Route::get('/', [BahiaVentaController::class, 'index'])->name('index');
+                Route::post('/{reservacion}/abrir', [BahiaVentaController::class, 'abrir'])->name('abrir');
+                Route::post('/cuenta/{cuenta}/items', [BahiaVentaController::class, 'agregarItem'])->name('items.store');
+                Route::post('/cuenta/{cuenta}/items/rapido', [BahiaVentaController::class, 'agregarItemRapido'])->name('items.rapido');
+                Route::put('/cuenta/{cuenta}/items/{item}', [BahiaVentaController::class, 'actualizarItem'])->name('items.update');
+                Route::delete('/cuenta/{cuenta}/items/{item}', [BahiaVentaController::class, 'quitarItem'])->name('items.destroy');
+                Route::get('/cuenta/{cuenta}/resumen', [BahiaVentaController::class, 'resumen'])->name('resumen');
+                Route::post('/cuenta/{cuenta}/cerrar-sin-cobrar', [BahiaVentaController::class, 'cerrarSinCobrar'])->name('cerrarSinCobrar');
+                Route::get('/cuenta/{cuenta}/cobrar', [BahiaVentaController::class, 'cobrar'])->name('cobrar');
+            });
             Route::resource('/tenant/ventas/venta', VentaController::class)->names([
                 'index' => 'tenant.ventas.venta.index',
                 'create' => 'tenant.ventas.venta.create',
@@ -315,6 +347,16 @@ Route::middleware([
             Route::get('/tenant/ventas/notas-credito', [NotaCreditoController::class, 'index'])->name('tenant.ventas.notas-credito.index');
             Route::get('/tenant/ventas/venta/{id}/nota-credito', [NotaCreditoController::class, 'create'])->name('tenant.ventas.venta.nota-credito.create');
             Route::post('/tenant/ventas/venta/{id}/nota-credito', [NotaCreditoController::class, 'store'])->name('tenant.ventas.venta.nota-credito.store');
+
+            /* Guia de remision: traslado de los productos de una venta ya facturada */
+            Route::get('/tenant/ventas/guias-remision', [GuiaRemisionController::class, 'index'])->name('tenant.ventas.guiaremision.index');
+            Route::get('/tenant/ventas/venta/{id}/guia-remision', [GuiaRemisionController::class, 'create'])->name('tenant.ventas.venta.guiaremision.create');
+            Route::post('/tenant/ventas/venta/{id}/guia-remision', [GuiaRemisionController::class, 'store'])->name('tenant.ventas.venta.guiaremision.store');
+            Route::post('/tenant/ventas/guia-remision/{id}/consultar', [GuiaRemisionController::class, 'consultarTicket'])->name('tenant.ventas.guiaremision.consultar');
+            Route::post('/tenant/ventas/guia-remision/{id}/simular', [GuiaRemisionController::class, 'simular'])->name('tenant.ventas.guiaremision.simular');
+            Route::get('/tenant/ventas/guia-remision/{id}/imprimir', [GuiaRemisionController::class, 'imprimir'])->name('tenant.ventas.guiaremision.imprimir');
+            Route::get('/tenant/ventas/guia-remision/{id}/sunat/xml', [GuiaRemisionController::class, 'xml'])->name('tenant.ventas.guiaremision.sunat.xml');
+            Route::get('/tenant/ventas/guia-remision/{id}/sunat/cdr', [GuiaRemisionController::class, 'cdr'])->name('tenant.ventas.guiaremision.sunat.cdr');
 
             /* Anulacion de un comprobante ya aceptado (boleta, factura, nota) */
             Route::get('/tenant/ventas/anulaciones', [AnulacionController::class, 'index'])->name('tenant.ventas.anulaciones.index');

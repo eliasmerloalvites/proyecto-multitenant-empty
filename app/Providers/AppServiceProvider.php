@@ -146,5 +146,46 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with($datos);
         });
+
+        // Aviso global de "hay reservas de mañana por notificar", visible en
+        // cualquier pantalla (no solo en la vista de Notificar reservas) para
+        // que no se pase por alto si el usuario esta ocupado en otra parte
+        // del sistema. Solo aplica a tallermoto (reservas es propio de ese
+        // rubro) y solo se calcula una vez por request.
+        View::composer([
+            'tenant_tallermoto.partials.container',
+        ], function ($view) {
+            static $resuelto = false;
+            static $datos = ['avisoReservasPendientes' => 0];
+
+            if (! $resuelto) {
+                $resuelto = true;
+
+                if (tenant() && Auth::guard('tenant')->check() && tenant_has_module('mantenimientos')) {
+                    $empresa = EmpresaFacturacion::delTenantActual();
+
+                    if ($empresa && $empresa->reserva_notif_activo) {
+                        $ahora = Carbon::now('America/Lima');
+                        $yaEsHora = $empresa->reserva_notif_hora
+                            ? $ahora->format('H:i') >= substr($empresa->reserva_notif_hora, 0, 5)
+                            : true;
+
+                        if ($yaEsHora) {
+                            $manana = $ahora->copy()->addDay()->toDateString();
+
+                            $pendientes = \App\Models\TenantTallerMotos\Reservacion::where('RES_Estado', 'ACT')
+                                ->where('RES_State', '!=', 'RECHAZADO')
+                                ->where('RES_Notificado', false)
+                                ->whereDate('RES_FechaProgramada', $manana)
+                                ->count();
+
+                            $datos = ['avisoReservasPendientes' => $pendientes];
+                        }
+                    }
+                }
+            }
+
+            $view->with($datos);
+        });
     }
 }

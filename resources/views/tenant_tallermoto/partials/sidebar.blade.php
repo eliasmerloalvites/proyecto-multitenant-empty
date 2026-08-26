@@ -47,15 +47,15 @@
                 <!-- RESERVAS (parte del flujo de Mantenimientos) -->
                 @if(tenant_has_module('mantenimientos'))
                 <li class="nav-item has-treeview
-                    {{ request()->routeIs('tenant.reservaciones.administracion*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->routeIs('tenant.reservaciones.administracion*') ? 'active': '' }}">
+                    {{ request()->routeIs('tenant.reservaciones.administracion*') || request()->routeIs('tenant.reservaciones.notificaciones*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('tenant.reservaciones.administracion*') || request()->routeIs('tenant.reservaciones.notificaciones*') ? 'active': '' }}">
                         <i class="nav-icon fas fa-calendar-check"></i>
                         <p>
                             RESERVAS
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
-                    
+
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item">
@@ -74,12 +74,20 @@
                             </a>
                         </li>
 
+                        <li class="nav-item">
+                            <a href="{{ route('tenant.reservaciones.notificaciones.index') }}" class="nav-link
+                            {{ request()->routeIs('tenant.reservaciones.notificaciones.index') ? 'active' : '' }}">
+                                <i class="fab fa-whatsapp nav-icon"></i>
+                                <p>Notificar reservas</p>
+                            </a>
+                        </li>
+
                     </ul>
                 </li>
                 @endif
 
                 <!-- REPORTES -->
-                @can('tenant.reportes.listageneral')
+                @canany(['tenant.reportes.listageneral', 'tenant.reportes.rendimientomecanicos', 'tenant.reportes.rentabilidad', 'tenant.reportes.inventario', 'tenant.reportes.comprasGastos', 'tenant.reportes.clientes', 'tenant.reportes.caja', 'tenant.reportes.operacionTaller'])
                 <li class="nav-item has-treeview
                     {{ request()->routeIs('tenant.reportes*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->routeIs('tenant.reportes*') ? 'active': '' }}">
@@ -93,16 +101,86 @@
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item">
-                            <a href="{{ route('tenant.reportes.listageneral') }}" class="nav-link 
+                            <a href="{{ route('tenant.reportes.listageneral') }}" class="nav-link
                             {{ request()->routeIs('tenant.reportes.listageneral') ? 'active' : '' }}">
                                 <i class="far fa-file-alt nav-icon"></i>
                                 <p>Lista General</p>
                             </a>
                         </li>
 
+                        @can('tenant.reportes.rendimientomecanicos')
+                        <li class="nav-item">
+                            <a href="{{ route('tenant.reportes.rendimientomecanicos') }}" class="nav-link
+                            {{ request()->routeIs('tenant.reportes.rendimientomecanicos') ? 'active' : '' }}">
+                                <i class="fas fa-user-cog nav-icon"></i>
+                                <p>Rendimiento de Mecánicos</p>
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('tenant.reportes.rentabilidad')
+                        <li class="nav-item">
+                            <a href="{{ route('tenant.reportes.rentabilidad') }}" class="nav-link
+                            {{ request()->routeIs('tenant.reportes.rentabilidad') ? 'active' : '' }}">
+                                <i class="fas fa-chart-line nav-icon"></i>
+                                <p>Rentabilidad</p>
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('tenant.reportes.inventario')
+                        <li class="nav-item">
+                            <a href="{{ route('tenant.reportes.inventario') }}" class="nav-link
+                            {{ request()->routeIs('tenant.reportes.inventario') ? 'active' : '' }}">
+                                <i class="fas fa-boxes nav-icon"></i>
+                                <p>Inventario Valorizado</p>
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('tenant.reportes.comprasGastos')
+                        <li class="nav-item">
+                            <a href="{{ route('tenant.reportes.comprasGastos') }}" class="nav-link
+                            {{ request()->routeIs('tenant.reportes.comprasGastos') ? 'active' : '' }}">
+                                <i class="fas fa-file-invoice nav-icon"></i>
+                                <p>Compras y Gastos</p>
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('tenant.reportes.clientes')
+                        <li class="nav-item">
+                            <a href="{{ route('tenant.reportes.clientes') }}" class="nav-link
+                            {{ request()->routeIs('tenant.reportes.clientes') ? 'active' : '' }}">
+                                <i class="fas fa-users nav-icon"></i>
+                                <p>Clientes</p>
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('tenant.reportes.caja')
+                        <li class="nav-item">
+                            <a href="{{ route('tenant.reportes.caja') }}" class="nav-link
+                            {{ request()->routeIs('tenant.reportes.caja') ? 'active' : '' }}">
+                                <i class="fas fa-cash-register nav-icon"></i>
+                                <p>Caja</p>
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('tenant.reportes.operacionTaller')
+                        <li class="nav-item">
+                            <a href="{{ route('tenant.reportes.operacionTaller') }}" class="nav-link
+                            {{ request()->routeIs('tenant.reportes.operacionTaller') ? 'active' : '' }}">
+                                <i class="fas fa-clipboard-check nav-icon"></i>
+                                <p>Operación del Taller</p>
+                            </a>
+                        </li>
+                        @endcan
+
                     </ul>
                 </li>
-                @endcan
+                @endcanany
 
                 @if(tenant_has_module('mantenimientos'))
                 @canany([
@@ -370,26 +448,30 @@
                 @endif
 
                 @if(tenant_has_module('ventas'))
+
+                {{-- VENTAS: solo lo propio de vender (lista, crear, clientes, metodos de pago, NC, guias) --}}
                 @canany([
-                    'tenant.ventas.metodopago.index',
+                    'tenant.ventas.venta.index',
                     'tenant.ventas.cliente.index',
-                    'tenant.ventas.caja.index',
-                    'tenant.ventas.venta.index'
+                    'tenant.ventas.metodopago.index',
                 ])
-                    <li
-                        class="nav-item has-treeview
-                            {{ request()->routeIs('tenant.ventas.metodopago*') ||
-                            request()->routeIs('tenant.ventas.cliente*') ||
-                            request()->routeIs('tenant.ventas.caja*') ||
-                            request()->routeIs('tenant.ventas.venta*')
-                                ? 'menu-open'
-                                : '' }}">
+                    <li class="nav-item has-treeview
+                        {{ request()->routeIs('tenant.ventas.venta*') ||
+                        request()->routeIs('tenant.ventas.cliente*') ||
+                        request()->routeIs('tenant.ventas.metodopago*') ||
+                        request()->routeIs('tenant.ventas.notas-credito*') ||
+                        request()->routeIs('tenant.ventas.guiaremision*') ||
+                        request()->routeIs('tenant.ventas.bahias*')
+                            ? 'menu-open'
+                            : '' }}">
                         <a href="#"
                             class="nav-link
-                                {{ request()->routeIs('tenant.ventas.metodopago*') ||
+                                {{ request()->routeIs('tenant.ventas.venta*') ||
                                 request()->routeIs('tenant.ventas.cliente*') ||
-                                request()->routeIs('tenant.ventas.caja*') ||
-                                request()->routeIs('tenant.ventas.venta*')
+                                request()->routeIs('tenant.ventas.metodopago*') ||
+                                request()->routeIs('tenant.ventas.notas-credito*') ||
+                                request()->routeIs('tenant.ventas.guiaremision*') ||
+                                request()->routeIs('tenant.ventas.bahias*')
                                     ? 'active'
                                     : '' }}">
                             <i class="nav-icon fas fa-cash-register"></i>
@@ -402,11 +484,27 @@
                             @can('tenant.ventas.venta.index')
                                 <li class="nav-item">
                                     <a href="{{ tenant_url('tenant.ventas.venta.index') }}"
-                                        class="nav-link {{ request()->routeIs('tenant.ventas.venta*') ? 'active' : '' }}">
+                                        class="nav-link {{ request()->routeIs('tenant.ventas.venta.index') || request()->routeIs('tenant.ventas.venta.show') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
-                                        <p>Ventas</p>
+                                        <p>Lista de Ventas</p>
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="{{ tenant_url('tenant.ventas.venta.create') }}"
+                                        class="nav-link {{ request()->routeIs('tenant.ventas.venta.create') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Crear Venta</p>
+                                    </a>
+                                </li>
+                                @if(tenant_has_module('mantenimientos'))
+                                    <li class="nav-item">
+                                        <a href="{{ tenant_url('tenant.ventas.bahias.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.ventas.bahias*') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Ventas por Bahía</p>
+                                        </a>
+                                    </li>
+                                @endif
                             @endcan
                             @can('tenant.ventas.cliente.index')
                                 <li class="nav-item">
@@ -426,15 +524,6 @@
                                     </a>
                                 </li>
                             @endcan
-                            @can('tenant.ventas.caja.index')
-                                <li class="nav-item">
-                                    <a href="{{ tenant_url('tenant.ventas.caja.index') }}"
-                                        class="nav-link {{ request()->routeIs('tenant.ventas.caja*') ? 'active' : '' }}">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Cajas</p>
-                                    </a>
-                                </li>
-                            @endcan
                             @can('tenant.ventas.venta.index')
                                 <li class="nav-item">
                                     <a href="{{ tenant_url('tenant.ventas.notas-credito.index') }}"
@@ -444,18 +533,60 @@
                                     </a>
                                 </li>
                             @endcan
-                            @can('tenant.ventas.venta.index')
+                            @can('tenant.ventas.guiaremision.index')
                                 <li class="nav-item">
-                                    <a href="{{ tenant_url('tenant.ventas.anulaciones.index') }}"
-                                        class="nav-link {{ request()->routeIs('tenant.ventas.anulaciones*') ? 'active' : '' }}">
+                                    <a href="{{ tenant_url('tenant.ventas.guiaremision.index') }}"
+                                        class="nav-link {{ request()->routeIs('tenant.ventas.guiaremision*') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
-                                        <p>Anulaciones</p>
+                                        <p>Guías de remisión</p>
                                     </a>
                                 </li>
                             @endcan
                         </ul>
                     </li>
                 @endcanany
+
+                {{-- CAJA: aparte de Ventas, agrupa configuracion de cajas e historial de turnos --}}
+                @can('tenant.ventas.caja.index')
+                    <li class="nav-item has-treeview
+                        {{ request()->routeIs('tenant.ventas.caja*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('tenant.ventas.caja*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-cash-register"></i>
+                            <p>
+                                CAJA
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ tenant_url('tenant.ventas.caja.index') }}"
+                                    class="nav-link {{ request()->routeIs('tenant.ventas.caja.index') || request()->routeIs('tenant.ventas.caja.create') || request()->routeIs('tenant.ventas.caja.edit') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Cajas</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ tenant_url('tenant.ventas.caja.historial') }}"
+                                    class="nav-link {{ request()->routeIs('tenant.ventas.caja.historial*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Historial de Caja</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                @endcan
+
+                {{-- ANULACIONES: grupo propio para no mezclarlo con Ventas --}}
+                @can('tenant.ventas.venta.index')
+                    <li class="nav-item">
+                        <a href="{{ tenant_url('tenant.ventas.anulaciones.index') }}"
+                            class="nav-link {{ request()->routeIs('tenant.ventas.anulaciones*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-ban"></i>
+                            <p>ANULACIONES</p>
+                        </a>
+                    </li>
+                @endcan
+
                 @endif
                 <!-- CONFIGURACIÓN -->
                 

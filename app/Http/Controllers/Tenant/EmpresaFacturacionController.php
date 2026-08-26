@@ -56,6 +56,10 @@ class EmpresaFacturacionController extends Controller
                     'sol_usuario' => $request->sol_usuario,
                     'sol_password' => $request->sol_password,
 
+                    // GRE (guia de remision - OAuth2 generado en el menu SOL)
+                    'gre_client_id' => $request->gre_client_id,
+                    'gre_client_secret' => $request->gre_client_secret,
+
                     // CERTIFICADO
                     'certificado_password' => $request->certificado_password,
                     'certificado_vencimiento' => $request->certificado_vencimiento,

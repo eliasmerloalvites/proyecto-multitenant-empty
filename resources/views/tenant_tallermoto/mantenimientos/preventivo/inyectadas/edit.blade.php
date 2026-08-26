@@ -810,6 +810,12 @@
                                             name="MPI_ProximoServicio" placeholder="#### KM"
                                             value="{{ $datos->MPI_ProximoServicio }}" maxlength="50" required="">
                                     </div>
+                                    <div class="form-group col-lg-6 col-md-6 col-sm-12 col-12">
+                                        <label for="name" class=" control-label">FECHA Y HORA DE TÉRMINO</label>
+                                        <input type="datetime-local" class="form-control" id="MPI_FechaTermino"
+                                            name="MPI_FechaTermino"
+                                            value="{{ $datos->MPI_FechaTermino ? \Carbon\Carbon::parse($datos->MPI_FechaTermino)->format('Y-m-d\TH:i') : '' }}">
+                                    </div>
                                 </div>
 
                             </div>
@@ -1220,6 +1226,7 @@
             $('#MPI_CorrecionObservacion').val(`<?php echo $datos->MPI_CorrecionObservacion; ?>`);
             $('#MPI_ProximoCambioAceite').val(`<?php echo $datos->MPI_ProximoCambioAceite; ?>`);
             $('#MPI_ProximoServicio').val(`<?php echo $datos->MPI_ProximoServicio; ?>`);
+            $('#MPI_FechaTermino').val(`<?php echo $datos->MPI_FechaTermino ? \Carbon\Carbon::parse($datos->MPI_FechaTermino)->format('Y-m-d\TH:i') : ''; ?>`);
 
             <?php foreach ($detalle as $dev): ?>
             var descripcion = `<?php echo $dev->MPID_Descripcion; ?>`;

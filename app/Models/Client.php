@@ -112,8 +112,8 @@ class Client extends Model
      *   evalúa vencimiento ni se cobra nada.
      * - 'pagado': ya existe un Pago con periodo = mes de $hoy.
      * - 'vencido': billing_day de este mes ya pasó y no está pagado.
-     * - 'por_vencer': billing_day de este mes cae dentro de los próximos 7 días.
-     * - 'pendiente': billing_day de este mes aún no llega (más de 7 días).
+     * - 'por_vencer': billing_day de este mes cae dentro de los próximos 2 días.
+     * - 'pendiente': billing_day de este mes aún no llega (más de 2 días).
      */
     public function estadoCicloActual(Carbon $hoy): string
     {
@@ -139,7 +139,7 @@ class Client extends Model
             return 'vencido';
         }
 
-        if ($fechaCiclo->lte($hoy->copy()->addDays(7)->endOfDay())) {
+        if ($fechaCiclo->lte($hoy->copy()->addDays(2)->endOfDay())) {
             return 'por_vencer';
         }
 

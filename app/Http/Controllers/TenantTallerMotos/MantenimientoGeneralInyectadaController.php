@@ -39,7 +39,7 @@ class MantenimientoGeneralInyectadaController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_general_inyectada as mgi')
                     ->join('users as p', 'p.id', '=', 'mgi.PER_Id')
-                    ->select('mgi.MGI_Id', 'mgi.MGI_Placa', 'mgi.MGI_Propietario', 'mgi.MGI_celular', 'mgi.notificar', 'mgi.MGI_Unidad', 'mgi.MGI_KMEntrada', 'mgi.MGI_FechaCreacion', 'mgi.MGI_Estado', DB::raw('CONCAT(p.name) as personal'));
+                    ->select('mgi.MGI_Id', 'mgi.MGI_Placa', 'mgi.MGI_Propietario', 'mgi.MGI_celular', 'mgi.notificar', 'mgi.MGI_Unidad', 'mgi.MGI_KMEntrada', 'mgi.MGI_FechaCreacion', 'mgi.MGI_FechaTermino', 'mgi.MGI_Estado', DB::raw('CONCAT(p.name) as personal'));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MGI_FechaCreacion', '>=', $request->fecha_inicio);
@@ -98,7 +98,7 @@ class MantenimientoGeneralInyectadaController extends Controller
             } else {
                 $data = DB::table('mantenimiento_general_inyectada as mgi')
                     ->join('users as p', 'p.id', '=', 'mgi.PER_Id')
-                    ->select('mgi.MGI_Id', 'mgi.MGI_Placa', 'mgi.MGI_Propietario', 'mgi.MGI_celular', 'mgi.notificar', 'mgi.MGI_Unidad', 'mgi.MGI_KMEntrada', 'mgi.MGI_FechaCreacion', 'mgi.MGI_Estado', DB::raw('CONCAT(p.name) as personal'))
+                    ->select('mgi.MGI_Id', 'mgi.MGI_Placa', 'mgi.MGI_Propietario', 'mgi.MGI_celular', 'mgi.notificar', 'mgi.MGI_Unidad', 'mgi.MGI_KMEntrada', 'mgi.MGI_FechaCreacion', 'mgi.MGI_FechaTermino', 'mgi.MGI_Estado', DB::raw('CONCAT(p.name) as personal'))
                     ->where('mgi.PER_Id', '=', $idpersonal)
                     ->get();
 
@@ -140,7 +140,9 @@ class MantenimientoGeneralInyectadaController extends Controller
         if ($roles->contains('Admin') || $roles->contains('Gerente')) {
             $rolAdmin = true;
         }
-        $personal = User::select('id', 'name')->get();
+        $personal = (tenant('plan') ?? 'start') === 'start'
+            ? User::select('id', 'name')->get()
+            : User::role('Mecanico')->select('id', 'name')->get();
 
 
         return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.general.inyectadas.create', ["admin" => $rolAdmin, "personal" => $personal]);
@@ -255,7 +257,9 @@ class MantenimientoGeneralInyectadaController extends Controller
         if ($roles->contains('Admin') || $roles->contains('Gerente')) {
             $rolAdmin = true;
         }
-        $personal = User::select('id', 'name')->get();
+        $personal = (tenant('plan') ?? 'start') === 'start'
+            ? User::select('id', 'name')->get()
+            : User::role('Mecanico')->select('id', 'name')->get();
 
         return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.general.inyectadas.edit', [
             "datos" => $datos,
@@ -498,6 +502,7 @@ class MantenimientoGeneralInyectadaController extends Controller
             $mtto_general_inyectadas->MGI_ProximoCambioAceite = $request->get('MGI_ProximoCambioAceite');
             $mtto_general_inyectadas->MGI_ProximoServicio = $request->get('MGI_ProximoServicio');
             $mtto_general_inyectadas->MGI_FechaEdicion = $mytime->toDateTimeString();
+            $mtto_general_inyectadas->MGI_FechaTermino = $request->get('MGI_FechaTermino') ? Carbon::parse($request->get('MGI_FechaTermino'))->toDateTimeString() : null;
             $mtto_general_inyectadas->MGI_UsuarioEditado = $idusu;
             $mtto_general_inyectadas->PER_Id = $request->get('USU_Id');
             if ($rolAdmin) {

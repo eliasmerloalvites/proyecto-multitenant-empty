@@ -65,6 +65,7 @@
                             <th>KM Entrada</th>
                             <th>Técnico</th>
                             <th>Fecha</th>
+                            <th>Fecha Término</th>
                             <th>Estado</th>
                             <th>Observacion</th>
                             <th>Solucion</th>
@@ -296,6 +297,10 @@
                         {
                             data: 'FechaCreacion',
                             name: 'FechaCreacion'
+                        },
+                        {
+                            data: 'FechaTermino',
+                            name: 'FechaTermino'
                         },
                         {
                             data: 'estado',
