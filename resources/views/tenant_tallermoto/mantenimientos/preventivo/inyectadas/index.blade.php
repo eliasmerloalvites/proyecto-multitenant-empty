@@ -70,6 +70,7 @@
                             <th>KM Entrada</th>
                             <th>Responsable</th>
                             <th>Fecha</th>
+                            <th>Fecha Término</th>
                             <th>Estado</th>
                             <th width="180">Opciones</th>
                         </tr>
@@ -189,6 +190,10 @@
                     {
                         data: 'MPI_FechaCreacion',
                         name: 'MPI_FechaCreacion'
+                    },
+                    {
+                        data: 'MPI_FechaTermino',
+                        name: 'MPI_FechaTermino'
                     },
                     {
                         data: 'estado',

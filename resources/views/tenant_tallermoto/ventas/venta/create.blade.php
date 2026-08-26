@@ -1525,6 +1525,21 @@
     </style>
 
     <div class="container-fluid pos-wrapper">
+        @if ($cuentaBahiaId ?? null)
+            <div class="alert alert-info d-flex justify-content-between align-items-center mb-2 py-2">
+                <div>
+                    <i class="fa fa-oil-can mr-1"></i>
+                    Cobrando cuenta de bahía
+                    @if ($prefillCliente ?? null)
+                        — <strong>{{ $prefillCliente['nombre'] }}</strong>
+                        ({{ $prefillCliente['moto'] }}, placa {{ $prefillCliente['placa'] }})
+                    @endif
+                </div>
+                <a href="{{ tenant_url('tenant.ventas.bahias.index') }}" class="btn btn-sm btn-outline-dark">
+                    <i class="fa fa-arrow-left"></i> Volver al tablero
+                </a>
+            </div>
+        @endif
         <div class="row g-2">
             <!-- LEFT -->
             <div class="col-lg-4">
@@ -1567,9 +1582,12 @@
                     </div>
 
                     <!-- SEARCH -->
-                    <div class="search-box">
+                    <div class="search-box d-flex align-items-center">
                         <i class="fas fa-search text-muted"></i>
                         <input class="search-input" type="text" placeholder="Buscar producto...">
+                        <button type="button" id="btnAbrirItemRapido" class="btn btn-sm btn-outline-primary ml-2 text-nowrap">
+                            <i class="fa fa-plus"></i> Item rápido
+                        </button>
                     </div>
 
                     <!-- CATEGORIES -->
@@ -1599,6 +1617,44 @@
     </div>
 
 
+
+    <div class="modal fade" id="modalItemRapido" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa fa-plus mr-2"></i>Agregar item rápido</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">
+                        Para vender algo que no está en tu catálogo (un servicio, un cargo especial,
+                        un producto todavía no registrado). Se agrega directo al carrito con el nombre,
+                        cantidad y precio que indiques.
+                    </p>
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" id="itemRapidoNombre" class="form-control" placeholder="Ej. Mano de obra, Servicio express...">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label>Cantidad</label>
+                            <input type="number" id="itemRapidoCantidad" class="form-control" value="1" min="0.01" step="0.01">
+                        </div>
+                        <div class="form-group col-6">
+                            <label>Precio unitario (S/)</label>
+                            <input type="number" id="itemRapidoPrecio" class="form-control" placeholder="0.00" min="0" step="0.01">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnAgregarItemRapido">
+                        <i class="fa fa-cart-plus"></i> Agregar al carrito
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="modal fade" id="modalCheckout" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -1968,6 +2024,11 @@
         let cart = [];
         let voucherType = 'NOTA';
 
+        // Si se viene del tablero de Ventas por Bahia, se precarga el carrito
+        // con lo que ya se le habia cargado a la cuenta.
+        window.CUENTA_BAHIA_ID = @json($cuentaBahiaId ?? null);
+        const PREFILL_CARRITO = @json($prefillCarrito ?? []);
+
         // Ambiente de facturacion del tenant: en pruebas el comprobante que
         // devuelve SUNAT no tiene validez tributaria.
         const FACTURACION_EN_PRUEBAS = @json($facturacionEnPruebas ?? true);
@@ -1992,7 +2053,11 @@
         };
 
         $(document).ready(function() {
-            
+
+            if (PREFILL_CARRITO.length) {
+                cart = PREFILL_CARRITO.map(p => ({ ...p, quantity: parseFloat(p.quantity) }));
+                renderCart();
+            }
 
             $('body').addClass('sidebar-collapse');
             $('.category-btn').on('click', function() {
@@ -2205,7 +2270,9 @@
                     <div class="product-footer">
                         <div>
                             <div class="product-price">S/ ${product.PRO_PrecioBaseVenta}</div>
-                            <div class="product-stock">Stock ${product.PRO_Cantidad}</div>
+                            <div class="product-stock" style="${product.PRO_Cantidad <= 0 ? 'color:#dc3545;font-weight:bold' : ''}">
+                                ${product.PRO_Cantidad <= 0 ? 'SIN STOCK' : 'Stock ' + product.PRO_Cantidad}
+                            </div>
                         </div>
                         <button class="btn btn-sm btn-primary rounded-circle"
                             onclick='addToCart(${JSON.stringify(product)})'>
@@ -2223,6 +2290,65 @@
             }
 
         }
+
+        $('#btnAbrirItemRapido').on('click', function () {
+            $('#modalItemRapido').modal('show');
+        });
+
+        $('#btnAgregarItemRapido').on('click', function () {
+            let nombre = ($('#itemRapidoNombre').val() || '').trim();
+            let cantidad = parseFloat($('#itemRapidoCantidad').val());
+            let precio = parseFloat($('#itemRapidoPrecio').val());
+
+            if (!nombre) {
+                Swal.fire({ icon: 'warning', title: 'Falta el nombre', text: 'Escribe que estas vendiendo.' });
+                return;
+            }
+            if (!(cantidad > 0)) {
+                Swal.fire({ icon: 'warning', title: 'Cantidad invalida', text: 'La cantidad debe ser mayor a 0.' });
+                return;
+            }
+            if (!(precio >= 0)) {
+                Swal.fire({ icon: 'warning', title: 'Precio invalido', text: 'Ingresa el precio unitario.' });
+                return;
+            }
+
+            let $btn = $(this).prop('disabled', true);
+
+            $.ajax({
+                url: '{{ tenant_url("tenant.ventas.venta.productoRapido") }}',
+                method: 'POST',
+                data: {
+                    nombre: nombre,
+                    cantidad: cantidad,
+                    precio: precio,
+                    _token: '{{ csrf_token() }}'
+                }
+            }).done(function (producto) {
+                addToCart(producto);
+
+                // addToCart siempre suma de a 1: se ajusta a la cantidad pedida.
+                let item = cart.find(x => x.PRO_Id == producto.PRO_Id);
+                if (item) {
+                    item.quantity = cantidad;
+                    renderCart();
+                }
+
+                $('#modalItemRapido').modal('hide');
+                $('#itemRapidoNombre').val('');
+                $('#itemRapidoCantidad').val(1);
+                $('#itemRapidoPrecio').val('');
+            }).fail(function (xhr) {
+                let r = xhr.responseJSON || {};
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No se pudo agregar',
+                    text: (r.errors ? Object.values(r.errors).flat().join(' ') : r.message) || 'Error de conexion.'
+                });
+            }).always(function () {
+                $btn.prop('disabled', false);
+            });
+        });
 
         function addToCart(product) {
             // BUSCAR SI YA EXISTE
@@ -2409,6 +2535,7 @@
                 vuelto: $('#inputVuelto').val(),
                 observacion: $('#observacion').val(),
                 productos: cart,
+                bahia_cuenta_id: window.CUENTA_BAHIA_ID || null,
                 _token: $('meta[name="csrf-token"]').attr('content')
             };
 
@@ -2452,6 +2579,10 @@
                             allowEscapeKey: false
                         }).then((result) => {
                             if (result.isConfirmed) {
+                                if (window.CUENTA_BAHIA_ID) {
+                                    window.location.href = "{{ tenant_url('tenant.ventas.bahias.index') }}";
+                                    return;
+                                }
                                 //location.reload();
                                 resetPOS();
                                 $('#modalCheckout').modal('hide');

@@ -40,36 +40,52 @@
                         @if (count($permissionsGrouped) <= 0)
                             <p>No hay registros</p>
                         @else
-                        
+
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small">
+                                    Total seleccionados: <strong id="totalSeleccionadosGlobal">0</strong> / {{ $permissionsGrouped->flatten()->count() }}
+                                </span>
+                                <div>
+                                    <button type="button" id="btnExpandirTodo" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-expand-alt"></i> Expandir todo
+                                    </button>
+                                    <button type="button" id="btnColapsarTodo" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-compress-alt"></i> Colapsar todo
+                                    </button>
+                                </div>
+                            </div>
+
                             <div class="scroll-container" style="max-height: 600px; overflow-y: auto;">
                                 @foreach ($permissionsGrouped as $groupName => $permissions)
-                                    <div class="mb-3">
+                                    @php($groupSlug = str_replace(' ', '', $groupName))
+                                    <div class="mb-3 permission-group" data-group="{{ $groupSlug }}">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <h6 class="m-0" style="cursor: pointer;" data-toggle="collapse"
-                                                data-target="#toggle{{ $groupName }}" aria-expanded="false"
-                                                aria-controls="toggle{{ $groupName }}">
+                                                data-target="#toggle{{ $groupSlug }}" aria-expanded="false"
+                                                aria-controls="toggle{{ $groupSlug }}">
                                                 <b>{{ $groupName }}</b>
+                                                <span class="badge badge-secondary group-count-badge" data-group="{{ $groupSlug }}">0/{{ count($permissions) }}</span>
                                             </h6>
                                             <button type="button" class="btn btn-link" data-toggle="collapse"
-                                                data-target="#toggle{{ $groupName }}" aria-expanded="false"
-                                                aria-controls="toggle{{ $groupName }}">
-                                                <i class="fas fa-chevron-down"></i> 
+                                                data-target="#toggle{{ $groupSlug }}" aria-expanded="false"
+                                                aria-controls="toggle{{ $groupSlug }}">
+                                                <i class="fas fa-chevron-down"></i>
                                             </button>
                                         </div>
 
                                         <!-- Contenido del grupo -->
-                                        <div id="toggle{{ $groupName }}" class="collapse">
+                                        <div id="toggle{{ $groupSlug }}" class="collapse">
                                             <div class="mt-2">
                                                 <!-- Checkbox para seleccionar todos -->
                                                 <div class="form-check">
                                                     <div class="row">
                                                         <div class="col-10">
-                                                            <label class="form-check-label text-info" 
-                                                                for="selectAll{{ $groupName }}">Seleccionar todo</label>
+                                                            <label class="form-check-label text-info"
+                                                                for="selectAll{{ $groupSlug }}">Seleccionar todo</label>
                                                         </div>
                                                         <div class="col-2 d-flex justify-content-end">
                                                             <input type="checkbox" class="form-check-input select-all"
-                                                                id="selectAll{{ $groupName }}">
+                                                                id="selectAll{{ $groupSlug }}">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -150,40 +166,37 @@
     @endcan
 
     <!-- Modal Ver detalles-->
-    <div class="modal fade" id="modalVerDetalle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+    <div class="modal fade" id="modalVerDetalle" tabindex="-1" aria-labelledby="modalVerDetalleLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                    <h5 class="modal-title" id="modalVerDetalleLabel">
+                        Rol: <strong id="ver_name"></strong>
+                    </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <p class="col">id de rol: </p>
-                        <p id="ver_id" class="col"></p>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>ID de rol:</strong> <span id="ver_id"></span></div>
+                        <div class="col-6">
+                            <strong>Permisos asignados:</strong>
+                            <span id="ver_total_permisos" class="badge badge-primary"></span>
+                        </div>
                     </div>
-                    <div class="row">
-                        <p class="col">Nombre de rol:</p>
-                        <p id="ver_name" class="col"></p>
+                    <div class="row mb-3">
+                        <div class="col-6"><strong>Creado:</strong> <span id="ver_fecha_registro"></span></div>
+                        <div class="col-6"><strong>Actualizado:</strong> <span id="ver_fecha_update"></span></div>
                     </div>
-
-                    <div class="row">
-                        <p class="col">Descripción de rol: </p>
-                        <p id="ver_descripcion" class="col"></p>
-                    </div>
-                    <div class="row">
-                        <p class="col">Fecha de registro de rol: </p>
-                        <p id="ver_fecha_registro" class="col"></p>
-                    </div>
-                    <div class="row">
-                        <p class="col">Fecha de actualización de rol: </p>
-                        <p id="ver_fecha_update" class="col"></p>
+                    <hr>
+                    <h6 class="mb-2">Detalle de permisos por módulo</h6>
+                    <div id="ver_permissions_container" style="max-height: 420px; overflow-y: auto;">
+                        <!-- Contenido generado dinámicamente por JS -->
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
@@ -229,8 +242,47 @@
                     const checkboxes = document.querySelectorAll(
                         `#toggle${groupName} .form-check-input`);
                     checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+                    updateGroupBadges();
                 });
             });
+
+            // Actualiza el badge "X/Y" de cada grupo y el contador global,
+            // para saber cuántos permisos tiene marcados un grupo sin desplegarlo.
+            function updateGroupBadges() {
+                let totalGlobal = 0;
+                document.querySelectorAll('.permission-group').forEach(function(group) {
+                    const groupName = group.getAttribute('data-group');
+                    const checkboxes = document.querySelectorAll(
+                        `#toggle${groupName} [name="permisos[]"]`);
+                    const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+                    totalGlobal += checked;
+
+                    const badge = document.querySelector(
+                        `.group-count-badge[data-group="${groupName}"]`);
+                    if (badge) {
+                        badge.textContent = checked + '/' + checkboxes.length;
+                        badge.classList.toggle('badge-secondary', checked === 0);
+                        badge.classList.toggle('badge-success', checked > 0 && checked === checkboxes.length);
+                        badge.classList.toggle('badge-info', checked > 0 && checked < checkboxes.length);
+                    }
+                });
+                const totalBadge = document.getElementById('totalSeleccionadosGlobal');
+                if (totalBadge) {
+                    totalBadge.textContent = totalGlobal;
+                }
+            }
+
+            $(document).on('change', '[name="permisos[]"]', updateGroupBadges);
+
+            $('#btnExpandirTodo').click(function() {
+                $('.permissions-groups .collapse').collapse('show');
+            });
+
+            $('#btnColapsarTodo').click(function() {
+                $('.permissions-groups .collapse').collapse('hide');
+            });
+
+            updateGroupBadges();
 
             $('#accesototal').change(function() {
                 // Si el checkbox "Seleccionar Todo" está marcado
@@ -241,6 +293,7 @@
                     // Desmarcar todos los checkboxes de permisos
                     $('[name="permisos[]"]').prop('checked', false);
                 }
+                updateGroupBadges();
             });
 
             $('#accesocero').change(function() {
@@ -249,6 +302,7 @@
                     // Marcar todos los checkboxes de permisos
                     $('[name="permisos[]"]').prop('checked', false);
                 }
+                updateGroupBadges();
             });
 
             var table = $('#table-roles').DataTable({
@@ -387,12 +441,24 @@
                             $('#accesototal').prop('checked', true);
 
                         } else {
-                            //console.log("No todos los permisos están seleccionados"); 
+                            //console.log("No todos los permisos están seleccionados");
 
                         }
                         if (verificarPermisosCero()) {
                             $('#accesocero').prop('checked', true);
                         }
+
+                        updateGroupBadges();
+
+                        // Auto-expandir solo los grupos que tienen algún permiso
+                        // marcado, para que se vea de inmediato qué tiene el rol
+                        // sin tener que desplegar cada grupo manualmente.
+                        $('.permission-group').each(function() {
+                            const groupName = $(this).data('group');
+                            const tieneMarcados = $(`#toggle${groupName} [name="permisos[]"]:checked`).length > 0;
+                            $(`#toggle${groupName}`).collapse(tieneMarcados ? 'show' : 'hide');
+                        });
+
                         //desactivar boton guardar
                         $("#saveBtn").prop("disabled", true);
                         //activar boton de actualizar
@@ -478,20 +544,56 @@
                 });
             });
 
+            function escapeHtml(text) {
+                return $('<div>').text(text ?? '').html();
+            }
+
             $('body').on('click', '.eyeRole', function() {
                 var Role_id_ver = $(this).data('id');
+                $('#ver_permissions_container').html(
+                    '<p class="text-muted">Cargando...</p>');
                 $('#modalVerDetalle').modal('show');
                 $.get('{{ tenant_url('tenant.seguridad.role.show', ['rol' => ':rol']) }}'.replace(':rol', Role_id_ver),
                     function(data) {
-                        console.log(data);
                         $('#ver_id').text(data.data.id);
                         $('#ver_name').text(data.data.name);
-                        $('#ver_descripcion').text(data.data.descripcion);
                         $('#ver_fecha_registro').text(moment(data.data.created_at).format(
                             'YYYY-MM-DD HH:mm:ss'));
                         $('#ver_fecha_update').text(moment(data.data.updated_at).format(
                             'YYYY-MM-DD HH:mm:ss'));
 
+                        var totalBadge = $('#ver_total_permisos');
+                        var esAccesoTotal = data.totalPermisos > 0 && data.totalPermisos === data.totalPermisosApp;
+                        totalBadge.text(data.totalPermisos + ' de ' + data.totalPermisosApp +
+                            (esAccesoTotal ? ' (Acceso Total)' : ''));
+                        totalBadge.toggleClass('badge-success', esAccesoTotal);
+                        totalBadge.toggleClass('badge-primary', !esAccesoTotal);
+
+                        var groups = data.permissionsGrouped;
+                        var groupNames = Object.keys(groups);
+
+                        if (groupNames.length === 0) {
+                            $('#ver_permissions_container').html(
+                                '<p class="text-muted mb-0">Este rol no tiene ningún permiso asignado.</p>'
+                            );
+                            return;
+                        }
+
+                        var html = '';
+                        groupNames.forEach(function(groupName) {
+                            var permisos = groups[groupName];
+                            html += '<div class="mb-3">';
+                            html += '<h6 class="mb-1">' + escapeHtml(groupName) +
+                                ' <span class="badge badge-light">' + permisos.length + '</span></h6>';
+                            html += '<ul class="list-unstyled mb-0 pl-3">';
+                            permisos.forEach(function(permiso) {
+                                html += '<li><i class="fas fa-check text-success mr-1"></i>' +
+                                    escapeHtml(permiso.nombre) + '</li>';
+                            });
+                            html += '</ul></div>';
+                        });
+
+                        $('#ver_permissions_container').html(html);
                     })
 
             });

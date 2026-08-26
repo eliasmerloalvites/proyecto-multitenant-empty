@@ -204,11 +204,12 @@ class UserController extends Controller
         $usuario->name = $request->name;
 
         // Obtengo los roles seleccionados desde la solicitud
-        $rolesSeleccionados = $request->input('roles');
+        $rolesSeleccionados = $request->input('roles', []);
 
-        // Asigna los roles seleccionados al usuario
-        //$usuario->roles()->sync($rolesSeleccionados); hace lo mismo q el de arriba
-        $usuario->syncRoles($rolesSeleccionados);
+        // Los IDs llegan como strings desde el formulario, pero syncRoles()
+        // solo resuelve por ID cuando recibe un int nativo (is_int) — con
+        // string los busca por nombre y lanza RoleDoesNotExist.
+        $usuario->syncRoles(array_map('intval', $rolesSeleccionados));
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $usuario->save();

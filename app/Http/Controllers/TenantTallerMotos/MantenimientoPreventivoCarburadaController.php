@@ -39,7 +39,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_preventivo_carburada as mpc')
                     ->join('users as p', 'p.id', '=', 'mpc.PER_Id')
-                    ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'));
+                    ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_FechaTermino', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MPC_FechaCreacion', '>=', $request->fecha_inicio);
@@ -98,7 +98,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
             } else {
                 $data = DB::table('mantenimiento_preventivo_carburada as mpc')
                     ->join('users as p', 'p.id', '=', 'mpc.PER_Id')
-                    ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'))
+                    ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_FechaTermino', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'))
                     ->where('mpc.PER_Id', '=', $idpersonal)
                     ->get();
 
@@ -140,7 +140,9 @@ class MantenimientoPreventivoCarburadaController extends Controller
         if ($roles->contains('Admin') || $roles->contains('Gerente')) {
             $rolAdmin = true;
         }
-        $personal = User::select('id', 'name')->get();
+        $personal = (tenant('plan') ?? 'start') === 'start'
+            ? User::select('id', 'name')->get()
+            : User::role('Mecanico')->select('id', 'name')->get();
 
 
         return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.preventivo.carburadas.create', ["admin" => $rolAdmin, "personal" => $personal]);
@@ -236,7 +238,9 @@ class MantenimientoPreventivoCarburadaController extends Controller
         if ($roles->contains('Admin') || $roles->contains('Gerente')) {
             $rolAdmin = true;
         }
-        $personal = User::select('id', 'name')->get();
+        $personal = (tenant('plan') ?? 'start') === 'start'
+            ? User::select('id', 'name')->get()
+            : User::role('Mecanico')->select('id', 'name')->get();
 
         return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.preventivo.carburadas.edit', [
             "datos" => $datos,
@@ -468,6 +472,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
             $mtto_preventivo_carburadas->MPC_ProximoCambioAceite = $request->get('MPC_ProximoCambioAceite');
             $mtto_preventivo_carburadas->MPC_ProximoServicio = $request->get('MPC_ProximoServicio');
             $mtto_preventivo_carburadas->MPC_FechaEdicion = $mytime->toDateTimeString();
+            $mtto_preventivo_carburadas->MPC_FechaTermino = $request->get('MPC_FechaTermino') ? Carbon::parse($request->get('MPC_FechaTermino'))->toDateTimeString() : null;
             $mtto_preventivo_carburadas->MPC_UsuarioEditado = $idusu;
             $mtto_preventivo_carburadas->PER_Id = $request->get('USU_Id');
             if ($rolAdmin) {

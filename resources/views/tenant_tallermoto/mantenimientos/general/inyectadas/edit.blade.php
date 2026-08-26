@@ -882,6 +882,11 @@
                                 <input type="text" class="form-control" id="MGI_ProximoServicio" name="MGI_ProximoServicio"
                                 placeholder="#### KM" value="{{$datos->MGI_ProximoServicio}}" maxlength="50" required="">
                             </div>
+                            <div class="form-group col-lg-6 col-md-6 col-sm-12 col-12">
+                                <label for="name" class=" control-label">FECHA Y HORA DE TÉRMINO</label>
+                                <input type="datetime-local" class="form-control" id="MGI_FechaTermino" name="MGI_FechaTermino"
+                                value="{{ $datos->MGI_FechaTermino ? \Carbon\Carbon::parse($datos->MGI_FechaTermino)->format('Y-m-d\TH:i') : '' }}">
+                            </div>
                         </div>
 
                     </div>
@@ -1286,6 +1291,7 @@
             $('#MGI_CorrecionObservacion').val(`<?php echo $datos->MGI_CorrecionObservacion; ?>`);
             $('#MGI_ProximoCambioAceite').val(`<?php echo $datos->MGI_ProximoCambioAceite; ?>`);
             $('#MGI_ProximoServicio').val(`<?php echo $datos->MGI_ProximoServicio; ?>`);
+            $('#MGI_FechaTermino').val(`<?php echo $datos->MGI_FechaTermino ? \Carbon\Carbon::parse($datos->MGI_FechaTermino)->format('Y-m-d\TH:i') : ''; ?>`);
 
             <?php foreach ($detalle as $dev): ?>
                 var descripcion = `<?php echo $dev->MGID_Descripcion; ?>`;

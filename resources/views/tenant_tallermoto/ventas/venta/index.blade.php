@@ -59,7 +59,7 @@
                         + Nuevo
                     </button>
                 <div class="row">
-                    <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
+                    <div class="col-lg-4 col-md-6 col-sm-12">
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" style="background: #EDEDED;">Fecha Inicio y Limite</span>
@@ -67,9 +67,61 @@
                             <input name="nuevofiltro" type="text" class="form-control" id="date_range">
                         </div>
                     </div>
-                    <div class="col-lg-1 col-md-1 col-sm-12 col-xs-12">
-                        <span><button class="btn btn-primary" class="btn btn-icon btn-sm " onclick="buscar()" type="button"
-                                id="btnbuscar"><i class="fa fa-search"></i></button></span>
+                    <div class="col-lg-2 col-md-3 col-sm-6">
+                        <select class="form-control mb-3" id="f_estado">
+                            <option value="">Estado: Todos</option>
+                            <option value="ACEPTADO">Aceptado</option>
+                            <option value="OBSERVADO">Aceptado con obs.</option>
+                            <option value="RECHAZADO">Rechazado</option>
+                            <option value="ERROR">No enviado (error)</option>
+                            <option value="PENDIENTE">Aun no enviado</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-6">
+                        <select class="form-control mb-3" id="f_tipo">
+                            <option value="">Comprobante: Todos</option>
+                            <option value="BOL">Boleta</option>
+                            <option value="FAC">Factura</option>
+                            <option value="NCR">Nota de credito</option>
+                            <option value="PRO">Nota de venta</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-6">
+                        <select class="form-control mb-3" id="f_anulado">
+                            <option value="">Anulado: Todos</option>
+                            <option value="0">No anulados</option>
+                            <option value="1">Anulados</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-6">
+                        <select class="form-control mb-3" id="f_almacen">
+                            <option value="">Almacen: Todos</option>
+                            @foreach ($almacenes ?? [] as $alm)
+                                <option value="{{ $alm->ALM_Id }}">{{ $alm->ALM_NombreAlmacen }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        <select class="form-control mb-3" id="f_metodo_pago">
+                            <option value="">Metodo de pago: Todos</option>
+                            @foreach ($metodosPago ?? [] as $mp)
+                                <option value="{{ $mp->MEP_Id }}">{{ $mp->MEP_Pago }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-lg-4 col-md-5 col-sm-8">
+                        <input type="text" class="form-control mb-3" id="f_cliente"
+                            placeholder="Cliente: nombre o numero de documento">
+                    </div>
+                    <div class="col-lg-2 col-md-2 col-sm-4">
+                        <button class="btn btn-primary btn-block mb-3" onclick="buscar()" type="button"
+                            id="btnbuscar"><i class="fa fa-search"></i> Filtrar</button>
+                    </div>
+                    <div class="col-lg-1 col-md-1 col-sm-12">
+                        <button class="btn btn-light btn-block mb-3" onclick="limpiarFiltros()" type="button"
+                            title="Quitar filtros"><i class="fa fa-eraser"></i></button>
                     </div>
                 </div>
                 <p class="card-text">
@@ -432,7 +484,19 @@
                 order: [
                     [0, "desc"]
                 ],
-                ajax: "{{ tenant_url('tenant.ventas.venta.index') }}",
+                ajax: {
+                    url: "{{ tenant_url('tenant.ventas.venta.index') }}",
+                    data: function(d) {
+                        d.fecha_inicio = ($('#date_range').val() || '').split(' - ')[0] || '';
+                        d.fecha_fin = ($('#date_range').val() || '').split(' - ')[1] || '';
+                        d.estado = $('#f_estado').val();
+                        d.tipo = $('#f_tipo').val();
+                        d.anulado = $('#f_anulado').val();
+                        d.almacen_id = $('#f_almacen').val();
+                        d.metodo_pago_id = $('#f_metodo_pago').val();
+                        d.cliente = $('#f_cliente').val();
+                    }
+                },
                 columns: [{
                         data: 'VEN_Id',
                         name: 'VEN_Id',
@@ -812,93 +876,18 @@
         
 
         function buscar() {
-            mostrarSeleccionado();
+            table.ajax.reload();
         }
 
-        function mostrarSeleccionado() {
-            $("#lista_ventas").dataTable().fnDestroy();
-            table = $('#lista_ventas').DataTable({
-                responsive: true, // Habilitar la opción responsive
-                autoWidth: false,
-                searchDelay: 2000,
-                processing: true,
-                serverSide: true,
-                "language": {
-                    "lengthMenu": "Mostrar _MENU_ registros por página",
-                    "zeroRecords": "Nada encontrado - disculpa",
-                    "info": "Mostrando la página _PAGE_ de _PAGES_",
-                    "infoEmpty": "No hay registros disponibles",
-                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
-                    "search": "Buscar:",
-                    "paginate": {
-                        "next": "Siguiente",
-                        "previous": "Anterior"
-                    }
-                },
-                order: [
-                    [0, "desc"]
-                ],
-                ajax: "{{ tenant_url('tenant.ventas.venta.index') }}" + "/filtro/" + $('#date_range')
-                    .val(),
-                columns: [{
-                        data: 'VEN_Id',
-                        name: 'VEN_Id',
-                        className: 'text-start'
-                    },
-                    {
-                        data: 'ALM_NombreAlmacen',
-                        name: 'ALM_NombreAlmacen',
-                        className: 'text-start'
-                    },
-                    {
-                        data: 'documento',
-                        name: 'documento',
-                        className: 'text-start'
-                    },
-                    {
-                        data: 'CLI_Nombre',
-                        name: 'CLI_Nombre',
-                        className: 'text-start'
-                    },
-                    {
-                        data: 'MEP_Pago',
-                        name: 'MEP_Pago',
-                        className: 'text-start'
-                    },
-                    {
-                        data: 'importe',
-                        name: 'importe',
-                        className: 'text-start'
-                    },
-                    {
-                        data: 'fecha',
-                        name: 'fecha',
-                        className: 'text-start'
-                    },
-                    @if ($mostrarSunat ?? false)
-                    {
-                        data: 'sunat',
-                        name: 'sunat',
-                        orderable: false,
-                        searchable: false,
-                        className: 'text-start text-nowrap'
-                    },
-                    @endif
-                    {
-                        data: null,
-                        name: '',
-                        'render': function(data, type, row) {
-                            return @can('tenant.ventas.venta.show')
-                                data.action3 + ' ' +
-                            @endcan
-                            ''
-                            @can('tenant.ventas.venta.show')
-                                +data.ticket + ' '+ data.pdf + ' ' + data.whatsapp
-                            @endcan
-                        }
-                    }
-                ],
-            });
+        function limpiarFiltros() {
+            $('#date_range').val('');
+            $('#f_estado').val('');
+            $('#f_tipo').val('');
+            $('#f_anulado').val('');
+            $('#f_almacen').val('');
+            $('#f_metodo_pago').val('');
+            $('#f_cliente').val('');
+            table.ajax.reload();
         }
     </script>
 @endsection

@@ -139,9 +139,29 @@ class RoleController extends Controller
      */
     public function show(string $id)
     {
-        $role = Role::find($id);
+        $role = Role::findOrFail($id);
+        $rolePermissionIds = $role->permissions()->pluck('permissions.id')->toArray();
 
-        return response()->json(['data' => $role]);
+        $permissionsGrouped = Permission::where('estado', 1)
+            ->get()
+            ->groupBy('group_name')
+            ->map(function ($permissions) use ($rolePermissionIds) {
+                return $permissions
+                    ->filter(fn ($permission) => in_array($permission->id, $rolePermissionIds))
+                    ->map(fn ($permission) => [
+                        'id'     => $permission->id,
+                        'nombre' => $permission->nombre,
+                    ])
+                    ->values();
+            })
+            ->filter(fn ($permissions) => $permissions->isNotEmpty());
+
+        return response()->json([
+            'data'                => $role,
+            'permissionsGrouped'  => $permissionsGrouped,
+            'totalPermisos'       => count($rolePermissionIds),
+            'totalPermisosApp'    => Permission::where('estado', 1)->count(),
+        ]);
     }
 
     /**
@@ -209,11 +229,9 @@ class RoleController extends Controller
      */
     public function destroy(string $id)
     {
-        $role = Role::find($id);
-        $role->estadorol = 0;
-        $role->save();
-       // return redirect()->route('role.index')->with('datos','Rol eliminado ...!');
-        
+        $role = Role::findOrFail($id);
+        $role->delete();
+
         return response()->json(['success' => 'Rol Eliminado Exitosamente.']);
     }
 }

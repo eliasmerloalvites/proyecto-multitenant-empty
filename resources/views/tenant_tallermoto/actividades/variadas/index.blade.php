@@ -70,6 +70,7 @@
                             <th>KM Entrada</th>
                             <th>Responsable</th>
                             <th>Fecha</th>
+                            <th>Fecha Término</th>
                             <th>Estado</th>
                             <th width="180">Opciones</th>
                         </tr>
@@ -189,6 +190,10 @@
                     {
                         data: 'MAV_FechaCreacion',
                         name: 'MAV_FechaCreacion'
+                    },
+                    {
+                        data: 'MAV_FechaTermino',
+                        name: 'MAV_FechaTermino'
                     },
                     {
                         data: 'estado',

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\EnviarVentaSunatJob;
+use App\Models\Tenant\Almacen;
 use App\Models\Tenant\Cliente;
 use App\Models\Tenant\Venta;
 use App\Models\Tenant\DetalleVenta;
@@ -54,24 +55,44 @@ class VentaController extends Controller
         return $empresa;
     }
 
+    /**
+     * Arma la consulta de ventas aplicando todos los filtros del listado:
+     * rango de fechas, estado SUNAT, tipo de comprobante, anulado/baja,
+     * almacen, metodo de pago y cliente (nombre o numero de documento).
+     */
+    private function consultaVentas(Request $request)
+    {
+        $query = DB::table('detalle_venta as dv')
+            ->join('venta as v', 'v.VEN_Id', '=', 'dv.VEN_Id')
+            ->join('documento_venta as dov', 'dov.VEN_Id', '=', 'v.VEN_Id')
+            ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
+            ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
+            ->join('users as u', 'u.id', '=', 'v.USU_Id')
+            ->join('almacen as a', 'a.ALM_Id', '=', 'v.ALM_Id')
+            ->select('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado as estadoDocVenta', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Id', 'mp.MEP_Pago', 'u.name as empleado', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id as EMP_Codigo', 'v.VEN_TipoPago as tipopago', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'))
+            ->groupBy('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Id', 'mp.MEP_Pago', 'u.name', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id', 'v.VEN_TipoPago', 'v.created_at')
+            ->when($request->filled('fecha_inicio'), fn ($q) => $q->where(DB::raw('DATE(v.created_at)'), '>=', $request->input('fecha_inicio')))
+            ->when($request->filled('fecha_fin'), fn ($q) => $q->where(DB::raw('DATE(v.created_at)'), '<=', $request->input('fecha_fin')))
+            ->when($request->filled('estado'), fn ($q) => $q->where('dov.DOV_Estado', $request->input('estado')))
+            ->when($request->filled('tipo'), fn ($q) => $q->where('dov.DOV_Tipo', $request->input('tipo')))
+            ->when($request->filled('anulado'), fn ($q) => $q->where('dov.DOV_Anulado', $request->input('anulado')))
+            ->when($request->filled('almacen_id'), fn ($q) => $q->where('a.ALM_Id', $request->input('almacen_id')))
+            ->when($request->filled('metodo_pago_id'), fn ($q) => $q->where('mp.MEP_Id', $request->input('metodo_pago_id')))
+            ->when($request->filled('cliente'), function ($q) use ($request) {
+                $busqueda = $request->input('cliente');
+                $q->where(function ($qq) use ($busqueda) {
+                    $qq->where('c.CLI_Nombre', 'like', '%' . $busqueda . '%')
+                       ->orWhere('c.CLI_NumDocumento', 'like', '%' . $busqueda . '%');
+                });
+            });
+
+        return $query;
+    }
+
     public function index(Request $request)
     {
-        $mytime = Carbon::now('America/Lima');
-        $fecha = $mytime->toDateString();
-
         if ($request->ajax()) {
-            $data = DB::table('detalle_venta as dv')
-                ->join('venta as v', 'v.VEN_Id', '=', 'dv.VEN_Id')
-                ->join('documento_venta as dov', 'dov.VEN_Id', '=', 'v.VEN_Id')
-                ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
-                ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
-                ->join('users as u', 'u.id', '=', 'v.USU_Id')
-                ->join('almacen as a', 'a.ALM_Id', '=', 'v.ALM_Id')
-                ->select('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado as estadoDocVenta', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Pago', 'u.name as empleado', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id as EMP_Codigo', 'v.VEN_TipoPago as tipopago', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'))
-                ->groupBy('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Pago', 'u.name', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id', 'v.VEN_TipoPago', 'v.created_at')
-                ->where(DB::raw('DATE(v.created_at)'), '>=', ($fecha))
-                ->where(DB::raw('DATE(v.created_at)'), '<=', ($fecha))
-                ->get();
+            $data = $this->consultaVentas($request)->get();
 
             return datatables()::of($data)
                 ->addIndexColumn()
@@ -125,6 +146,8 @@ class VentaController extends Controller
         return view('tenant_' . tenant('tipo_negocio') . '.ventas.venta.index', [
             // La columna de SUNAT solo tiene sentido si ya hay certificado.
             'mostrarSunat' => tenant_tiene_certificado(),
+            'almacenes' => DB::table('almacen')->orderBy('ALM_NombreAlmacen')->get(),
+            'metodosPago' => DB::table('metodo_pago')->orderBy('MEP_Pago')->get(),
         ]);
     }
 
@@ -186,6 +209,11 @@ class VentaController extends Controller
             $html .= '<a class="btn btn-outline-secondary btn-sm" title="Emitir nota de credito" href="/tenant/ventas/venta/' . $id . '/nota-credito"><i class="fa fa-undo"></i></a>';
         }
 
+        // Guia de remision: entrega de los productos de esta venta.
+        if (in_array($row->DOV_Tipo, ['BOL', 'FAC'], true) && $yaEnSunat && !$anulado && !$bajaEnCurso) {
+            $html .= '<a class="btn btn-outline-secondary btn-sm" title="Emitir guia de remision" href="/tenant/ventas/venta/' . $id . '/guia-remision"><i class="fa fa-truck"></i></a>';
+        }
+
         // Anular: solo sobre un comprobante aceptado, que no este ya anulado
         // ni con una baja en curso (evita pedir dos veces lo mismo).
         if ($yaEnSunat && !$anulado && !$bajaEnCurso) {
@@ -208,22 +236,13 @@ class VentaController extends Controller
     {
         $fec    = explode(" - ", $fecharange);
 
-        $fechaini = $fec[0];
-        $fechafin = $fec[1];
+        $request->merge([
+            'fecha_inicio' => $request->input('fecha_inicio', $fec[0] ?? null),
+            'fecha_fin'    => $request->input('fecha_fin', $fec[1] ?? null),
+        ]);
 
         if ($request->ajax()) {
-            $data = DB::table('detalle_venta as dv')
-                ->join('venta as v', 'v.VEN_Id', '=', 'dv.VEN_Id')
-                ->join('documento_venta as dov', 'dov.VEN_Id', '=', 'v.VEN_Id')
-                ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
-                ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
-                ->join('users as u', 'u.id', '=', 'v.USU_Id')
-                ->join('almacen as a', 'a.ALM_Id', '=', 'v.ALM_Id')
-                ->select('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado as estadoDocVenta', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Pago', 'u.name as empleado', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id as EMP_Codigo', 'v.VEN_TipoPago as tipopago', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'))
-                ->groupBy('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Pago', 'u.name', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id', 'v.VEN_TipoPago', 'v.created_at')
-                ->where(DB::raw('DATE(v.created_at)'), '>=', ($fechaini))
-                ->where(DB::raw('DATE(v.created_at)'), '<=', ($fechafin))
-                ->get();
+            $data = $this->consultaVentas($request)->get();
 
             return datatables()::of($data)
                 ->addIndexColumn()
@@ -278,7 +297,7 @@ class VentaController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         if (tenant_requiere_apertura_caja()) {
             $cajasCerradas = \App\Models\Tenant\Caja::where('CAJ_Status', 1)->whereDoesntHave('sesionAbierta')->get();
@@ -303,6 +322,41 @@ class VentaController extends Controller
         // asi que no se ofrece para imprimir.
         $facturacionEnPruebas = tenant_facturacion_en_pruebas();
 
+        // Si se viene desde el tablero de "Ventas por Bahia" (cuenta_bahia en
+        // la URL), se precarga el carrito con lo que ya se le cargo a la
+        // cuenta y el cliente/moto de la reserva, para no volver a escribirlo.
+        $cuentaBahiaId = null;
+        $prefillCarrito = [];
+        $prefillCliente = null;
+
+        if ($request->filled('cuenta_bahia')) {
+            $cuenta = \App\Models\TenantTallerMotos\BahiaCuenta::with(['items', 'reservacion'])
+                ->find($request->input('cuenta_bahia'));
+
+            if ($cuenta && $cuenta->estaAbierta()) {
+                $cuentaBahiaId = $cuenta->BCT_Id;
+
+                $productos = DB::table('producto')->whereIn('PRO_Id', $cuenta->items->pluck('PRO_Id'))
+                    ->pluck('PRO_Nombre', 'PRO_Id');
+
+                $prefillCarrito = $cuenta->items->map(fn ($item) => [
+                    'PRO_Id' => $item->PRO_Id,
+                    'PRO_Nombre' => $productos[$item->PRO_Id] ?? ('Producto #' . $item->PRO_Id),
+                    'PRO_PrecioBaseVenta' => $item->BCI_PrecioUnitario,
+                    'quantity' => $item->BCI_Cantidad,
+                ])->values();
+
+                if ($cuenta->reservacion) {
+                    $prefillCliente = [
+                        'nombre' => $cuenta->reservacion->RES_Cliente,
+                        'celular' => $cuenta->reservacion->RES_Celular,
+                        'moto' => $cuenta->reservacion->RES_Moto,
+                        'placa' => $cuenta->reservacion->RES_Placa,
+                    ];
+                }
+            }
+        }
+
         return view(
             'tenant_' . tenant('tipo_negocio') . '.ventas.venta.create',
             compact(
@@ -312,28 +366,66 @@ class VentaController extends Controller
                 'metodo_pago',
                 'puedeFacturar',
                 'problemasFacturacion',
-                'facturacionEnPruebas'
+                'facturacionEnPruebas',
+                'cuentaBahiaId',
+                'prefillCarrito',
+                'prefillCliente'
             )
         );
     }
 
+    /**
+     * Item "al vuelo" para vender algo que no esta en el catalogo (un
+     * servicio, un cargo especial, un producto que todavia no se registro):
+     * crea un Producto minimo y un Lote con exactamente la cantidad que se
+     * va a vender, para que la venta se registre igual que cualquier otra
+     * (sin depender de que la sede tenga activado "vender sin stock").
+     * Se agrupan todos bajo la categoria/clase "Varios" para no ensuciar
+     * el catalogo de categorias real del negocio.
+     */
+    public function crearProductoRapido(Request $request, \App\Services\Ventas\ItemRapidoService $itemRapidoService)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:150',
+            'precio' => 'required|numeric|min:0',
+            'cantidad' => 'required|numeric|min:0.01',
+        ]);
+
+        $idAlmacen = tenant_caja_activa_almacen_id() ?? 1;
+
+        return response()->json($itemRapidoService->crear(
+            $validated['nombre'],
+            (float) $validated['cantidad'],
+            (float) $validated['precio'],
+            $idAlmacen
+        ));
+    }
+
     public function getProductos(Request $request)
     {
-        $query = DB::table('lote as lt')
-            ->join('almacen as a', 'a.ALM_Id', '=', 'lt.ALM_Id')
-            ->join('producto as p', 'p.PRO_Id', '=', 'lt.PRO_Id')
+        // La sede activa decide si el catalogo puede ofrecer productos sin
+        // stock (LEFT JOIN a lote, incluye los que nunca tuvieron lote ahi)
+        // o si se sigue ocultando todo lo que no tenga cantidad disponible
+        // (comportamiento de siempre).
+        $idAlmacen = tenant_caja_activa_almacen_id() ?? 1;
+        $permitirSinStock = (bool) (Almacen::find($idAlmacen)->ALM_PermitirVentaSinStock ?? false);
+
+        $query = DB::table('producto as p')
             ->join('categoria as cat', 'cat.CAT_Id', '=', 'p.CAT_Id')
             ->join('clase as cl', 'cl.CLA_Id', '=', 'cat.CLA_Id')
+            ->leftJoin('lote as lt', function ($join) use ($idAlmacen) {
+                $join->on('lt.PRO_Id', '=', 'p.PRO_Id')
+                    ->where('lt.ALM_Id', '=', $idAlmacen);
+            })
             ->select(
                 'p.PRO_Id',
                 'p.PRO_Nombre',
                 'p.PRO_Descripcion',
                 'p.PRO_Imagen',
                 'p.CAT_Id',
-                DB::raw('SUM(lt.LOT_CantidadReal) as PRO_Cantidad'),
-                DB::raw('MAX(lt.LOT_PrecioVenta) as PRO_PrecioBaseVenta')
+                DB::raw('COALESCE(SUM(lt.LOT_CantidadReal), 0) as PRO_Cantidad'),
+                DB::raw('COALESCE(MAX(lt.LOT_PrecioVenta), p.PRO_PrecioVenta) as PRO_PrecioBaseVenta')
             )
-            ->where('lt.LOT_CantidadReal', '>', 0)
             ->where('p.PRO_Status', 1);
 
         // FILTRO CATEGORIA
@@ -351,8 +443,16 @@ class VentaController extends Controller
                 );
             });
         }
-        $productos = $query->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Descripcion', 'p.PRO_Imagen', 'p.CAT_Id')
-            ->paginate(20);
+
+        $query->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Descripcion', 'p.PRO_Imagen', 'p.CAT_Id', 'p.PRO_PrecioVenta');
+
+        // Sin el permiso de la sede, se mantiene el filtro de siempre: solo
+        // lo que tenga stock disponible en esta sede.
+        if (! $permitirSinStock) {
+            $query->havingRaw('COALESCE(SUM(lt.LOT_CantidadReal), 0) > 0');
+        }
+
+        $productos = $query->paginate(20);
 
         return response()->json($productos);
     }
@@ -578,11 +678,13 @@ class VentaController extends Controller
                 );
             }
 
+            $permitirSinStock = (bool) (Almacen::find($idAlmacen)->ALM_PermitirVentaSinStock ?? false);
+
             $cont = 0;
             $it = 0;
             foreach ($request->productos as $item) {
 
-                $rdst = self::ReducirStock($item['PRO_Id'], $item['quantity'], $idAlmacen);
+                $rdst = self::ReducirStock($item['PRO_Id'], $item['quantity'], $idAlmacen, $permitirSinStock);
 
                 for ($i = 0; $i < count($rdst); $i = $i + 2) {
                     $detalle = new DetalleVenta();
@@ -604,6 +706,18 @@ class VentaController extends Controller
             $movi->tipo = "Salida";
             $movi->idcv = $venta->VEN_Id;
             $movi->save();
+
+            // Si esta venta viene del tablero de "Ventas por Bahia", se cierra
+            // la cuenta y queda enlazada a la venta recien creada.
+            if ($request->filled('bahia_cuenta_id')) {
+                \App\Models\TenantTallerMotos\BahiaCuenta::where('BCT_Id', $request->input('bahia_cuenta_id'))
+                    ->where('BCT_Estado', \App\Models\TenantTallerMotos\BahiaCuenta::ESTADO_ABIERTA)
+                    ->update([
+                        'BCT_Estado' => \App\Models\TenantTallerMotos\BahiaCuenta::ESTADO_CERRADA,
+                        'VEN_Id' => $venta->VEN_Id,
+                        'BCT_CerradoEn' => now(),
+                    ]);
+            }
 
             DB::commit();
 
@@ -999,57 +1113,85 @@ class VentaController extends Controller
 
 
 
-    public static function ReducirStock($pro, $can, $alm)
+    /**
+     * Descuenta $can unidades de $pro en el almacen $alm, lote por lote
+     * (FIFO por fecha de ingreso). Devuelve un arreglo plano
+     * [LOT_Id, cantidadTomadaDeEseLote, LOT_Id2, cantidad2, ...] para armar
+     * el detalle de venta (puede repartirse entre varios lotes).
+     *
+     * Si el stock no alcanza:
+     * - $permitirSinStock = false (comportamiento de siempre): lanza una
+     *   excepcion, la venta no se registra.
+     * - $permitirSinStock = true (sede con ALM_PermitirVentaSinStock
+     *   activado): el faltante se descuenta igual del ultimo lote usado
+     *   (o de uno nuevo en 0 si el producto nunca tuvo lote en esta sede),
+     *   dejandolo en negativo para que quede visible el sobregiro.
+     */
+    public static function ReducirStock($pro, $can, $alm, $permitirSinStock = false)
     {
-        $lot = DB::table('lote')
-            ->select('LOT_Id', 'PRO_Id', 'LOT_CantidadReal')
-            ->where('PRO_Id', '=', $pro)
-            ->where('ALM_Id', '=', $alm)
+        $lotes = DB::table('lote')
+            ->select('LOT_Id', 'LOT_CantidadReal')
+            ->where('PRO_Id', $pro)
+            ->where('ALM_Id', $alm)
             ->orderBy('created_at', 'asc')
             ->get();
 
-        $canre = $can;
-        $conte = 0;
-        $pasar = 0;
+        $restante = $can;
         $lotid = [];
-        $sumlot = 0;
-        $idfin;
-        $conta = 0;
-        foreach ($lot as $lo) {
-            $sumlot = $sumlot + $lo->LOT_CantidadReal;
-            $conta++;
-            if ($lo->LOT_CantidadReal > 0) {
-                $lotid[$conte] = $lo->LOT_Id;
+        $i = 0;
 
-                $lotes = Lote::findOrFail($lo->LOT_Id);
-                $stock =  $lotes->LOT_CantidadReal - $can;
-
-                if ($stock < 0) {
-                    $can = - ($stock);
-                    $stock = 0;
-                    $pasar = 1;
-                    $lotid[$conte + 1] = $lotes->LOT_CantidadReal;
-                } else {
-                    $pasar = 0;
-                    $lotid[$conte + 1] = $can;
-                    $can = 0;
-                }
-
-                $lotes->LOT_CantidadReal = $stock;
-                $lotes->update();
-                $conte = $conte + 2;
-                if ($pasar == 0) {
-                    return $lotid;
-                }
+        foreach ($lotes as $lote) {
+            if ($restante <= 0) {
+                break;
             }
-            $idfin = $lo->LOT_Id;
+
+            if ($lote->LOT_CantidadReal <= 0) {
+                continue;
+            }
+
+            $tomar = min($lote->LOT_CantidadReal, $restante);
+
+            Lote::where('LOT_Id', $lote->LOT_Id)->decrement('LOT_CantidadReal', $tomar);
+
+            $lotid[$i++] = $lote->LOT_Id;
+            $lotid[$i++] = $tomar;
+            $restante -= $tomar;
         }
 
-        if ($sumlot == 0) {
-            $lotid[0] = $idfin;
-            $lotid[1] = $canre;
-            return $lotid;
+        if ($restante > 0) {
+            if (! $permitirSinStock) {
+                throw new Exception('No hay stock suficiente de este producto en la sede.');
+            }
+
+            // Se reutiliza el ultimo lote de la lista (el mas antiguo con
+            // datos, aunque ya estuviera en 0) para no perder el precio de
+            // compra/venta que tenia registrado. Si el producto nunca tuvo
+            // un lote en esta sede, se crea uno en 0 solo para poder anclar
+            // el detalle de venta (la FK LOT_Id lo exige).
+            $ultimoLoteId = optional($lotes->last())->LOT_Id;
+
+            if (! $ultimoLoteId) {
+                $ultimoLoteId = DB::table('lote')->insertGetId([
+                    'ALM_Id' => $alm,
+                    'PRO_Id' => $pro,
+                    'LOT_TipoIngreso' => 'VENTA_SIN_STOCK',
+                    'LOT_IdIngreso' => 0,
+                    'LOT_CantidadReal' => 0,
+                    'LOT_CantidadIngreso' => 0,
+                    'LOT_PrecioCompra' => 0,
+                    'LOT_PrecioVenta' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            Lote::where('LOT_Id', $ultimoLoteId)->decrement('LOT_CantidadReal', $restante);
+
+            $lotid[$i++] = $ultimoLoteId;
+            $lotid[$i++] = $restante;
         }
+
+        return $lotid;
     }
 
     public static  function CrearDocumentoDetalleVentaLibre($idventa, $idalmacen)

@@ -57,6 +57,7 @@ class MantenimientoPreventivoInyectada  extends Model
 
         'MPI_FechaCreacion',
         'MPI_FechaEdicion',
+        'MPI_FechaTermino',
 
         'MPI_UsuarioCreacion',
         'MPI_UsuarioEditado',
@@ -76,6 +77,7 @@ class MantenimientoPreventivoInyectada  extends Model
 
        'MPI_FechaCreacion' => 'datetime',
         'MPI_FechaEdicion' => 'datetime',
+        'MPI_FechaTermino' => 'datetime',
 
         'statevalidate' => 'boolean',
         'notificar' => 'boolean',

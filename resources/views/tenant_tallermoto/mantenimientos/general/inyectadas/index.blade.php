@@ -70,6 +70,7 @@
                             <th>KM Entrada</th>
                             <th>Responsable</th>
                             <th>Fecha</th>
+                            <th>Fecha Término</th>
                             <th>Estado</th>
                             <th width="180">Opciones</th>
                         </tr>
@@ -189,6 +190,10 @@
                     {
                         data: 'MGI_FechaCreacion',
                         name: 'MGI_FechaCreacion'
+                    },
+                    {
+                        data: 'MGI_FechaTermino',
+                        name: 'MGI_FechaTermino'
                     },
                     {
                         data: 'estado',

@@ -24,7 +24,7 @@ class AnulacionController extends Controller
      * Lista las anulaciones solicitadas, mas recientes primero. Incluye
      * tanto las que ya se resolvieron como las que siguen en tramite.
      */
-    public function index()
+    public function index(Request $request)
     {
         $anulaciones = DB::table('documento_venta as dov')
             ->join('venta as v', 'v.VEN_Id', '=', 'dov.VEN_Id')
@@ -42,12 +42,26 @@ class AnulacionController extends Controller
                 'dov.DOV_FechaRespuestaBaja',
                 'c.CLI_Nombre'
             )
+            ->when($request->filled('estado'), fn ($q) => $q->where('dov.DOV_EstadoBaja', $request->input('estado')))
+            ->when($request->filled('tipo'), fn ($q) => $q->where('dov.DOV_Tipo', $request->input('tipo')))
+            ->when($request->filled('fecha_inicio'), fn ($q) => $q->where(DB::raw('date(dov.DOV_FechaSolicitudBaja)'), '>=', $request->input('fecha_inicio')))
+            ->when($request->filled('fecha_fin'), fn ($q) => $q->where(DB::raw('date(dov.DOV_FechaSolicitudBaja)'), '<=', $request->input('fecha_fin')))
+            ->when($request->filled('cliente'), function ($q) use ($request) {
+                $busqueda = $request->input('cliente');
+                $q->where(function ($qq) use ($busqueda) {
+                    $qq->where('c.CLI_Nombre', 'like', '%' . $busqueda . '%')
+                       ->orWhere('c.CLI_NumDocumento', 'like', '%' . $busqueda . '%');
+                });
+            })
             ->orderByDesc('dov.DOV_FechaSolicitudBaja')
             ->get();
 
         return view(
             'tenant_' . tenant('tipo_negocio') . '.ventas.venta.anulaciones',
-            ['anulaciones' => $anulaciones]
+            [
+                'anulaciones' => $anulaciones,
+                'filtros' => $request->only(['estado', 'tipo', 'fecha_inicio', 'fecha_fin', 'cliente']),
+            ]
         );
     }
 

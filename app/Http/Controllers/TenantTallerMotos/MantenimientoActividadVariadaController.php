@@ -51,7 +51,7 @@ class MantenimientoActividadVariadaController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_actividad_variadas as mav')
                     ->join('users as p', 'p.id', '=', 'mav.PER_Id')
-                    ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'));
+                    ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_FechaTermino', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MAV_FechaCreacion', '>=', $request->fecha_inicio);
@@ -110,7 +110,7 @@ class MantenimientoActividadVariadaController extends Controller
             } else {
                 $data = DB::table('mantenimiento_actividad_variadas as mav')
                     ->join('users as p', 'p.id', '=', 'mav.PER_Id')
-                    ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'))
+                    ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_FechaTermino', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'))
                     ->where('mav.PER_Id', '=', $idpersonal)
                     ->get();
 
@@ -152,7 +152,9 @@ class MantenimientoActividadVariadaController extends Controller
         if ($roles->contains('Admin') || $roles->contains('Gerente')) {
             $rolAdmin = true;
         }
-        $personal = User::select('id', 'name')->get();
+        $personal = (tenant('plan') ?? 'start') === 'start'
+            ? User::select('id', 'name')->get()
+            : User::role('Mecanico')->select('id', 'name')->get();
 
 
         return view('tenant_' . tenant('tipo_negocio') . '.actividades.variadas.create', ["admin" => $rolAdmin, "personal" => $personal]);
@@ -230,7 +232,9 @@ class MantenimientoActividadVariadaController extends Controller
         if ($roles->contains('Admin') || $roles->contains('Gerente')) {
             $rolAdmin = true;
         }
-        $personal = User::select('id', 'name')->get();
+        $personal = (tenant('plan') ?? 'start') === 'start'
+            ? User::select('id', 'name')->get()
+            : User::role('Mecanico')->select('id', 'name')->get();
 
         return view('tenant_' . tenant('tipo_negocio') . '.actividades.variadas.edit', [
             "datos" => $datos,
@@ -441,6 +445,7 @@ class MantenimientoActividadVariadaController extends Controller
             $mtto_act_variadas->MAV_ProximoCambioAceite = $request->get('MAV_ProximoCambioAceite');
             $mtto_act_variadas->MAV_ProximoServicio = $request->get('MAV_ProximoServicio');
             $mtto_act_variadas->MAV_FechaEdicion = $mytime->toDateTimeString();
+            $mtto_act_variadas->MAV_FechaTermino = $request->get('MAV_FechaTermino') ? Carbon::parse($request->get('MAV_FechaTermino'))->toDateTimeString() : null;
             $mtto_act_variadas->MAV_UsuarioEditado = $idusu;
             $mtto_act_variadas->PER_Id = $request->get('USU_Id');
             if ($rolAdmin) {

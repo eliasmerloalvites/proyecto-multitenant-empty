@@ -39,7 +39,7 @@ class MantenimientoGeneralCarburadaController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_general_carburada as mgi')
                     ->join('users as p', 'p.id', '=', 'mgi.PER_Id')
-                    ->select('mgi.MGC_Id', 'mgi.MGC_Placa', 'mgi.MGC_Propietario', 'mgi.MGC_celular', 'mgi.notificar', 'mgi.MGC_Unidad', 'mgi.MGC_KMEntrada', 'mgi.MGC_FechaCreacion', 'mgi.MGC_Estado', DB::raw('CONCAT(p.name) as personal'));
+                    ->select('mgi.MGC_Id', 'mgi.MGC_Placa', 'mgi.MGC_Propietario', 'mgi.MGC_celular', 'mgi.notificar', 'mgi.MGC_Unidad', 'mgi.MGC_KMEntrada', 'mgi.MGC_FechaCreacion', 'mgi.MGC_FechaTermino', 'mgi.MGC_Estado', DB::raw('CONCAT(p.name) as personal'));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MGC_FechaCreacion', '>=', $request->fecha_inicio);
@@ -98,7 +98,7 @@ class MantenimientoGeneralCarburadaController extends Controller
             } else {
                 $data = DB::table('mantenimiento_general_inyectada as mgi')
                     ->join('users as p', 'p.id', '=', 'mgi.PER_Id')
-                    ->select('mgi.MGC_Id', 'mgi.MGC_Placa', 'mgi.MGC_Propietario', 'mgi.MGC_celular', 'mgi.notificar', 'mgi.MGC_Unidad', 'mgi.MGC_KMEntrada', 'mgi.MGC_FechaCreacion', 'mgi.MGC_Estado', DB::raw('CONCAT(p.name) as personal'))
+                    ->select('mgi.MGC_Id', 'mgi.MGC_Placa', 'mgi.MGC_Propietario', 'mgi.MGC_celular', 'mgi.notificar', 'mgi.MGC_Unidad', 'mgi.MGC_KMEntrada', 'mgi.MGC_FechaCreacion', 'mgi.MGC_FechaTermino', 'mgi.MGC_Estado', DB::raw('CONCAT(p.name) as personal'))
                     ->where('mgi.PER_Id', '=', $idpersonal)
                     ->get();
 
@@ -140,7 +140,9 @@ class MantenimientoGeneralCarburadaController extends Controller
         if ($roles->contains('Admin') || $roles->contains('Gerente')) {
             $rolAdmin = true;
         }
-        $personal = User::select('id', 'name')->get();
+        $personal = (tenant('plan') ?? 'start') === 'start'
+            ? User::select('id', 'name')->get()
+            : User::role('Mecanico')->select('id', 'name')->get();
 
 
         return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.general.carburadas.create', ["admin" => $rolAdmin, "personal" => $personal]);
@@ -248,7 +250,9 @@ class MantenimientoGeneralCarburadaController extends Controller
         if ($roles->contains('Admin') || $roles->contains('Gerente')) {
             $rolAdmin = true;
         }
-        $personal = User::select('id', 'name')->get();
+        $personal = (tenant('plan') ?? 'start') === 'start'
+            ? User::select('id', 'name')->get()
+            : User::role('Mecanico')->select('id', 'name')->get();
 
         return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.general.carburadas.edit', [
             "datos" => $datos,
@@ -492,6 +496,7 @@ class MantenimientoGeneralCarburadaController extends Controller
             $mtto_general_carburadas->MGC_ProximoCambioAceite = $request->get('MGC_ProximoCambioAceite');
             $mtto_general_carburadas->MGC_ProximoServicio = $request->get('MGC_ProximoServicio');
             $mtto_general_carburadas->MGC_FechaEdicion = $mytime->toDateTimeString();
+            $mtto_general_carburadas->MGC_FechaTermino = $request->get('MGC_FechaTermino') ? Carbon::parse($request->get('MGC_FechaTermino'))->toDateTimeString() : null;
             $mtto_general_carburadas->MGC_UsuarioEditado = $idusu;
             $mtto_general_carburadas->PER_Id = $request->get('USU_Id');
             if ($rolAdmin) {
