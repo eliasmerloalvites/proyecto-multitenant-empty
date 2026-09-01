@@ -101,11 +101,34 @@ class MantenimientoPreventivoCarburadaController extends Controller
                 $data = DB::table('mantenimiento_preventivo_carburada as mpc')
                     ->join('users as p', 'p.id', '=', 'mpc.PER_Id')
                     ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_FechaTermino', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'))
-                    ->where('mpc.PER_Id', '=', $idpersonal)
-                    ->get();
+                    ->where('mpc.PER_Id', '=', $idpersonal);
+
+                if ($request->filled('fecha_inicio')) {
+                    $data->whereDate('MPC_FechaCreacion', '>=', $request->fecha_inicio);
+                }
+
+                if ($request->filled('fecha_fin')) {
+                    $data->whereDate('MPC_FechaCreacion', '<=', $request->fecha_fin);
+                }
+
+                if ($request->filled('estado')) {
+                    $data->where('MPC_Estado', $request->estado);
+                }
 
                 return Datatables::of($data)
                     ->addIndexColumn()
+                    ->addColumn('estado', function ($row) {
+                        if ($row->MPC_Estado == 'APROBADO') {
+                            $btn = '<button type="button" class="btn btn-sm btn-outline-success">' . $row->MPC_Estado . '</button>';
+                        } else if ($row->MPC_Estado == 'PENDIENTE') {
+                            $btn = '<button type="button" class="btn btn-sm btn-outline-warning">' . $row->MPC_Estado . '</button>';
+                        } else if ($row->MPC_Estado == 'OBSERVADO') {
+                            $btn = '<button type="button" class="btn btn-sm btn-outline-danger">' . $row->MPC_Estado . '</button>';
+                        } else {
+                            $btn = '<button type="button" class="btn btn-sm btn-outline-secondary">' . $row->MPC_Estado . '</button>';
+                        }
+                        return $btn;
+                    })
                     ->addColumn('action1', function ($row) {
                         if ($row->MPC_Estado === 'PENDIENTE') {
                             $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->MPC_Id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm editMantenimientoPreventivoCarburadas"><i class="fa fa-edit"></i></a>';
@@ -121,11 +144,14 @@ class MantenimientoPreventivoCarburadaController extends Controller
                         $btn = '<a  target="_blank" href="/mantenimientos/preventivocarburada/' . $row->MPC_Id . '/pdf" data-toggle="tooltip"  data-id="' . $row->MPC_Id . '" data-original-title="Pdf" class="btn btn-danger btn-sm "><i class="fas fa-file-pdf"></i></a>';
                         return $btn;
                     })
+                    ->addColumn('action4', function ($row) {
+                        return '';
+                    })
                     ->addColumn('celular', function ($row) {
                         $btn = $row->MPC_celular;
                         return $btn;
                     })
-                    ->rawColumns(['action1', 'action2', 'action3', 'celular'])
+                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'estado', 'celular'])
                     ->make(true);
             }
         }

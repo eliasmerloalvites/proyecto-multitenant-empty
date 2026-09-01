@@ -98,14 +98,37 @@ class MantenimientoGeneralCarburadaController extends Controller
                     ->rawColumns(['action1', 'action2', 'action3', 'action4', 'estado', 'celular'])
                     ->make(true);
             } else {
-                $data = DB::table('mantenimiento_general_inyectada as mgi')
+                $data = DB::table('mantenimiento_general_carburada as mgi')
                     ->join('users as p', 'p.id', '=', 'mgi.PER_Id')
                     ->select('mgi.MGC_Id', 'mgi.MGC_Placa', 'mgi.MGC_Propietario', 'mgi.MGC_celular', 'mgi.notificar', 'mgi.MGC_Unidad', 'mgi.MGC_KMEntrada', 'mgi.MGC_FechaCreacion', 'mgi.MGC_FechaTermino', 'mgi.MGC_Estado', DB::raw('CONCAT(p.name) as personal'))
-                    ->where('mgi.PER_Id', '=', $idpersonal)
-                    ->get();
+                    ->where('mgi.PER_Id', '=', $idpersonal);
+
+                if ($request->filled('fecha_inicio')) {
+                    $data->whereDate('MGC_FechaCreacion', '>=', $request->fecha_inicio);
+                }
+
+                if ($request->filled('fecha_fin')) {
+                    $data->whereDate('MGC_FechaCreacion', '<=', $request->fecha_fin);
+                }
+
+                if ($request->filled('estado')) {
+                    $data->where('MGC_Estado', $request->estado);
+                }
 
                 return Datatables::of($data)
                     ->addIndexColumn()
+                    ->addColumn('estado', function ($row) {
+                        if ($row->MGC_Estado == 'APROBADO') {
+                            $btn = '<button type="button" class="btn btn-sm btn-outline-success">' . $row->MGC_Estado . '</button>';
+                        } else if ($row->MGC_Estado == 'PENDIENTE') {
+                            $btn = '<button type="button" class="btn btn-sm btn-outline-warning">' . $row->MGC_Estado . '</button>';
+                        } else if ($row->MGC_Estado == 'OBSERVADO') {
+                            $btn = '<button type="button" class="btn btn-sm btn-outline-danger">' . $row->MGC_Estado . '</button>';
+                        } else {
+                            $btn = '<button type="button" class="btn btn-sm btn-outline-secondary">' . $row->MGC_Estado . '</button>';
+                        }
+                        return $btn;
+                    })
                     ->addColumn('action1', function ($row) {
                         if ($row->MGC_Estado === 'PENDIENTE') {
                             $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->MGC_Id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm editMantenimientoGeneralCarburadas"><i class="fa fa-edit"></i></a>';
@@ -121,11 +144,14 @@ class MantenimientoGeneralCarburadaController extends Controller
                         $btn = '<a  target="_blank" href="/mantenimientos/generalcarburada/' . $row->MGC_Id . '/pdf" data-toggle="tooltip"  data-id="' . $row->MGC_Id . '" data-original-title="Pdf" class="btn btn-danger btn-sm "><i class="fas fa-file-pdf"></i></a>';
                         return $btn;
                     })
+                    ->addColumn('action4', function ($row) {
+                        return '';
+                    })
                     ->addColumn('celular', function ($row) {
                         $btn = $row->MGC_celular;
                         return $btn;
                     })
-                    ->rawColumns(['action1', 'action2', 'action3', 'celular'])
+                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'estado', 'celular'])
                     ->make(true);
             }
         }
