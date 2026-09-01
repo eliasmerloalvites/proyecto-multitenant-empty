@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use App\Models\TenantTallerMotos\Reservacion;
 use App\Models\TenantTallerMotos\Bahia;
 use App\Models\Tenant\Almacen;
+use App\Models\TenantTallerMotos\MantenimientoActividadVariada;
 use App\Models\TenantTallerMotos\MantenimientoGeneralCarburada;
 use App\Models\TenantTallerMotos\MantenimientoGeneralInyectada;
+use App\Models\TenantTallerMotos\MantenimientoPreventivoCarburada;
 use App\Models\TenantTallerMotos\MantenimientoPreventivoInyectada;
 use App\Models\TenantTallerMotos\Turno;
 use Carbon\Carbon;
@@ -346,6 +348,10 @@ class ReservacionController extends Controller
             'RES_Celular' => 'required|string|max:12',
             'RES_Detalle' => 'nullable|string|max:250',
             'RES_Adicional' => 'nullable|string|max:250',
+            'TIP_Mantenimiento' => 'nullable|string|in:MANTENIMIENTO GENERAL CARBURADA,MANTENIMIENTO GENERAL INYECTADA,MANTENIMIENTO PREVENTIVO CARBURADA,MANTENIMIENTO PREVENTIVO INYECTADA,ACTIVIDAD VARIADA',
+            'CAM_Aceite' => 'nullable|string|in:SI,NO',
+            'aceite' => 'nullable|string|max:100',
+            'CAM_FiltroAceite' => 'nullable|string|in:SI,NO',
         ]);
 
         // Pre-chequeo: mensaje inmediato en el caso normal (sin carrera).
@@ -354,7 +360,9 @@ class ReservacionController extends Controller
         }
 
         try {
-            $Reservacion = Reservacion::create($validated);
+            $Reservacion = Reservacion::create(collect($validated)->except([
+                'TIP_Mantenimiento', 'CAM_Aceite', 'aceite', 'CAM_FiltroAceite',
+            ])->all());
         } catch (QueryException $e) {
             // Protección real ante condición de carrera: el índice único de BD
             // rechazó un segundo INSERT casi simultáneo para el mismo slot.
@@ -364,215 +372,199 @@ class ReservacionController extends Controller
             throw $e;
         }
 
+        // Si se indicó un tipo de mantenimiento, se crea de una vez el
+        // registro correspondiente (checklist en blanco, se completa luego
+        // al atender). Es opcional: una reserva puede quedar sin esto.
+        if (!empty($validated['TIP_Mantenimiento'])) {
+            $this->crearMantenimientoDesdeReserva($validated, $Reservacion);
+        }
+
         return response()->json(['success' => 'Reservacion Registrado Exitosamente.']);
 	}
-	
-	public function storecliente (Request $request)
-	{
+
+    /**
+     * Crea el registro de mantenimiento del tipo elegido al reservar, con el
+     * checklist en blanco (se completa cuando se atiende la moto). Cubre los
+     * 5 tipos existentes; antes solo cubria 3 y no tenia forma de invocarse
+     * desde la interfaz.
+     */
+    private function crearMantenimientoDesdeReserva(array $datos, Reservacion $reserva): void
+    {
         $mytime = Carbon::now('America/Lima');
-        $idusu = 1;
-        $idper = 1;
+        $idusu = Auth::id();
+        $idper = Auth::id();
 
-        $request->validate([
-            'ALM_Id' => 'required|integer|exists:almacen,ALM_Id',
-            'TUR_Id' => 'required|integer|exists:turno,TUR_Id',
-            'BAH_Id' => 'required|integer|exists:bahia,BAH_Id',
-            'RES_FechaProgramada' => 'required|string',
-            'RES_Placa' => 'required|string|max:20',
-            'RES_Moto' => 'required|string|max:150',
-            'RES_Cliente' => 'required|string|max:120',
-            'RES_Celular' => 'required|string|max:12',
-        ]);
+        $tipoMantenimiento = $datos['TIP_Mantenimiento'];
+        $cambioAceite = $datos['CAM_Aceite'] ?? null;
+        $aceite = $datos['aceite'] ?? null;
+        $cambioFiltro = $datos['CAM_FiltroAceite'] ?? null;
 
-        // Pre-chequeo: mensaje inmediato en el caso normal (sin carrera).
-        if (Reservacion::slotEstaOcupado($request->BAH_Id, $request->TUR_Id, $request->RES_FechaProgramada)) {
-            return response()->json(['success' => false, 'message' => 'Esa bahía y turno ya están reservados para esa fecha. Elige otro horario.'], 409);
+        $detalleServicio = "*Tipo de Mantenimiento: " . $tipoMantenimiento . ". \n";
+        if ($cambioAceite) {
+            $detalleServicio .= "*Cambio de Aceite: " . $cambioAceite . ". \n";
+        }
+        if ($cambioAceite === "SI" && $aceite) {
+            $detalleServicio .= "*Aceite: " . $aceite . ". \n";
+        }
+        if ($cambioFiltro) {
+            $detalleServicio .= "*Cambio de Filtro de Aceite: " . $cambioFiltro . ". \n";
         }
 
-        try {
-            $Reservacion = Reservacion::create($request->all());
-        } catch (QueryException $e) {
-            // Protección real ante condición de carrera: el índice único de BD
-            // rechazó un segundo INSERT casi simultáneo para el mismo slot.
-            if (Reservacion::esConflictoDeSlot($e)) {
-                return response()->json(['success' => false, 'message' => 'Esa bahía y turno acaban de ser reservados por otra persona. Elige otro horario.'], 409);
+        $placa = $datos['RES_Placa'];
+        $propietario = $datos['RES_Cliente'];
+        $celular = $datos['RES_Celular'];
+        $unidad = $datos['RES_Moto'];
+        $detalleObservacion = $datos['RES_Detalle'] ?? null;
+
+        if ($tipoMantenimiento === 'MANTENIMIENTO GENERAL INYECTADA') {
+            $mtto = new MantenimientoGeneralInyectada;
+            $mtto->MGI_Placa = $placa;
+            $mtto->MGI_Propietario = $propietario;
+            $mtto->MGI_celular = $celular;
+            $mtto->MGI_Unidad = $unidad;
+            $mtto->MGI_KMEntrada = "";
+            $mtto->MGI_DetalleIngreso = $detalleServicio;
+            $mtto->MGI_DetalleObservacion = $detalleObservacion;
+            foreach (range(1, 27) as $n) {
+                $mtto->{"MGI_Det{$n}"} = "NO";
             }
-            throw $e;
+            $mtto->MGI_Det1Informacion = "";
+            $mtto->MGI_Det9Admision = "";
+            $mtto->MGI_Det9Escape = "";
+            $mtto->MGI_Det10Medida = "";
+            $mtto->MGI_Det11Medida = "";
+            $mtto->MGI_Det18 = "";
+            $mtto->MGI_Det19 = "";
+            $mtto->MGI_Det20Humedad = "";
+            $mtto->MGI_Det22Ventilador = "";
+            $mtto->MGI_Det24Vida = "";
+            $mtto->MGI_Det24Carga = "";
+            $mtto->MGI_Det24Arranque = "";
+            $mtto->MGI_DetalleRealizado = "";
+            $mtto->MGI_CorrecionObservacion = "";
+            $mtto->MGI_ProximoCambioAceite = "";
+            $mtto->MGI_ProximoServicio = "";
+            $mtto->MGI_FechaCreacion = $mytime->toDateTimeString();
+            $mtto->MGI_FechaEdicion = $mytime->toDateTimeString();
+            $mtto->MGI_UsuarioCreacion = $idusu;
+            $mtto->MGI_UsuarioEditado = $idusu;
+            $mtto->PER_Id = $idper;
+            $mtto->save();
+        } elseif ($tipoMantenimiento === 'MANTENIMIENTO PREVENTIVO INYECTADA') {
+            $mtto = new MantenimientoPreventivoInyectada;
+            $mtto->MPI_Placa = $placa;
+            $mtto->MPI_Propietario = $propietario;
+            $mtto->MPI_celular = $celular;
+            $mtto->MPI_Unidad = $unidad;
+            $mtto->MPI_KMEntrada = "";
+            $mtto->MPI_DetalleIngreso = $detalleServicio;
+            $mtto->MPI_DetalleObservacion = $detalleObservacion;
+            foreach (range(1, 20) as $n) {
+                $mtto->{"MPI_Det{$n}"} = "NO";
+            }
+            $mtto->MPI_Det1Informacion = "";
+            $mtto->MPI_Det7Admision = "";
+            $mtto->MPI_Det7Escape = "";
+            $mtto->MPI_Det8Medida = "";
+            $mtto->MPI_Det15 = "";
+            $mtto->MPI_Det16 = "";
+            $mtto->MPI_Det17Ventilador = "";
+            $mtto->MPI_Det19Vida = "";
+            $mtto->MPI_Det19Carga = "";
+            $mtto->MPI_Det19Arranque = "";
+            $mtto->MPI_DetalleRealizado = "";
+            $mtto->MPI_CorrecionObservacion = "";
+            $mtto->MPI_ProximoCambioAceite = "";
+            $mtto->MPI_ProximoServicio = "";
+            $mtto->MPI_FechaCreacion = $mytime->toDateTimeString();
+            $mtto->MPI_FechaEdicion = $mytime->toDateTimeString();
+            $mtto->MPI_UsuarioCreacion = $idusu;
+            $mtto->MPI_UsuarioEditado = $idusu;
+            $mtto->PER_Id = $idper;
+            $mtto->save();
+        } elseif ($tipoMantenimiento === 'MANTENIMIENTO GENERAL CARBURADA') {
+            $mtto = new MantenimientoGeneralCarburada;
+            $mtto->MGC_Placa = $placa;
+            $mtto->MGC_Propietario = $propietario;
+            $mtto->MGC_celular = $celular;
+            $mtto->MGC_Unidad = $unidad;
+            $mtto->MGC_KMEntrada = "";
+            $mtto->MGC_DetalleIngreso = $detalleServicio;
+            $mtto->MGC_DetalleObservacion = $detalleObservacion;
+            foreach (range(1, 21) as $n) {
+                $mtto->{"MGC_Det{$n}"} = "NO";
+            }
+            $mtto->MGC_Det1Informacion = "";
+            $mtto->MGC_Det8Admision = "";
+            $mtto->MGC_Det8Escape = "";
+            $mtto->MGC_Det9Medida = "";
+            $mtto->MGC_Det16 = "";
+            $mtto->MGC_Det17 = "";
+            $mtto->MGC_Det18Humedad = "";
+            $mtto->MGC_Det19Ventilador = "";
+            $mtto->MGC_Det21Vida = "";
+            $mtto->MGC_Det21Carga = "";
+            $mtto->MGC_Det21Arranque = "";
+            $mtto->MGC_DetalleRealizado = "";
+            $mtto->MGC_CorrecionObservacion = "";
+            $mtto->MGC_ProximoCambioAceite = "";
+            $mtto->MGC_ProximoServicio = "";
+            $mtto->MGC_FechaCreacion = $mytime->toDateTimeString();
+            $mtto->MGC_FechaEdicion = $mytime->toDateTimeString();
+            $mtto->MGC_UsuarioCreacion = $idusu;
+            $mtto->MGC_UsuarioEditado = $idusu;
+            $mtto->PER_Id = $idper;
+            $mtto->save();
+        } elseif ($tipoMantenimiento === 'MANTENIMIENTO PREVENTIVO CARBURADA') {
+            $mtto = new MantenimientoPreventivoCarburada;
+            $mtto->MPC_Placa = $placa;
+            $mtto->MPC_Propietario = $propietario;
+            $mtto->MPC_celular = $celular;
+            $mtto->MPC_Unidad = $unidad;
+            $mtto->MPC_KMEntrada = "";
+            $mtto->MPC_DetalleIngreso = $detalleServicio;
+            $mtto->MPC_DetalleObservacion = $detalleObservacion;
+            foreach (range(1, 11) as $n) {
+                $mtto->{"MPC_Det{$n}"} = "NO";
+            }
+            $mtto->MPC_Det1Informacion = "";
+            $mtto->MPC_Det7Admision = "";
+            $mtto->MPC_Det7Escape = "";
+            $mtto->MPC_Det8Medida = "";
+            $mtto->MPC_Det11Vida = "";
+            $mtto->MPC_Det11Carga = "";
+            $mtto->MPC_Det11Arranque = "";
+            $mtto->MPC_DetalleRealizado = "";
+            $mtto->MPC_CorrecionObservacion = "";
+            $mtto->MPC_ProximoCambioAceite = "";
+            $mtto->MPC_ProximoServicio = "";
+            $mtto->MPC_FechaCreacion = $mytime->toDateTimeString();
+            $mtto->MPC_FechaEdicion = $mytime->toDateTimeString();
+            $mtto->MPC_UsuarioCreacion = $idusu;
+            $mtto->MPC_UsuarioEditado = $idusu;
+            $mtto->PER_Id = $idper;
+            $mtto->save();
+        } elseif ($tipoMantenimiento === 'ACTIVIDAD VARIADA') {
+            $mtto = new MantenimientoActividadVariada;
+            $mtto->MAV_Placa = $placa;
+            $mtto->MAV_Propietario = $propietario;
+            $mtto->MAV_celular = $celular;
+            $mtto->MAV_Unidad = $unidad;
+            $mtto->MAV_KMEntrada = "";
+            $mtto->MAV_DetalleIngreso = $detalleServicio;
+            $mtto->MAV_DetalleObservacion = $detalleObservacion;
+            $mtto->MAV_DetalleRealizado = "";
+            $mtto->MAV_CorrecionObservacion = "";
+            $mtto->MAV_ProximoCambioAceite = "";
+            $mtto->MAV_ProximoServicio = "";
+            $mtto->MAV_FechaCreacion = $mytime->toDateTimeString();
+            $mtto->MAV_FechaEdicion = $mytime->toDateTimeString();
+            $mtto->MAV_UsuarioCreacion = $idusu;
+            $mtto->MAV_UsuarioEditado = $idusu;
+            $mtto->PER_Id = $idper;
+            $mtto->save();
         }
-
-        $TipoMantenimiento = $request->TIP_Mantenimiento;
-        $CambioAceite = $request->CAM_Aceite;
-        $Aceite = $request->aceite;
-        $CambioFiltro = $request->CAM_FiltroAceite;
-        $detalleServicio = "";
-        $detalleServicio .= "*Tipo de Mantenimiento: ".$TipoMantenimiento.". \n";
-        $detalleServicio .= "*Cambio de Aceite: ".$CambioAceite.". \n";
-        // $detalleServicio = "Tipo de Mantenimiento: ".$TipoMantenimiento.". Cambio de Aceite: ".$CambioAceite.". Aceite: ".$Aceite.". Cambio de Filtro de Aceite: ".$CambioFiltro;
-        if($CambioAceite == "SI"){
-            $detalleServicio .= "*Aceite: ".$Aceite.". \n";
-        }
-
-        if($CambioFiltro == "SI"){
-            $detalleServicio .= "*Cambio de Filtro de Aceite: ".$CambioFiltro.". \n";
-        }
-
-        if ($TipoMantenimiento === 'MANTENIMIENTO GENERAL INYECTADA') {
-            $mtto_gener_inyectadas=new MantenimientoGeneralInyectada;
-            $mtto_gener_inyectadas->MGI_Placa=$request->get('Placa');
-            $mtto_gener_inyectadas->MGI_Propietario=$request->get('RES_Cliente');
-            $mtto_gener_inyectadas->MGI_celular=$request->get('RES_Celular');
-            $mtto_gener_inyectadas->MGI_Unidad=$request->get('RES_Moto');
-            $mtto_gener_inyectadas->MGI_KMEntrada="";
-            $mtto_gener_inyectadas->MGI_DetalleIngreso=$detalleServicio;
-            $mtto_gener_inyectadas->MGI_DetalleObservacion=$request->get('RES_Detalle');
-            $mtto_gener_inyectadas->MGI_Det1="NO";
-            $mtto_gener_inyectadas->MGI_Det1Informacion="";
-            $mtto_gener_inyectadas->MGI_Det2="NO";
-            $mtto_gener_inyectadas->MGI_Det3="NO";
-            $mtto_gener_inyectadas->MGI_Det4="NO";
-            $mtto_gener_inyectadas->MGI_Det5="NO";
-            $mtto_gener_inyectadas->MGI_Det6="NO";
-            $mtto_gener_inyectadas->MGI_Det7="NO";
-            $mtto_gener_inyectadas->MGI_Det8="NO";
-            $mtto_gener_inyectadas->MGI_Det9="NO";
-            $mtto_gener_inyectadas->MGI_Det9Admision="";
-            $mtto_gener_inyectadas->MGI_Det9Escape="";
-            $mtto_gener_inyectadas->MGI_Det10="NO";
-            $mtto_gener_inyectadas->MGI_Det10Medida="";
-            $mtto_gener_inyectadas->MGI_Det11="NO";
-            $mtto_gener_inyectadas->MGI_Det11Medida="";
-            $mtto_gener_inyectadas->MGI_Det12="NO";
-            $mtto_gener_inyectadas->MGI_Det13="NO";
-            $mtto_gener_inyectadas->MGI_Det14="NO";
-            $mtto_gener_inyectadas->MGI_Det15="NO";
-            $mtto_gener_inyectadas->MGI_Det16="NO";
-            $mtto_gener_inyectadas->MGI_Det17="NO";
-            $mtto_gener_inyectadas->MGI_Det18="";
-            $mtto_gener_inyectadas->MGI_Det19="";
-            $mtto_gener_inyectadas->MGI_Det20="NO";
-            $mtto_gener_inyectadas->MGI_Det20Humedad="";
-            $mtto_gener_inyectadas->MGI_Det21="NO";
-            $mtto_gener_inyectadas->MGI_Det22="NO";
-            $mtto_gener_inyectadas->MGI_Det22Ventilador="";
-            $mtto_gener_inyectadas->MGI_Det23="NO";
-            $mtto_gener_inyectadas->MGI_Det24="NO";
-            $mtto_gener_inyectadas->MGI_Det24Vida="";
-            $mtto_gener_inyectadas->MGI_Det24Carga="";
-            $mtto_gener_inyectadas->MGI_Det24Arranque="";
-            $mtto_gener_inyectadas->MGI_Det25="NO";
-            $mtto_gener_inyectadas->MGI_Det26="NO";
-            $mtto_gener_inyectadas->MGI_Det27="NO";
-            $mtto_gener_inyectadas->MGI_DetalleRealizado="";
-            $mtto_gener_inyectadas->MGI_CorrecionObservacion="";
-            $mtto_gener_inyectadas->MGI_ProximoCambioAceite="";
-            $mtto_gener_inyectadas->MGI_ProximoServicio="";
-            $mtto_gener_inyectadas->MGI_FechaCreacion=$mytime->toDateTimeString();
-            $mtto_gener_inyectadas->MGI_FechaEdicion=$mytime->toDateTimeString();
-            $mtto_gener_inyectadas->MGI_UsuarioCreacion=$idusu;
-            $mtto_gener_inyectadas->MGI_UsuarioEditado=$idusu;
-            $mtto_gener_inyectadas->PER_Id=$idper;
-            $mtto_gener_inyectadas->save();
-            
-        } else if ($TipoMantenimiento === 'MANTENIMIENTO PREVENTIVO INYECTADA') {
-            $mtto_prev_inyec=new MantenimientoPreventivoInyectada;
-            $mtto_prev_inyec->MPI_Placa=$request->get('Placa');
-            $mtto_prev_inyec->MPI_Propietario=$request->get('RES_Cliente');
-            $mtto_prev_inyec->MPI_celular=$request->get('RES_Celular');
-            $mtto_prev_inyec->MPI_Unidad=$request->get('RES_Moto');
-            $mtto_prev_inyec->MPI_KMEntrada="";
-            $mtto_prev_inyec->MPI_DetalleIngreso=$detalleServicio;
-            $mtto_prev_inyec->MPI_DetalleObservacion=$request->get('RES_Detalle');
-            $mtto_prev_inyec->MPI_Det1="NO";
-            $mtto_prev_inyec->MPI_Det1Informacion="";
-            $mtto_prev_inyec->MPI_Det2="NO";
-            $mtto_prev_inyec->MPI_Det3="NO";
-            $mtto_prev_inyec->MPI_Det4="NO";
-            $mtto_prev_inyec->MPI_Det5="NO";
-            $mtto_prev_inyec->MPI_Det6="NO";
-            $mtto_prev_inyec->MPI_Det7="NO";
-            $mtto_prev_inyec->MPI_Det7Admision="";
-            $mtto_prev_inyec->MPI_Det7Escape="";
-            $mtto_prev_inyec->MPI_Det8="NO";
-            $mtto_prev_inyec->MPI_Det8Medida="";
-            $mtto_prev_inyec->MPI_Det9="NO";
-            $mtto_prev_inyec->MPI_Det10="NO";
-            $mtto_prev_inyec->MPI_Det11="NO";
-            $mtto_prev_inyec->MPI_Det12="NO";
-            $mtto_prev_inyec->MPI_Det13="NO";
-            $mtto_prev_inyec->MPI_Det14="NO";
-            $mtto_prev_inyec->MPI_Det15="";
-            $mtto_prev_inyec->MPI_Det16="";
-            $mtto_prev_inyec->MPI_Det17="NO";
-            $mtto_prev_inyec->MPI_Det17Ventilador="";
-            $mtto_prev_inyec->MPI_Det18="NO";
-            $mtto_prev_inyec->MPI_Det19="NO";
-            $mtto_prev_inyec->MPI_Det19Vida="";
-            $mtto_prev_inyec->MPI_Det19Carga="";
-            $mtto_prev_inyec->MPI_Det19Arranque="";
-            $mtto_prev_inyec->MPI_Det20="NO";
-            $mtto_prev_inyec->MPI_DetalleRealizado="";
-            $mtto_prev_inyec->MPI_CorrecionObservacion="";
-            $mtto_prev_inyec->MPI_ProximoCambioAceite="";
-            $mtto_prev_inyec->MPI_ProximoServicio="";
-            $mtto_prev_inyec->MPI_FechaCreacion=$mytime->toDateTimeString();
-            $mtto_prev_inyec->MPI_FechaEdicion=$mytime->toDateTimeString();
-            $mtto_prev_inyec->MPI_UsuarioCreacion=$idusu;
-            $mtto_prev_inyec->MPI_UsuarioEditado=$idusu;
-            $mtto_prev_inyec->PER_Id=$idper;
-            $mtto_prev_inyec->save();
-        } else if ($TipoMantenimiento === 'MANTENIMIENTO GENERAL CARBURADA') {
-            $mtto_gener_carburadas=new MantenimientoGeneralCarburada;
-            $mtto_gener_carburadas->MGC_Placa=$request->get('Placa');
-            $mtto_gener_carburadas->MGC_Propietario=$request->get('RES_Cliente');
-            $mtto_gener_carburadas->MGC_celular=$request->get('RES_Celular');
-            $mtto_gener_carburadas->MGC_Unidad=$request->get('RES_Moto');
-            $mtto_gener_carburadas->MGC_KMEntrada="";
-            $mtto_gener_carburadas->MGC_DetalleIngreso=$detalleServicio;
-            $mtto_gener_carburadas->MGC_DetalleObservacion=$request->get('RES_Detalle');
-            $mtto_gener_carburadas->MGC_Det1="NO";
-            $mtto_gener_carburadas->MGC_Det1Informacion="";
-            $mtto_gener_carburadas->MGC_Det2="NO";
-            $mtto_gener_carburadas->MGC_Det3="NO";
-            $mtto_gener_carburadas->MGC_Det4="NO";
-            $mtto_gener_carburadas->MGC_Det5="NO";
-            $mtto_gener_carburadas->MGC_Det6="NO";
-            $mtto_gener_carburadas->MGC_Det7="NO";
-            $mtto_gener_carburadas->MGC_Det8="NO";
-            $mtto_gener_carburadas->MGC_Det8Admision="";
-            $mtto_gener_carburadas->MGC_Det8Escape="";
-            $mtto_gener_carburadas->MGC_Det9="NO";
-            $mtto_gener_carburadas->MGC_Det9Medida="";
-            $mtto_gener_carburadas->MGC_Det10="NO";
-            $mtto_gener_carburadas->MGC_Det11="NO";
-            $mtto_gener_carburadas->MGC_Det12="NO";
-            $mtto_gener_carburadas->MGC_Det13="NO";
-            $mtto_gener_carburadas->MGC_Det14="NO";
-            $mtto_gener_carburadas->MGC_Det15="NO";
-            $mtto_gener_carburadas->MGC_Det16="";
-            $mtto_gener_carburadas->MGC_Det17="";
-            $mtto_gener_carburadas->MGC_Det18="NO";
-            $mtto_gener_carburadas->MGC_Det18Humedad="";
-            $mtto_gener_carburadas->MGC_Det19="NO";
-            $mtto_gener_carburadas->MGC_Det19Ventilador="";
-            $mtto_gener_carburadas->MGC_Det20="NO";
-            $mtto_gener_carburadas->MGC_Det21="NO";
-            $mtto_gener_carburadas->MGC_Det21Vida="";
-            $mtto_gener_carburadas->MGC_Det21Carga="";
-            $mtto_gener_carburadas->MGC_Det21Arranque="";
-            $mtto_gener_carburadas->MGC_DetalleRealizado="";
-            $mtto_gener_carburadas->MGC_CorrecionObservacion="";
-            $mtto_gener_carburadas->MGC_ProximoCambioAceite="";
-            $mtto_gener_carburadas->MGC_ProximoServicio="";
-            $mtto_gener_carburadas->MGC_FechaCreacion=$mytime->toDateTimeString();
-            $mtto_gener_carburadas->MGC_FechaEdicion=$mytime->toDateTimeString();
-            $mtto_gener_carburadas->MGC_UsuarioCreacion=$idusu;
-            $mtto_gener_carburadas->MGC_UsuarioEditado=$idusu;
-            $mtto_gener_carburadas->PER_Id=$idper;
-            $mtto_gener_carburadas->save();
-        } 
-
-        return response()->json(['success' => 'Reservacion Registrado Exitosamente.']);
-	}
+    }
 
 	public function show($id)
 	{

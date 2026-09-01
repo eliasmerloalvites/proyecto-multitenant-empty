@@ -39,6 +39,7 @@ use App\Http\Controllers\TenantTallerMotos\MantenimientoPreventivoInyectadaContr
 use App\Http\Controllers\TenantTallerMotos\MantenimientoPreventivoCarburadaController;
 use App\Http\Controllers\TenantTallerMotos\ReportesController;
 use App\Http\Controllers\TenantTallerMotos\BahiaVentaController;
+use App\Http\Controllers\TenantTallerMotos\MantenimientoPlanController;
 use App\Http\Controllers\TenantTallerMotos\ReportesFinancierosController;
 use App\Http\Controllers\TenantTallerMotos\NotificacionReservaController;
 use App\Http\Controllers\TenantTallerMotos\ReservacionController;
@@ -192,6 +193,12 @@ Route::middleware([
             'preventivoinyectada' => 'preventivoinyectada'
         ]);
         
+        // Planes/paquetes de checklist (Fase 1 de la configuracion de mantenimientos).
+        Route::get('/tenant/mantenimientos/planes', [MantenimientoPlanController::class, 'index'])->name('tenant.mantenimientos.planes.index');
+        Route::post('/tenant/mantenimientos/planes', [MantenimientoPlanController::class, 'store'])->name('tenant.mantenimientos.planes.store');
+        Route::put('/tenant/mantenimientos/planes/{plan}', [MantenimientoPlanController::class, 'update'])->name('tenant.mantenimientos.planes.update');
+        Route::delete('/tenant/mantenimientos/planes/{plan}', [MantenimientoPlanController::class, 'destroy'])->name('tenant.mantenimientos.planes.destroy');
+
         Route::post('/tenant/mantenimientos/generalcarburada/{generalcarburada}/crop',[MantenimientoGeneralCarburadaController::class, 'crop'])->name('tenant.mantenimientos.generalcarburada.crop');
         Route::delete('/tenant/mantenimientos/generalcarburada/crop/{generalcarburada}/{item}',[MantenimientoGeneralCarburadaController::class, 'destroyimagen'])->name('tenant.mantenimientos.generalcarburada.destroyimagen');
         Route::put('/tenant/mantenimientos/generalcarburada/{generalcarburada}/actualizarestado', [MantenimientoGeneralCarburadaController::class, 'actualizarestado'])->name('tenant.mantenimientos.generalcarburada.actualizarestado');

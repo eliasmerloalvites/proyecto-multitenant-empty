@@ -206,6 +206,9 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.mantenimientos.generalinyectada.aprobar', 'Mtto General Inyectadas', 'Aprobar Mtto General Inyectadas',  'Aprobar Mtto General Inyectadas'],
             ['tenant.mantenimientos.generalinyectada.notificar', 'Mtto General Inyectadas', 'Notificar Mtto General Inyectadas',  'Notificar Mtto General Inyectadas'],
             
+            // Planes de Mantenimiento (checklist configurable)
+            ['tenant.mantenimientos.planes.index', 'Mantenimientos', 'Gestionar Planes de Mantenimiento', 'Crear/editar paquetes de checklist por tipo de mantenimiento'],
+
             // Reportes
             ['tenant.reportes.listageneral',   'Reportes', 'Ver Lista de General', 'Lista General de Mantenimientos'],
             ['tenant.reportes.rendimientomecanicos', 'Reportes', 'Ver Rendimiento de Mecánicos', 'Reporte de mantenimientos completados por mecánico y periodo'],
@@ -417,6 +420,8 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.mantenimientos.generalinyectada.aprobar',
             'tenant.mantenimientos.generalinyectada.notificar',
 
+            'tenant.mantenimientos.planes.index',
+
             'tenant.reportes.listageneral',
             'tenant.reportes.rendimientomecanicos',
             'tenant.reportes.rentabilidad',
@@ -575,6 +580,8 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.mantenimientos.generalinyectada.destroy',
             'tenant.mantenimientos.generalinyectada.aprobar',
             'tenant.mantenimientos.generalinyectada.notificar',
+
+            'tenant.mantenimientos.planes.index',
 
             'tenant.reportes.listageneral',
             'tenant.reportes.rendimientomecanicos',

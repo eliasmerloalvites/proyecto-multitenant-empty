@@ -7,6 +7,7 @@ use App\Models\Tenant\Almacen;
 use App\Models\Tenant\EmpresaFacturacion;
 use App\Models\Tenant\User;
 use App\Models\TenantTallerMotos\MantenimientoGeneralInyectada;
+use App\Models\TenantTallerMotos\MantenimientoPlan;
 use App\Models\TenantTallerMotos\MgiDetalleReemplazo;
 use App\Models\TenantTallerMotos\MgiImagen;
 use Carbon\Carbon;
@@ -145,7 +146,9 @@ class MantenimientoGeneralInyectadaController extends Controller
             : User::role('Mecanico')->select('id', 'name')->get();
 
 
-        return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.general.inyectadas.create', ["admin" => $rolAdmin, "personal" => $personal]);
+        $planes = MantenimientoPlan::where('PLAN_Tipo', 'MGI')->where('PLAN_Activo', true)->orderBy('PLAN_Nombre')->get();
+
+        return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.general.inyectadas.create', ["admin" => $rolAdmin, "personal" => $personal, "planes" => $planes]);
     }
     public function store(Request $request)
     {
@@ -209,6 +212,7 @@ class MantenimientoGeneralInyectadaController extends Controller
             $mtto_general_inyectadas->MGI_UsuarioCreacion = $idusu;
             $mtto_general_inyectadas->MGI_UsuarioEditado = $idusu;
             $mtto_general_inyectadas->PER_Id = $request->get('USU_Id');
+            $mtto_general_inyectadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
             $mtto_general_inyectadas->save();
 
             $MGID_Descripcion = $request->get('MGID_Descripcion');
@@ -261,6 +265,8 @@ class MantenimientoGeneralInyectadaController extends Controller
             ? User::select('id', 'name')->get()
             : User::role('Mecanico')->select('id', 'name')->get();
 
+        $planes = MantenimientoPlan::where('PLAN_Tipo', 'MGI')->where('PLAN_Activo', true)->orderBy('PLAN_Nombre')->get();
+
         return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.general.inyectadas.edit', [
             "datos" => $datos,
             "admin" => $rolAdmin,
@@ -268,7 +274,8 @@ class MantenimientoGeneralInyectadaController extends Controller
             "personal" => $personal,
             "detalle" => $detalle,
             "imagenes" => $imagenes,
-            "id" => $id
+            "id" => $id,
+            "planes" => $planes
         ]);
     }
 
@@ -505,6 +512,7 @@ class MantenimientoGeneralInyectadaController extends Controller
             $mtto_general_inyectadas->MGI_FechaTermino = $request->get('MGI_FechaTermino') ? Carbon::parse($request->get('MGI_FechaTermino'))->toDateTimeString() : null;
             $mtto_general_inyectadas->MGI_UsuarioEditado = $idusu;
             $mtto_general_inyectadas->PER_Id = $request->get('USU_Id');
+            $mtto_general_inyectadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
             if ($rolAdmin) {
                 $mtto_general_inyectadas->MGI_Estado = 'APROBADO';
             }

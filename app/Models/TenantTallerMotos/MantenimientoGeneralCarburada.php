@@ -75,6 +75,7 @@ class MantenimientoGeneralCarburada  extends Model
         'MGC_Estado',
 
         'PER_Id',
+        'PLAN_Id',
 
         'statevalidate',
         'notificar',

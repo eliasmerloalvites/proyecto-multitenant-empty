@@ -261,6 +261,16 @@
                             </ul>
                         </li>
 
+                        @can('tenant.mantenimientos.planes.index')
+                        <li class="nav-item">
+                            <a href="{{ tenant_url('tenant.mantenimientos.planes.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.mantenimientos.planes*') ? 'active' : '' }}">
+                                <i class="fas fa-clipboard-list nav-icon text-warning"></i>
+                                <p>Planes de Mantenimiento</p>
+                            </a>
+                        </li>
+                        @endcan
+
                     </ul>
                 </li>
                 @endcanany

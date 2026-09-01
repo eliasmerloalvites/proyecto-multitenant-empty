@@ -55,6 +55,7 @@ class MantenimientoPreventivoCarburada  extends Model
         'MPC_Estado',
 
         'PER_Id',
+        'PLAN_Id',
 
         'statevalidate',
         'notificar',

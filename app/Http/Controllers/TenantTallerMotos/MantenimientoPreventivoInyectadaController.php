@@ -7,6 +7,7 @@ use App\Models\Tenant\Almacen;
 use App\Models\Tenant\EmpresaFacturacion;
 use App\Models\Tenant\User;
 use App\Models\TenantTallerMotos\MantenimientoPreventivoInyectada;
+use App\Models\TenantTallerMotos\MantenimientoPlan;
 use App\Models\TenantTallerMotos\MpiDetalleReemplazo;
 use App\Models\TenantTallerMotos\MpiImagen;
 use Carbon\Carbon;
@@ -145,7 +146,9 @@ class MantenimientoPreventivoInyectadaController extends Controller
             : User::role('Mecanico')->select('id', 'name')->get();
 
 
-        return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.preventivo.inyectadas.create', ["admin" => $rolAdmin, "personal" => $personal]);
+        $planes = MantenimientoPlan::where('PLAN_Tipo', 'MPI')->where('PLAN_Activo', true)->orderBy('PLAN_Nombre')->get();
+
+        return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.preventivo.inyectadas.create', ["admin" => $rolAdmin, "personal" => $personal, "planes" => $planes]);
     }
     public function store(Request $request)
     {
@@ -200,6 +203,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
             $mtto_preventivo_inyectadas->MPI_UsuarioCreacion = $idusu;
             $mtto_preventivo_inyectadas->MPI_UsuarioEditado = $idusu;
             $mtto_preventivo_inyectadas->PER_Id = $request->get('USU_Id');
+            $mtto_preventivo_inyectadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
             $mtto_preventivo_inyectadas->save();
 
             $MPID_Descripcion = $request->get('MPID_Descripcion');
@@ -252,6 +256,8 @@ class MantenimientoPreventivoInyectadaController extends Controller
             ? User::select('id', 'name')->get()
             : User::role('Mecanico')->select('id', 'name')->get();
 
+        $planes = MantenimientoPlan::where('PLAN_Tipo', 'MPI')->where('PLAN_Activo', true)->orderBy('PLAN_Nombre')->get();
+
         return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.preventivo.inyectadas.edit', [
             "datos" => $datos,
             "admin" => $rolAdmin,
@@ -259,7 +265,8 @@ class MantenimientoPreventivoInyectadaController extends Controller
             "personal" => $personal,
             "detalle" => $detalle,
             "imagenes" => $imagenes,
-            "id" => $id
+            "id" => $id,
+            "planes" => $planes
         ]);
     }
 
@@ -495,6 +502,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
             $mtto_preventivo_inyectadas->MPI_FechaTermino = $request->get('MPI_FechaTermino') ? Carbon::parse($request->get('MPI_FechaTermino'))->toDateTimeString() : null;
             $mtto_preventivo_inyectadas->MPI_UsuarioEditado = $idusu;
             $mtto_preventivo_inyectadas->PER_Id = $request->get('USU_Id');
+            $mtto_preventivo_inyectadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
             if ($rolAdmin) {
                 $mtto_preventivo_inyectadas->MPI_Estado = 'APROBADO';
             }

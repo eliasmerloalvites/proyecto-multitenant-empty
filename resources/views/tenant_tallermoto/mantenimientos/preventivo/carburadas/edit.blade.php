@@ -378,6 +378,17 @@
                                 </h3>
                             </div>
                             <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="form-group col-lg-6 col-md-8 col-sm-12 col-12">
+                                        <label>PLAN / PAQUETE (opcional)</label>
+                                        <select class="form-control" id="PLAN_Id" name="PLAN_Id">
+                                            <option value="">Checklist completo</option>
+                                            @foreach ($planes as $plan)
+                                                <option value="{{ $plan->PLAN_Id }}" data-items='@json($plan->PLAN_Items)' {{ $plan->PLAN_Id == $datos->PLAN_Id ? 'selected' : '' }}>{{ $plan->PLAN_Nombre }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="row">
                                     <div class="form-group col-lg-1 col-md-1 col-sm-1 col-2" style="text-align: left">
                                         1.0
@@ -903,7 +914,36 @@
                 ActivarMPC();
             });
 
+            inicializarPlanChecklist('MPC');
         });
+
+        function inicializarPlanChecklist(prefijo) {
+            var regexItem = new RegExp('^' + prefijo + '_Det(\\d+)$');
+            var filasPorCodigo = {};
+            $('input[name^="' + prefijo + '_Det"], select[name^="' + prefijo + '_Det"]').each(function() {
+                var name = $(this).attr('name');
+                var m = name.match(regexItem);
+                if (m) {
+                    filasPorCodigo['Det' + m[1]] = $(this).closest('.row');
+                }
+            });
+
+            function aplicarFiltro() {
+                var items = $('#PLAN_Id option:selected').data('items');
+                if (!items) {
+                    Object.keys(filasPorCodigo).forEach(function(codigo) {
+                        filasPorCodigo[codigo].show();
+                    });
+                    return;
+                }
+                Object.keys(filasPorCodigo).forEach(function(codigo) {
+                    filasPorCodigo[codigo].toggle(items.indexOf(codigo) !== -1);
+                });
+            }
+
+            $('#PLAN_Id').on('change', aplicarFiltro);
+            aplicarFiltro();
+        }
 
         function cargarFileForImagen() {
             var container = document.querySelector('.fileforImagen');
