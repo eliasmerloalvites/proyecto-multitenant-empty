@@ -55,7 +55,7 @@ class GuiaRemisionService
             );
         }
 
-        $numero = $this->siguienteCorrelativo($serie);
+        $numero = $this->siguienteCorrelativo($serie, $sede->correlativoInicialPara(EmpresaFacturacion::TIPO_GUIA_REMISION));
 
         $guia = new GuiaRemision();
         $guia->GRM_Serie = $serie;
@@ -94,12 +94,14 @@ class GuiaRemisionService
         return $guia;
     }
 
-    private function siguienteCorrelativo(string $serie): int
+    private function siguienteCorrelativo(string $serie, int $correlativoInicial = 0): int
     {
         $ultimo = GuiaRemision::where('GRM_Serie', $serie)
             ->lockForUpdate()
             ->max('GRM_Numero');
 
-        return ((int) $ultimo) + 1;
+        $base = max((int) $ultimo, $correlativoInicial - 1);
+
+        return $base + 1;
     }
 }
