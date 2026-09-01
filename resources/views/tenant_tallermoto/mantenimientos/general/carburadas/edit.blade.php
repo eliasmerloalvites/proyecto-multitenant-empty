@@ -844,6 +844,12 @@
                                             value="{{ $datos->MGC_ProximoServicio }}" maxlength="50" required="">
                                     </div>
                                     <div class="form-group col-lg-6 col-md-6 col-sm-12 col-12">
+                                        <label for="name" class=" control-label">FECHA Y HORA DE INICIO</label>
+                                        <input type="datetime-local" class="form-control" id="MGC_FechaInicio"
+                                            name="MGC_FechaInicio"
+                                            value="{{ $datos->MGC_FechaInicio ? \Carbon\Carbon::parse($datos->MGC_FechaInicio)->format('Y-m-d\TH:i') : '' }}">
+                                    </div>
+                                    <div class="form-group col-lg-6 col-md-6 col-sm-12 col-12">
                                         <label for="name" class=" control-label">FECHA Y HORA DE TÉRMINO</label>
                                         <input type="datetime-local" class="form-control" id="MGC_FechaTermino"
                                             name="MGC_FechaTermino"
@@ -1288,6 +1294,7 @@
             $('#MGC_CorrecionObservacion').val(`<?php echo $datos->MGC_CorrecionObservacion; ?>`);
             $('#MGC_ProximoCambioAceite').val(`<?php echo $datos->MGC_ProximoCambioAceite; ?>`);
             $('#MGC_ProximoServicio').val(`<?php echo $datos->MGC_ProximoServicio; ?>`);
+            $('#MGC_FechaInicio').val(`<?php echo $datos->MGC_FechaInicio ? \Carbon\Carbon::parse($datos->MGC_FechaInicio)->format('Y-m-d\TH:i') : ''; ?>`);
             $('#MGC_FechaTermino').val(`<?php echo $datos->MGC_FechaTermino ? \Carbon\Carbon::parse($datos->MGC_FechaTermino)->format('Y-m-d\TH:i') : ''; ?>`);
 
             <?php foreach ($detalle as $dev): ?>

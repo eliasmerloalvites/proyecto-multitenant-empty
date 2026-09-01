@@ -67,6 +67,7 @@ class MantenimientoGeneralCarburada  extends Model
 
         'MGC_FechaCreacion',
         'MGC_FechaEdicion',
+        'MGC_FechaInicio',
         'MGC_FechaTermino',
 
         'MGC_UsuarioCreacion',
@@ -89,6 +90,7 @@ class MantenimientoGeneralCarburada  extends Model
 
        'MGC_FechaCreacion' => 'datetime',
         'MGC_FechaEdicion' => 'datetime',
+        'MGC_FechaInicio' => 'datetime',
         'MGC_FechaTermino' => 'datetime',
 
         'statevalidate' => 'boolean',

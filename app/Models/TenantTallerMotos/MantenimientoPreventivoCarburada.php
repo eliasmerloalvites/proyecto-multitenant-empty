@@ -47,6 +47,7 @@ class MantenimientoPreventivoCarburada  extends Model
 
         'MPC_FechaCreacion',
         'MPC_FechaEdicion',
+        'MPC_FechaInicio',
         'MPC_FechaTermino',
 
         'MPC_UsuarioCreacion',
@@ -69,6 +70,7 @@ class MantenimientoPreventivoCarburada  extends Model
 
        'MPC_FechaCreacion' => 'datetime',
         'MPC_FechaEdicion' => 'datetime',
+        'MPC_FechaInicio' => 'datetime',
         'MPC_FechaTermino' => 'datetime',
 
         'statevalidate' => 'boolean',

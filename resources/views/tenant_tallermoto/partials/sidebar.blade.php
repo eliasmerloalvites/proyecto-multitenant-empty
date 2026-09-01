@@ -680,7 +680,7 @@
                 @canany([
                     'tenant.seguridad.permiso.index',
                     'tenant.seguridad.role.index',
-                    'tenant.seguridad.usuario.index'
+                    'tenant.seguridad.users.index'
                 ])
                     <li class="nav-item has-treeview {{ request()->routeIs('tenant.seguridad*') || request()->routeIs('tenant.seguridad.permiso*') || request()->routeIs('tenant.seguridad.rol*') ? 'menu-open' : '' }}"
                         id="idCabSeguridad">

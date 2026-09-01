@@ -26,6 +26,7 @@ class MantenimientoActividadVariada extends Model
 
         'MAV_FechaCreacion',
         'MAV_FechaEdicion',
+        'MAV_FechaInicio',
         'MAV_FechaTermino',
 
         'MAV_UsuarioCreacion',
@@ -50,6 +51,7 @@ class MantenimientoActividadVariada extends Model
 
         'MAV_FechaCreacion' => 'datetime',
         'MAV_FechaEdicion' => 'datetime',
+        'MAV_FechaInicio' => 'datetime',
         'MAV_FechaTermino' => 'datetime',
     ];
 

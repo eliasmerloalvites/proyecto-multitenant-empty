@@ -498,6 +498,7 @@ class MantenimientoGeneralCarburadaController extends Controller
             $mtto_general_carburadas->MGC_ProximoCambioAceite = $request->get('MGC_ProximoCambioAceite');
             $mtto_general_carburadas->MGC_ProximoServicio = $request->get('MGC_ProximoServicio');
             $mtto_general_carburadas->MGC_FechaEdicion = $mytime->toDateTimeString();
+            $mtto_general_carburadas->MGC_FechaInicio = $request->get('MGC_FechaInicio') ? Carbon::parse($request->get('MGC_FechaInicio'))->toDateTimeString() : null;
             $mtto_general_carburadas->MGC_FechaTermino = $request->get('MGC_FechaTermino') ? Carbon::parse($request->get('MGC_FechaTermino'))->toDateTimeString() : null;
             $mtto_general_carburadas->MGC_UsuarioEditado = $idusu;
             $mtto_general_carburadas->PER_Id = $request->get('USU_Id');

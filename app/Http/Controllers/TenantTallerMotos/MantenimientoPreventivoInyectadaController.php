@@ -495,6 +495,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
             $mtto_preventivo_inyectadas->MPI_ProximoCambioAceite = $request->get('MPI_ProximoCambioAceite');
             $mtto_preventivo_inyectadas->MPI_ProximoServicio = $request->get('MPI_ProximoServicio');
             $mtto_preventivo_inyectadas->MPI_FechaEdicion = $mytime->toDateTimeString();
+            $mtto_preventivo_inyectadas->MPI_FechaInicio = $request->get('MPI_FechaInicio') ? Carbon::parse($request->get('MPI_FechaInicio'))->toDateTimeString() : null;
             $mtto_preventivo_inyectadas->MPI_FechaTermino = $request->get('MPI_FechaTermino') ? Carbon::parse($request->get('MPI_FechaTermino'))->toDateTimeString() : null;
             $mtto_preventivo_inyectadas->MPI_UsuarioEditado = $idusu;
             $mtto_preventivo_inyectadas->PER_Id = $request->get('USU_Id');

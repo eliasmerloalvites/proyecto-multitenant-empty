@@ -475,6 +475,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
             $mtto_preventivo_carburadas->MPC_ProximoCambioAceite = $request->get('MPC_ProximoCambioAceite');
             $mtto_preventivo_carburadas->MPC_ProximoServicio = $request->get('MPC_ProximoServicio');
             $mtto_preventivo_carburadas->MPC_FechaEdicion = $mytime->toDateTimeString();
+            $mtto_preventivo_carburadas->MPC_FechaInicio = $request->get('MPC_FechaInicio') ? Carbon::parse($request->get('MPC_FechaInicio'))->toDateTimeString() : null;
             $mtto_preventivo_carburadas->MPC_FechaTermino = $request->get('MPC_FechaTermino') ? Carbon::parse($request->get('MPC_FechaTermino'))->toDateTimeString() : null;
             $mtto_preventivo_carburadas->MPC_UsuarioEditado = $idusu;
             $mtto_preventivo_carburadas->PER_Id = $request->get('USU_Id');

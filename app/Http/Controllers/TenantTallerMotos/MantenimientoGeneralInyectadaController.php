@@ -505,6 +505,7 @@ class MantenimientoGeneralInyectadaController extends Controller
             $mtto_general_inyectadas->MGI_ProximoCambioAceite = $request->get('MGI_ProximoCambioAceite');
             $mtto_general_inyectadas->MGI_ProximoServicio = $request->get('MGI_ProximoServicio');
             $mtto_general_inyectadas->MGI_FechaEdicion = $mytime->toDateTimeString();
+            $mtto_general_inyectadas->MGI_FechaInicio = $request->get('MGI_FechaInicio') ? Carbon::parse($request->get('MGI_FechaInicio'))->toDateTimeString() : null;
             $mtto_general_inyectadas->MGI_FechaTermino = $request->get('MGI_FechaTermino') ? Carbon::parse($request->get('MGI_FechaTermino'))->toDateTimeString() : null;
             $mtto_general_inyectadas->MGI_UsuarioEditado = $idusu;
             $mtto_general_inyectadas->PER_Id = $request->get('USU_Id');

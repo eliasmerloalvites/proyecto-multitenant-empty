@@ -441,6 +441,7 @@ class MantenimientoActividadVariadaController extends Controller
             $mtto_act_variadas->MAV_ProximoCambioAceite = $request->get('MAV_ProximoCambioAceite');
             $mtto_act_variadas->MAV_ProximoServicio = $request->get('MAV_ProximoServicio');
             $mtto_act_variadas->MAV_FechaEdicion = $mytime->toDateTimeString();
+            $mtto_act_variadas->MAV_FechaInicio = $request->get('MAV_FechaInicio') ? Carbon::parse($request->get('MAV_FechaInicio'))->toDateTimeString() : null;
             $mtto_act_variadas->MAV_FechaTermino = $request->get('MAV_FechaTermino') ? Carbon::parse($request->get('MAV_FechaTermino'))->toDateTimeString() : null;
             $mtto_act_variadas->MAV_UsuarioEditado = $idusu;
             $mtto_act_variadas->PER_Id = $request->get('USU_Id');
