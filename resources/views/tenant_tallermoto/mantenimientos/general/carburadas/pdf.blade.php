@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -565,8 +565,8 @@
 
                     <td width="25%">
                         <div class="header-info">
-                            <strong>CÓDIGO:</strong> AV-FO-001 <br>
-                            <strong>VERSIÓN:</strong> 01 <br>
+                            <strong>CÃ“DIGO:</strong> AV-FO-001 <br>
+                            <strong>VERSIÃ“N:</strong> 01 <br>
                             <strong>FECHA:</strong> {{ date('d/m/Y', strtotime($mttoPreventivo->MGC_FechaCreacion)) }} <br>
                             <strong>HORA:</strong> {{ date('H:i:s', strtotime($mttoPreventivo->MGC_FechaCreacion)) }}
                         </div>
@@ -588,7 +588,7 @@
                                     </td>
                                     <td>
                                         <div class="company-label">
-                                            RAZÓN SOCIAL
+                                            RAZÃ“N SOCIAL
                                         </div>
                                         <div class="company-value">
                                             {{ $empresa->razon_social }}
@@ -618,7 +618,7 @@
                                         <img src="{{ $direccionIcon }}" class="icon">
                                     </td>
                                     <td>
-                                        <div class="company-label">DIRECCIÓN</div>
+                                        <div class="company-label">DIRECCIÃ“N</div>
                                         <div class="company-value">
                                             {{ $empresa->direccion }} - {{ $empresa->provincia }}
                                         </div>
@@ -652,7 +652,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <div class="client-label">TELÉFONO</div>
+                            <div class="client-label">TELÃ‰FONO</div>
                             <div class="client-value">{{ $mttoPreventivo->MGC_celular }}</div>
                         </td>
                         <td>
@@ -701,7 +701,7 @@
 
         <!-- CORRECCION -->
         <div class="section no-break">
-            <div class="section-title">CORRECCIÓN DE OBSERVACIONES</div>
+            <div class="section-title">CORRECCIÃ“N DE OBSERVACIONES</div>
             <div class="large-body">{{ $mttoPreventivo->MGC_CorrecionObservacion }}</div>
         </div>
 
@@ -716,7 +716,7 @@
                             <thead>
                                 <tr>
                                     <th>ITEM</th>
-                                    <th>DESCRIPCIÓN</th>
+                                    <th>DESCRIPCIÃ“N</th>
                                     <th>CANT.</th>
                                     <th>TOTAL</th>
                                 </tr>
@@ -745,11 +745,11 @@
                     </td>
                     <td width="32%" style="padding-left:10px">
                         <div class="service-box">
-                            <div class="service-title">PRÓXIMO CAMBIO DE ACEITE</div>
+                            <div class="service-title">PRÃ“XIMO CAMBIO DE ACEITE</div>
                             <div class="service-body">{{ $mttoPreventivo->MGC_ProximoCambioAceite }}</div>
                         </div>
                         <div class="service-box">
-                            <div class="service-title">PRÓXIMO SERVICIO</div>
+                            <div class="service-title">PRÃ“XIMO SERVICIO</div>
                             <div class="service-body">{{ $mttoPreventivo->MGC_ProximoServicio }}</div>
                         </div>
                     </td>
@@ -764,9 +764,10 @@
             <div class="service-content">
 
                 <table class="service-table">
+                    @php $itemNum = 1; @endphp
                     @if($mttoPreventivo->MGC_Det1 == 'SI')
 <tr>
-                        <td class="number">1.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">CAMBIO DE ACEITE</td>
                         <td class="status">
                             <span
@@ -780,7 +781,7 @@
 
                     @if($mttoPreventivo->MGC_Det2 == 'SI')
 <tr>
-                        <td class="number">2.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">CAMBIO DE FILTRO DE ACEITE</td>
                         <td class="status">
                             <span
@@ -793,7 +794,7 @@
 
                     @if($mttoPreventivo->MGC_Det3 == 'SI')
 <tr>
-                        <td class="number">3.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">LIMGCEZA DE CHASIS CON AIRE COMP.</td>
                         <td class="status">
                             <span
@@ -806,7 +807,7 @@
 
                     @if($mttoPreventivo->MGC_Det4 == 'SI')
 <tr>
-                        <td class="number">4.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">LIMGCEZA DE CABLES ELEC CON AIRE COMP.</td>
                         <td class="status">
                             <span
@@ -819,7 +820,7 @@
 
                     @if($mttoPreventivo->MGC_Det5 == 'SI')
 <tr>
-                        <td class="number">5.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">DESENGRASE INTERNO DE LA UNIDAD</td>
                         <td class="status">
                             <span
@@ -832,7 +833,7 @@
 
                     @if($mttoPreventivo->MGC_Det6 == 'SI')
 <tr>
-                        <td class="number">6.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">MANTENIMIENTO DE FILTRO DE AIRE</td>
                         <td class="status">
                             <span
@@ -845,7 +846,7 @@
 
                     @if($mttoPreventivo->MGC_Det7 == 'SI')
 <tr>
-                        <td class="number">7.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">MANTENIMIENTO DE CARBURADOR</td>
                         <td class="status">
                             <span
@@ -858,8 +859,8 @@
 
                     @if($mttoPreventivo->MGC_Det8 == 'SI')
 <tr>
-                        <td class="number">8.0</td>
-                        <td class="description">AJUSTE DE VÁLVULAS</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
+                        <td class="description">AJUSTE DE VÃLVULAS</td>
                         <td class="status">
                             <span
                                 class="status-{{ $mttoPreventivo->MGC_Det8 == 'SI' ? 'ok' : 'no' }}">{{ $mttoPreventivo->MGC_Det8 == 'SI' ? 'OK' : 'NO' }}</span>
@@ -876,7 +877,7 @@
                                                 color:#111;
                                                 margin-bottom:4px;
                                             ">
-                                            ADMISIÓN
+                                            ADMISIÃ“N
                                         </div>
                                         <div
                                             style="
@@ -922,8 +923,8 @@
 
                     @if($mttoPreventivo->MGC_Det9 == 'SI')
 <tr>
-                        <td class="number">9.0</td>
-                        <td class="description">REVISIÓN Y CALIBRACIÓN DE BUJÍA</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
+                        <td class="description">REVISIÃ“N Y CALIBRACIÃ“N DE BUJÃA</td>
                         <td class="status">
                             <span
                                 class="status-{{ $mttoPreventivo->MGC_Det9 == 'SI' ? 'ok' : 'no' }}">{{ $mttoPreventivo->MGC_Det9 == 'SI' ? 'OK' : 'NO' }}</span>
@@ -966,7 +967,7 @@
 
                     @if($mttoPreventivo->MGC_Det10 == 'SI')
 <tr>
-                        <td class="number">10.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">AJUSTE DE LA BRIDA DEL TUBO DE ESCAPE</td>
                         <td class="status">
                             <span
@@ -979,7 +980,7 @@
 
                     @if($mttoPreventivo->MGC_Det11 == 'SI')
 <tr>
-                        <td class="number">11.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">LAVADO Y AJUSTE DEL SISTEMA DE ARRASTRE</td>
                         <td class="status">
                             <span
@@ -992,7 +993,7 @@
 
                     @if($mttoPreventivo->MGC_Det12 == 'SI')
 <tr>
-                        <td class="number">12.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">MANTENIMIENTO DE FRENO DELANTERO</td>
                         <td class="status">
                             <span
@@ -1005,7 +1006,7 @@
 
                     @if($mttoPreventivo->MGC_Det13 == 'SI')
 <tr>
-                        <td class="number">13.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">MANTENIMIENTO DE FRENO POSTERIOR</td>
                         <td class="status">
                             <span
@@ -1018,7 +1019,7 @@
 
                     @if($mttoPreventivo->MGC_Det14 == 'SI')
 <tr>
-                        <td class="number">14.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">AJUSTE DE PERNOS DE CHASIS</td>
                         <td class="status">
                             <span
@@ -1031,8 +1032,8 @@
 
                     @if($mttoPreventivo->MGC_Det15 == 'SI')
 <tr>
-                        <td class="number">15.0</td>
-                        <td class="description">LIMGCEZA DE CONECTORES ELÉCTRICOS</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
+                        <td class="description">LIMGCEZA DE CONECTORES ELÃ‰CTRICOS</td>
                         <td class="status">
                             <span
                                 class="status-{{ $mttoPreventivo->MGC_Det15 == 'SI' ? 'ok' : 'no' }}">{{ $mttoPreventivo->MGC_Det15 == 'SI' ? 'OK' : 'NO' }}</span>
@@ -1044,8 +1045,8 @@
 
                     @if(!empty($mttoPreventivo->MGC_Det16))
 <tr>
-                        <td class="number">16.0</td>
-                        <td class="description">PRESIÓN DE NEUMÁTICO DELANTERO</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
+                        <td class="description">PRESIÃ“N DE NEUMÃTICO DELANTERO</td>
                         <td class="status">
                             <span class="ref-value">{{ $mttoPreventivo->MGC_Det16 }}</span>
                         </td>
@@ -1057,8 +1058,8 @@
 
                     @if(!empty($mttoPreventivo->MGC_Det17))
 <tr>
-                        <td class="number">17.0</td>
-                        <td class="description">PRESIÓN DE NEUMÁTICO POSTERIOR</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
+                        <td class="description">PRESIÃ“N DE NEUMÃTICO POSTERIOR</td>
                         <td class="status">
                             <span class="ref-value">{{ $mttoPreventivo->MGC_Det17 }}</span>
                         </td>
@@ -1069,7 +1070,7 @@
 
                     @if($mttoPreventivo->MGC_Det18 == 'SI')
 <tr>
-                        <td class="number">18.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">REVISION Y TEST DE LIQUIDO DE FRENOS</td>
                         <td class="status">
                             <span
@@ -1113,7 +1114,7 @@
 
                     @if($mttoPreventivo->MGC_Det19 == 'SI')
 <tr>
-                        <td class="number">19.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">REVISION DEL SISTEMA DE ENFRIAMIENTO</td>
                         <td class="status">
                             <span
@@ -1157,8 +1158,8 @@
 
                     @if($mttoPreventivo->MGC_Det20 == 'SI')
 <tr>
-                        <td class="number">20.0</td>
-                        <td class="description">LUBRICACIÓN DEL SISTEMA DE ARRASTRE</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
+                        <td class="description">LUBRICACIÃ“N DEL SISTEMA DE ARRASTRE</td>
                         <td class="status">
                             <span
                                 class="status-{{ $mttoPreventivo->MGC_Det20 == 'SI' ? 'ok' : 'no' }}">{{ $mttoPreventivo->MGC_Det20 == 'SI' ? 'OK' : 'NO' }}</span>
@@ -1170,7 +1171,7 @@
 
                     @if($mttoPreventivo->MGC_Det21 == 'SI')
 <tr>
-                        <td class="number">21.0</td>
+                        <td class="number">{{ $itemNum++ }}.0</td>
                         <td class="description">TEST DE BATERIA</td>
                         <td class="status">
                             <span
@@ -1262,7 +1263,7 @@
         <!-- EVIDENCIAS -->
         <div class="section no-break">
             <div class="section-title">
-                EVIDENCIA FOTOGRÁFICA
+                EVIDENCIA FOTOGRÃFICA
             </div>
             <div class="section-body">
                 <table class="evidence-grid">
@@ -1302,7 +1303,7 @@
                             </td>
                             <td>
                                 <div class="sign-line"></div>
-                                <div class="sign-title">FIRMA DEL TÉCNICO</div>
+                                <div class="sign-title">FIRMA DEL TÃ‰CNICO</div>
                                 <div class="sign-sub">Responsable</div>
                             </td>
                             <td>
