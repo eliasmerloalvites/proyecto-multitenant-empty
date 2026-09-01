@@ -227,7 +227,10 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.reservaciones.administracion.destroy', 'Reservaciones', 'Eliminar Reservaciones',  'Eliminar Reservaciones'],
             ['tenant.reservaciones.administracion.aprobar', 'Reservaciones', 'Aprobar Reservaciones',  'Aprobar Reservaciones'],
             ['tenant.reservaciones.administracion.notificar', 'Reservaciones', 'Notificar Reservaciones',  'Notificar Reservaciones'],
-            
+
+            // Motos
+            ['tenant.motos.index', 'Motos', 'Ver Motos Atendidas', 'Historial de motos atendidas en el taller'],
+
         ];
 
         foreach ($permissions as [$name, $group, $nombre, $description]) {
@@ -435,7 +438,9 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.reservaciones.administracion.create',
             'tenant.reservaciones.administracion.edit',
             'tenant.reservaciones.administracion.show',
-            'tenant.reservaciones.administracion.destroy'
+            'tenant.reservaciones.administracion.destroy',
+
+            'tenant.motos.index',
 
         ]);
 
@@ -596,7 +601,9 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.reservaciones.administracion.create',
             'tenant.reservaciones.administracion.edit',
             'tenant.reservaciones.administracion.show',
-            'tenant.reservaciones.administracion.destroy'
+            'tenant.reservaciones.administracion.destroy',
+
+            'tenant.motos.index',
         ]);
 
         /*

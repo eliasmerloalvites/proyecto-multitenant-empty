@@ -166,7 +166,7 @@ class ReportesController extends Controller
         $fechafin = $fec[1];
         if ($request->ajax()) {
             $idusu = Auth::user()->id;
-            $idpersonal = Auth::user()->PER_Id;
+            $idpersonal = Auth::user()->id;
             $ubicaAdministrador = "FALSE";
 
             $roles = DB::table('role_user')
@@ -613,7 +613,7 @@ class ReportesController extends Controller
 
         if ($request->ajax()) {
             $idusu = Auth::user()->id;
-            $idpersonal = Auth::user()->PER_Id;
+            $idpersonal = Auth::user()->id;
             $ubicaAdministrador = "FALSE";
 
             $roles = DB::table('role_user')

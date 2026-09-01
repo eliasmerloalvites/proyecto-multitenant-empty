@@ -31,7 +31,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
     {
         if ($request->ajax()) {
             $roles = Auth::user()->getRoleNames();
-            $idpersonal = Auth::user()->PER_Id;
+            $idpersonal = Auth::user()->id;
 
             $rolAdmin = false;
             if ($roles->contains('Admin') || $roles->contains('Gerente')) {
@@ -101,11 +101,34 @@ class MantenimientoPreventivoInyectadaController extends Controller
                 $data = DB::table('mantenimiento_preventivo_inyectada as mpi')
                     ->join('users as p', 'p.id', '=', 'mpi.PER_Id')
                     ->select('mpi.MPI_Id', 'mpi.MPI_Placa', 'mpi.MPI_Propietario', 'mpi.MPI_celular', 'mpi.notificar', 'mpi.MPI_Unidad', 'mpi.MPI_KMEntrada', 'mpi.MPI_FechaCreacion', 'mpi.MPI_FechaTermino', 'mpi.MPI_Estado', DB::raw('CONCAT(p.name) as personal'))
-                    ->where('mpi.PER_Id', '=', $idpersonal)
-                    ->get();
+                    ->where('mpi.PER_Id', '=', $idpersonal);
+
+                if ($request->filled('fecha_inicio')) {
+                    $data->whereDate('MPI_FechaCreacion', '>=', $request->fecha_inicio);
+                }
+
+                if ($request->filled('fecha_fin')) {
+                    $data->whereDate('MPI_FechaCreacion', '<=', $request->fecha_fin);
+                }
+
+                if ($request->filled('estado')) {
+                    $data->where('MPI_Estado', $request->estado);
+                }
 
                 return Datatables::of($data)
                     ->addIndexColumn()
+                    ->addColumn('estado', function ($row) {
+                        if ($row->MPI_Estado == 'APROBADO') {
+                            $btn = '<button type="button" class="btn btn-sm btn-outline-success">' . $row->MPI_Estado . '</button>';
+                        } else if ($row->MPI_Estado == 'PENDIENTE') {
+                            $btn = '<button type="button" class="btn btn-sm btn-outline-warning">' . $row->MPI_Estado . '</button>';
+                        } else if ($row->MPI_Estado == 'OBSERVADO') {
+                            $btn = '<button type="button" class="btn btn-sm btn-outline-danger">' . $row->MPI_Estado . '</button>';
+                        } else {
+                            $btn = '<button type="button" class="btn btn-sm btn-outline-secondary">' . $row->MPI_Estado . '</button>';
+                        }
+                        return $btn;
+                    })
                     ->addColumn('action1', function ($row) {
                         if ($row->MPI_Estado === 'PENDIENTE') {
                             $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->MPI_Id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm editMantenimientoPreventivoInyectadas"><i class="fa fa-edit"></i></a>';
@@ -118,14 +141,17 @@ class MantenimientoPreventivoInyectadaController extends Controller
                         return '';
                     })
                     ->addColumn('action3', function ($row) {
-                        $btn = '<a  target="_blank" href="/mantenimientos/preventivoinyectada/' . $row->MPI_Id . '/pdf" data-toggle="tooltip"  data-id="' . $row->MPI_Id . '" data-original-title="Pdf" class="btn btn-danger btn-sm "><i class="fas fa-file-pdf"></i></a>';
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/preventivoinyectada/' . $row->MPI_Id . '/pdf" data-toggle="tooltip"  data-id="' . $row->MPI_Id . '" data-original-title="Pdf" class="btn btn-danger btn-sm "><i class="fas fa-file-pdf"></i></a>';
                         return $btn;
+                    })
+                    ->addColumn('action4', function ($row) {
+                        return '';
                     })
                     ->addColumn('celular', function ($row) {
                         $btn = $row->MPI_celular;
                         return $btn;
                     })
-                    ->rawColumns(['action1', 'action2', 'action3', 'celular'])
+                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'estado', 'celular'])
                     ->make(true);
             }
         }

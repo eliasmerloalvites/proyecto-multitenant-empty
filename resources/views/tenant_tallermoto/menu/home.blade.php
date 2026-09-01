@@ -307,9 +307,9 @@
 
 </div>
 
-{{-- KPI CARDS (Ventas/Inventario/Compras: solo Plus/Empresarial) --}}
+{{-- KPI CARDS (Ventas/Inventario/Compras: solo Plus/Empresarial, y solo para quien puede ver reportes financieros) --}}
 
-@if($mostrarVentas)
+@if($mostrarVentas && auth()->user()->hasAnyRole(['Admin', 'Gerente']))
 <div class="row mb-4">
 
     <div class="col-lg-3 col-md-6 mb-3">
@@ -432,6 +432,7 @@
 
 <div class="row mb-4">
 
+    @can('tenant.reservaciones.administracion.index')
     <div class="col-lg-4 col-md-6 mb-3">
 
         <div class="kpi-card kpi-primary">
@@ -453,6 +454,7 @@
         </div>
 
     </div>
+    @endcan
 
     <div class="col-lg-4 col-md-6 mb-3">
 
@@ -476,6 +478,7 @@
 
     </div>
 
+    @can('tenant.reservaciones.administracion.index')
     <div class="col-lg-4 col-md-6 mb-3">
 
         <div class="kpi-card kpi-success">
@@ -497,6 +500,7 @@
         </div>
 
     </div>
+    @endcan
 
 </div>
 
@@ -504,6 +508,7 @@
 
 <div class="row mb-4">
 
+    @can('tenant.reservaciones.administracion.index')
     <div class="col-lg-7 mb-3">
 
         <div class="dashboard-card mb-0" style="height:100%;">
@@ -519,6 +524,7 @@
         </div>
 
     </div>
+    @endcan
 
     <div class="col-lg-5 mb-3">
 
@@ -563,6 +569,7 @@
 
     </div>
 
+    @can('tenant.reservaciones.administracion.index')
     <div class="col-lg-5 mb-3">
 
         <div class="dashboard-card mb-0" style="height:100%;">
@@ -605,12 +612,13 @@
         </div>
 
     </div>
+    @endcan
 
 </div>
 
-{{-- CHARTS (Ventas/Inventario/Compras: solo Plus/Empresarial) --}}
+{{-- CHARTS (Ventas/Inventario/Compras: solo Plus/Empresarial, y solo para quien puede ver reportes financieros) --}}
 
-@if($mostrarVentas)
+@if($mostrarVentas && auth()->user()->hasAnyRole(['Admin', 'Gerente']))
 <div class="row">
 
     <div class="col-lg-8">
@@ -655,9 +663,9 @@
 </div>
 @endif
 
-{{-- TABLE + PRODUCTS (Ventas/Inventario/Compras: solo Plus/Empresarial) --}}
+{{-- TABLE + PRODUCTS (Ventas/Inventario/Compras: solo Plus/Empresarial, y solo para quien puede ver reportes financieros) --}}
 
-@if($mostrarVentas)
+@if($mostrarVentas && auth()->user()->hasAnyRole(['Admin', 'Gerente']))
 <div class="row">
 
     <div class="col-lg-8">
@@ -784,6 +792,7 @@
 
     const salesCtx = document.getElementById('salesChart');
 
+    if (salesCtx) {
     new Chart(salesCtx, {
 
         type: 'line',
@@ -839,6 +848,7 @@
             }
         }
     });
+    }
 
     // ======================================================
     // PAYMENT CHART
@@ -896,6 +906,7 @@
     // RESERVAS ÚLTIMOS 7 DÍAS
     // ======================================================
 
+    if (document.getElementById('reservasChart')) {
     new Chart(document.getElementById('reservasChart'), {
         type: 'bar',
         data: {
@@ -938,6 +949,7 @@
             }
         }
     });
+    }
 
     // ======================================================
     // MANTENIMIENTOS POR ESTADO

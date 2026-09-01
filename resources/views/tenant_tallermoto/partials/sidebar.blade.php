@@ -24,6 +24,7 @@
                     </a>
                 </li>
 
+                @hasanyrole('Admin|Gerente')
                 <li class="nav-item">
                     <a href="{{ tenant_url('tenant.facturacion.index') }}" class="nav-link {{ request()->routeIs('tenant.facturacion*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-file-invoice-dollar"></i>
@@ -32,8 +33,9 @@
                         </p>
                     </a>
                 </li>
+                @endhasanyrole
 
-                @if(tenant_has_module('mantenimientos'))
+                @if(tenant_has_module('mantenimientos') && auth()->user()->can('tenant.motos.index'))
                 <li class="nav-item">
                     <a href="{{ tenant_url('tenant.motos.index') }}" class="nav-link {{ request()->routeIs('tenant.motos*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-motorcycle"></i>
@@ -45,7 +47,11 @@
                 @endif
 
                 <!-- RESERVAS (parte del flujo de Mantenimientos) -->
-                @if(tenant_has_module('mantenimientos'))
+                @if(tenant_has_module('mantenimientos') && auth()->user()->hasAnyPermission([
+                    'tenant.reservaciones.administracion.index',
+                    'tenant.reservaciones.administracion.create',
+                    'tenant.reservaciones.administracion.notificar',
+                ]))
                 <li class="nav-item has-treeview
                     {{ request()->routeIs('tenant.reservaciones.administracion*') || request()->routeIs('tenant.reservaciones.notificaciones*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->routeIs('tenant.reservaciones.administracion*') || request()->routeIs('tenant.reservaciones.notificaciones*') ? 'active': '' }}">
@@ -58,6 +64,7 @@
 
                     <ul class="nav nav-treeview">
 
+                        @can('tenant.reservaciones.administracion.create')
                         <li class="nav-item">
                             <a href="{{ route('tenant.reservaciones.administracion.create') }}" class="nav-link
                             {{ request()->routeIs('tenant.reservaciones.administracion.create') ? 'active' : '' }}">
@@ -65,7 +72,9 @@
                                 <p>Reservaciones</p>
                             </a>
                         </li>
+                        @endcan
 
+                        @can('tenant.reservaciones.administracion.index')
                         <li class="nav-item">
                             <a href="{{ route('tenant.reservaciones.administracion.index') }}" class="nav-link
                             {{ request()->routeIs('tenant.reservaciones.administracion.index') ? 'active' : '' }}">
@@ -73,7 +82,9 @@
                                 <p>Todas las Reservas</p>
                             </a>
                         </li>
+                        @endcan
 
+                        @can('tenant.reservaciones.administracion.notificar')
                         <li class="nav-item">
                             <a href="{{ route('tenant.reservaciones.notificaciones.index') }}" class="nav-link
                             {{ request()->routeIs('tenant.reservaciones.notificaciones.index') ? 'active' : '' }}">
@@ -81,6 +92,7 @@
                                 <p>Notificar reservas</p>
                             </a>
                         </li>
+                        @endcan
 
                     </ul>
                 </li>
