@@ -138,10 +138,19 @@
                         <div class="form-group row">
                             <div class="col-md-6 col-12">
                                 <label class="control-label" style="text-align: left; display: block;">Serie Nota
-                                    Crédito:</label>
-                                <input type="text" id="ALM_SerieNotaCredito" name="ALM_SerieNotaCredito"
-                                    class="form-control" placeholder="Ej. FC01 / BC01" maxlength="4">
+                                    Crédito (Boleta):</label>
+                                <input type="text" id="ALM_SerieNotaCreditoBoleta" name="ALM_SerieNotaCreditoBoleta"
+                                    class="form-control" placeholder="Ej. BC01" maxlength="4">
                             </div>
+                            <div class="col-md-6 col-12">
+                                <label class="control-label" style="text-align: left; display: block;">Serie Nota
+                                    Crédito (Factura):</label>
+                                <input type="text" id="ALM_SerieNotaCreditoFactura" name="ALM_SerieNotaCreditoFactura"
+                                    class="form-control" placeholder="Ej. FC01" maxlength="4">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
                             <div class="col-md-6 col-12">
                                 <label class="control-label" style="text-align: left; display: block;">Serie Nota
                                     Débito:</label>
@@ -392,7 +401,8 @@
                         $('#ALM_CodigoSunat').val(d.ALM_CodigoSunat);
                         $('#ALM_SerieFactura').val(d.ALM_SerieFactura);
                         $('#ALM_SerieBoleta').val(d.ALM_SerieBoleta);
-                        $('#ALM_SerieNotaCredito').val(d.ALM_SerieNotaCredito);
+                        $('#ALM_SerieNotaCreditoBoleta').val(d.ALM_SerieNotaCreditoBoleta);
+                        $('#ALM_SerieNotaCreditoFactura').val(d.ALM_SerieNotaCreditoFactura);
                         $('#ALM_SerieNotaDebito').val(d.ALM_SerieNotaDebito);
                         $('#ALM_SerieGuiaRemision').val(d.ALM_SerieGuiaRemision);
                         $('#ALM_SerieNotaVenta').val(d.ALM_SerieNotaVenta);
