@@ -7,7 +7,9 @@ use App\Models\Tenant\Almacen;
 use App\Models\Tenant\EmpresaFacturacion;
 use App\Models\Tenant\User;
 use App\Models\TenantTallerMotos\MantenimientoPreventivoCarburada;
+use App\Models\TenantTallerMotos\MantenimientoPlan;
 use App\Models\TenantTallerMotos\MpcDetalleReemplazo;
+use App\Services\Mantenimiento\RepuestosBahiaSync;
 use App\Models\TenantTallerMotos\MpcImagen;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -145,7 +147,9 @@ class MantenimientoPreventivoCarburadaController extends Controller
             : User::role('Mecanico')->select('id', 'name')->get();
 
 
-        return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.preventivo.carburadas.create', ["admin" => $rolAdmin, "personal" => $personal]);
+        $planes = MantenimientoPlan::where('PLAN_Tipo', 'MPC')->where('PLAN_Activo', true)->orderBy('PLAN_Nombre')->get();
+
+        return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.preventivo.carburadas.create', ["admin" => $rolAdmin, "personal" => $personal, "planes" => $planes]);
     }
     public function store(Request $request)
     {
@@ -190,23 +194,16 @@ class MantenimientoPreventivoCarburadaController extends Controller
             $mtto_preventivo_carburadas->MPC_UsuarioCreacion = $idusu;
             $mtto_preventivo_carburadas->MPC_UsuarioEditado = $idusu;
             $mtto_preventivo_carburadas->PER_Id = $request->get('USU_Id');
+            $mtto_preventivo_carburadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
             $mtto_preventivo_carburadas->save();
 
-            $MPCD_Descripcion = $request->get('MPCD_Descripcion');
-            $MPC_Precio = $request->get('MPC_Precio');
-            if ($MPCD_Descripcion) {
-                $cont = 0;
-                while ($cont < count($MPCD_Descripcion)) {
-                    $mtto_det_reemplazo = new MpcDetalleReemplazo;
-                    $mtto_det_reemplazo->MPC_Id = $mtto_preventivo_carburadas->MPC_Id;
-                    $mtto_det_reemplazo->MPCD_Descripcion = $MPCD_Descripcion[$cont];
-                    $mtto_det_reemplazo->MPCD_Item = $cont + 1;
-                    $mtto_det_reemplazo->MPC_Precio = $MPC_Precio[$cont];
-                    $mtto_det_reemplazo->save();
-
-                    $cont = $cont + 1;
-                }
-            }
+            RepuestosBahiaSync::reemplazarManuales(
+                'MPC',
+                $mtto_preventivo_carburadas->MPC_Id,
+                $request->get('MPCD_Descripcion', []),
+                $request->get('MPC_Precio', [])
+            );
+            RepuestosBahiaSync::sincronizar('MPC', $mtto_preventivo_carburadas->MPC_Id, $mtto_preventivo_carburadas->RES_Id);
 
             DB::commit();
         } catch (Exception $e) {
@@ -225,6 +222,9 @@ class MantenimientoPreventivoCarburadaController extends Controller
             ->select('mpc.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPC_Id', '=', $id)
             ->first();
+
+        RepuestosBahiaSync::sincronizar('MPC', (int) $id, $datos->RES_Id ?? null);
+
         $detalle = DB::table('mpc_detalle_reemplazo')
             ->where('MPC_Id', '=', $id)
             ->get();
@@ -242,6 +242,8 @@ class MantenimientoPreventivoCarburadaController extends Controller
             ? User::select('id', 'name')->get()
             : User::role('Mecanico')->select('id', 'name')->get();
 
+        $planes = MantenimientoPlan::where('PLAN_Tipo', 'MPC')->where('PLAN_Activo', true)->orderBy('PLAN_Nombre')->get();
+
         return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.preventivo.carburadas.edit', [
             "datos" => $datos,
             "admin" => $rolAdmin,
@@ -249,7 +251,8 @@ class MantenimientoPreventivoCarburadaController extends Controller
             "personal" => $personal,
             "detalle" => $detalle,
             "imagenes" => $imagenes,
-            "id" => $id
+            "id" => $id,
+            "planes" => $planes,
         ]);
     }
 
@@ -475,6 +478,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
             $mtto_preventivo_carburadas->MPC_FechaTermino = $request->get('MPC_FechaTermino') ? Carbon::parse($request->get('MPC_FechaTermino'))->toDateTimeString() : null;
             $mtto_preventivo_carburadas->MPC_UsuarioEditado = $idusu;
             $mtto_preventivo_carburadas->PER_Id = $request->get('USU_Id');
+            $mtto_preventivo_carburadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
             if ($rolAdmin) {
                 $mtto_preventivo_carburadas->MPC_Estado = 'APROBADO';
             }
@@ -483,26 +487,13 @@ class MantenimientoPreventivoCarburadaController extends Controller
             }
             $mtto_preventivo_carburadas->update();
 
-
-            DB::table('mpc_detalle_reemplazo')
-                ->where('MPC_Id', $mtto_preventivo_carburadas->MPC_Id)
-                ->delete();
-
-            $MPCD_Descripcion = $request->get('MPCD_Descripcion');
-            $MPC_Precio = $request->get('MPC_Precio');
-            if ($MPCD_Descripcion) {
-                $cont = 0;
-                while ($cont < count($MPCD_Descripcion)) {
-                    $correctivoresponsable = new MpcDetalleReemplazo;
-                    $correctivoresponsable->MPC_Id = $mtto_preventivo_carburadas->MPC_Id;
-                    $correctivoresponsable->MPCD_Descripcion = $MPCD_Descripcion[$cont];
-                    $correctivoresponsable->MPCD_Item = $cont + 1;
-                    $correctivoresponsable->MPC_Precio = $MPC_Precio[$cont];
-                    $correctivoresponsable->save();
-
-                    $cont = $cont + 1;
-                }
-            }
+            RepuestosBahiaSync::reemplazarManuales(
+                'MPC',
+                $mtto_preventivo_carburadas->MPC_Id,
+                $request->get('MPCD_Descripcion', []),
+                $request->get('MPC_Precio', [])
+            );
+            RepuestosBahiaSync::sincronizar('MPC', $mtto_preventivo_carburadas->MPC_Id, $mtto_preventivo_carburadas->RES_Id);
 
             DB::commit();
         } catch (Exception $e) {

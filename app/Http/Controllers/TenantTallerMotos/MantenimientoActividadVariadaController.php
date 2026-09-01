@@ -8,6 +8,7 @@ use App\Models\Tenant\EmpresaFacturacion;
 use App\Models\Tenant\User;
 use App\Models\TenantTallerMotos\MantenimientoActividadVariada;
 use App\Models\TenantTallerMotos\MavDetalleReemplazo;
+use App\Services\Mantenimiento\RepuestosBahiaSync;
 use App\Models\TenantTallerMotos\MavImagen;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -186,21 +187,13 @@ class MantenimientoActividadVariadaController extends Controller
             $mtto_act_variadas->PER_Id = $request->get('USU_Id');
             $mtto_act_variadas->save();
 
-            $MAVD_Descripcion = $request->get('MAVD_Descripcion');
-            $MAV_Precio = $request->get('MAV_Precio');
-            if ($MAVD_Descripcion) {
-                $cont = 0;
-                while ($cont < count($MAVD_Descripcion)) {
-                    $mtto_det_reemplazo = new MavDetalleReemplazo;
-                    $mtto_det_reemplazo->MAV_Id = $mtto_act_variadas->MAV_Id;
-                    $mtto_det_reemplazo->MAVD_Descripcion = $MAVD_Descripcion[$cont];
-                    $mtto_det_reemplazo->MAVD_Item = $cont + 1;
-                    $mtto_det_reemplazo->MAV_Precio = $MAV_Precio[$cont];
-                    $mtto_det_reemplazo->save();
-
-                    $cont = $cont + 1;
-                }
-            }
+            RepuestosBahiaSync::reemplazarManuales(
+                'MAV',
+                $mtto_act_variadas->MAV_Id,
+                $request->get('MAVD_Descripcion', []),
+                $request->get('MAV_Precio', [])
+            );
+            RepuestosBahiaSync::sincronizar('MAV', $mtto_act_variadas->MAV_Id, $mtto_act_variadas->RES_Id);
 
             DB::commit();
         } catch (Exception $e) {
@@ -219,6 +212,9 @@ class MantenimientoActividadVariadaController extends Controller
             ->select('mav.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MAV_Id', '=', $id)
             ->first();
+
+        RepuestosBahiaSync::sincronizar('MAV', (int) $id, $datos->RES_Id ?? null);
+
         $detalle = DB::table('mav_detalle_reemplazo')
             ->where('MAV_Id', '=', $id)
             ->get();
@@ -456,26 +452,13 @@ class MantenimientoActividadVariadaController extends Controller
             }
             $mtto_act_variadas->update();
 
-
-            DB::table('mav_detalle_reemplazo')
-                ->where('MAV_Id', $mtto_act_variadas->MAV_Id)
-                ->delete();
-
-            $MAVD_Descripcion = $request->get('MAVD_Descripcion');
-            $MAV_Precio = $request->get('MAV_Precio');
-            if ($MAVD_Descripcion) {
-                $cont = 0;
-                while ($cont < count($MAVD_Descripcion)) {
-                    $correctivoresponsable = new MAVDetalleReemplazo;
-                    $correctivoresponsable->MAV_Id = $mtto_act_variadas->MAV_Id;
-                    $correctivoresponsable->MAVD_Descripcion = $MAVD_Descripcion[$cont];
-                    $correctivoresponsable->MAVD_Item = $cont + 1;
-                    $correctivoresponsable->MAV_Precio = $MAV_Precio[$cont];
-                    $correctivoresponsable->save();
-
-                    $cont = $cont + 1;
-                }
-            }
+            RepuestosBahiaSync::reemplazarManuales(
+                'MAV',
+                $mtto_act_variadas->MAV_Id,
+                $request->get('MAVD_Descripcion', []),
+                $request->get('MAV_Precio', [])
+            );
+            RepuestosBahiaSync::sincronizar('MAV', $mtto_act_variadas->MAV_Id, $mtto_act_variadas->RES_Id);
 
             DB::commit();
         } catch (Exception $e) {

@@ -7,7 +7,9 @@ use App\Models\Tenant\Almacen;
 use App\Models\Tenant\EmpresaFacturacion;
 use App\Models\Tenant\User;
 use App\Models\TenantTallerMotos\MantenimientoGeneralInyectada;
+use App\Models\TenantTallerMotos\MantenimientoPlan;
 use App\Models\TenantTallerMotos\MgiDetalleReemplazo;
+use App\Services\Mantenimiento\RepuestosBahiaSync;
 use App\Models\TenantTallerMotos\MgiImagen;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -145,7 +147,9 @@ class MantenimientoGeneralInyectadaController extends Controller
             : User::role('Mecanico')->select('id', 'name')->get();
 
 
-        return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.general.inyectadas.create', ["admin" => $rolAdmin, "personal" => $personal]);
+        $planes = MantenimientoPlan::where('PLAN_Tipo', 'MGI')->where('PLAN_Activo', true)->orderBy('PLAN_Nombre')->get();
+
+        return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.general.inyectadas.create', ["admin" => $rolAdmin, "personal" => $personal, "planes" => $planes]);
     }
     public function store(Request $request)
     {
@@ -209,23 +213,16 @@ class MantenimientoGeneralInyectadaController extends Controller
             $mtto_general_inyectadas->MGI_UsuarioCreacion = $idusu;
             $mtto_general_inyectadas->MGI_UsuarioEditado = $idusu;
             $mtto_general_inyectadas->PER_Id = $request->get('USU_Id');
+            $mtto_general_inyectadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
             $mtto_general_inyectadas->save();
 
-            $MGID_Descripcion = $request->get('MGID_Descripcion');
-            $MGI_Precio = $request->get('MGI_Precio');
-            if ($MGID_Descripcion) {
-                $cont = 0;
-                while ($cont < count($MGID_Descripcion)) {
-                    $mtto_det_reemplazo = new MgiDetalleReemplazo;
-                    $mtto_det_reemplazo->MGI_Id = $mtto_general_inyectadas->MGI_Id;
-                    $mtto_det_reemplazo->MGID_Descripcion = $MGID_Descripcion[$cont];
-                    $mtto_det_reemplazo->MGID_Item = $cont + 1;
-                    $mtto_det_reemplazo->MGI_Precio = $MGI_Precio[$cont];
-                    $mtto_det_reemplazo->save();
-
-                    $cont = $cont + 1;
-                }
-            }
+            RepuestosBahiaSync::reemplazarManuales(
+                'MGI',
+                $mtto_general_inyectadas->MGI_Id,
+                $request->get('MGID_Descripcion', []),
+                $request->get('MGI_Precio', [])
+            );
+            RepuestosBahiaSync::sincronizar('MGI', $mtto_general_inyectadas->MGI_Id, $mtto_general_inyectadas->RES_Id);
 
             DB::commit();
         } catch (Exception $e) {
@@ -244,6 +241,9 @@ class MantenimientoGeneralInyectadaController extends Controller
             ->select('mgi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MGI_Id', '=', $id)
             ->first();
+
+        RepuestosBahiaSync::sincronizar('MGI', (int) $id, $datos->RES_Id ?? null);
+
         $detalle = DB::table('mgi_detalle_reemplazo')
             ->where('MGI_Id', '=', $id)
             ->get();
@@ -261,6 +261,8 @@ class MantenimientoGeneralInyectadaController extends Controller
             ? User::select('id', 'name')->get()
             : User::role('Mecanico')->select('id', 'name')->get();
 
+        $planes = MantenimientoPlan::where('PLAN_Tipo', 'MGI')->where('PLAN_Activo', true)->orderBy('PLAN_Nombre')->get();
+
         return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.general.inyectadas.edit', [
             "datos" => $datos,
             "admin" => $rolAdmin,
@@ -268,7 +270,8 @@ class MantenimientoGeneralInyectadaController extends Controller
             "personal" => $personal,
             "detalle" => $detalle,
             "imagenes" => $imagenes,
-            "id" => $id
+            "id" => $id,
+            "planes" => $planes
         ]);
     }
 
@@ -505,6 +508,7 @@ class MantenimientoGeneralInyectadaController extends Controller
             $mtto_general_inyectadas->MGI_FechaTermino = $request->get('MGI_FechaTermino') ? Carbon::parse($request->get('MGI_FechaTermino'))->toDateTimeString() : null;
             $mtto_general_inyectadas->MGI_UsuarioEditado = $idusu;
             $mtto_general_inyectadas->PER_Id = $request->get('USU_Id');
+            $mtto_general_inyectadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
             if ($rolAdmin) {
                 $mtto_general_inyectadas->MGI_Estado = 'APROBADO';
             }
@@ -513,26 +517,13 @@ class MantenimientoGeneralInyectadaController extends Controller
             }
             $mtto_general_inyectadas->update();
 
-
-            DB::table('mgi_detalle_reemplazo')
-                ->where('MGI_Id', $mtto_general_inyectadas->MGI_Id)
-                ->delete();
-
-            $MGID_Descripcion = $request->get('MGID_Descripcion');
-            $MGI_Precio = $request->get('MGI_Precio');
-            if ($MGID_Descripcion) {
-                $cont = 0;
-                while ($cont < count($MGID_Descripcion)) {
-                    $correctivoresponsable = new MgiDetalleReemplazo;
-                    $correctivoresponsable->MGI_Id = $mtto_general_inyectadas->MGI_Id;
-                    $correctivoresponsable->MGID_Descripcion = $MGID_Descripcion[$cont];
-                    $correctivoresponsable->MGID_Item = $cont + 1;
-                    $correctivoresponsable->MGI_Precio = $MGI_Precio[$cont];
-                    $correctivoresponsable->save();
-
-                    $cont = $cont + 1;
-                }
-            }
+            RepuestosBahiaSync::reemplazarManuales(
+                'MGI',
+                $mtto_general_inyectadas->MGI_Id,
+                $request->get('MGID_Descripcion', []),
+                $request->get('MGI_Precio', [])
+            );
+            RepuestosBahiaSync::sincronizar('MGI', $mtto_general_inyectadas->MGI_Id, $mtto_general_inyectadas->RES_Id);
 
             DB::commit();
         } catch (Exception $e) {

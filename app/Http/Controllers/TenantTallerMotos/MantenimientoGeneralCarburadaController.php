@@ -7,7 +7,9 @@ use App\Models\Tenant\Almacen;
 use App\Models\Tenant\EmpresaFacturacion;
 use App\Models\Tenant\User;
 use App\Models\TenantTallerMotos\MantenimientoGeneralCarburada;
+use App\Models\TenantTallerMotos\MantenimientoPlan;
 use App\Models\TenantTallerMotos\MgcDetalleReemplazo;
+use App\Services\Mantenimiento\RepuestosBahiaSync;
 use App\Models\TenantTallerMotos\MgcImagen;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -144,8 +146,9 @@ class MantenimientoGeneralCarburadaController extends Controller
             ? User::select('id', 'name')->get()
             : User::role('Mecanico')->select('id', 'name')->get();
 
+        $planes = MantenimientoPlan::where('PLAN_Tipo', 'MGC')->where('PLAN_Activo', true)->orderBy('PLAN_Nombre')->get();
 
-        return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.general.carburadas.create', ["admin" => $rolAdmin, "personal" => $personal]);
+        return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.general.carburadas.create', ["admin" => $rolAdmin, "personal" => $personal, "planes" => $planes]);
     }
     public function store(Request $request)
     {
@@ -202,23 +205,16 @@ class MantenimientoGeneralCarburadaController extends Controller
             $mtto_general_carburadas->MGC_UsuarioCreacion = $idusu;
             $mtto_general_carburadas->MGC_UsuarioEditado = $idusu;
             $mtto_general_carburadas->PER_Id = $request->get('USU_Id');
+            $mtto_general_carburadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
             $mtto_general_carburadas->save();
 
-            $MGCD_Descripcion = $request->get('MGCD_Descripcion');
-            $MGC_Precio = $request->get('MGC_Precio');
-            if ($MGCD_Descripcion) {
-                $cont = 0;
-                while ($cont < count($MGCD_Descripcion)) {
-                    $mtto_det_reemplazo = new MgcDetalleReemplazo;
-                    $mtto_det_reemplazo->MGC_Id = $mtto_general_carburadas->MGC_Id;
-                    $mtto_det_reemplazo->MGCD_Descripcion = $MGCD_Descripcion[$cont];
-                    $mtto_det_reemplazo->MGCD_Item = $cont + 1;
-                    $mtto_det_reemplazo->MGC_Precio = $MGC_Precio[$cont];
-                    $mtto_det_reemplazo->save();
-
-                    $cont = $cont + 1;
-                }
-            }
+            RepuestosBahiaSync::reemplazarManuales(
+                'MGC',
+                $mtto_general_carburadas->MGC_Id,
+                $request->get('MGCD_Descripcion', []),
+                $request->get('MGC_Precio', [])
+            );
+            RepuestosBahiaSync::sincronizar('MGC', $mtto_general_carburadas->MGC_Id, $mtto_general_carburadas->RES_Id);
 
             DB::commit();
         } catch (Exception $e) {
@@ -237,6 +233,9 @@ class MantenimientoGeneralCarburadaController extends Controller
             ->select('mgi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MGC_Id', '=', $id)
             ->first();
+
+        RepuestosBahiaSync::sincronizar('MGC', (int) $id, $datos->RES_Id ?? null);
+
         $detalle = DB::table('mgc_detalle_reemplazo')
             ->where('MGC_Id', '=', $id)
             ->get();
@@ -254,6 +253,8 @@ class MantenimientoGeneralCarburadaController extends Controller
             ? User::select('id', 'name')->get()
             : User::role('Mecanico')->select('id', 'name')->get();
 
+        $planes = MantenimientoPlan::where('PLAN_Tipo', 'MGC')->where('PLAN_Activo', true)->orderBy('PLAN_Nombre')->get();
+
         return view('tenant_' . tenant('tipo_negocio') . '.mantenimientos.general.carburadas.edit', [
             "datos" => $datos,
             "admin" => $rolAdmin,
@@ -261,7 +262,8 @@ class MantenimientoGeneralCarburadaController extends Controller
             "personal" => $personal,
             "detalle" => $detalle,
             "imagenes" => $imagenes,
-            "id" => $id
+            "id" => $id,
+            "planes" => $planes,
         ]);
     }
 
@@ -499,6 +501,7 @@ class MantenimientoGeneralCarburadaController extends Controller
             $mtto_general_carburadas->MGC_FechaTermino = $request->get('MGC_FechaTermino') ? Carbon::parse($request->get('MGC_FechaTermino'))->toDateTimeString() : null;
             $mtto_general_carburadas->MGC_UsuarioEditado = $idusu;
             $mtto_general_carburadas->PER_Id = $request->get('USU_Id');
+            $mtto_general_carburadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
             if ($rolAdmin) {
                 $mtto_general_carburadas->MGC_Estado = 'APROBADO';
             }
@@ -507,26 +510,13 @@ class MantenimientoGeneralCarburadaController extends Controller
             }
             $mtto_general_carburadas->update();
 
-
-            DB::table('mgc_detalle_reemplazo')
-                ->where('MGC_Id', $mtto_general_carburadas->MGC_Id)
-                ->delete();
-
-            $MGCD_Descripcion = $request->get('MGCD_Descripcion');
-            $MGC_Precio = $request->get('MGC_Precio');
-            if ($MGCD_Descripcion) {
-                $cont = 0;
-                while ($cont < count($MGCD_Descripcion)) {
-                    $correctivoresponsable = new MgcDetalleReemplazo;
-                    $correctivoresponsable->MGC_Id = $mtto_general_carburadas->MGC_Id;
-                    $correctivoresponsable->MGCD_Descripcion = $MGCD_Descripcion[$cont];
-                    $correctivoresponsable->MGCD_Item = $cont + 1;
-                    $correctivoresponsable->MGC_Precio = $MGC_Precio[$cont];
-                    $correctivoresponsable->save();
-
-                    $cont = $cont + 1;
-                }
-            }
+            RepuestosBahiaSync::reemplazarManuales(
+                'MGC',
+                $mtto_general_carburadas->MGC_Id,
+                $request->get('MGCD_Descripcion', []),
+                $request->get('MGC_Precio', [])
+            );
+            RepuestosBahiaSync::sincronizar('MGC', $mtto_general_carburadas->MGC_Id, $mtto_general_carburadas->RES_Id);
 
             DB::commit();
         } catch (Exception $e) {

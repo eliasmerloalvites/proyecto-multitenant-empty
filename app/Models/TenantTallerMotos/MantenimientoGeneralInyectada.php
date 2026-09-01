@@ -85,6 +85,8 @@ class MantenimientoGeneralInyectada  extends Model
         'MGI_Estado',
 
         'PER_Id',
+        'PLAN_Id',
+        'RES_Id',
 
         'statevalidate',
         'notificar',

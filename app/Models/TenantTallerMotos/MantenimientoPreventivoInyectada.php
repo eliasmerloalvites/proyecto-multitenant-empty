@@ -65,6 +65,8 @@ class MantenimientoPreventivoInyectada  extends Model
         'MPI_Estado',
 
         'PER_Id',
+        'PLAN_Id',
+        'RES_Id',
 
         'statevalidate',
         'notificar',

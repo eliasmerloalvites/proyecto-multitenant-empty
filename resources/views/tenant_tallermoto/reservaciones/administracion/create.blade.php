@@ -997,6 +997,65 @@
 
                             </div>
 
+                            {{-- TIPO DE MANTENIMIENTO --}}
+                            <div class="form-group" style="margin-bottom:2px">
+
+                                <label style="font-size: 13px;">
+                                    Tipo de mantenimiento *
+                                </label>
+
+                                <select name="TIP_Mantenimiento" id="idTIP_Mantenimiento" required
+                                    class="form-control reservation-input">
+                                    <option value="">Seleccione...</option>
+                                    <option value="MANTENIMIENTO GENERAL CARBURADA">Mantenimiento General (Carburada)</option>
+                                    <option value="MANTENIMIENTO GENERAL INYECTADA">Mantenimiento General (Inyectada)</option>
+                                    <option value="MANTENIMIENTO PREVENTIVO CARBURADA">Mantenimiento Preventivo (Carburada)</option>
+                                    <option value="MANTENIMIENTO PREVENTIVO INYECTADA">Mantenimiento Preventivo (Inyectada)</option>
+                                    <option value="ACTIVIDAD VARIADA">Otro / Actividad variada</option>
+                                </select>
+
+                            </div>
+
+                            {{-- CAMBIO DE ACEITE --}}
+                            <div class="form-group" style="margin-bottom:2px">
+
+                                <label style="font-size: 13px;">
+                                    ¿Cambio de aceite?
+                                </label>
+
+                                <select name="CAM_Aceite" id="idCAM_Aceite" class="form-control reservation-input">
+                                    <option value="NO">No</option>
+                                    <option value="SI">Sí</option>
+                                </select>
+
+                            </div>
+
+                            {{-- TIPO DE ACEITE (solo si hay cambio de aceite) --}}
+                            <div class="form-group" id="grupoAceite" style="margin-bottom:2px; display:none;">
+
+                                <label style="font-size: 13px;">
+                                    Tipo / marca de aceite
+                                </label>
+
+                                <input type="text" name="aceite" class="form-control reservation-input"
+                                    placeholder="Ej. 20W50 semisintético">
+
+                            </div>
+
+                            {{-- CAMBIO DE FILTRO DE ACEITE --}}
+                            <div class="form-group" style="margin-bottom:2px">
+
+                                <label style="font-size: 13px;">
+                                    ¿Cambio de filtro de aceite?
+                                </label>
+
+                                <select name="CAM_FiltroAceite" class="form-control reservation-input">
+                                    <option value="NO">No</option>
+                                    <option value="SI">Sí</option>
+                                </select>
+
+                            </div>
+
                             {{-- DETALLE --}}
                             <div class="form-group" style="margin-bottom:2px">
 
@@ -1352,6 +1411,10 @@
                     $('#ver_Mecanico').text(Mecanico_id_ver);
                     $('#ver_FechaProgramada').text(FechaProgramada_id_ver);
                 });
+
+                $('#idCAM_Aceite').on('change', function() {
+                    $('#grupoAceite').toggle($(this).val() === 'SI');
+                }).trigger('change');
 
                 $('#btnInahibilitarReservacion').on('click', function(e) {
                     e.preventDefault();

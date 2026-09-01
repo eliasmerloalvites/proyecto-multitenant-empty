@@ -377,6 +377,17 @@
                                 </h3>
                             </div>
                             <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="form-group col-lg-6 col-md-8 col-sm-12 col-12">
+                                <label>PLAN / PAQUETE (opcional)</label>
+                                <select class="form-control" id="PLAN_Id" name="PLAN_Id">
+                                    <option value="">Checklist completo</option>
+                                    @foreach ($planes as $plan)
+                                        <option value="{{ $plan->PLAN_Id }}" data-items='@json($plan->PLAN_Items)' {{ $plan->PLAN_Id == $datos->PLAN_Id ? 'selected' : '' }}>{{ $plan->PLAN_Nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="form-group col-lg-1 col-md-1 col-sm-1 col-2" style="text-align: left">
                                 1.0
@@ -1138,7 +1149,36 @@
                 ActivarMGI();
             });
 
+            inicializarPlanChecklist('MGI');
         });
+
+        function inicializarPlanChecklist(prefijo) {
+            var regexItem = new RegExp('^' + prefijo + '_Det(\\d+)$');
+            var filasPorCodigo = {};
+            $('input[name^="' + prefijo + '_Det"], select[name^="' + prefijo + '_Det"]').each(function() {
+                var name = $(this).attr('name');
+                var m = name.match(regexItem);
+                if (m) {
+                    filasPorCodigo['Det' + m[1]] = $(this).closest('.row');
+                }
+            });
+
+            function aplicarFiltro() {
+                var items = $('#PLAN_Id option:selected').data('items');
+                if (!items) {
+                    Object.keys(filasPorCodigo).forEach(function(codigo) {
+                        filasPorCodigo[codigo].show();
+                    });
+                    return;
+                }
+                Object.keys(filasPorCodigo).forEach(function(codigo) {
+                    filasPorCodigo[codigo].toggle(items.indexOf(codigo) !== -1);
+                });
+            }
+
+            $('#PLAN_Id').on('change', aplicarFiltro);
+            aplicarFiltro();
+        }
 
         function cargarFileForImagen(){
             var container = document.querySelector('.fileforImagen');
@@ -1296,8 +1336,9 @@
             <?php foreach ($detalle as $dev): ?>
                 var descripcion = `<?php echo $dev->MGID_Descripcion; ?>`;
                 var precio = `<?php echo $dev->MGI_Precio; ?>`;
+                var origen = `<?php echo $dev->origen ?? 'MANUAL'; ?>`;
 
-                var fila1 = [descripcion, precio];
+                var fila1 = [descripcion, precio, origen];
                 ListDet.push(fila1);
             <?php endforeach ?>
 
@@ -1446,16 +1487,26 @@
             $("#detalles tbody").html('');
                 var totalCosto = 0
                 for (var i = ListDet.length - 1; i >= 0; i--) {
-                    var col0 = '<tr  onClick="MostrarValores1(' + ListDet[i][0] + ');" id="fila' + i + '">'
+                    var esBahia = ListDet[i][2] === 'BAHIA';
+                    var col0 = '<tr id="fila' + i + '">'
                     var col1 = '<td style="text-align: left;">' + (i + 1) + '</td>'
-                    var col2 = '<td style="text-align: left;"><input id="MGID_Descripcion' + i + '" type="hidden" name="MGID_Descripcion[]" value="' + ListDet[i][0] +
-                        '">' + ListDet[i][0] + '</td>'
-                    var col3 = '<td style="text-align: left;"><input id="MGI_Precio' + i + '" type="hidden" name="MGI_Precio[]" value="' + ListDet[i][1] +
-                        '">' + ListDet[i][1] + '</td>'
-                    var col4 =
-                        '<td style="width:80px; height : 24px; text-align: center;"><button  type="button"  class="btn" onclick="eliminar(' +
-                        i +
-                        ');" style="border-radius: 10px; height : 24px; color:red;padding:0px"><i class="fa fa-trash"></button></td></tr>';
+                    var col2, col3, col4;
+                    if (esBahia) {
+                        col2 = '<td style="text-align: left;">' + ListDet[i][0] +
+                            ' <span class="badge badge-info">BAHÍA</span></td>'
+                        col3 = '<td style="text-align: left;">' + ListDet[i][1] + '</td>'
+                        col4 = '<td style="width:80px; height : 24px; text-align: center;" title="Se gestiona desde la cuenta de bahia">' +
+                            '<i class="fa fa-lock text-muted"></i></td></tr>';
+                    } else {
+                        col2 = '<td style="text-align: left;"><input id="MGID_Descripcion' + i + '" type="hidden" name="MGID_Descripcion[]" value="' + ListDet[i][0] +
+                            '">' + ListDet[i][0] + '</td>'
+                        col3 = '<td style="text-align: left;"><input id="MGI_Precio' + i + '" type="hidden" name="MGI_Precio[]" value="' + ListDet[i][1] +
+                            '">' + ListDet[i][1] + '</td>'
+                        col4 =
+                            '<td style="width:80px; height : 24px; text-align: center;"><button  type="button"  class="btn" onclick="eliminar(' +
+                            i +
+                            ');" style="border-radius: 10px; height : 24px; color:red;padding:0px"><i class="fa fa-trash"></button></td></tr>';
+                    }
                     var fila = col0 + col1 + col2 + col3 + col4 ;
                     $("#detalles").append(fila);
                     totalCosto = parseFloat(totalCosto) + parseFloat(ListDet[i][1])

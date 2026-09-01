@@ -161,12 +161,12 @@
                             <div class="card-body">
                                 <div class="form-group">
                                     <label>INGRESO DE UNIDAD</label>
-                                    <textarea class="form-control" rows="4" name="MPC_DetalleIngreso" id="MPC_DetalleIngreso"
+                                    <textarea class="form-control" rows="4" name="MPI_DetalleIngreso" id="MPI_DetalleIngreso"
                                         onkeyup="handleText(this); this.value=this.value.toUpperCase();"></textarea>
                                 </div>
                                 <div class="form-group mb-0">
                                     <label>OBSERVACIONES</label>
-                                    <textarea class="form-control" rows="4" name="MPC_DetalleObservacion" id="MPC_DetalleObservacion"
+                                    <textarea class="form-control" rows="4" name="MPI_DetalleObservacion" id="MPI_DetalleObservacion"
                                         onkeyup="handleText(this); this.value=this.value.toUpperCase();"></textarea>
                                 </div>
                             </div>
@@ -185,6 +185,17 @@
                                 </h3>
                             </div>
                             <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="form-group col-lg-6 col-md-8 col-sm-12 col-12">
+                                        <label>PLAN / PAQUETE (opcional)</label>
+                                        <select class="form-control" id="PLAN_Id" name="PLAN_Id">
+                                            <option value="">Checklist completo</option>
+                                            @foreach ($planes as $plan)
+                                                <option value="{{ $plan->PLAN_Id }}" data-items='@json($plan->PLAN_Items)'>{{ $plan->PLAN_Nombre }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="row">
                                     <div class="form-group col-lg-1 col-md-1 col-sm-1 col-2" style="text-align: left">
                                         1.0
@@ -194,15 +205,15 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det1"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det1"
                                                 id="customSwitch1">
                                             <label class="custom-control-label" for="customSwitch1"></label>
                                         </div>
                                     </div>
                                     <div class="form-group col-lg-4 col-md-4 col-sm-12 col-12" style="text-align: center">
                                         <input type="text" class="form-control form-control-sm"
-                                            onKeyUp="this.value=this.value.toUpperCase();" id="MPC_Det1Informacion"
-                                            name="MPC_Det1Informacion" placeholder="Ingrese informacion" value=""
+                                            onKeyUp="this.value=this.value.toUpperCase();" id="MPI_Det1Informacion"
+                                            name="MPI_Det1Informacion" placeholder="Ingrese informacion" value=""
                                             maxlength="50">
                                     </div>
                                 </div>
@@ -215,7 +226,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det2"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det2"
                                                 id="customSwitch2">
                                             <label class="custom-control-label" for="customSwitch2"></label>
                                         </div>
@@ -232,7 +243,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det3"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det3"
                                                 id="customSwitch3">
                                             <label class="custom-control-label" for="customSwitch3"></label>
                                         </div>
@@ -249,7 +260,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det4"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det4"
                                                 id="customSwitch4">
                                             <label class="custom-control-label" for="customSwitch4"></label>
                                         </div>
@@ -266,7 +277,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det5"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det5"
                                                 id="customSwitch5">
                                             <label class="custom-control-label" for="customSwitch5"></label>
                                         </div>
@@ -283,7 +294,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det6"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det6"
                                                 id="customSwitch6">
                                             <label class="custom-control-label" for="customSwitch6"></label>
                                         </div>
@@ -300,7 +311,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det7"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det7"
                                                 id="customSwitch7">
                                             <label class="custom-control-label" for="customSwitch7"></label>
                                         </div>
@@ -309,14 +320,14 @@
                                         class="form-group col-lg-4 col-md-4 col-sm-12 col-12 row "style="text-align: left">
                                         <div class="form-group col-lg-6 col-md-6 col-sm-6 col-12 "style="text-align: left">
                                             <input type="text" class="form-control form-control-sm"
-                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPC_Det7Admision"
-                                                name="MPC_Det7Admision" placeholder="Admision: #.## mm" value=""
+                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPI_Det7Admision"
+                                                name="MPI_Det7Admision" placeholder="Admision: #.## mm" value=""
                                                 maxlength="10" required="">
                                         </div>
                                         <div class="form-group col-lg-6 col-md-6 col-sm-6 col-12 "style="text-align: left">
                                             <input type="text" class="form-control form-control-sm"
-                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPC_Det7Escape"
-                                                name="MPC_Det7Escape" placeholder="Escape #.## mm" value=""
+                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPI_Det7Escape"
+                                                name="MPI_Det7Escape" placeholder="Escape #.## mm" value=""
                                                 maxlength="10" required="">
                                         </div>
                                     </div>
@@ -330,7 +341,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det8"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det8"
                                                 id="customSwitch8">
                                             <label class="custom-control-label" for="customSwitch8"></label>
                                         </div>
@@ -339,8 +350,8 @@
                                         class="form-group col-lg-4 col-md-4 col-sm-12 col-12 row "style="text-align: left">
                                         <div class="form-group col-lg-6 col-md-6 col-sm-6 col-12 "style="text-align: left">
                                             <input type="text" class="form-control form-control-sm"
-                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPC_Det8Medida"
-                                                name="MPC_Det8Medida" placeholder="Medida: #.## mm" value=""
+                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPI_Det8Medida"
+                                                name="MPI_Det8Medida" placeholder="Medida: #.## mm" value=""
                                                 maxlength="10" required="">
                                         </div>
                                     </div>
@@ -354,7 +365,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det9"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det9"
                                                 id="customSwitch9">
                                             <label class="custom-control-label" for="customSwitch9"></label>
                                         </div>
@@ -371,7 +382,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det10"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det10"
                                                 id="customSwitch10">
                                             <label class="custom-control-label" for="customSwitch10"></label>
                                         </div>
@@ -388,7 +399,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det11"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det11"
                                                 id="customSwitch11">
                                             <label class="custom-control-label" for="customSwitch11"></label>
                                         </div>
@@ -405,7 +416,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det12"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det12"
                                                 id="customSwitch12">
                                             <label class="custom-control-label" for="customSwitch12"></label>
                                         </div>
@@ -422,7 +433,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det13"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det13"
                                                 id="customSwitch13">
                                             <label class="custom-control-label" for="customSwitch13"></label>
                                         </div>
@@ -439,7 +450,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det14"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det14"
                                                 id="customSwitch14">
                                             <label class="custom-control-label" for="customSwitch14"></label>
                                         </div>
@@ -455,8 +466,8 @@
                                         PRESION DE NEUMATICO DELANTERO
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
-                                        <input type="number" class="form-control form-control-sm" id="MPC_Det15"
-                                            name="MPC_Det15" placeholder="## PSI" value="" required="">
+                                        <input type="number" class="form-control form-control-sm" id="MPI_Det15"
+                                            name="MPI_Det15" placeholder="## PSI" value="" required="">
                                     </div>
                                     <div class="form-group col-lg-4 col-md-4 col-sm-12 col-12 "style="text-align: left">
                                     </div>
@@ -469,8 +480,8 @@
                                         PRESION DE NEUMATICO POSTERIOR
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
-                                        <input type="number" class="form-control form-control-sm" id="MPC_Det16"
-                                            name="MPC_Det16" placeholder="## PSI" value="" required="">
+                                        <input type="number" class="form-control form-control-sm" id="MPI_Det16"
+                                            name="MPI_Det16" placeholder="## PSI" value="" required="">
                                     </div>
                                     <div class="form-group col-lg-4 col-md-4 col-sm-12 col-12 "style="text-align: left">
                                     </div>
@@ -484,7 +495,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det17"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det17"
                                                 id="customSwitch17">
                                             <label class="custom-control-label" for="customSwitch17"></label>
                                         </div>
@@ -493,8 +504,8 @@
                                         class="form-group col-lg-4 col-md-4 col-sm-12 col-12 row "style="text-align: left">
                                         <div class="form-group col-lg-6 col-md-6 col-sm-6 col-12 "style="text-align: left">
                                             <input type="text" class="form-control form-control-sm"
-                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPC_Det17Ventilador"
-                                                name="MPC_Det17Ventilador" placeholder="Ventilador: ## " value=""
+                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPI_Det17Ventilador"
+                                                name="MPI_Det17Ventilador" placeholder="Ventilador: ## " value=""
                                                 maxlength="10" required="">
                                         </div>
                                     </div>
@@ -508,7 +519,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det18"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det18"
                                                 id="customSwitch18">
                                             <label class="custom-control-label" for="customSwitch18"></label>
                                         </div>
@@ -525,7 +536,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det19"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det19"
                                                 id="customSwitch19">
                                             <label class="custom-control-label" for="customSwitch19"></label>
                                         </div>
@@ -534,20 +545,20 @@
                                         class="form-group col-lg-4 col-md-4 col-sm-12 col-12 row "style="text-align: left">
                                         <div class="form-group col-lg-4 col-md-4 col-sm-4 col-12 "style="text-align: left">
                                             <input type="text" class="form-control form-control-sm"
-                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPC_Det19Vida"
-                                                name="MPC_Det19Vida" placeholder="%. VIDA UTIL: #% " value=""
+                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPI_Det19Vida"
+                                                name="MPI_Det19Vida" placeholder="%. VIDA UTIL: #% " value=""
                                                 maxlength="20" required="">
                                         </div>
                                         <div class="form-group col-lg-4 col-md-4 col-sm-4 col-12 "style="text-align: left">
                                             <input type="text" class="form-control form-control-sm"
-                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPC_Det19Carga"
-                                                name="MPC_Det19Carga" placeholder="V. Carga: ## " value=""
+                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPI_Det19Carga"
+                                                name="MPI_Det19Carga" placeholder="V. Carga: ## " value=""
                                                 maxlength="20" required="">
                                         </div>
                                         <div class="form-group col-lg-4 col-md-4 col-sm-4 col-12 "style="text-align: left">
                                             <input type="text" class="form-control form-control-sm"
-                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPC_Det19Arranque"
-                                                name="MPC_Det19Arranque" placeholder="V. ARRANQUE: ## DVC "
+                                                onKeyUp="this.value=this.value.toUpperCase();" id="MPI_Det19Arranque"
+                                                name="MPI_Det19Arranque" placeholder="V. ARRANQUE: ## DVC "
                                                 value="" maxlength="20" required="">
                                         </div>
                                     </div>
@@ -561,7 +572,7 @@
                                     </div>
                                     <div class="form-group col-lg-1 col-md-1 col-sm-3 col-2">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" name="MPC_Det20"
+                                            <input type="checkbox" class="custom-control-input" name="MPI_Det20"
                                                 id="customSwitch20">
                                             <label class="custom-control-label" for="customSwitch20"></label>
                                         </div>
@@ -574,7 +585,7 @@
 
                                 <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12" align="left">
                                     <label for="Descripcion de averia">DETALLE DE LO REALIZADO</label><br>
-                                    <textarea onKeyUp="handleText(this);" name="MPC_DetalleRealizado" id="MPC_DetalleRealizado" class="form-control"
+                                    <textarea onKeyUp="handleText(this);" name="MPI_DetalleRealizado" id="MPI_DetalleRealizado" class="form-control"
                                         rows="6" onKeyUp="this.value=this.value.toUpperCase();"></textarea>
                                 </div>
                                 <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12" align="left">
@@ -623,8 +634,8 @@
                                     <div class="col-lg-8">
                                         <div class="form-group">
                                             <label>DESCRIPCIÓN</label>
-                                            <input class="form-control" id="MPCD_Descripcion_Aux"
-                                                name="MPCD_Descripcion_Aux" type="text">
+                                            <input class="form-control" id="MPID_Descripcion_Aux"
+                                                name="MPID_Descripcion_Aux" type="text">
                                         </div>
                                     </div>
                                     <div class="col-lg-3">
@@ -751,11 +762,40 @@
                 AgregarMPC()
             });
 
+            inicializarPlanChecklist('MPI');
         });
+
+        function inicializarPlanChecklist(prefijo) {
+            var regexItem = new RegExp('^' + prefijo + '_Det(\\d+)$');
+            var filasPorCodigo = {};
+            $('input[name^="' + prefijo + '_Det"], select[name^="' + prefijo + '_Det"]').each(function() {
+                var name = $(this).attr('name');
+                var m = name.match(regexItem);
+                if (m) {
+                    filasPorCodigo['Det' + m[1]] = $(this).closest('.row');
+                }
+            });
+
+            function aplicarFiltro() {
+                var items = $('#PLAN_Id option:selected').data('items');
+                if (!items) {
+                    Object.keys(filasPorCodigo).forEach(function(codigo) {
+                        filasPorCodigo[codigo].show();
+                    });
+                    return;
+                }
+                Object.keys(filasPorCodigo).forEach(function(codigo) {
+                    filasPorCodigo[codigo].toggle(items.indexOf(codigo) !== -1);
+                });
+            }
+
+            $('#PLAN_Id').on('change', aplicarFiltro);
+            aplicarFiltro();
+        }
 
         function agregardetalle() {
 
-            var descripcion = $('#MPCD_Descripcion_Aux').val();
+            var descripcion = $('#MPID_Descripcion_Aux').val();
             var precio = $('#MPCD_Precio_Aux').val();
 
             if (descripcion != "" && precio != "") {
@@ -821,11 +861,11 @@
             for (var i = ListDetVenta.length - 1; i >= 0; i--) {
                 var col0 = '<tr  onClick="MostrarValores1(' + ListDetVenta[i][0] + ');" id="fila' + i + '">'
                 var col1 = '<td style="text-align: left;">' + (i + 1) + '</td>'
-                var col2 = '<td style="text-align: left;"><input id="MPCD_Descripcion' + i +
-                    '" type="hidden" name="MPCD_Descripcion[]" value="' + ListDetVenta[i][0] +
+                var col2 = '<td style="text-align: left;"><input id="MPID_Descripcion' + i +
+                    '" type="hidden" name="MPID_Descripcion[]" value="' + ListDetVenta[i][0] +
                     '">' + ListDetVenta[i][0] + '</td>'
-                var col3 = '<td style="text-align: left;"><input id="MPC_Precio' + i +
-                    '" type="hidden" name="MPC_Precio[]" value="' + ListDetVenta[i][1] +
+                var col3 = '<td style="text-align: left;"><input id="MPI_Precio' + i +
+                    '" type="hidden" name="MPI_Precio[]" value="' + ListDetVenta[i][1] +
                     '">' + ListDetVenta[i][1] + '</td>'
                 var col4 =
                     '<td style="width:80px; height : 24px; text-align: center;"><button  type="button"  class="btn" onclick="eliminar(' +
@@ -873,7 +913,7 @@
         }
 
         function limpiardetalle() {
-            $('#MPCD_Descripcion_Aux').val('');
+            $('#MPID_Descripcion_Aux').val('');
             $('#MPCD_Precio_Aux').val('');
 
         }
