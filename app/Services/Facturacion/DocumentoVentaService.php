@@ -179,11 +179,12 @@ class DocumentoVentaService
             );
         }
 
-        $serie = $sede->seriePara(EmpresaFacturacion::TIPO_NOTA_CREDITO);
+        $serie = $sede->serieNotaCreditoPara($documentoAfectado->DOV_Tipo);
 
         if (!$serie) {
+            $origenLabel = $documentoAfectado->DOV_Tipo === EmpresaFacturacion::TIPO_FACTURA ? 'factura' : 'boleta';
             throw new RuntimeException(
-                'La sede "' . $sede->ALM_NombreAlmacen . '" no tiene configurada la serie de nota de credito.'
+                'La sede "' . $sede->ALM_NombreAlmacen . '" no tiene configurada la serie de nota de credito para ' . $origenLabel . '.'
             );
         }
 

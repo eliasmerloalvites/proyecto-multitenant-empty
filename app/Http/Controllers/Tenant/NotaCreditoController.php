@@ -106,9 +106,10 @@ class NotaCreditoController extends Controller
             ->get();
 
         $sede = Almacen::find($venta->ALM_Id);
+        $origenLabel = $original->DOV_Tipo === EmpresaFacturacion::TIPO_FACTURA ? 'factura' : 'boleta';
         $problemasSede = array_filter([
-            !$sede->seriePara(EmpresaFacturacion::TIPO_NOTA_CREDITO)
-                ? 'A "' . $sede->ALM_NombreAlmacen . '" le falta la serie de nota de credito.'
+            !$sede->serieNotaCreditoPara($original->DOV_Tipo)
+                ? 'A "' . $sede->ALM_NombreAlmacen . '" le falta la serie de nota de credito para ' . $origenLabel . '.'
                 : null,
         ]);
 

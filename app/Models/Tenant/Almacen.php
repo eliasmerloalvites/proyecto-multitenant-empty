@@ -35,6 +35,8 @@ class Almacen extends Model
         'ALM_SerieFactura',
         'ALM_SerieBoleta',
         'ALM_SerieNotaCredito',
+        'ALM_SerieNotaCreditoBoleta',
+        'ALM_SerieNotaCreditoFactura',
         'ALM_SerieNotaDebito',
         'ALM_SerieGuiaRemision',
         'ALM_SerieNotaVenta',
@@ -106,8 +108,18 @@ class Almacen extends Model
     const SERIES = [
         EmpresaFacturacion::TIPO_BOLETA        => 'ALM_SerieBoleta',
         EmpresaFacturacion::TIPO_FACTURA       => 'ALM_SerieFactura',
-        EmpresaFacturacion::TIPO_NOTA_CREDITO  => 'ALM_SerieNotaCredito',
         EmpresaFacturacion::TIPO_GUIA_REMISION => 'ALM_SerieGuiaRemision',
+    ];
+
+    /**
+     * Columna de serie de nota de credito segun el tipo de comprobante
+     * afectado (SUNAT exige series distintas: BC01 para boleta, FC01 para
+     * factura). No entra en SERIES porque no se selecciona por DOV_Tipo de
+     * la propia nota (siempre 'NCR'), sino por el documento que acredita.
+     */
+    const SERIES_NOTA_CREDITO = [
+        EmpresaFacturacion::TIPO_BOLETA  => 'ALM_SerieNotaCreditoBoleta',
+        EmpresaFacturacion::TIPO_FACTURA => 'ALM_SerieNotaCreditoFactura',
     ];
 
     /**
@@ -117,6 +129,20 @@ class Almacen extends Model
     {
         $columna = self::SERIES[$tipo]
             ?? throw new \InvalidArgumentException("Tipo de documento no soportado: $tipo");
+
+        $serie = trim((string) $this->{$columna});
+
+        return $serie !== '' ? strtoupper($serie) : null;
+    }
+
+    /**
+     * Serie de nota de credito segun el tipo del comprobante que se acredita
+     * (recibe EmpresaFacturacion::TIPO_BOLETA o TIPO_FACTURA).
+     */
+    public function serieNotaCreditoPara(string $tipoDocumentoAfectado): ?string
+    {
+        $columna = self::SERIES_NOTA_CREDITO[$tipoDocumentoAfectado]
+            ?? throw new \InvalidArgumentException("Tipo de documento afectado no soportado para nota de credito: $tipoDocumentoAfectado");
 
         $serie = trim((string) $this->{$columna});
 
