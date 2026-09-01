@@ -42,7 +42,7 @@ class MantenimientoActividadVariadaController extends Controller
     {
         if ($request->ajax()) {
             $roles = Auth::user()->getRoleNames();
-            $idpersonal = Auth::user()->PER_Id;
+            $idpersonal = Auth::user()->id;
 
             $rolAdmin = false;
             if ($roles->contains('Admin') || $roles->contains('Gerente')) {
