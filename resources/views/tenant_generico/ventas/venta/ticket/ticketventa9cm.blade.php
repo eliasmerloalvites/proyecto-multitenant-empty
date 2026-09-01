@@ -167,10 +167,13 @@ body{
 
         <!-- LOGO -->
         <div class="logo-container">
+            @php
+                $logoPath = !empty($datosalmacen->logo_pdf) ? $datosalmacen->logo_pdf : '/images/logo.png';
+            @endphp
             @if($generaimagen)
-                <img src="{{ public_path('/images/logo.png') }}" class="logo">
+                <img src="{{ public_path($logoPath) }}" class="logo">
             @else
-                <img src="{{ asset_root('/images/logo.png') }}" class="logo">
+                <img src="{{ asset_root($logoPath) }}" class="logo">
             @endif
 
             <div class="empresa">
