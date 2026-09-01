@@ -9,6 +9,7 @@ use App\Models\Tenant\User;
 use App\Models\TenantTallerMotos\MantenimientoPreventivoInyectada;
 use App\Models\TenantTallerMotos\MantenimientoPlan;
 use App\Models\TenantTallerMotos\MpiDetalleReemplazo;
+use App\Services\Mantenimiento\RepuestosBahiaSync;
 use App\Models\TenantTallerMotos\MpiImagen;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -206,21 +207,13 @@ class MantenimientoPreventivoInyectadaController extends Controller
             $mtto_preventivo_inyectadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
             $mtto_preventivo_inyectadas->save();
 
-            $MPID_Descripcion = $request->get('MPID_Descripcion');
-            $MPI_Precio = $request->get('MPI_Precio');
-            if ($MPID_Descripcion) {
-                $cont = 0;
-                while ($cont < count($MPID_Descripcion)) {
-                    $mtto_det_reemplazo = new MpiDetalleReemplazo;
-                    $mtto_det_reemplazo->MPI_Id = $mtto_preventivo_inyectadas->MPI_Id;
-                    $mtto_det_reemplazo->MPID_Descripcion = $MPID_Descripcion[$cont];
-                    $mtto_det_reemplazo->MPID_Item = $cont + 1;
-                    $mtto_det_reemplazo->MPI_Precio = $MPI_Precio[$cont];
-                    $mtto_det_reemplazo->save();
-
-                    $cont = $cont + 1;
-                }
-            }
+            RepuestosBahiaSync::reemplazarManuales(
+                'MPI',
+                $mtto_preventivo_inyectadas->MPI_Id,
+                $request->get('MPID_Descripcion', []),
+                $request->get('MPI_Precio', [])
+            );
+            RepuestosBahiaSync::sincronizar('MPI', $mtto_preventivo_inyectadas->MPI_Id, $mtto_preventivo_inyectadas->RES_Id);
 
             DB::commit();
         } catch (Exception $e) {
@@ -239,6 +232,9 @@ class MantenimientoPreventivoInyectadaController extends Controller
             ->select('mpi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPI_Id', '=', $id)
             ->first();
+
+        RepuestosBahiaSync::sincronizar('MPI', (int) $id, $datos->RES_Id ?? null);
+
         $detalle = DB::table('mpi_detalle_reemplazo')
             ->where('MPI_Id', '=', $id)
             ->get();
@@ -511,26 +507,13 @@ class MantenimientoPreventivoInyectadaController extends Controller
             }
             $mtto_preventivo_inyectadas->update();
 
-
-            DB::table('mpi_detalle_reemplazo')
-                ->where('MPI_Id', $mtto_preventivo_inyectadas->MPI_Id)
-                ->delete();
-
-            $MPID_Descripcion = $request->get('MPID_Descripcion');
-            $MPI_Precio = $request->get('MPI_Precio');
-            if ($MPID_Descripcion) {
-                $cont = 0;
-                while ($cont < count($MPID_Descripcion)) {
-                    $correctivoresponsable = new MpiDetalleReemplazo;
-                    $correctivoresponsable->MPI_Id = $mtto_preventivo_inyectadas->MPI_Id;
-                    $correctivoresponsable->MPID_Descripcion = $MPID_Descripcion[$cont];
-                    $correctivoresponsable->MPID_Item = $cont + 1;
-                    $correctivoresponsable->MPI_Precio = $MPI_Precio[$cont];
-                    $correctivoresponsable->save();
-
-                    $cont = $cont + 1;
-                }
-            }
+            RepuestosBahiaSync::reemplazarManuales(
+                'MPI',
+                $mtto_preventivo_inyectadas->MPI_Id,
+                $request->get('MPID_Descripcion', []),
+                $request->get('MPI_Precio', [])
+            );
+            RepuestosBahiaSync::sincronizar('MPI', $mtto_preventivo_inyectadas->MPI_Id, $mtto_preventivo_inyectadas->RES_Id);
 
             DB::commit();
         } catch (Exception $e) {

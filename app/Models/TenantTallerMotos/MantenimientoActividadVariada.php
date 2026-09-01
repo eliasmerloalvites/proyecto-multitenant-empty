@@ -34,6 +34,7 @@ class MantenimientoActividadVariada extends Model
         'MAV_Estado',
 
         'PER_Id',
+        'RES_Id',
 
         'statevalidate',
         'notificar',

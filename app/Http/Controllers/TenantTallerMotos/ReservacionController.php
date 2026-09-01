@@ -449,6 +449,7 @@ class ReservacionController extends Controller
             $mtto->MGI_UsuarioCreacion = $idusu;
             $mtto->MGI_UsuarioEditado = $idusu;
             $mtto->PER_Id = $idper;
+            $mtto->RES_Id = $reserva->RES_Id;
             $mtto->save();
         } elseif ($tipoMantenimiento === 'MANTENIMIENTO PREVENTIVO INYECTADA') {
             $mtto = new MantenimientoPreventivoInyectada;
@@ -481,6 +482,7 @@ class ReservacionController extends Controller
             $mtto->MPI_UsuarioCreacion = $idusu;
             $mtto->MPI_UsuarioEditado = $idusu;
             $mtto->PER_Id = $idper;
+            $mtto->RES_Id = $reserva->RES_Id;
             $mtto->save();
         } elseif ($tipoMantenimiento === 'MANTENIMIENTO GENERAL CARBURADA') {
             $mtto = new MantenimientoGeneralCarburada;
@@ -514,6 +516,7 @@ class ReservacionController extends Controller
             $mtto->MGC_UsuarioCreacion = $idusu;
             $mtto->MGC_UsuarioEditado = $idusu;
             $mtto->PER_Id = $idper;
+            $mtto->RES_Id = $reserva->RES_Id;
             $mtto->save();
         } elseif ($tipoMantenimiento === 'MANTENIMIENTO PREVENTIVO CARBURADA') {
             $mtto = new MantenimientoPreventivoCarburada;
@@ -543,6 +546,7 @@ class ReservacionController extends Controller
             $mtto->MPC_UsuarioCreacion = $idusu;
             $mtto->MPC_UsuarioEditado = $idusu;
             $mtto->PER_Id = $idper;
+            $mtto->RES_Id = $reserva->RES_Id;
             $mtto->save();
         } elseif ($tipoMantenimiento === 'ACTIVIDAD VARIADA') {
             $mtto = new MantenimientoActividadVariada;
@@ -562,6 +566,7 @@ class ReservacionController extends Controller
             $mtto->MAV_UsuarioCreacion = $idusu;
             $mtto->MAV_UsuarioEditado = $idusu;
             $mtto->PER_Id = $idper;
+            $mtto->RES_Id = $reserva->RES_Id;
             $mtto->save();
         }
     }

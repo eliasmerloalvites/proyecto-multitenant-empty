@@ -1336,8 +1336,9 @@
             <?php foreach ($detalle as $dev): ?>
                 var descripcion = `<?php echo $dev->MGID_Descripcion; ?>`;
                 var precio = `<?php echo $dev->MGI_Precio; ?>`;
+                var origen = `<?php echo $dev->origen ?? 'MANUAL'; ?>`;
 
-                var fila1 = [descripcion, precio];
+                var fila1 = [descripcion, precio, origen];
                 ListDet.push(fila1);
             <?php endforeach ?>
 
@@ -1486,16 +1487,26 @@
             $("#detalles tbody").html('');
                 var totalCosto = 0
                 for (var i = ListDet.length - 1; i >= 0; i--) {
-                    var col0 = '<tr  onClick="MostrarValores1(' + ListDet[i][0] + ');" id="fila' + i + '">'
+                    var esBahia = ListDet[i][2] === 'BAHIA';
+                    var col0 = '<tr id="fila' + i + '">'
                     var col1 = '<td style="text-align: left;">' + (i + 1) + '</td>'
-                    var col2 = '<td style="text-align: left;"><input id="MGID_Descripcion' + i + '" type="hidden" name="MGID_Descripcion[]" value="' + ListDet[i][0] +
-                        '">' + ListDet[i][0] + '</td>'
-                    var col3 = '<td style="text-align: left;"><input id="MGI_Precio' + i + '" type="hidden" name="MGI_Precio[]" value="' + ListDet[i][1] +
-                        '">' + ListDet[i][1] + '</td>'
-                    var col4 =
-                        '<td style="width:80px; height : 24px; text-align: center;"><button  type="button"  class="btn" onclick="eliminar(' +
-                        i +
-                        ');" style="border-radius: 10px; height : 24px; color:red;padding:0px"><i class="fa fa-trash"></button></td></tr>';
+                    var col2, col3, col4;
+                    if (esBahia) {
+                        col2 = '<td style="text-align: left;">' + ListDet[i][0] +
+                            ' <span class="badge badge-info">BAHÍA</span></td>'
+                        col3 = '<td style="text-align: left;">' + ListDet[i][1] + '</td>'
+                        col4 = '<td style="width:80px; height : 24px; text-align: center;" title="Se gestiona desde la cuenta de bahia">' +
+                            '<i class="fa fa-lock text-muted"></i></td></tr>';
+                    } else {
+                        col2 = '<td style="text-align: left;"><input id="MGID_Descripcion' + i + '" type="hidden" name="MGID_Descripcion[]" value="' + ListDet[i][0] +
+                            '">' + ListDet[i][0] + '</td>'
+                        col3 = '<td style="text-align: left;"><input id="MGI_Precio' + i + '" type="hidden" name="MGI_Precio[]" value="' + ListDet[i][1] +
+                            '">' + ListDet[i][1] + '</td>'
+                        col4 =
+                            '<td style="width:80px; height : 24px; text-align: center;"><button  type="button"  class="btn" onclick="eliminar(' +
+                            i +
+                            ');" style="border-radius: 10px; height : 24px; color:red;padding:0px"><i class="fa fa-trash"></button></td></tr>';
+                    }
                     var fila = col0 + col1 + col2 + col3 + col4 ;
                     $("#detalles").append(fila);
                     totalCosto = parseFloat(totalCosto) + parseFloat(ListDet[i][1])
