@@ -33,11 +33,18 @@ class ComprobanteSunatController extends Controller
 
     /**
      * Codigo con el que SUNAT indica que el comprobante no esta registrado.
-     * Es el unico caso en el que reenviar es seguro: cualquier otra respuesta
-     * significa que SUNAT ya lo tiene de alguna forma (aceptado, rechazado o
-     * dado de baja) y un segundo envio lo duplicaria.
+     * Se deja documentado, pero ya no se usa para decidir si se reenvia: un
+     * codigo distinto a este NO prueba que SUNAT lo tenga (ver ESTADOS_CONFIRMADOS).
      */
     const CODIGO_NO_REGISTRADO = '0004';
+
+    /**
+     * Unicos estados de la consulta que prueban que SUNAT ya tiene el
+     * comprobante registrado. Cualquier otra respuesta (codigo ambiguo,
+     * sin 'estado', error del servicio de consulta, etc.) NO es prueba de
+     * nada y no debe bloquear ni falsear el reenvio real del comprobante.
+     */
+    const ESTADOS_CONFIRMADOS = ['ACEPTADO', 'OBSERVADO', 'RECHAZADO'];
 
     /**
      * Descarga el XML firmado que se envio a SUNAT.
@@ -216,18 +223,20 @@ class ComprobanteSunatController extends Controller
             return null;
         }
 
-        $codigo = (string) ($data['codigo'] ?? '');
+        $estado = $data['estado'] ?? null;
 
-        // Solo el codigo de "no registrado" habilita el reenvio; ante
-        // cualquier otra respuesta se asume que SUNAT ya lo tiene.
-        if ($codigo === self::CODIGO_NO_REGISTRADO) {
+        // Solo un 'estado' reconocido prueba que SUNAT ya tiene el
+        // comprobante. Cualquier otra respuesta (codigo ambiguo, sin
+        // 'estado', consulta caida, etc.) se deja pasar para que el
+        // reenvio real se intente en vez de darlo por aceptado a ciegas.
+        if (!in_array($estado, self::ESTADOS_CONFIRMADOS, true)) {
             return null;
         }
 
         return [
-            'codigo'      => $codigo,
+            'codigo'      => (string) ($data['codigo'] ?? ''),
             'descripcion' => $data['descripcion'] ?? 'sin detalle',
-            'estado'      => $data['estado'] ?? null,
+            'estado'      => $estado,
         ];
     }
 
@@ -237,10 +246,12 @@ class ComprobanteSunatController extends Controller
      */
     private function marcarComoRegistrado($ventaId, array $sunat): void
     {
+        // $sunat['estado'] siempre viene de ESTADOS_CONFIRMADOS (ver
+        // yaEstaEnSunat), nunca vacio: no hay fallback a 'ACEPTADO' a ciegas.
         DB::table('documento_venta')
             ->where('VEN_Id', $ventaId)
             ->update([
-                'DOV_Estado'              => $sunat['estado'] ?: 'ACEPTADO',
+                'DOV_Estado'              => $sunat['estado'],
                 'DOV_CodigoSunat'         => $sunat['codigo'],
                 'DOV_DescripcionSunat'    => $sunat['descripcion'],
                 'DOV_FechaRespuestaSunat' => now(),
