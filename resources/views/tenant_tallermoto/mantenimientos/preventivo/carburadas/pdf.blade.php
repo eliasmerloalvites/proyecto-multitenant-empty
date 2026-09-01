@@ -767,7 +767,8 @@
 
                 <table class="service-table">
 
-                    <tr>
+                    @if($mttoPreventivo->MPC_Det1 == 'SI')
+<tr>
                         <td class="number">1.0</td>
                         <td class="description">CAMBIO DE ACEITE</td>
                         <td class="status">
@@ -778,8 +779,10 @@
                             <span class="ref-value">{{ $mttoPreventivo->MPC_Det1Informacion }}</span>
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPC_Det2 == 'SI')
+<tr>
                         <td class="number">2.0</td>
                         <td class="description">CAMBIO DE FILTRO DE ACEITE</td>
                         <td class="status">
@@ -789,8 +792,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPC_Det3 == 'SI')
+<tr>
                         <td class="number">3.0</td>
                         <td class="description">LIMPIEZA DE CHASIS CON AIRE COMP.</td>
                         <td class="status">
@@ -800,8 +805,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPC_Det4 == 'SI')
+<tr>
                         <td class="number">4.0</td>
                         <td class="description">LIMPIEZA DE CABLES ELEC CON AIRE COMP.</td>
                         <td class="status">
@@ -811,8 +818,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPC_Det5 == 'SI')
+<tr>
                         <td class="number">5.0</td>
                         <td class="description">MANTENIMIENTO DE FILTRO DE AIRE</td>
                         <td class="status">
@@ -822,8 +831,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
                     
-                    <tr>
+                    @if($mttoPreventivo->MPC_Det6 == 'SI')
+<tr>
                         <td class="number">6.0</td>
                         <td class="description">MANTENIMIENTO DE CARBURADOR</td>
                         <td class="status">
@@ -833,8 +844,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPC_Det7 == 'SI')
+<tr>
                         <td class="number">7.0</td>
                         <td class="description">AJUSTE DE VÁLVULAS</td>
                         <td class="status">
@@ -895,8 +908,10 @@
                             </table>
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPC_Det8 == 'SI')
+<tr>
                         <td class="number">8.0</td>
                         <td class="description">REVISIÓN Y CALIBRACIÓN DE BUJÍA</td>
                         <td class="status">
@@ -937,8 +952,10 @@
                             </table>
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if(!empty($mttoPreventivo->MPC_Det9))
+<tr>
                         <td class="number">9.0</td>
                         <td class="description">PRESIÓN DE NEUMÁTICO DELANTERO</td>
                         <td class="status">
@@ -948,8 +965,10 @@
                             
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if(!empty($mttoPreventivo->MPC_Det10))
+<tr>
                         <td class="number">10.0</td>
                         <td class="description">PRESIÓN DE NEUMÁTICO POSTERIOR</td>
                         <td class="status">
@@ -958,8 +977,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPC_Det11 == 'SI')
+<tr>
                         <td class="number">11.0</td>
                         <td class="description">TEST DE BATERIA</td>
                         <td class="status">
@@ -1042,6 +1063,7 @@
                             </table>
                         </td>
                     </tr>
+@endif
                     
 
                 </table>

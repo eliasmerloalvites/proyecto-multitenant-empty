@@ -768,6 +768,7 @@
 
                 <table class="service-table">
 
+                    @if($mttoPreventivo->MGI_Det1 == 'SI')
                     <tr>
                         <td class="number">1.0</td>
                         <td class="description">CAMBIO DE ACEITE</td>
@@ -779,7 +780,9 @@
                             <span class="ref-value">{{ $mttoPreventivo->MGI_Det1Informacion }}</span>
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det2 == 'SI')
                     <tr>
                         <td class="number">2.0</td>
                         <td class="description">CAMBIO DE FILTRO DE ACEITE</td>
@@ -790,7 +793,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det3 == 'SI')
                     <tr>
                         <td class="number">3.0</td>
                         <td class="description">LIMPIEZA DE CHASIS CON AIRE COMP.</td>
@@ -801,7 +806,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det4 == 'SI')
                     <tr>
                         <td class="number">4.0</td>
                         <td class="description">LIMPIEZA DE CABLES ELEC CON AIRE COMP.</td>
@@ -812,7 +819,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det5 == 'SI')
                     <tr>
                         <td class="number">5.0</td>
                         <td class="description">DESENGRASE INTERNO DE LA UNIDAD</td>
@@ -823,7 +832,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det6 == 'SI')
                     <tr>
                         <td class="number">6.0</td>
                         <td class="description">MANTENIMIENTO DE FILTRO DE AIRE</td>
@@ -834,7 +845,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det7 == 'SI')
                     <tr>
                         <td class="number">7.0</td>
                         <td class="description">LIMPIEZA DEL CUERPO DE ACELERACION</td>
@@ -845,7 +858,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det8 == 'SI')
                     <tr>
                         <td class="number">8.0</td>
                         <td class="description">LAVADO DE INYECTOR EN ULTRASONIDO</td>
@@ -856,7 +871,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det9 == 'SI')
                     <tr>
                         <td class="number">9.0</td>
                         <td class="description">AJUSTE DE VÁLVULAS</td>
@@ -918,7 +935,9 @@
                             </table>
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det10 == 'SI')
                     <tr>
                         <td class="number">10.0</td>
                         <td class="description">REVISIÓN Y CALIBRACIÓN DE BUJÍA</td>
@@ -960,7 +979,9 @@
                             </table>
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det11 == 'SI')
                     <tr>
                         <td class="number">11.0</td>
                         <td class="description">MEDICION DE COMPRESION DEL MOTOR</td>
@@ -1002,7 +1023,9 @@
                             </table>
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det12 == 'SI')
                     <tr>
                         <td class="number">12.0</td>
                         <td class="description">AJUSTE DE LA BRIDA DEL TUBO DE ESCAPE</td>
@@ -1013,7 +1036,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det13 == 'SI')
                     <tr>
                         <td class="number">13.0</td>
                         <td class="description">LAVADO Y AJUSTE DEL SISTEMA DE ARRASTRE</td>
@@ -1024,7 +1049,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det14 == 'SI')
                     <tr>
                         <td class="number">14.0</td>
                         <td class="description">MANTENIMIENTO DE FRENO DELANTERO</td>
@@ -1035,7 +1062,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det15 == 'SI')
                     <tr>
                         <td class="number">15.0</td>
                         <td class="description">MANTENIMIENTO DE FRENO POSTERIOR</td>
@@ -1046,7 +1075,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det16 == 'SI')
                     <tr>
                         <td class="number">16.0</td>
                         <td class="description">AJUSTE DE PERNOS DE CHASIS</td>
@@ -1057,7 +1088,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det17 == 'SI')
                     <tr>
                         <td class="number">17.0</td>
                         <td class="description">LIMPIEZA DE CONECTORES ELÉCTRICOS</td>
@@ -1068,7 +1101,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if(!empty($mttoPreventivo->MGI_Det18))
                     <tr>
                         <td class="number">18.0</td>
                         <td class="description">PRESIÓN DE NEUMÁTICO DELANTERO</td>
@@ -1076,10 +1111,12 @@
                             <span class="ref-value">{{ $mttoPreventivo->MGI_Det18 }}</span>
                         </td>
                         <td class="reference">
-                            
+
                         </td>
                     </tr>
+                    @endif
 
+                    @if(!empty($mttoPreventivo->MGI_Det19))
                     <tr>
                         <td class="number">19.0</td>
                         <td class="description">PRESIÓN DE NEUMÁTICO POSTERIOR</td>
@@ -1089,7 +1126,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det20 == 'SI')
                     <tr>
                         <td class="number">20.0</td>
                         <td class="description">REVISION Y TEST DE LIQUIDO DE FRENOS</td>
@@ -1131,7 +1170,9 @@
                             </table>
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det21 == 'SI')
                     <tr>
                         <td class="number">21.0</td>
                         <td class="description">REVISION Y TEST DE LIQUIDO REFRIGERANTE</td>
@@ -1142,7 +1183,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det22 == 'SI')
                     <tr>
                         <td class="number">22.0</td>
                         <td class="description">REVISIÓN DEL SISTEMA DE ENFRIAMIENTO</td>
@@ -1183,7 +1226,9 @@
                             </table>
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det23 == 'SI')
                     <tr>
                         <td class="number">23.0</td>
                         <td class="description">LUBRICACIÓN DEL SISTEMA DE ARRASTRE</td>
@@ -1194,7 +1239,9 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
+                    @if($mttoPreventivo->MGI_Det24 == 'SI')
                     <tr>
                         <td class="number">24.0</td>
                         <td class="description">TEST DE BATERIA</td>
@@ -1202,7 +1249,7 @@
                             <span
                                 class="status-{{ $mttoPreventivo->MGI_Det24 == 'SI' ? 'ok' : 'no' }}">{{ $mttoPreventivo->MGI_Det24 == 'SI' ? 'OK' : 'NO' }}</span>
                         </td>
-                        
+
                         <td class="reference">
                             <table style="width: 100%;">
                                 <tr>
@@ -1278,6 +1325,8 @@
                             </table>
                         </td>
                     </tr>
+                    @endif
+                    @if($mttoPreventivo->MGI_Det25 == 'SI')
                     <tr>
                         <td class="number">25.0</td>
                         <td class="description">LIMPIEZA DEL SENSOR DE OXIGENO</td>
@@ -1288,6 +1337,8 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
+                    @if($mttoPreventivo->MGI_Det26 == 'SI')
                     <tr>
                         <td class="number">26.0</td>
                         <td class="description">ESCANEO</td>
@@ -1298,6 +1349,8 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
+                    @if($mttoPreventivo->MGI_Det27 == 'SI')
                     <tr>
                         <td class="number">27.0</td>
                         <td class="description">VERIFICACIÓN DEL SISTEMA DE LUCES</td>
@@ -1308,6 +1361,7 @@
                         <td class="reference">
                         </td>
                     </tr>
+                    @endif
 
                 </table>
             </div>

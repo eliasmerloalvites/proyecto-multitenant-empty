@@ -767,7 +767,8 @@
 
                 <table class="service-table">
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det1 == 'SI')
+<tr>
                         <td class="number">1.0</td>
                         <td class="description">CAMBIO DE ACEITE</td>
                         <td class="status">
@@ -778,8 +779,10 @@
                             <span class="ref-value">{{ $mttoPreventivo->MPI_Det1Informacion }}</span>
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det2 == 'SI')
+<tr>
                         <td class="number">2.0</td>
                         <td class="description">CAMBIO DE FILTRO DE ACEITE</td>
                         <td class="status">
@@ -789,8 +792,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det3 == 'SI')
+<tr>
                         <td class="number">3.0</td>
                         <td class="description">LIMPIEZA DE CHASIS CON AIRE COMP.</td>
                         <td class="status">
@@ -800,8 +805,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det4 == 'SI')
+<tr>
                         <td class="number">4.0</td>
                         <td class="description">LIMPIEZA DE CABLES ELEC CON AIRE COMP.</td>
                         <td class="status">
@@ -811,8 +818,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det5 == 'SI')
+<tr>
                         <td class="number">5.0</td>
                         <td class="description">DESENGRASE INTERNO DE LA UNIDAD</td>
                         <td class="status">
@@ -822,8 +831,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det6 == 'SI')
+<tr>
                         <td class="number">6.0</td>
                         <td class="description">MANTENIMIENTO DE FILTRO DE AIRE</td>
                         <td class="status">
@@ -833,8 +844,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det7 == 'SI')
+<tr>
                         <td class="number">7.0</td>
                         <td class="description">AJUSTE DE VÁLVULAS</td>
                         <td class="status">
@@ -895,8 +908,10 @@
                             </table>
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det8 == 'SI')
+<tr>
                         <td class="number">8.0</td>
                         <td class="description">REVISIÓN Y CALIBRACIÓN DE BUJÍA</td>
                         <td class="status">
@@ -937,8 +952,10 @@
                             </table>
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det9 == 'SI')
+<tr>
                         <td class="number">9.0</td>
                         <td class="description">AJUSTE DE LA BRIDA DEL TUBO DE ESCAPE</td>
                         <td class="status">
@@ -948,8 +965,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det10 == 'SI')
+<tr>
                         <td class="number">10.0</td>
                         <td class="description">LAVADO Y AJUSTE DEL SISTEMA DE ARRASTRE</td>
                         <td class="status">
@@ -959,8 +978,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det11 == 'SI')
+<tr>
                         <td class="number">11.0</td>
                         <td class="description">MANTENIMIENTO DE FRENO DELANTERO</td>
                         <td class="status">
@@ -970,8 +991,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det12 == 'SI')
+<tr>
                         <td class="number">12.0</td>
                         <td class="description">MANTENIMIENTO DE FRENO POSTERIOR</td>
                         <td class="status">
@@ -981,8 +1004,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det13 == 'SI')
+<tr>
                         <td class="number">13.0</td>
                         <td class="description">AJUSTE DE PERNOS DE CHASIS</td>
                         <td class="status">
@@ -992,8 +1017,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det14 == 'SI')
+<tr>
                         <td class="number">14.0</td>
                         <td class="description">LIMPIEZA DE CONECTORES ELÉCTRICOS</td>
                         <td class="status">
@@ -1003,8 +1030,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if(!empty($mttoPreventivo->MPI_Det15))
+<tr>
                         <td class="number">15.0</td>
                         <td class="description">PRESIÓN DE NEUMÁTICO DELANTERO</td>
                         <td class="status">
@@ -1014,8 +1043,10 @@
                             
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if(!empty($mttoPreventivo->MPI_Det16))
+<tr>
                         <td class="number">16.0</td>
                         <td class="description">PRESIÓN DE NEUMÁTICO POSTERIOR</td>
                         <td class="status">
@@ -1024,8 +1055,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det17 == 'SI')
+<tr>
                         <td class="number">17.0</td>
                         <td class="description">REVISIÓN DEL SISTEMA DE ENFRIAMIENTO</td>
                         <td class="status">
@@ -1065,8 +1098,10 @@
                             </table>
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det18 == 'SI')
+<tr>
                         <td class="number">18.0</td>
                         <td class="description">LUBRICACIÓN DEL SISTEMA DE ARRASTRE</td>
                         <td class="status">
@@ -1076,8 +1111,10 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
-                    <tr>
+                    @if($mttoPreventivo->MPI_Det19 == 'SI')
+<tr>
                         <td class="number">19.0</td>
                         <td class="description">MEDICIÓN DE VOLTAJE DE CARGA DE BATERÍA</td>
                         <td class="status">
@@ -1160,7 +1197,9 @@
                             </table>
                         </td>
                     </tr>
-                    <tr>
+@endif
+                    @if($mttoPreventivo->MPI_Det20 == 'SI')
+<tr>
                         <td class="number">20.0</td>
                         <td class="description">VERIFICACIÓN DEL SISTEMA DE LUCES</td>
                         <td class="status">
@@ -1170,6 +1209,7 @@
                         <td class="reference">
                         </td>
                     </tr>
+@endif
 
                 </table>
             </div>
