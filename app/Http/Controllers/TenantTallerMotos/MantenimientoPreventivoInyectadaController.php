@@ -141,7 +141,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
                         return '';
                     })
                     ->addColumn('action3', function ($row) {
-                        $btn = '<a  target="_blank" href="/mantenimientos/preventivoinyectada/' . $row->MPI_Id . '/pdf" data-toggle="tooltip"  data-id="' . $row->MPI_Id . '" data-original-title="Pdf" class="btn btn-danger btn-sm "><i class="fas fa-file-pdf"></i></a>';
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/preventivoinyectada/' . $row->MPI_Id . '/pdf" data-toggle="tooltip"  data-id="' . $row->MPI_Id . '" data-original-title="Pdf" class="btn btn-danger btn-sm "><i class="fas fa-file-pdf"></i></a>';
                         return $btn;
                     })
                     ->addColumn('action4', function ($row) {
