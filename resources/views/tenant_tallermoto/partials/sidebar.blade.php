@@ -24,6 +24,7 @@
                     </a>
                 </li>
 
+                @hasanyrole('Admin|Gerente')
                 <li class="nav-item">
                     <a href="{{ tenant_url('tenant.facturacion.index') }}" class="nav-link {{ request()->routeIs('tenant.facturacion*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-file-invoice-dollar"></i>
@@ -32,6 +33,7 @@
                         </p>
                     </a>
                 </li>
+                @endhasanyrole
 
                 @if(tenant_has_module('mantenimientos') && auth()->user()->can('tenant.motos.index'))
                 <li class="nav-item">
