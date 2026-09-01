@@ -69,8 +69,8 @@ class VentaController extends Controller
             ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
             ->join('users as u', 'u.id', '=', 'v.USU_Id')
             ->join('almacen as a', 'a.ALM_Id', '=', 'v.ALM_Id')
-            ->select('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado as estadoDocVenta', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Id', 'mp.MEP_Pago', 'u.name as empleado', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id as EMP_Codigo', 'v.VEN_TipoPago as tipopago', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'))
-            ->groupBy('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Id', 'mp.MEP_Pago', 'u.name', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id', 'v.VEN_TipoPago', 'v.created_at')
+            ->select('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado as estadoDocVenta', 'dov.DOV_DescripcionSunat', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Id', 'mp.MEP_Pago', 'u.name as empleado', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id as EMP_Codigo', 'v.VEN_TipoPago as tipopago', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'))
+            ->groupBy('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado', 'dov.DOV_DescripcionSunat', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Id', 'mp.MEP_Pago', 'u.name', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id', 'v.VEN_TipoPago', 'v.created_at')
             ->when($request->filled('fecha_inicio'), fn ($q) => $q->where(DB::raw('DATE(v.created_at)'), '>=', $request->input('fecha_inicio')))
             ->when($request->filled('fecha_fin'), fn ($q) => $q->where(DB::raw('DATE(v.created_at)'), '<=', $request->input('fecha_fin')))
             ->when($request->filled('estado'), fn ($q) => $q->where('dov.DOV_Estado', $request->input('estado')))
@@ -180,8 +180,20 @@ class VentaController extends Controller
         // observaciones: reenviarlo lo duplicaria.
         $yaEnSunat = in_array($row->estadoDocVenta, ComprobanteSunatController::ESTADOS_EN_SUNAT, true);
 
-        $html = '<span class="badge badge-' . $color . '" title="' . e($titulo) . '">'
+        // El motivo del rechazo/error queda guardado en DOV_DescripcionSunat;
+        // se muestra en el tooltip del badge para que el usuario sepa por que.
+        $motivo = trim((string) ($row->DOV_DescripcionSunat ?? ''));
+        $tituloBadge = $titulo;
+        if (in_array($row->estadoDocVenta, ['RECHAZADO', 'ERROR', 'OBSERVADO'], true) && $motivo !== '') {
+            $tituloBadge .= ': ' . $motivo;
+        }
+
+        $html = '<span class="badge badge-' . $color . '" title="' . e($tituloBadge) . '">'
               . e($row->estadoDocVenta) . '</span> ';
+
+        if (in_array($row->estadoDocVenta, ['RECHAZADO', 'ERROR', 'OBSERVADO'], true) && $motivo !== '') {
+            $html .= '<i class="fa fa-info-circle text-danger ml-1" style="cursor:help" title="' . e($motivo) . '"></i> ';
+        }
 
         if ($anulado) {
             $html .= '<span class="badge badge-dark" title="El comprobante fue anulado ante SUNAT">ANULADO</span> ';
