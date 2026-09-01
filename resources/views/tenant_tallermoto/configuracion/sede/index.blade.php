@@ -174,6 +174,43 @@
                             </div>
                         </div>
 
+                        <!-- Correlativo inicial (para tenants que migran desde otro sistema) -->
+                        <hr>
+                        <h6 class="font-weight-bold text-secondary">Correlativo Inicial (opcional)</h6>
+                        <small class="d-block text-muted mb-2">
+                            Solo llenar si ya emitías comprobantes en otro sistema y quieres que la numeración
+                            continúe desde ahí en vez de empezar en 1.
+                        </small>
+                        <div class="form-group row">
+                            <div class="col-md-4 col-12">
+                                <label class="control-label" style="text-align: left; display: block;">Boleta desde:</label>
+                                <input type="number" min="0" id="ALM_CorrelativoInicialBoleta" name="ALM_CorrelativoInicialBoleta"
+                                    class="form-control" placeholder="Ej. 1500">
+                            </div>
+                            <div class="col-md-4 col-12">
+                                <label class="control-label" style="text-align: left; display: block;">Factura desde:</label>
+                                <input type="number" min="0" id="ALM_CorrelativoInicialFactura" name="ALM_CorrelativoInicialFactura"
+                                    class="form-control" placeholder="Ej. 800">
+                            </div>
+                            <div class="col-md-4 col-12">
+                                <label class="control-label" style="text-align: left; display: block;">Guía Remisión desde:</label>
+                                <input type="number" min="0" id="ALM_CorrelativoInicialGuiaRemision" name="ALM_CorrelativoInicialGuiaRemision"
+                                    class="form-control" placeholder="Ej. 300">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-6 col-12">
+                                <label class="control-label" style="text-align: left; display: block;">Nota Crédito (Boleta) desde:</label>
+                                <input type="number" min="0" id="ALM_CorrelativoInicialNotaCreditoBoleta" name="ALM_CorrelativoInicialNotaCreditoBoleta"
+                                    class="form-control" placeholder="Ej. 50">
+                            </div>
+                            <div class="col-md-6 col-12">
+                                <label class="control-label" style="text-align: left; display: block;">Nota Crédito (Factura) desde:</label>
+                                <input type="number" min="0" id="ALM_CorrelativoInicialNotaCreditoFactura" name="ALM_CorrelativoInicialNotaCreditoFactura"
+                                    class="form-control" placeholder="Ej. 30">
+                            </div>
+                        </div>
+
                         <!-- Parámetros de Operación y Estado -->
                         <hr>
                         <h6 class="font-weight-bold text-secondary">Parámetros Operativos</h6>
@@ -406,6 +443,11 @@
                         $('#ALM_SerieNotaDebito').val(d.ALM_SerieNotaDebito);
                         $('#ALM_SerieGuiaRemision').val(d.ALM_SerieGuiaRemision);
                         $('#ALM_SerieNotaVenta').val(d.ALM_SerieNotaVenta);
+                        $('#ALM_CorrelativoInicialBoleta').val(d.ALM_CorrelativoInicialBoleta);
+                        $('#ALM_CorrelativoInicialFactura').val(d.ALM_CorrelativoInicialFactura);
+                        $('#ALM_CorrelativoInicialNotaCreditoBoleta').val(d.ALM_CorrelativoInicialNotaCreditoBoleta);
+                        $('#ALM_CorrelativoInicialNotaCreditoFactura').val(d.ALM_CorrelativoInicialNotaCreditoFactura);
+                        $('#ALM_CorrelativoInicialGuiaRemision').val(d.ALM_CorrelativoInicialGuiaRemision);
 
                         // Checkboxes y Estado
                         $('#ALM_EsPrincipal').prop('checked', d.ALM_EsPrincipal == 1);

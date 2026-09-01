@@ -40,6 +40,11 @@ class Almacen extends Model
         'ALM_SerieNotaDebito',
         'ALM_SerieGuiaRemision',
         'ALM_SerieNotaVenta',
+        'ALM_CorrelativoInicialBoleta',
+        'ALM_CorrelativoInicialFactura',
+        'ALM_CorrelativoInicialNotaCreditoBoleta',
+        'ALM_CorrelativoInicialNotaCreditoFactura',
+        'ALM_CorrelativoInicialGuiaRemision',
         'ALM_PermitirVentaSinStock',
         'ALM_Status',
     ];
@@ -147,6 +152,43 @@ class Almacen extends Model
         $serie = trim((string) $this->{$columna});
 
         return $serie !== '' ? strtoupper($serie) : null;
+    }
+
+    /** Tipo de documento interno => columna con su correlativo inicial. */
+    const CORRELATIVO_INICIAL = [
+        EmpresaFacturacion::TIPO_BOLETA        => 'ALM_CorrelativoInicialBoleta',
+        EmpresaFacturacion::TIPO_FACTURA       => 'ALM_CorrelativoInicialFactura',
+        EmpresaFacturacion::TIPO_GUIA_REMISION => 'ALM_CorrelativoInicialGuiaRemision',
+    ];
+
+    /** Igual que SERIES_NOTA_CREDITO, pero para el correlativo inicial. */
+    const CORRELATIVO_INICIAL_NOTA_CREDITO = [
+        EmpresaFacturacion::TIPO_BOLETA  => 'ALM_CorrelativoInicialNotaCreditoBoleta',
+        EmpresaFacturacion::TIPO_FACTURA => 'ALM_CorrelativoInicialNotaCreditoFactura',
+    ];
+
+    /**
+     * Numero desde el que debe arrancar la numeracion de este tipo de
+     * documento en esta sede (util para tenants que migran desde otro
+     * sistema y ya llevan un correlativo avanzado). 0 si no se configuro,
+     * es decir, arranca de forma natural en 1.
+     */
+    public function correlativoInicialPara(string $tipo): int
+    {
+        $columna = self::CORRELATIVO_INICIAL[$tipo] ?? null;
+
+        return $columna ? (int) ($this->{$columna} ?? 0) : 0;
+    }
+
+    /**
+     * Igual que correlativoInicialPara(), pero para nota de credito segun el
+     * tipo del comprobante que se acredita.
+     */
+    public function correlativoInicialNotaCreditoPara(string $tipoDocumentoAfectado): int
+    {
+        $columna = self::CORRELATIVO_INICIAL_NOTA_CREDITO[$tipoDocumentoAfectado] ?? null;
+
+        return $columna ? (int) ($this->{$columna} ?? 0) : 0;
     }
 
     /**

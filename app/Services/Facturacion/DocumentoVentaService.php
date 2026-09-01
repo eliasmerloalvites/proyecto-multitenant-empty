@@ -108,7 +108,7 @@ class DocumentoVentaService
             );
         }
 
-        $numero = $this->siguienteCorrelativo($tipo, $serie);
+        $numero = $this->siguienteCorrelativo($tipo, $serie, $sede->correlativoInicialPara($tipo));
 
         $documento = new DocumentoVenta;
         $documento->DOV_Tipo         = $tipo;
@@ -189,7 +189,7 @@ class DocumentoVentaService
         }
 
         $tipo   = EmpresaFacturacion::TIPO_NOTA_CREDITO;
-        $numero = $this->siguienteCorrelativo($tipo, $serie);
+        $numero = $this->siguienteCorrelativo($tipo, $serie, $sede->correlativoInicialNotaCreditoPara($documentoAfectado->DOV_Tipo));
 
         $tipoDocAfectado = $documentoAfectado->DOV_Tipo === EmpresaFacturacion::TIPO_FACTURA ? '01' : '03';
         $numDocAfectado  = $documentoAfectado->DOV_Serie . '-' . $documentoAfectado->DOV_Numero;
@@ -218,8 +218,12 @@ class DocumentoVentaService
     /**
      * Siguiente numero libre de la serie, bloqueando las filas existentes para
      * que dos ventas simultaneas no obtengan el mismo.
+     *
+     * $correlativoInicial permite a un tenant que migra desde otro sistema
+     * arrancar en un numero ya avanzado: el resultado nunca es menor a el,
+     * pero tampoco pisa numeros que esta app ya emitio.
      */
-    private function siguienteCorrelativo(string $tipo, string $serie): int
+    private function siguienteCorrelativo(string $tipo, string $serie, int $correlativoInicial = 0): int
     {
         $ultimo = DB::table('documento_venta')
             ->where('DOV_Tipo', $tipo)
@@ -227,7 +231,9 @@ class DocumentoVentaService
             ->lockForUpdate()
             ->max('DOV_Numero');
 
-        return ((int) $ultimo) + 1;
+        $base = max((int) $ultimo, $correlativoInicial - 1);
+
+        return $base + 1;
     }
 
     /**
