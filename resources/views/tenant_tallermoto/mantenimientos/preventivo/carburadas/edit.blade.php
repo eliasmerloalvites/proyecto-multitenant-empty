@@ -652,6 +652,12 @@
                                             value="{{ $datos->MPC_ProximoServicio }}" maxlength="50" required="">
                                     </div>
                                     <div class="form-group col-lg-6 col-md-6 col-sm-12 col-12">
+                                        <label for="name" class=" control-label">FECHA Y HORA DE INICIO</label>
+                                        <input type="datetime-local" class="form-control" id="MPC_FechaInicio"
+                                            name="MPC_FechaInicio"
+                                            value="{{ $datos->MPC_FechaInicio ? \Carbon\Carbon::parse($datos->MPC_FechaInicio)->format('Y-m-d\TH:i') : '' }}">
+                                    </div>
+                                    <div class="form-group col-lg-6 col-md-6 col-sm-12 col-12">
                                         <label for="name" class=" control-label">FECHA Y HORA DE TÉRMINO</label>
                                         <input type="datetime-local" class="form-control" id="MPC_FechaTermino"
                                             name="MPC_FechaTermino"
@@ -1096,6 +1102,7 @@
             $('#MPC_CorrecionObservacion').val(`<?php echo $datos->MPC_CorrecionObservacion; ?>`);
             $('#MPC_ProximoCambioAceite').val(`<?php echo $datos->MPC_ProximoCambioAceite; ?>`);
             $('#MPC_ProximoServicio').val(`<?php echo $datos->MPC_ProximoServicio; ?>`);
+            $('#MPC_FechaInicio').val(`<?php echo $datos->MPC_FechaInicio ? \Carbon\Carbon::parse($datos->MPC_FechaInicio)->format('Y-m-d\TH:i') : ''; ?>`);
             $('#MPC_FechaTermino').val(`<?php echo $datos->MPC_FechaTermino ? \Carbon\Carbon::parse($datos->MPC_FechaTermino)->format('Y-m-d\TH:i') : ''; ?>`);
 
             <?php foreach ($detalle as $dev): ?>

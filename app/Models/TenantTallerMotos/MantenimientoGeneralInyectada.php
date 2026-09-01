@@ -77,6 +77,7 @@ class MantenimientoGeneralInyectada  extends Model
 
         'MGI_FechaCreacion',
         'MGI_FechaEdicion',
+        'MGI_FechaInicio',
         'MGI_FechaTermino',
 
         'MGI_UsuarioCreacion',
@@ -99,6 +100,7 @@ class MantenimientoGeneralInyectada  extends Model
 
        'MGI_FechaCreacion' => 'datetime',
         'MGI_FechaEdicion' => 'datetime',
+        'MGI_FechaInicio' => 'datetime',
         'MGI_FechaTermino' => 'datetime',
 
         'statevalidate' => 'boolean',

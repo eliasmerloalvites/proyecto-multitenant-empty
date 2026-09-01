@@ -401,6 +401,11 @@
                                             onkeyup="this.value=this.value.toUpperCase();">
                                     </div>
                                     <div class="form-group col-md-6">
+                                        <label>FECHA Y HORA DE INICIO</label>
+                                        <input type="datetime-local" class="form-control" id="MAV_FechaInicio"
+                                            name="MAV_FechaInicio">
+                                    </div>
+                                    <div class="form-group col-md-6">
                                         <label>FECHA Y HORA DE TÉRMINO</label>
                                         <input type="datetime-local" class="form-control" id="MAV_FechaTermino"
                                             name="MAV_FechaTermino">
@@ -808,6 +813,7 @@
             $('#MAV_CorrecionObservacion').val(`<?php echo $datos->MAV_CorrecionObservacion; ?>`);
             $('#MAV_ProximoCambioAceite').val(`<?php echo $datos->MAV_ProximoCambioAceite; ?>`);
             $('#MAV_ProximoServicio').val(`<?php echo $datos->MAV_ProximoServicio; ?>`);
+            $('#MAV_FechaInicio').val(`<?php echo $datos->MAV_FechaInicio ? \Carbon\Carbon::parse($datos->MAV_FechaInicio)->format('Y-m-d\TH:i') : ''; ?>`);
             $('#MAV_FechaTermino').val(`<?php echo $datos->MAV_FechaTermino ? \Carbon\Carbon::parse($datos->MAV_FechaTermino)->format('Y-m-d\TH:i') : ''; ?>`);
 
             <?php foreach ($detalle as $dev): ?>
