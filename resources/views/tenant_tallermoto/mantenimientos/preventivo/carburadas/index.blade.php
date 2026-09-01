@@ -2,7 +2,7 @@
 @section('titulo', 'Mantenimiento Preventivo Carburadas')
 @section('contenido')
 
-    @can('tenant.configuracion.bahia.index')
+    @can('tenant.mantenimientos.preventivocarburada.index')
     <div class="col-12">
 
     <div class="card shadow-sm">

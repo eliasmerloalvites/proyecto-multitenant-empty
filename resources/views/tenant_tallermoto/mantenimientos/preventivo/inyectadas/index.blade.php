@@ -2,7 +2,7 @@
 @section('titulo', 'Mantenimiento Preventivo Inyectadas')
 @section('contenido')
 
-    @can('tenant.configuracion.bahia.index')
+    @can('tenant.mantenimientos.preventivoinyectada.index')
     <div class="col-12">
 
     <div class="card shadow-sm">
