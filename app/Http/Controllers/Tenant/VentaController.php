@@ -1007,7 +1007,15 @@ class VentaController extends Controller
                 ->timeout(120)
                 ->format('A4')
                 ->showBackground()
-                ->noSandbox();
+                ->noSandbox()
+                // Chrome intenta escribir config en $HOME/.local/... ; en el
+                // VPS el usuario que corre PHP no tiene permiso de escribir
+                // en su home real, asi que se le da uno temporal y siempre
+                // escribible en vez de depender de permisos del servidor.
+                // (setNodeEnv, no setEnvironmentOptions: browser.cjs hace
+                // spread de process.env DESPUES de options.env, asi que
+                // setEnvironmentOptions terminaria pisado por el HOME real).
+                ->setNodeEnv(['HOME' => sys_get_temp_dir()]);
 
             // En el VPS, Puppeteer no trae Chromium propio: se usa el
             // Chromium del sistema apuntando PUPPETEER_EXECUTABLE_PATH en
