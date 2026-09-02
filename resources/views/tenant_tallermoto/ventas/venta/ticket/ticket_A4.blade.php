@@ -458,6 +458,33 @@
                 padding:8mm !important;
             }
 
+            .download-btn{
+                display:none !important;
+            }
+
+        }
+
+        .download-btn{
+            position:fixed;
+            top:16px;
+            right:16px;
+            display:flex;
+            align-items:center;
+            gap:6px;
+            background:var(--primary);
+            color:white;
+            border:none;
+            border-radius:8px;
+            padding:10px 16px;
+            font-size:13px;
+            font-weight:700;
+            font-family:'Segoe UI', sans-serif;
+            cursor:pointer;
+            box-shadow:0 6px 18px rgba(15,43,112,.25);
+        }
+
+        .download-btn:hover{
+            background:var(--primary-light);
         }
 
     </style>
@@ -1023,6 +1050,10 @@
     </div>
 
 </div>
+
+<button type="button" class="download-btn" onclick="window.print()">
+    &#128190; Descargar PDF
+</button>
 
 </body>
 
