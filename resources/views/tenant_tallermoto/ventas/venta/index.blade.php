@@ -160,7 +160,8 @@
                         Detalle de la Venta
                     </h4>
 
-                    <button type="button" class="btn-close" data-bs-dismiss="modal">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
 
@@ -297,7 +298,7 @@
                 <!-- FOOTER -->
                 <div class="modal-footer border-0 pt-0">
 
-                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">
 
                         Cerrar
 
@@ -320,13 +321,14 @@
 
                     <h4 class="modal-title fw-bold text-success">
 
-                        <i class="fa fa-whatsapp me-2"></i>
+                        <i class="fab fa-whatsapp me-2"></i>
 
                         Enviar Ticket
 
                     </h4>
 
-                    <button type="button" class="btn-close" data-bs-dismiss="modal">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
                     </button>
 
                 </div>
@@ -338,7 +340,7 @@
 
                         <div class="whatsapp-circle">
 
-                            <i class="fa fa-whatsapp"></i>
+                            <i class="fab fa-whatsapp"></i>
 
                         </div>
 
@@ -376,7 +378,7 @@
                 <!-- FOOTER -->
                 <div class="modal-footer border-0">
 
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">
 
                         Cancelar
 
