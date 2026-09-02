@@ -93,6 +93,10 @@ Route::middleware([
     Route::post('/tenant/logout', [UserController::class, 'logout'])->name('tenant.logout');
 
     
+    // Link corto/opaco para compartir el PDF de una venta (ej. por WhatsApp):
+    // no expone el tenant ni la ruta interna de storage, y fuerza la descarga.
+    Route::get('/t/{codigo}', [VentaController::class, 'compartirTicket'])->name('tenant.ventas.venta.compartir');
+
     Route::get('/consulta', [ConsultaDocumentoController::class,'index'])->name('consulta');
     Route::get('/consultardni/{id}', [ConsultaDocumentoController::class,'buscarDni'] )->name('consultar.reniec');
     Route::get('/consultasunat', [ConsultaDocumentoController::class,'indexsunsat'] )->name('consultarsunat');
