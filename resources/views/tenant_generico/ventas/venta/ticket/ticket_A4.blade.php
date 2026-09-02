@@ -43,7 +43,7 @@
             padding:10mm;
             border-radius:10px;
             box-shadow: 0 10px 35px rgba(15,43,112,.08);
-            font-size:9.5px;
+            font-size:11.5px;
         }
 
         /* =======================================
@@ -70,7 +70,7 @@
         }
 
         .company-name{
-            font-size:18px;
+            font-size:20px;
             font-weight:900;
             color:var(--primary);
             margin-bottom:4px;
@@ -79,7 +79,7 @@
 
         .company-subtitle{
             color:#2563eb;
-            font-size:10px;
+            font-size:12px;
             font-weight:700;
             margin-bottom:8px;
 
@@ -87,7 +87,7 @@
 
         .company-info{
             line-height:1.5;
-            font-size:9px;
+            font-size:11px;
         }
 
         .company-info strong{
@@ -116,7 +116,7 @@
             color:white;
             padding:6px 10px;
             text-align:center;
-            font-size:11px;
+            font-size:13px;
             font-weight:800;
             letter-spacing:.5px;
         }
@@ -126,7 +126,7 @@
         }
 
         .document-ruc{
-            font-size:10px;
+            font-size:12px;
             font-weight:800;
             text-align:center;
             margin-bottom:8px;
@@ -134,7 +134,7 @@
         }
 
         .document-number{
-            font-size:13px;
+            font-size:15px;
             font-weight:900;
             text-align:center;
             line-height:1.05;
@@ -147,7 +147,7 @@
             display:flex;
             justify-content:space-between;
             margin-bottom:6px;
-            font-size:9.5px;
+            font-size:11.5px;
 
         }
 
@@ -177,7 +177,7 @@
             );
             color:white;
             padding:5px 10px;
-            font-size:10.5px;
+            font-size:12.5px;
             font-weight:800;
 
         }
@@ -201,7 +201,7 @@
             display:flex;
             gap:6px;
             margin-bottom:3px;
-            font-size:9px;
+            font-size:11px;
 
         }
 
@@ -235,7 +235,7 @@
 
         th{
             padding:6px 6px;
-            font-size:8px;
+            font-size:10px;
             font-weight:800;
             text-transform:uppercase;
             letter-spacing:.3px;
@@ -245,7 +245,7 @@
         td{
             padding:4px 6px;
             border-bottom:1px solid #edf2f7;
-            font-size:8.5px;
+            font-size:10.5px;
             vertical-align:top;
             background:white;
 
@@ -269,12 +269,12 @@
             font-weight:800;
             color:#111827;
             margin-bottom:2px;
-            font-size:8.5px;
+            font-size:10.5px;
         }
 
         .product-category{
             color:#64748b;
-            font-size:7px;
+            font-size:9px;
         }
 
         /* =======================================
@@ -304,14 +304,14 @@
 
         .amount-letters h4{
             color:var(--primary);
-            font-size:11px;
+            font-size:13px;
             margin-bottom:6px;
             font-weight:800;
         }
 
         .amount-letters p{
             line-height:1.4;
-            font-size:9px;
+            font-size:11px;
 
         }
 
@@ -332,7 +332,7 @@
         .totals td{
             border:1px solid #edf2f7;
             padding:5px 8px;
-            font-size:9.5px;
+            font-size:11.5px;
         }
 
         .total-final td{
@@ -342,7 +342,7 @@
                 var(--primary-light)
             );
             color:white;
-            font-size:10.5px;
+            font-size:12.5px;
             font-weight:600;
 
         }
@@ -372,7 +372,7 @@
 
         .qr-text{
             line-height:1.4;
-            font-size:8px;
+            font-size:10px;
 
         }
         .aditional-box{
@@ -387,7 +387,7 @@
 
         .aditional-title{
             color:var(--primary);
-            font-size:10.5px;
+            font-size:12.5px;
             font-weight:800;
             margin-bottom:6px;
 
@@ -397,7 +397,7 @@
             display:flex;
             gap:6px;
             margin-bottom:3px;
-            font-size:9px;
+            font-size:11px;
 
         }
 
@@ -417,14 +417,14 @@
         }
 
         .thanks-title{
-            font-size:16px;
+            font-size:18px;
             font-weight:800;
             color:var(--primary);
             margin-bottom:4px;
         }
 
         .thanks-subtitle{
-            font-size:9px;
+            font-size:11px;
             color:#64748b;
 
         }
