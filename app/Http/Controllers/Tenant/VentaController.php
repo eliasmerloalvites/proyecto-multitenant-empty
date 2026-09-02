@@ -1003,11 +1003,21 @@ class VentaController extends Controller
         // Se genera como PDF (no imagen): Browsershot usa Chrome real, asi que
         // respeta el flexbox/grid/gradientes del diseño, a diferencia de dompdf.
         if (!is_file($rutaCompleta)) {
-            Browsershot::html($html)
+            $browsershot = Browsershot::html($html)
                 ->timeout(120)
                 ->format('A4')
                 ->showBackground()
-                ->save($rutaCompleta);
+                ->noSandbox();
+
+            // En el VPS, Puppeteer no trae Chromium propio: se usa el
+            // Chromium del sistema apuntando PUPPETEER_EXECUTABLE_PATH en
+            // el .env. En local, si no esta seteado, Browsershot usa su
+            // deteccion por defecto (asi sigue funcionando igual que antes).
+            if ($chromePath = env('PUPPETEER_EXECUTABLE_PATH')) {
+                $browsershot->setChromePath($chromePath);
+            }
+
+            $browsershot->save($rutaCompleta);
         }
 
         // Se comparte por una URL corta y opaca (/t/{codigo}) en vez de la ruta
