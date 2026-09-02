@@ -997,26 +997,67 @@ class VentaController extends Controller
             $ubicacionNegocio = tenant('tipo_negocio');
         }
 
-        $path = public_path('storage/' . $ubicacionNegocio . '/' . $id . '/archivos/tickets/');
-        if (!file_exists($path)) {
-
-            mkdir($path, 0777, true);
-        }
-        $fileName = $ventae->pdf . '.png';
-        $rutaCompleta = $path . $fileName;
+        $rutaCompleta = self::rutaTicketPdf($ubicacionNegocio, $id, $ventae->pdf);
 
         // Se rehace solo si no existe: generarla cuesta abrir un navegador.
+        // Se genera como PDF (no imagen): Browsershot usa Chrome real, asi que
+        // respeta el flexbox/grid/gradientes del diseño, a diferencia de dompdf.
         if (!is_file($rutaCompleta)) {
             Browsershot::html($html)
                 ->timeout(120)
-                ->windowSize(900, 1200)
+                ->format('A4')
+                ->showBackground()
                 ->save($rutaCompleta);
         }
 
-        // url() y no asset(): con asset_helper_tenancy activo, asset() devuelve
-        // una ruta /tenancy/assets/... que da 404, porque el ticket se guarda
-        // bajo public/storage.
-        return url('storage/' . $ubicacionNegocio . '/' . $id . '/archivos/tickets/' . $fileName);
+        // Se comparte por una URL corta y opaca (/t/{codigo}) en vez de la ruta
+        // real de storage, para no exponer el nombre del tenant ni la
+        // estructura interna de carpetas; esa ruta fuerza la descarga del PDF.
+        return route('tenant.ventas.venta.compartir', $ventae->pdf);
+    }
+
+    /**
+     * Ruta fisica donde vive (o vivira) el PDF compartible de una venta.
+     */
+    private static function rutaTicketPdf(string $tipoNegocio, ?string $tenantId, string $codigo): string
+    {
+        $path = public_path('storage/' . $tipoNegocio . '/' . $tenantId . '/archivos/tickets/');
+        if (!file_exists($path)) {
+            mkdir($path, 0777, true);
+        }
+
+        return $path . $codigo . '.pdf';
+    }
+
+    /**
+     * Entrega el PDF de una venta por una URL corta/opaca (el codigo publico
+     * DOV_Pdf, no el VEN_Id), forzando la descarga con un nombre amigable en
+     * vez de mostrar la ruta interna de storage. Es el link que se manda por
+     * WhatsApp: si el archivo aun no existe, se genera en el momento.
+     */
+    public function compartirTicket(string $codigo)
+    {
+        $documento = DB::table('documento_venta')->where('DOV_Pdf', $codigo)->first();
+
+        if (!$documento) {
+            abort(404);
+        }
+
+        $ubicacionNegocio = tenant('tipo_negocio');
+        $tenantId = tenant('id');
+        $rutaCompleta = self::rutaTicketPdf($ubicacionNegocio, $tenantId, $codigo);
+
+        if (!is_file($rutaCompleta)) {
+            self::ticketImagen($documento->VEN_Id);
+        }
+
+        if (!is_file($rutaCompleta)) {
+            abort(404);
+        }
+
+        $nombreArchivo = 'Comprobante-' . $documento->DOV_Serie . '-' . $documento->DOV_Numero . '.pdf';
+
+        return response()->download($rutaCompleta, $nombreArchivo);
     }
 
     /**
