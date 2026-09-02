@@ -40,9 +40,10 @@
             min-height:297mm;
             margin:auto;
             background:white;
-            padding:25px;
-            border-radius:20px;
+            padding:10mm;
+            border-radius:10px;
             box-shadow: 0 10px 35px rgba(15,43,112,.08);
+            font-size:9.5px;
         }
 
         /* =======================================
@@ -53,7 +54,7 @@
             display:flex;
             justify-content:space-between;
             align-items:flex-start;
-            gap:40px;
+            gap:16px;
         }
 
         /* =======================================
@@ -64,29 +65,29 @@
             width:55%;
         }
         .logo{
-            width:250px;
-            margin-bottom:10px;
+            width:120px;
+            margin-bottom:5px;
         }
 
         .company-name{
-            font-size:40px;
+            font-size:18px;
             font-weight:900;
             color:var(--primary);
-            margin-bottom:10px;
-            line-height:1;
+            margin-bottom:4px;
+            line-height:1.1;
         }
 
         .company-subtitle{
             color:#2563eb;
-            font-size:20px;
+            font-size:10px;
             font-weight:700;
-            margin-bottom:20px;
+            margin-bottom:8px;
 
         }
 
         .company-info{
-            line-height:2;
-            font-size:15px;
+            line-height:1.5;
+            font-size:9px;
         }
 
         .company-info strong{
@@ -99,10 +100,10 @@
 
         .document-box{
             width:45%;
-            border-radius:22px;
+            border-radius:10px;
             overflow:hidden;
             background:white;
-            box-shadow: 0 10px 30px rgba(15,43,112,.15);
+            box-shadow: 0 6px 16px rgba(15,43,112,.15);
 
         }
 
@@ -113,40 +114,40 @@
                 var(--primary-light)
             );
             color:white;
-            padding:20px;
+            padding:6px 10px;
             text-align:center;
-            font-size:20px;
+            font-size:11px;
             font-weight:800;
-            letter-spacing:1px;
+            letter-spacing:.5px;
         }
 
         .document-body{
-            padding:20px;
+            padding:10px;
         }
 
         .document-ruc{
-            font-size:16px;
+            font-size:10px;
             font-weight:800;
             text-align:center;
-            margin-bottom:20px;
+            margin-bottom:8px;
             color:#111827;
         }
 
         .document-number{
-            font-size:20px;
+            font-size:13px;
             font-weight:900;
             text-align:center;
             line-height:1.05;
             color:var(--primary);
-            margin-bottom:28px;
+            margin-bottom:10px;
 
         }
 
         .document-detail{
             display:flex;
             justify-content:space-between;
-            margin-bottom:16px;
-            font-size:16px;
+            margin-bottom:6px;
+            font-size:9.5px;
 
         }
 
@@ -159,9 +160,9 @@
         ======================================= */
 
         .section{
-            margin-top:20px;
+            margin-top:8px;
             border:1px solid var(--border);
-            border-radius:18px;
+            border-radius:8px;
             overflow:hidden;
             background:white;
             box-shadow: 0 4px 12px rgba(15,43,112,.04);
@@ -175,14 +176,14 @@
                 var(--primary-light)
             );
             color:white;
-            padding:12px 20px;
-            font-size:20px;
+            padding:5px 10px;
+            font-size:10.5px;
             font-weight:800;
 
         }
 
         .section-body{
-            padding:20px;
+            padding:10px;
         }
 
         /* =======================================
@@ -192,20 +193,20 @@
         .client-grid{
             display:grid;
             grid-template-columns:1fr 1fr;
-            gap:40px;
+            gap:16px;
 
         }
 
         .client-item{
             display:flex;
-            gap:12px;
-            margin-bottom:10px;
-            font-size:14px;
+            gap:6px;
+            margin-bottom:3px;
+            font-size:9px;
 
         }
 
         .client-item strong{
-            width:140px;
+            width:90px;
             color:#111827;
         }
 
@@ -217,9 +218,9 @@
             width:100%;
             border-collapse:separate;
             border-spacing:0;
-            margin-top:20px;
+            margin-top:8px;
             overflow:hidden;
-            border-radius:18px;
+            border-radius:8px;
 
         }
 
@@ -233,18 +234,18 @@
         }
 
         th{
-            padding:16px 10px;
-            font-size:12px;
+            padding:6px 6px;
+            font-size:8px;
             font-weight:800;
             text-transform:uppercase;
-            letter-spacing:.5px;
+            letter-spacing:.3px;
 
         }
 
         td{
-            padding:10px 10px;
+            padding:4px 6px;
             border-bottom:1px solid #edf2f7;
-            font-size:14px;
+            font-size:8.5px;
             vertical-align:top;
             background:white;
 
@@ -267,13 +268,13 @@
         .product-name{
             font-weight:800;
             color:#111827;
-            margin-bottom:6px;
-            font-size:14px;
+            margin-bottom:2px;
+            font-size:8.5px;
         }
 
         .product-category{
             color:#64748b;
-            font-size:12px;
+            font-size:7px;
         }
 
         /* =======================================
@@ -283,8 +284,8 @@
         .bottom-grid{
             display:flex;
             justify-content:space-between;
-            gap:35px;
-            margin-top:20px;
+            gap:14px;
+            margin-top:8px;
 
         }
 
@@ -295,22 +296,22 @@
         .amount-letters{
             width:50%;
             border:1px solid var(--border);
-            border-radius:18px;
-            padding:20px;
+            border-radius:8px;
+            padding:10px;
             background:white;
             box-shadow: 0 4px 12px rgba(15,43,112,.04);
         }
 
         .amount-letters h4{
             color:var(--primary);
-            font-size:24px;
-            margin-bottom:18px;
+            font-size:11px;
+            margin-bottom:6px;
             font-weight:800;
         }
 
         .amount-letters p{
-            line-height:1.8;
-            font-size:15px;
+            line-height:1.4;
+            font-size:9px;
 
         }
 
@@ -330,8 +331,8 @@
 
         .totals td{
             border:1px solid #edf2f7;
-            padding:10px;
-            font-size:16px;
+            padding:5px 8px;
+            font-size:9.5px;
         }
 
         .total-final td{
@@ -341,7 +342,7 @@
                 var(--primary-light)
             );
             color:white;
-            font-size:18px;
+            font-size:10.5px;
             font-weight:600;
 
         }
@@ -353,32 +354,32 @@
         .footer-grid{
             display:flex;
             justify-content:space-between;
-            gap:35px;
-            margin-top:20px;
+            gap:14px;
+            margin-top:8px;
 
         }
 
         .qr-box{
             width:48%;
             border:1px solid var(--border);
-            border-radius:18px;
-            padding:15px;
+            border-radius:8px;
+            padding:8px;
             background:#f8fbff;
             display:flex;
-            gap:25px;
+            gap:10px;
             align-items:center;
         }
 
         .qr-text{
-            line-height:2;
-            font-size:12px;
+            line-height:1.4;
+            font-size:8px;
 
         }
         .aditional-box{
             width:48%;
             border:1px solid var(--border);
-            border-radius:18px;
-            padding:15px;
+            border-radius:8px;
+            padding:8px;
             background:white;
             box-shadow:
                 0 4px 12px rgba(15,43,112,.04);
@@ -386,22 +387,22 @@
 
         .aditional-title{
             color:var(--primary);
-            font-size:20px;
+            font-size:10.5px;
             font-weight:800;
-            margin-bottom:20px;
+            margin-bottom:6px;
 
         }
 
         .aditional-item{
             display:flex;
-            gap:12px;
-            margin-bottom:5px;
-            font-size:15px;
+            gap:6px;
+            margin-bottom:3px;
+            font-size:9px;
 
         }
 
         .aditional-item strong{
-            width:150px;
+            width:95px;
         }
 
         /* =======================================
@@ -409,21 +410,21 @@
         ======================================= */
 
         .thanks{
-            margin-top:50px;
-            border-top:2px solid var(--primary);
-            padding-top:30px;
+            margin-top:16px;
+            border-top:1px solid var(--primary);
+            padding-top:10px;
             text-align:center;
         }
 
         .thanks-title{
-            font-size:40px;
+            font-size:16px;
             font-weight:800;
             color:var(--primary);
-            margin-bottom:12px;
+            margin-bottom:4px;
         }
 
         .thanks-subtitle{
-            font-size:16px;
+            font-size:9px;
             color:#64748b;
 
         }
@@ -926,7 +927,7 @@
 
             <div>
 
-                {!! QrCode::size(130)->generate(
+                {!! QrCode::size(65)->generate(
                     'RUC: '.$datosalmacen->ruc.
                     ' | DOC: '.$UbiDoc.'-'.$NumDoc.
                     ' | TOTAL: S/'.$ventae->total_venta
