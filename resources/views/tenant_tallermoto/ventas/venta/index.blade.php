@@ -698,6 +698,64 @@
                 });
             });
 
+            // Anular una Nota de Venta: documento interno, no requiere
+            // tramite ante SUNAT (a diferencia de .anularComprobante).
+            $('body').on('click', '.anularNota', function() {
+                var id = $(this).data('id');
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Anular nota de venta',
+                    html:
+                        '<label for="swalMotivoAnularNota" class="swal2-input-label" style="display:block;text-align:left;margin-bottom:.25rem">Motivo de la anulacion</label>' +
+                        '<input id="swalMotivoAnularNota" class="swal2-input" placeholder="Ej. El cliente se arrepintio" style="margin:0 0 .5rem">' +
+                        '<div style="text-align:left;margin-top:.5rem">' +
+                        '<label style="font-weight:normal">' +
+                        '<input type="checkbox" id="swalDevolverStockNota" checked> Devolver estos productos al stock del almacen' +
+                        '</label></div>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Anular',
+                    cancelButtonText: 'Cancelar',
+                    focusConfirm: false,
+                    preConfirm: function() {
+                        var motivo = $('#swalMotivoAnularNota').val();
+                        if (!motivo || !motivo.trim()) {
+                            Swal.showValidationMessage('Escribe el motivo.');
+                            return false;
+                        }
+                        return {
+                            motivo: motivo,
+                            devolverStock: $('#swalDevolverStockNota').is(':checked')
+                        };
+                    }
+                }).then(function(res) {
+                    if (!res.isConfirmed) return;
+
+                    $.ajax({
+                        url: '/tenant/ventas/venta/' + id + '/anular-nota',
+                        method: 'POST',
+                        data: {
+                            motivo: res.value.motivo,
+                            devolver_stock: res.value.devolverStock ? 1 : 0,
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        }
+                    }).done(function(r) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Nota anulada',
+                            text: r.success
+                        }).then(function() { table.ajax.reload(null, false); });
+                    }).fail(function(xhr) {
+                        var r = xhr.responseJSON || {};
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'No se pudo anular',
+                            text: r.error || 'Error de conexion.'
+                        });
+                    });
+                });
+            });
+
             // Consultar el resultado de una anulacion que quedo en tramite.
             $('body').on('click', '.bajaConsultar', function() {
                 var id = $(this).data('id');

@@ -180,9 +180,14 @@ class VentaController extends Controller
      */
     private function columnaSunat($row): string
     {
-        // Las notas de venta no van a SUNAT.
+        // Las notas de venta no van a SUNAT, pero si se pueden anular: es un
+        // documento interno, asi que no hace falta ningun tramite externo.
         if (!in_array($row->DOV_Tipo, ['BOL', 'FAC', 'NCR'], true)) {
-            return '<span class="text-muted">&mdash;</span>';
+            if ($row->DOV_Anulado) {
+                return '<span class="badge badge-dark" title="Esta nota de venta fue anulada">ANULADA</span>';
+            }
+
+            return '<button type="button" class="btn btn-outline-danger btn-sm anularNota" data-id="' . $row->VEN_Id . '" title="Anular esta nota de venta"><i class="fa fa-ban"></i> Anular</button>';
         }
 
         $estados = [
@@ -1280,6 +1285,69 @@ class VentaController extends Controller
         $Venta = Venta::find($id);
         $Venta->delete();
         return response()->json(['success' => 'Venta Eliminado Exitosamente.']);
+    }
+
+    /**
+     * Anula una Nota de Venta (no un comprobante electronico: eso se hace
+     * desde AnulacionController, que si tramita la baja ante SUNAT). Una
+     * nota es un documento interno, asi que anularla no requiere ningun
+     * tramite externo: solo se marca como anulada y, si se pide, se
+     * devuelve el stock que desconto al venderse.
+     */
+    public function anularNota(Request $request, string $id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $documento = DB::table('documento_venta')->where('VEN_Id', $id)->first();
+
+            if (!$documento) {
+                throw new Exception('Esta venta no tiene un documento asociado.');
+            }
+
+            if (in_array($documento->DOV_Tipo, ['BOL', 'FAC', 'NCR'], true)) {
+                throw new Exception('Una Boleta, Factura o Nota de Credito se anula con el boton "Anular comprobante" (tramita la baja ante SUNAT).');
+            }
+
+            if ($documento->DOV_Anulado) {
+                throw new Exception('Esta nota de venta ya esta anulada.');
+            }
+
+            $motivo = trim((string) $request->input('motivo'));
+
+            if ($motivo === '') {
+                throw new Exception('Indica el motivo de la anulacion.');
+            }
+
+            if ($request->boolean('devolver_stock', true)) {
+                $detalle = DB::table('detalle_venta')->where('VEN_Id', $id)->get(['LOT_Id', 'DEV_Cantidad']);
+
+                foreach ($detalle as $linea) {
+                    Lote::devolver($linea->LOT_Id, (float) $linea->DEV_Cantidad);
+                }
+            }
+
+            DB::table('documento_venta')->where('VEN_Id', $id)->update([
+                'DOV_Anulado'            => 1,
+                'DOV_MotivoBaja'         => $motivo,
+                'DOV_FechaSolicitudBaja' => now(),
+                'updated_at'             => now(),
+            ]);
+
+            // A diferencia de boleta/factura (donde VEN_Status nunca se toca,
+            // por compatibilidad con lo que ya habia), aqui si se apaga: es
+            // lo que hace que los reportes de caja dejen de contar esta nota
+            // como ingreso una vez anulada.
+            DB::table('venta')->where('VEN_Id', $id)->update(['VEN_Status' => 0]);
+
+            DB::commit();
+
+            return response()->json(['success' => 'Nota de venta anulada.']);
+        } catch (Exception $e) {
+            DB::rollback();
+
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
     }
 
 
