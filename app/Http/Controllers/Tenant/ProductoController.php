@@ -125,16 +125,16 @@ class ProductoController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Productos');
 
-        $encabezados = ['Nombre', 'Categoria', 'Marca', 'Descripcion', 'Precio Compra', 'Precio Venta', 'Stock Inicial'];
+        $encabezados = ['Nombre', 'Categoria', 'Marca', 'Descripcion', 'Precio Compra', 'Precio Venta', 'Stock Inicial', 'Stock Minimo'];
         $sheet->fromArray($encabezados, null, 'A1');
-        $sheet->getStyle('A1:G1')->getFont()->setBold(true);
-        foreach (range('A', 'G') as $col) {
+        $sheet->getStyle('A1:H1')->getFont()->setBold(true);
+        foreach (range('A', 'H') as $col) {
             $sheet->getColumnDimension($col)->setWidth(20);
         }
 
         // Fila de ejemplo, para que quede claro el formato esperado.
         $sheet->fromArray(
-            ['ACEITE 20W50 1L', 'LUBRICANTES', 'LIQUI MOLY', 'Aceite mineral para motor', 25.00, 35.00, 10],
+            ['ACEITE 20W50 1L', 'LUBRICANTES', 'LIQUI MOLY', 'Aceite mineral para motor', 25.00, 35.00, 10, 3],
             null,
             'A2'
         );
@@ -220,7 +220,7 @@ class ProductoController extends Controller
             foreach ($filas as $fila) {
                 $numeroFila++;
 
-                [$nombre, $categoriaNombre, $marca, $descripcion, $precioCompra, $precioVenta, $stockInicial] = array_pad($fila, 7, null);
+                [$nombre, $categoriaNombre, $marca, $descripcion, $precioCompra, $precioVenta, $stockInicial, $stockMinimo] = array_pad($fila, 8, null);
 
                 $nombre = trim((string) $nombre);
                 $categoriaNombre = trim((string) $categoriaNombre);
@@ -253,6 +253,14 @@ class ProductoController extends Controller
                     $errores++;
                     continue;
                 }
+
+                $stockMinimoTexto = trim((string) $stockMinimo);
+                if ($stockMinimoTexto !== '' && (!is_numeric($stockMinimoTexto) || (float) $stockMinimoTexto < 0)) {
+                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": el stock minimo no es un numero valido."];
+                    $errores++;
+                    continue;
+                }
+                $stockMinimo = $stockMinimoTexto === '' ? 0 : (float) $stockMinimoTexto;
 
                 $claveCategoria = mb_strtolower($categoriaNombre);
                 if (!$categoriasCache->has($claveCategoria)) {
@@ -287,6 +295,7 @@ class ProductoController extends Controller
                         'PRO_PrecioCompra' => $precioCompra,
                         'PRO_PrecioVenta' => $precioVenta,
                         'PRO_Marca' => $marca,
+                        'PRO_StockMinimo' => $stockMinimo,
                         'PRO_Status' => 1,
                         'CAT_Id' => $catId,
                     ]);

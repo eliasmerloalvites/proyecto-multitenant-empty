@@ -374,7 +374,7 @@
                 <div class="modal-body">
 
                     <p class="text-muted">
-                        Sube un Excel con tus productos y su stock inicial. Los productos nuevos se crean; si el nombre
+                        Sube un Excel con tus productos, su stock inicial y su stock mínimo. Los productos nuevos se crean; si el nombre
                         ya existe, no se duplica y solo se le agrega el stock. Las categorías que no existan se crean solas.
                     </p>
 
