@@ -452,7 +452,7 @@ class ProductoController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $EntradasBase = DB::table('lote as lt')
+        $EntradasCompraBase = DB::table('lote as lt')
             ->join('compra as cp', 'lt.LOT_IdIngreso', '=', 'cp.COM_Id')
             ->select(
                 'cp.COM_Id as id',
@@ -466,7 +466,7 @@ class ProductoController extends Controller
             ->where('lt.PRO_Id', $id)
             ->where('lt.LOT_TipoIngreso', 'COMPRA');
 
-        $SalidasBase = DB::table('venta as v')
+        $SalidasVentaBase = DB::table('venta as v')
             ->join('documento_venta as dov', 'v.VEN_Id', '=', 'dov.VEN_Id')
             ->join('detalle_venta as dv', 'v.VEN_Id', '=', 'dv.VEN_Id')
             ->select(
@@ -480,14 +480,48 @@ class ProductoController extends Controller
             )
             ->where('dv.PRO_Id', $id);
 
+        // Un traslado entre almacenes no cambia el stock total del producto,
+        // pero se registra como una Entrada (en la sede destino) y una
+        // Salida (en la sede origen) con la misma fecha, para que el
+        // kardex muestre por donde se movio.
+        $EntradasTrasladoBase = DB::table('traslado_detalle as td')
+            ->join('traslado as t', 'td.TRA_Id', '=', 't.TRA_Id')
+            ->join('almacen as ao', 't.ALM_OrigenId', '=', 'ao.ALM_Id')
+            ->select(
+                't.TRA_Id as id',
+                DB::raw("CONCAT('Traslado desde ', ao.ALM_NombreAlmacen) as documento"),
+                't.created_at as fecha',
+                'td.LOT_IdDestino as lote_id',
+                'td.TRD_Cantidad as entrada',
+                DB::raw('0 as salida'),
+                DB::raw('"Entrada" as tipo')
+            )
+            ->where('td.PRO_Id', $id);
+
+        $SalidasTrasladoBase = DB::table('traslado_detalle as td')
+            ->join('traslado as t', 'td.TRA_Id', '=', 't.TRA_Id')
+            ->join('almacen as ad', 't.ALM_DestinoId', '=', 'ad.ALM_Id')
+            ->select(
+                't.TRA_Id as id',
+                DB::raw("CONCAT('Traslado hacia ', ad.ALM_NombreAlmacen) as documento"),
+                't.created_at as fecha',
+                'td.LOT_IdDestino as lote_id',
+                DB::raw('0 as entrada'),
+                'td.TRD_Cantidad as salida',
+                DB::raw('"Salida" as tipo')
+            )
+            ->where('td.PRO_Id', $id);
+
         /*
         |--------------------------------------------------------------------------
         | CLONAR QUERIES
         |--------------------------------------------------------------------------
         */
 
-        $Entradas = clone $EntradasBase;
-        $Salidas = clone $SalidasBase;
+        $EntradasCompra = clone $EntradasCompraBase;
+        $EntradasTraslado = clone $EntradasTrasladoBase;
+        $SalidasVenta = clone $SalidasVentaBase;
+        $SalidasTraslado = clone $SalidasTrasladoBase;
 
         /*
         |--------------------------------------------------------------------------
@@ -500,21 +534,29 @@ class ProductoController extends Controller
         if ($fecha_inicio) {
 
             // ENTRADAS PREVIAS
-            $entradasPrevias = (clone $EntradasBase)
+            $entradasPrevias = (clone $EntradasCompraBase)
                 ->where('cp.created_at','<',$fecha_inicio . ' 00:00:00')
-                ->sum('lt.LOT_CantidadIngreso');
+                ->sum('lt.LOT_CantidadIngreso')
+                + (clone $EntradasTrasladoBase)
+                ->where('t.created_at','<',$fecha_inicio . ' 00:00:00')
+                ->sum('td.TRD_Cantidad');
 
             // SALIDAS PREVIAS
-            $salidasPrevias = (clone $SalidasBase)
+            $salidasPrevias = (clone $SalidasVentaBase)
                 ->where('v.created_at','<',$fecha_inicio . ' 00:00:00')
-                ->sum('dv.DEV_Cantidad');
+                ->sum('dv.DEV_Cantidad')
+                + (clone $SalidasTrasladoBase)
+                ->where('t.created_at','<',$fecha_inicio . ' 00:00:00')
+                ->sum('td.TRD_Cantidad');
 
             // STOCK INICIAL
             $stock = $entradasPrevias - $salidasPrevias;
 
             // FILTRO FECHA INICIO
-            $Entradas->where('cp.created_at','>=',$fecha_inicio . ' 00:00:00');
-            $Salidas->where('v.created_at','>=',$fecha_inicio . ' 00:00:00');
+            $EntradasCompra->where('cp.created_at','>=',$fecha_inicio . ' 00:00:00');
+            $EntradasTraslado->where('t.created_at','>=',$fecha_inicio . ' 00:00:00');
+            $SalidasVenta->where('v.created_at','>=',$fecha_inicio . ' 00:00:00');
+            $SalidasTraslado->where('t.created_at','>=',$fecha_inicio . ' 00:00:00');
         }
 
         /*
@@ -524,8 +566,10 @@ class ProductoController extends Controller
         */
 
         if ($fecha_fin) {
-            $Entradas->where('cp.created_at','<=',$fecha_fin . ' 23:59:59');
-            $Salidas->where('v.created_at','<=',$fecha_fin . ' 23:59:59');
+            $EntradasCompra->where('cp.created_at','<=',$fecha_fin . ' 23:59:59');
+            $EntradasTraslado->where('t.created_at','<=',$fecha_fin . ' 23:59:59');
+            $SalidasVenta->where('v.created_at','<=',$fecha_fin . ' 23:59:59');
+            $SalidasTraslado->where('t.created_at','<=',$fecha_fin . ' 23:59:59');
         }
 
         /*
@@ -535,12 +579,14 @@ class ProductoController extends Controller
         */
 
         if ($tipo == 'Entrada') {
-            $kardex = $Entradas->get();
+            $kardex = $EntradasCompra->unionAll($EntradasTraslado)->get();
         } elseif ($tipo == 'Salida') {
-            $kardex = $Salidas->get();
+            $kardex = $SalidasVenta->unionAll($SalidasTraslado)->get();
         } else {
-            $kardex = $Entradas
-                ->unionAll($Salidas)
+            $kardex = $EntradasCompra
+                ->unionAll($EntradasTraslado)
+                ->unionAll($SalidasVenta)
+                ->unionAll($SalidasTraslado)
                 ->get();
         }
 
