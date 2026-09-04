@@ -157,7 +157,8 @@ class SunatService
     /**
      * Traduce las lineas del detalle de venta al formato de la API.
      *
-     * @param iterable $detalle filas con DEV_Cantidad, DEV_PrecioUnitario, PRO_Id y PRO_Nombre
+     * @param iterable $detalle filas con DEV_Cantidad, DEV_PrecioUnitario,
+     *                          DEV_Descuento, PRO_Id y PRO_Nombre
      */
     public function mapearItems(iterable $detalle): array
     {
@@ -172,11 +173,13 @@ class SunatService
             // demas. El IGV se calcula como la diferencia contra el valor de
             // venta, no como un porcentaje del valor de venta; si no, la resta
             // de los redondeos deja al XML un centimo por debajo del ticket.
+            // DEV_PrecioUnitario ya viene neto (con el descuento del POS
+            // aplicado), asi que valor_venta/igv salen correctos sin mas.
             $totalLinea = round($precio * $cantidad, 2);
             $valorVenta = round($totalLinea / (1 + $porcentajeIgv / 100), 2);
             $igv        = round($totalLinea - $valorVenta, 2);
 
-            $items[] = [
+            $fila = [
                 'codigo'          => $item->PRO_Id,
                 'descripcion'     => $item->PRO_Nombre,
                 'unidad'          => 'NIU',
@@ -190,6 +193,30 @@ class SunatService
                 'tipo_afectacion' => '10',
                 'porcentaje_igv'  => $porcentajeIgv,
             ];
+
+            // Si el POS aplico un descuento en esta linea (DEV_Descuento, con
+            // IGV incluido), se declara como AllowanceCharge de item: monto y
+            // monto_base van sin IGV (son valor de venta, no precio de
+            // venta). valor_venta de la linea ya quedo neto arriba; esto solo
+            // deja evidencia de por que es menor a su precio de lista.
+            $descuentoConIgv = round((float) ($item->DEV_Descuento ?? 0), 2);
+
+            if ($descuentoConIgv > 0) {
+                $totalLineaBruto = round($totalLinea + $descuentoConIgv, 2);
+                $valorVentaBruto = round($totalLineaBruto / (1 + $porcentajeIgv / 100), 2);
+                $descuentoValorVenta = round($valorVentaBruto - $valorVenta, 2);
+
+                if ($descuentoValorVenta > 0) {
+                    $fila['descuentos'] = [[
+                        'cod_tipo'   => '02',
+                        'monto'      => $descuentoValorVenta,
+                        'monto_base' => $valorVentaBruto,
+                        'factor'     => $valorVentaBruto > 0 ? round($descuentoValorVenta / $valorVentaBruto, 8) : 0,
+                    ]];
+                }
+            }
+
+            $items[] = $fila;
         }
 
         return $items;
