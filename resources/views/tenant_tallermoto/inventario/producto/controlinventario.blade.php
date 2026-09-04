@@ -134,6 +134,16 @@
 </style>
 
     <div class="col-12">
+        @if ($stockBajoCount > 0)
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <div>
+                    <strong>{{ $stockBajoCount }}</strong>
+                    {{ $stockBajoCount == 1 ? 'producto está' : 'productos están' }}
+                    en stock mínimo o por debajo. Revisa la lista para reponer.
+                </div>
+            </div>
+        @endif
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">LISTA DE PRODUCTOS</h5>
@@ -146,6 +156,7 @@
                                 <th scope="col">Nombre</th>
                                 <th scope="col">Categoria</th>
                                 <th scope="col">Stock</th>
+                                <th scope="col">Stock Mínimo</th>
                                 <th scope="col">P. Venta</th>
                                 <th scope="col">P. Compra</th>
                                 <th scope="col">Opciones</th>
@@ -557,6 +568,11 @@
                     {
                         data: 'cantidad_total',
                         name: 'cantidad_total',
+                        className: 'text-start'
+                    },
+                    {
+                        data: 'PRO_StockMinimo',
+                        name: 'PRO_StockMinimo',
                         className: 'text-start'
                     },
                     {

@@ -114,6 +114,14 @@
                                     placeholder="Marca" required>
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <label class="control-label" style=" text-align: left; display: block;">Stock Mínimo:</label>
+                                <input type="number" id="PRO_StockMinimo" name="PRO_StockMinimo" min="0" step="1"
+                                    class="form-control input_user " placeholder="Stock Mínimo" value="0">
+                                <small class="form-text text-muted">Se avisará cuando el stock llegue a este nivel o menos.</small>
+                            </div>
+                        </div>
                         <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12" style="text-align: left;">
                             <label>Añadir Imagen </label>
                             <div class="custom-file center">
@@ -547,6 +555,7 @@
                         $('#PRO_PrecioCompra').val(result.data.PRO_PrecioCompra);
                         $('#PRO_PrecioVenta').val(result.data.PRO_PrecioVenta);
                         $('#PRO_Marca').val(result.data.PRO_Marca);
+                        $('#PRO_StockMinimo').val(result.data.PRO_StockMinimo);
                         $('#CAT_Id').val(result.data.CAT_Id);
                         $('#CAT_Id').change();
 

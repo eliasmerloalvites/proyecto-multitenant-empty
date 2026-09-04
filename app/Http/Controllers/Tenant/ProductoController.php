@@ -71,6 +71,7 @@ class ProductoController extends Controller
                 $producto->PRO_PrecioCompra = $request->PRO_PrecioCompra;
                 $producto->PRO_PrecioVenta = $request->PRO_PrecioVenta;
                 $producto->PRO_Marca = $request->PRO_Marca;
+                $producto->PRO_StockMinimo = $request->PRO_StockMinimo ?? 0;
                 $producto->PRO_Status = $request->PRO_Status ?? 1;
                 $producto->CAT_Id = $request->CAT_Id;
                 $producto->save();
@@ -354,12 +355,22 @@ class ProductoController extends Controller
             $data = DB::table('producto as pd')
                 ->join('categoria as ct', 'pd.CAT_Id', '=', 'ct.CAT_Id')
                 ->join('lote as lt','pd.PRO_Id','=','lt.PRO_Id')
-                ->select('pd.PRO_Id', 'pd.PRO_Nombre', 'pd.PRO_PrecioVenta', 'pd.PRO_PrecioCompra', 'ct.CAT_Nombre', DB::raw('SUM(lt.LOT_CantidadReal) as cantidad_total'))
-                ->groupBy('pd.PRO_Id', 'pd.PRO_Nombre', 'pd.PRO_PrecioVenta', 'pd.PRO_PrecioCompra', 'ct.CAT_Nombre')
+                ->select('pd.PRO_Id', 'pd.PRO_Nombre', 'pd.PRO_PrecioVenta', 'pd.PRO_PrecioCompra', 'pd.PRO_StockMinimo', 'ct.CAT_Nombre', DB::raw('SUM(lt.LOT_CantidadReal) as cantidad_total'))
+                ->groupBy('pd.PRO_Id', 'pd.PRO_Nombre', 'pd.PRO_PrecioVenta', 'pd.PRO_PrecioCompra', 'pd.PRO_StockMinimo', 'ct.CAT_Nombre')
                 ->get();
 
             return datatables()::of($data)
                 ->addIndexColumn()
+                ->addColumn('cantidad_total', function ($row) {
+                    if ($row->cantidad_total <= 0) {
+                        $badge = 'badge-danger';
+                    } elseif ($row->cantidad_total <= $row->PRO_StockMinimo) {
+                        $badge = 'badge-warning';
+                    } else {
+                        $badge = 'badge-success';
+                    }
+                    return '<span class="badge ' . $badge . '">' . number_format($row->cantidad_total, 2) . '</span>';
+                })
                 ->addColumn('lotes', function ($row) {
                     $btn = '<a data-toggle="tooltip"  data-id="' . $row->PRO_Id . '" data-original-title="Lotes" class="btn btn-warning btn-sm lotesProducto" ><i class="fas fa-layer-group"></i></a>';
                     return $btn;
@@ -374,12 +385,20 @@ class ProductoController extends Controller
 
                     return $btn;
                 })
-                ->rawColumns(['lotes', 'kardex', 'action3'])
+                ->rawColumns(['cantidad_total', 'lotes', 'kardex', 'action3'])
                 ->make(true);
         }
 
+        $stockBajoCount = DB::table('producto as pd')
+            ->join('lote as lt', 'pd.PRO_Id', '=', 'lt.PRO_Id')
+            ->select('pd.PRO_Id')
+            ->groupBy('pd.PRO_Id', 'pd.PRO_StockMinimo')
+            ->havingRaw('SUM(lt.LOT_CantidadReal) <= pd.PRO_StockMinimo')
+            ->get()
+            ->count();
+
         $categorias = DB::table('categoria')->get();
-        return view('tenant_'.tenant('tipo_negocio').'.inventario.producto.controlinventario', compact('categorias'));
+        return view('tenant_'.tenant('tipo_negocio').'.inventario.producto.controlinventario', compact('categorias', 'stockBajoCount'));
     }
 
     public function lotes(Request $request,string $id)
@@ -585,6 +604,7 @@ class ProductoController extends Controller
             $producto->PRO_PrecioCompra = $request->PRO_PrecioCompra;
             $producto->PRO_PrecioVenta = $request->PRO_PrecioVenta;
             $producto->PRO_Marca = $request->PRO_Marca;
+            $producto->PRO_StockMinimo = $request->PRO_StockMinimo ?? 0;
             $producto->PRO_Status = $request->PRO_Status ?? 1;
             $producto->CAT_Id = $request->CAT_Id;
             $producto->update();
