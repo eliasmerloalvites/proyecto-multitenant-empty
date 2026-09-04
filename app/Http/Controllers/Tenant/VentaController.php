@@ -698,15 +698,23 @@ class VentaController extends Controller
 
                 $rdst = self::ReducirStock($item['PRO_Id'], $item['quantity'], $idAlmacen, $permitirSinStock);
 
+                // El precio y el descuento por unidad son editables desde el
+                // carrito (POS): "descuentoUnitario" solo se resta para
+                // calcular el precio final, nunca deja el precio en negativo.
+                $descuentoUnitario = isset($item['descuentoUnitario']) ? max(0, (float) $item['descuentoUnitario']) : 0;
+                $precioBase = isset($item['precioUnitario']) ? (float) $item['precioUnitario'] : (float) $item['PRO_PrecioBaseVenta'];
+                $precioBase = max(0, $precioBase);
+                $precioFinal = max(0, $precioBase - $descuentoUnitario);
+
                 for ($i = 0; $i < count($rdst); $i = $i + 2) {
                     $detalle = new DetalleVenta();
                     $detalle->VEN_Id = $venta->VEN_Id;
                     $detalle->DEV_Item = $it + 1;
                     $detalle->PRO_Id = $item['PRO_Id'];
                     $detalle->DEV_Cantidad = $rdst[$i + 1];
-                    $detalle->DEV_PrecioUnitario = $item['PRO_PrecioBaseVenta'];
+                    $detalle->DEV_PrecioUnitario = $precioFinal;
                     $detalle->LOT_Id = $rdst[$i];
-                    $detalle->DEV_Descuento = 0;
+                    $detalle->DEV_Descuento = $descuentoUnitario * $rdst[$i + 1];
                     $detalle->save();
                     $it = $it + 1;
                 }

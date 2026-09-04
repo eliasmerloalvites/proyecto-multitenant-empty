@@ -322,6 +322,35 @@
             font-size: 12px;
         }
 
+        .cart-edit-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+
+        .cart-edit-row label {
+            font-size: 10px;
+            color: var(--gray);
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .cart-edit-input {
+            width: 62px;
+            font-size: 11px;
+            padding: 2px 4px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .cart-price-original {
+            font-size: 10px;
+            color: var(--gray);
+            text-decoration: line-through;
+        }
+
         /* =========================
                             TOTAL
                             ========================= */
@@ -2358,14 +2387,39 @@
                 existing.quantity++;
             } else {
                 // NUEVO PRODUCTO
+                // precioUnitario: precio de venta al que se cobra (editable).
+                // descuentoUnitario: monto que se descuenta por unidad, informativo,
+                // se resta de precioUnitario para calcular el subtotal de la linea.
                 cart.push({
                     ...product,
-                    quantity: 1
+                    quantity: 1,
+                    precioUnitario: parseFloat(product.PRO_PrecioBaseVenta),
+                    descuentoUnitario: 0
                 });
             }
 
             renderCart();
 
+        }
+
+        function precioFinalItem(item) {
+            let precio = parseFloat(item.precioUnitario);
+            let descuento = parseFloat(item.descuentoUnitario) || 0;
+            return Math.max(0, precio - descuento);
+        }
+
+        function updatePrecioItem(id, value) {
+            let item = cart.find(x => x.PRO_Id == id);
+            let precio = parseFloat(value);
+            item.precioUnitario = (isNaN(precio) || precio < 0) ? 0 : precio;
+            renderCart();
+        }
+
+        function updateDescuentoItem(id, value) {
+            let item = cart.find(x => x.PRO_Id == id);
+            let descuento = parseFloat(value);
+            item.descuentoUnitario = (isNaN(descuento) || descuento < 0) ? 0 : descuento;
+            renderCart();
         }
 
         function renderCart() {
@@ -2374,9 +2428,13 @@
             let totalItems = 0;
             cart.forEach(item => {
 
-                let subtotal = item.quantity * parseFloat(item.PRO_PrecioBaseVenta);
+                let precioFinal = precioFinalItem(item);
+                let subtotal = item.quantity * precioFinal;
                 total += subtotal;
                 totalItems += item.quantity;
+
+                let precioOriginal = parseFloat(item.PRO_PrecioBaseVenta);
+                let tieneAjuste = precioFinal !== precioOriginal;
 
                 let image = item.PRO_Imagen ?
                     `/storage/{{ tenant('tipo_negocio') }}/{{ tenant('id') }}/archivos/producto/${item.PRO_Imagen}` :
@@ -2389,7 +2447,17 @@
                     </div>
                     <div class="cart-info">
                         <div class="cart-name">${item.PRO_Nombre}</div>
-                        <div class="cart-price">Unit. S/ ${item.PRO_PrecioBaseVenta}</div>
+                        ${tieneAjuste ? `<div class="cart-price-original">Precio lista: S/ ${precioOriginal.toFixed(2)}</div>` : ''}
+                        <div class="cart-edit-row">
+                            <label>Precio</label>
+                            <input type="number" min="0" step="0.01" class="cart-edit-input"
+                                value="${item.precioUnitario}"
+                                onchange="updatePrecioItem(${item.PRO_Id}, this.value)">
+                            <label>Desc. x unid.</label>
+                            <input type="number" min="0" step="0.01" class="cart-edit-input"
+                                value="${item.descuentoUnitario}"
+                                onchange="updateDescuentoItem(${item.PRO_Id}, this.value)">
+                        </div>
                         <div class="cart-bottom">
                             <div class="qty-control">
                                 <button class="qty-btn" onclick="decreaseQty(${item.PRO_Id})">-</button>
