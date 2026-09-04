@@ -269,12 +269,17 @@ class CajaSesionController extends Controller
             ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
             ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
             ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+            ->leftJoin('documento_venta as dov', 'dov.VEN_Id', '=', 'v.VEN_Id')
             ->where('v.CS_Id', $id)
             // DEV_PrecioUnitario ya es el precio final con descuento
             // aplicado; no se resta DEV_Descuento de nuevo (ver nota en
-            // ventasPorMetodoEnSesion).
-            ->select('v.VEN_Id', 'c.CLI_Nombre', 'mp.MEP_Pago', 'v.created_at', DB::raw('SUM(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) as total'))
-            ->groupBy('v.VEN_Id', 'c.CLI_Nombre', 'mp.MEP_Pago', 'v.created_at')
+            // ventasPorMetodoEnSesion). Se trae DOV_Anulado para que el
+            // detalle del turno pueda marcar las ventas/notas anuladas en
+            // vez de mostrarlas como si siguieran activas (el resumen por
+            // metodo ya las excluye via VEN_Status, pero este listado es
+            // historico y las sigue mostrando a proposito).
+            ->select('v.VEN_Id', 'c.CLI_Nombre', 'mp.MEP_Pago', 'v.created_at', 'v.VEN_Status', DB::raw('MAX(dov.DOV_Anulado) as DOV_Anulado'), DB::raw('SUM(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) as total'))
+            ->groupBy('v.VEN_Id', 'c.CLI_Nombre', 'mp.MEP_Pago', 'v.created_at', 'v.VEN_Status')
             ->orderByDesc('v.VEN_Id')
             ->get();
 
