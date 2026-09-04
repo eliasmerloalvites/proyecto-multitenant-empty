@@ -339,6 +339,7 @@
                 request()->routeIs('tenant.inventario.almacen*') ||
                 request()->routeIs('tenant.inventario.producto*') ||
                 request()->routeIs('tenant.inventario.traslado*') ||
+                request()->routeIs('tenant.inventario.ajuste*') ||
                 request()->routeIs('tenant.inventario.controlinventario*')
                     ? 'menu-open'
                     : '' }}">
@@ -349,6 +350,7 @@
                     request()->routeIs('tenant.inventario.almacen*') ||
                     request()->routeIs('tenant.inventario.producto*') ||
                     request()->routeIs('tenant.inventario.traslado*') ||
+                    request()->routeIs('tenant.inventario.ajuste*') ||
                     request()->routeIs('tenant.inventario.controlinventario*')
                         ? 'active'
                         : '' }}">
@@ -379,6 +381,13 @@
                                         class="nav-link {{ request()->routeIs('tenant.inventario.traslado*') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Traslado de Stock</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ tenant_url('tenant.inventario.ajuste.index') }}"
+                                        class="nav-link {{ request()->routeIs('tenant.inventario.ajuste*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Ajuste de Inventario</p>
                                     </a>
                                 </li>
                             @endcan
