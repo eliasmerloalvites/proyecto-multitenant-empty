@@ -41,7 +41,8 @@ class ProductoController extends Controller
         }
 
         $categorias = DB::table('categoria')->get();
-        return view('tenant_'.tenant('tipo_negocio').'.inventario.producto.index', compact('categorias'));
+        $almacenes = DB::table('almacen')->orderBy('ALM_NombreAlmacen')->get();
+        return view('tenant_'.tenant('tipo_negocio').'.inventario.producto.index', compact('categorias', 'almacenes'));
     }
 
     /**
@@ -70,6 +71,7 @@ class ProductoController extends Controller
                 $producto->PRO_PrecioCompra = $request->PRO_PrecioCompra;
                 $producto->PRO_PrecioVenta = $request->PRO_PrecioVenta;
                 $producto->PRO_Marca = $request->PRO_Marca;
+                $producto->PRO_StockMinimo = $request->PRO_StockMinimo ?? 0;
                 $producto->PRO_Status = $request->PRO_Status ?? 1;
                 $producto->CAT_Id = $request->CAT_Id;
                 $producto->save();
@@ -115,6 +117,229 @@ class ProductoController extends Controller
     }
 
     /**
+     * Plantilla Excel para la carga masiva de productos con su stock inicial.
+     */
+    public function plantillaImportacion()
+    {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Productos');
+
+        $encabezados = ['Nombre', 'Categoria', 'Marca', 'Descripcion', 'Precio Compra', 'Precio Venta', 'Stock Inicial', 'Stock Minimo'];
+        $sheet->fromArray($encabezados, null, 'A1');
+        $sheet->getStyle('A1:H1')->getFont()->setBold(true);
+        foreach (range('A', 'H') as $col) {
+            $sheet->getColumnDimension($col)->setWidth(20);
+        }
+
+        // Fila de ejemplo, para que quede claro el formato esperado.
+        $sheet->fromArray(
+            ['ACEITE 20W50 1L', 'LUBRICANTES', 'LIQUI MOLY', 'Aceite mineral para motor', 25.00, 35.00, 10, 3],
+            null,
+            'A2'
+        );
+
+        // Hoja aparte con las categorias que ya existen en el sistema, para
+        // que el usuario las escriba tal cual y no cree una nueva por error
+        // de tipeo (ej. "Lubricantes" vs "Lubricante").
+        $categorias = DB::table('categoria')->orderBy('CAT_Nombre')->pluck('CAT_Nombre')->filter()->values();
+
+        $hojaCategorias = $spreadsheet->createSheet();
+        $hojaCategorias->setTitle('Categorias existentes');
+        $hojaCategorias->fromArray(['Categorias ya registradas en el sistema'], null, 'A1');
+        $hojaCategorias->getStyle('A1')->getFont()->setBold(true);
+        $hojaCategorias->getColumnDimension('A')->setWidth(35);
+        if ($categorias->isNotEmpty()) {
+            $hojaCategorias->fromArray($categorias->map(fn ($c) => [$c])->toArray(), null, 'A2');
+        }
+
+        // Desplegable en la columna Categoria (filas 2 a 500) que sugiere las
+        // existentes, pero sin bloquear que se escriba una categoria nueva.
+        if ($categorias->isNotEmpty()) {
+            $ultimaFila = 1 + $categorias->count();
+            $rango = "'Categorias existentes'!\$A\$2:\$A\$$ultimaFila";
+            for ($fila = 2; $fila <= 500; $fila++) {
+                $validacion = $sheet->getCell("B$fila")->getDataValidation();
+                $validacion->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
+                $validacion->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_INFORMATION);
+                $validacion->setAllowBlank(true);
+                $validacion->setShowDropDown(true);
+                $validacion->setShowInputMessage(true);
+                $validacion->setShowErrorMessage(false);
+                $validacion->setPromptTitle('Categoria');
+                $validacion->setPrompt('Elige una existente o escribe una nueva.');
+                $validacion->setFormula1($rango);
+            }
+        }
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, 'plantilla_productos.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    /**
+     * Carga masiva de productos desde un Excel: crea los que no existen (por
+     * nombre) y a los que ya existen les agrega el stock como un lote nuevo,
+     * sin duplicar el producto. Las categorias que no existan se crean solas.
+     */
+    public function importar(Request $request)
+    {
+        $request->validate([
+            'ALM_Id' => 'required|integer|exists:almacen,ALM_Id',
+            'archivo' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+
+        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($request->file('archivo')->getRealPath());
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($request->file('archivo')->getRealPath());
+        $filas = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
+
+        // La primera fila son encabezados; se ignora.
+        array_shift($filas);
+
+        $categoriasCache = collect(
+            DB::table('categoria')->get(['CAT_Id', 'CAT_Nombre'])
+        )->mapWithKeys(fn ($c) => [mb_strtolower(trim($c->CAT_Nombre)) => $c->CAT_Id]);
+
+        $claseGeneral = null;
+        $categoriasCreadas = [];
+        $resultados = [];
+        $creados = 0;
+        $conStockAgregado = 0;
+        $errores = 0;
+        $numeroFila = 1; // fila 1 = encabezados
+
+        DB::beginTransaction();
+        try {
+            foreach ($filas as $fila) {
+                $numeroFila++;
+
+                [$nombre, $categoriaNombre, $marca, $descripcion, $precioCompra, $precioVenta, $stockInicial, $stockMinimo] = array_pad($fila, 8, null);
+
+                $nombre = trim((string) $nombre);
+                $categoriaNombre = trim((string) $categoriaNombre);
+
+                // Fila totalmente vacia (ej. al final del archivo): se ignora en silencio.
+                if ($nombre === '' && $categoriaNombre === '') {
+                    continue;
+                }
+
+                if ($nombre === '') {
+                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => 'Falta el nombre del producto.'];
+                    $errores++;
+                    continue;
+                }
+
+                if ($categoriaNombre === '') {
+                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": falta la categoria."];
+                    $errores++;
+                    continue;
+                }
+
+                if (!is_numeric($precioVenta) || (float) $precioVenta < 0) {
+                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": el precio de venta no es un numero valido."];
+                    $errores++;
+                    continue;
+                }
+
+                if (!is_numeric($stockInicial) || (float) $stockInicial < 0) {
+                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": el stock inicial no es un numero valido."];
+                    $errores++;
+                    continue;
+                }
+
+                $stockMinimoTexto = trim((string) $stockMinimo);
+                if ($stockMinimoTexto !== '' && (!is_numeric($stockMinimoTexto) || (float) $stockMinimoTexto < 0)) {
+                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": el stock minimo no es un numero valido."];
+                    $errores++;
+                    continue;
+                }
+                $stockMinimo = $stockMinimoTexto === '' ? 0 : (float) $stockMinimoTexto;
+
+                $claveCategoria = mb_strtolower($categoriaNombre);
+                if (!$categoriasCache->has($claveCategoria)) {
+                    if (!$claseGeneral) {
+                        $claseGeneral = DB::table('clase')->orderBy('CLA_Id')->first()
+                            ?? (object) ['CLA_Id' => DB::table('clase')->insertGetId(['CLA_Nombre' => 'General'])];
+                    }
+
+                    $nuevaCatId = DB::table('categoria')->insertGetId([
+                        'CAT_Nombre' => $categoriaNombre,
+                        'CLA_Id' => $claseGeneral->CLA_Id,
+                    ]);
+                    $categoriasCache[$claveCategoria] = $nuevaCatId;
+                    $categoriasCreadas[] = $categoriaNombre;
+                }
+                $catId = $categoriasCache[$claveCategoria];
+
+                $precioCompra = is_numeric($precioCompra) ? (float) $precioCompra : 0;
+                $precioVenta = (float) $precioVenta;
+                $stockInicial = (float) $stockInicial;
+
+                $productoExistente = DB::table('producto')->whereRaw('LOWER(PRO_Nombre) = ?', [mb_strtolower($nombre)])->first();
+
+                if ($productoExistente) {
+                    $proId = $productoExistente->PRO_Id;
+                    $estado = 'stock_agregado';
+                    $conStockAgregado++;
+                } else {
+                    $proId = DB::table('producto')->insertGetId([
+                        'PRO_Nombre' => $nombre,
+                        'PRO_Descripcion' => $descripcion,
+                        'PRO_PrecioCompra' => $precioCompra,
+                        'PRO_PrecioVenta' => $precioVenta,
+                        'PRO_Marca' => $marca,
+                        'PRO_StockMinimo' => $stockMinimo,
+                        'PRO_Status' => 1,
+                        'CAT_Id' => $catId,
+                    ]);
+                    $estado = 'creado';
+                    $creados++;
+                }
+
+                if ($stockInicial > 0) {
+                    DB::table('lote')->insert([
+                        'ALM_Id' => $request->ALM_Id,
+                        'PRO_Id' => $proId,
+                        'LOT_TipoIngreso' => 'CARGA_MASIVA',
+                        'LOT_IdIngreso' => 0,
+                        'LOT_CantidadReal' => $stockInicial,
+                        'LOT_CantidadIngreso' => $stockInicial,
+                        'LOT_PrecioCompra' => $precioCompra,
+                        'LOT_PrecioVenta' => $precioVenta,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+
+                $resultados[] = ['fila' => $numeroFila, 'estado' => $estado, 'detalle' => $nombre];
+            }
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            return response()->json(['success' => false, 'error' => 'No se pudo procesar el archivo: ' . $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'resumen' => [
+                'creados' => $creados,
+                'con_stock_agregado' => $conStockAgregado,
+                'errores' => $errores,
+                'categorias_creadas' => array_values(array_unique($categoriasCreadas)),
+            ],
+            'detalle' => $resultados,
+        ]);
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(string $id)
@@ -139,12 +364,22 @@ class ProductoController extends Controller
             $data = DB::table('producto as pd')
                 ->join('categoria as ct', 'pd.CAT_Id', '=', 'ct.CAT_Id')
                 ->join('lote as lt','pd.PRO_Id','=','lt.PRO_Id')
-                ->select('pd.PRO_Id', 'pd.PRO_Nombre', 'pd.PRO_PrecioVenta', 'pd.PRO_PrecioCompra', 'ct.CAT_Nombre', DB::raw('SUM(lt.LOT_CantidadReal) as cantidad_total'))
-                ->groupBy('pd.PRO_Id', 'pd.PRO_Nombre', 'pd.PRO_PrecioVenta', 'pd.PRO_PrecioCompra', 'ct.CAT_Nombre')
+                ->select('pd.PRO_Id', 'pd.PRO_Nombre', 'pd.PRO_PrecioVenta', 'pd.PRO_PrecioCompra', 'pd.PRO_StockMinimo', 'ct.CAT_Nombre', DB::raw('SUM(lt.LOT_CantidadReal) as cantidad_total'))
+                ->groupBy('pd.PRO_Id', 'pd.PRO_Nombre', 'pd.PRO_PrecioVenta', 'pd.PRO_PrecioCompra', 'pd.PRO_StockMinimo', 'ct.CAT_Nombre')
                 ->get();
 
             return datatables()::of($data)
                 ->addIndexColumn()
+                ->addColumn('cantidad_total', function ($row) {
+                    if ($row->cantidad_total <= 0) {
+                        $badge = 'badge-danger';
+                    } elseif ($row->cantidad_total <= $row->PRO_StockMinimo) {
+                        $badge = 'badge-warning';
+                    } else {
+                        $badge = 'badge-success';
+                    }
+                    return '<span class="badge ' . $badge . '">' . number_format($row->cantidad_total, 2) . '</span>';
+                })
                 ->addColumn('lotes', function ($row) {
                     $btn = '<a data-toggle="tooltip"  data-id="' . $row->PRO_Id . '" data-original-title="Lotes" class="btn btn-warning btn-sm lotesProducto" ><i class="fas fa-layer-group"></i></a>';
                     return $btn;
@@ -159,12 +394,20 @@ class ProductoController extends Controller
 
                     return $btn;
                 })
-                ->rawColumns(['lotes', 'kardex', 'action3'])
+                ->rawColumns(['cantidad_total', 'lotes', 'kardex', 'action3'])
                 ->make(true);
         }
 
+        $stockBajoCount = DB::table('producto as pd')
+            ->join('lote as lt', 'pd.PRO_Id', '=', 'lt.PRO_Id')
+            ->select('pd.PRO_Id')
+            ->groupBy('pd.PRO_Id', 'pd.PRO_StockMinimo')
+            ->havingRaw('SUM(lt.LOT_CantidadReal) <= pd.PRO_StockMinimo')
+            ->get()
+            ->count();
+
         $categorias = DB::table('categoria')->get();
-        return view('tenant_'.tenant('tipo_negocio').'.inventario.producto.controlinventario', compact('categorias'));
+        return view('tenant_'.tenant('tipo_negocio').'.inventario.producto.controlinventario', compact('categorias', 'stockBajoCount'));
     }
 
     public function lotes(Request $request,string $id)
@@ -209,7 +452,7 @@ class ProductoController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $EntradasBase = DB::table('lote as lt')
+        $EntradasCompraBase = DB::table('lote as lt')
             ->join('compra as cp', 'lt.LOT_IdIngreso', '=', 'cp.COM_Id')
             ->select(
                 'cp.COM_Id as id',
@@ -223,7 +466,7 @@ class ProductoController extends Controller
             ->where('lt.PRO_Id', $id)
             ->where('lt.LOT_TipoIngreso', 'COMPRA');
 
-        $SalidasBase = DB::table('venta as v')
+        $SalidasVentaBase = DB::table('venta as v')
             ->join('documento_venta as dov', 'v.VEN_Id', '=', 'dov.VEN_Id')
             ->join('detalle_venta as dv', 'v.VEN_Id', '=', 'dv.VEN_Id')
             ->select(
@@ -237,14 +480,48 @@ class ProductoController extends Controller
             )
             ->where('dv.PRO_Id', $id);
 
+        // Un traslado entre almacenes no cambia el stock total del producto,
+        // pero se registra como una Entrada (en la sede destino) y una
+        // Salida (en la sede origen) con la misma fecha, para que el
+        // kardex muestre por donde se movio.
+        $EntradasTrasladoBase = DB::table('traslado_detalle as td')
+            ->join('traslado as t', 'td.TRA_Id', '=', 't.TRA_Id')
+            ->join('almacen as ao', 't.ALM_OrigenId', '=', 'ao.ALM_Id')
+            ->select(
+                't.TRA_Id as id',
+                DB::raw("CONCAT('Traslado desde ', ao.ALM_NombreAlmacen) as documento"),
+                't.created_at as fecha',
+                'td.LOT_IdDestino as lote_id',
+                'td.TRD_Cantidad as entrada',
+                DB::raw('0 as salida'),
+                DB::raw('"Entrada" as tipo')
+            )
+            ->where('td.PRO_Id', $id);
+
+        $SalidasTrasladoBase = DB::table('traslado_detalle as td')
+            ->join('traslado as t', 'td.TRA_Id', '=', 't.TRA_Id')
+            ->join('almacen as ad', 't.ALM_DestinoId', '=', 'ad.ALM_Id')
+            ->select(
+                't.TRA_Id as id',
+                DB::raw("CONCAT('Traslado hacia ', ad.ALM_NombreAlmacen) as documento"),
+                't.created_at as fecha',
+                'td.LOT_IdDestino as lote_id',
+                DB::raw('0 as entrada'),
+                'td.TRD_Cantidad as salida',
+                DB::raw('"Salida" as tipo')
+            )
+            ->where('td.PRO_Id', $id);
+
         /*
         |--------------------------------------------------------------------------
         | CLONAR QUERIES
         |--------------------------------------------------------------------------
         */
 
-        $Entradas = clone $EntradasBase;
-        $Salidas = clone $SalidasBase;
+        $EntradasCompra = clone $EntradasCompraBase;
+        $EntradasTraslado = clone $EntradasTrasladoBase;
+        $SalidasVenta = clone $SalidasVentaBase;
+        $SalidasTraslado = clone $SalidasTrasladoBase;
 
         /*
         |--------------------------------------------------------------------------
@@ -257,21 +534,29 @@ class ProductoController extends Controller
         if ($fecha_inicio) {
 
             // ENTRADAS PREVIAS
-            $entradasPrevias = (clone $EntradasBase)
+            $entradasPrevias = (clone $EntradasCompraBase)
                 ->where('cp.created_at','<',$fecha_inicio . ' 00:00:00')
-                ->sum('lt.LOT_CantidadIngreso');
+                ->sum('lt.LOT_CantidadIngreso')
+                + (clone $EntradasTrasladoBase)
+                ->where('t.created_at','<',$fecha_inicio . ' 00:00:00')
+                ->sum('td.TRD_Cantidad');
 
             // SALIDAS PREVIAS
-            $salidasPrevias = (clone $SalidasBase)
+            $salidasPrevias = (clone $SalidasVentaBase)
                 ->where('v.created_at','<',$fecha_inicio . ' 00:00:00')
-                ->sum('dv.DEV_Cantidad');
+                ->sum('dv.DEV_Cantidad')
+                + (clone $SalidasTrasladoBase)
+                ->where('t.created_at','<',$fecha_inicio . ' 00:00:00')
+                ->sum('td.TRD_Cantidad');
 
             // STOCK INICIAL
             $stock = $entradasPrevias - $salidasPrevias;
 
             // FILTRO FECHA INICIO
-            $Entradas->where('cp.created_at','>=',$fecha_inicio . ' 00:00:00');
-            $Salidas->where('v.created_at','>=',$fecha_inicio . ' 00:00:00');
+            $EntradasCompra->where('cp.created_at','>=',$fecha_inicio . ' 00:00:00');
+            $EntradasTraslado->where('t.created_at','>=',$fecha_inicio . ' 00:00:00');
+            $SalidasVenta->where('v.created_at','>=',$fecha_inicio . ' 00:00:00');
+            $SalidasTraslado->where('t.created_at','>=',$fecha_inicio . ' 00:00:00');
         }
 
         /*
@@ -281,8 +566,10 @@ class ProductoController extends Controller
         */
 
         if ($fecha_fin) {
-            $Entradas->where('cp.created_at','<=',$fecha_fin . ' 23:59:59');
-            $Salidas->where('v.created_at','<=',$fecha_fin . ' 23:59:59');
+            $EntradasCompra->where('cp.created_at','<=',$fecha_fin . ' 23:59:59');
+            $EntradasTraslado->where('t.created_at','<=',$fecha_fin . ' 23:59:59');
+            $SalidasVenta->where('v.created_at','<=',$fecha_fin . ' 23:59:59');
+            $SalidasTraslado->where('t.created_at','<=',$fecha_fin . ' 23:59:59');
         }
 
         /*
@@ -292,12 +579,14 @@ class ProductoController extends Controller
         */
 
         if ($tipo == 'Entrada') {
-            $kardex = $Entradas->get();
+            $kardex = $EntradasCompra->unionAll($EntradasTraslado)->get();
         } elseif ($tipo == 'Salida') {
-            $kardex = $Salidas->get();
+            $kardex = $SalidasVenta->unionAll($SalidasTraslado)->get();
         } else {
-            $kardex = $Entradas
-                ->unionAll($Salidas)
+            $kardex = $EntradasCompra
+                ->unionAll($EntradasTraslado)
+                ->unionAll($SalidasVenta)
+                ->unionAll($SalidasTraslado)
                 ->get();
         }
 
@@ -370,6 +659,7 @@ class ProductoController extends Controller
             $producto->PRO_PrecioCompra = $request->PRO_PrecioCompra;
             $producto->PRO_PrecioVenta = $request->PRO_PrecioVenta;
             $producto->PRO_Marca = $request->PRO_Marca;
+            $producto->PRO_StockMinimo = $request->PRO_StockMinimo ?? 0;
             $producto->PRO_Status = $request->PRO_Status ?? 1;
             $producto->CAT_Id = $request->CAT_Id;
             $producto->update();

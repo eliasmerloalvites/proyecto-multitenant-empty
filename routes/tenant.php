@@ -21,6 +21,7 @@ use App\Http\Controllers\Tenant\ProveedorController;
 use App\Http\Controllers\Tenant\SedeController;
 use App\Http\Controllers\Tenant\EmpresaFacturacionController;
 use App\Http\Controllers\Tenant\ComprobanteSunatController;
+use App\Http\Controllers\Tenant\TrasladoController;
 use App\Http\Controllers\Tenant\NotaCreditoController;
 use App\Http\Controllers\Tenant\GuiaRemisionController;
 use App\Http\Controllers\Tenant\AnulacionController;
@@ -461,6 +462,9 @@ Route::middleware([
             ])->parameters([
                 'producto' => 'producto'
             ]);
+
+            Route::get('/tenant/inventario/producto/importar/plantilla', [ProductoController::class, 'plantillaImportacion'])->name('tenant.inventario.producto.importar.plantilla');
+            Route::post('/tenant/inventario/producto/importar', [ProductoController::class, 'importar'])->name('tenant.inventario.producto.importar');
         });
 
         Route::middleware(['tenant.module:inventario'])->group(function () {
@@ -501,6 +505,11 @@ Route::middleware([
             ])->parameters([
                 'almacen' => 'almacen'
             ]);
+
+            Route::get('/tenant/inventario/traslado', [TrasladoController::class, 'index'])->name('tenant.inventario.traslado.index');
+            Route::get('/tenant/inventario/traslado/stock', [TrasladoController::class, 'stockPorAlmacen'])->name('tenant.inventario.traslado.stock');
+            Route::post('/tenant/inventario/traslado', [TrasladoController::class, 'store'])->name('tenant.inventario.traslado.store');
+            Route::get('/tenant/inventario/traslado/{traslado}', [TrasladoController::class, 'show'])->name('tenant.inventario.traslado.show');
         });
 
         Route::resource('/tenant/configuracion/empresa', EmpresaFacturacionController::class)->names([

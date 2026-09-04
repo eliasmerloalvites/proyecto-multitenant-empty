@@ -114,6 +114,14 @@
                                     placeholder="Marca" required>
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <label class="control-label" style=" text-align: left; display: block;">Stock Mínimo:</label>
+                                <input type="number" id="PRO_StockMinimo" name="PRO_StockMinimo" min="0" step="1"
+                                    class="form-control input_user " placeholder="Stock Mínimo" value="0">
+                                <small class="form-text text-muted">Se avisará cuando el stock llegue a este nivel o menos.</small>
+                            </div>
+                        </div>
                         <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12" style="text-align: left;">
                             <label>Añadir Imagen </label>
                             <div class="custom-file center">
@@ -140,7 +148,14 @@
         <div class="col-12 col-md-8">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">LISTA DE PRODUCTOS</h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">LISTA DE PRODUCTOS</h5>
+                        @can('tenant.inventario.producto.create')
+                        <button type="button" class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#modalImportarProducto">
+                            <i class="fa fa-file-excel mr-1"></i> Importar
+                        </button>
+                        @endcan
+                    </div>
                     <p class="card-text">
                     <div class="table-responsive" style="background:#FFF;">
                         <table class="table" id="lista_productos">
@@ -343,6 +358,65 @@
         </div>
     </div>
 
+    <!-- IMPORTAR PRODUCTOS -->
+    <div class="modal fade" id="modalImportarProducto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">
+                        <i class="fa fa-file-excel text-success me-2"></i>
+                        Importar Productos
+                    </h5>
+                    <button type="button" class="btn-close" data-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <p class="text-muted">
+                        Sube un Excel con tus productos, su stock inicial y su stock mínimo. Los productos nuevos se crean; si el nombre
+                        ya existe, no se duplica y solo se le agrega el stock. Las categorías que no existan se crean solas.
+                    </p>
+
+                    <a href="{{ tenant_url('tenant.inventario.producto.importar.plantilla') }}" class="btn btn-outline-primary btn-sm mb-3">
+                        <i class="fa fa-download mr-1"></i> Descargar plantilla
+                    </a>
+
+                    <form id="form_importar_producto" enctype="multipart/form-data">
+                        @csrf
+
+                        <div class="form-group">
+                            <label class="control-label">Sede / Almacén donde ingresa el stock:</label>
+                            <select class="form-control" id="importar_ALM_Id" name="ALM_Id" required>
+                                <option value="">Seleccionar ...</option>
+                                @foreach ($almacenes as $alm)
+                                    <option value="{{ $alm->ALM_Id }}">{{ $alm->ALM_NombreAlmacen }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Archivo Excel (.xlsx):</label>
+                            <input type="file" class="form-control" id="importar_archivo" name="archivo" accept=".xlsx,.xls,.csv" required>
+                        </div>
+
+                    </form>
+
+                    <div id="importar_resultado" style="display:none; max-height: 260px; overflow-y: auto;" class="mt-3"></div>
+
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light border px-4" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-success px-4" id="btnImportarProducto">
+                        <i class="fa fa-upload mr-1"></i> Importar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 @endsection
 @section('script')
     <script>
@@ -481,6 +555,7 @@
                         $('#PRO_PrecioCompra').val(result.data.PRO_PrecioCompra);
                         $('#PRO_PrecioVenta').val(result.data.PRO_PrecioVenta);
                         $('#PRO_Marca').val(result.data.PRO_Marca);
+                        $('#PRO_StockMinimo').val(result.data.PRO_StockMinimo);
                         $('#CAT_Id').val(result.data.CAT_Id);
                         $('#CAT_Id').change();
 
@@ -607,6 +682,73 @@
                         icon: 'info'
                     });
                 }
+            });
+
+            // IMPORTAR PRODUCTOS
+            $('#btnImportarProducto').on('click', function() {
+                if (!document.getElementById('form_importar_producto').reportValidity()) {
+                    return;
+                }
+
+                var formData = new FormData(document.getElementById('form_importar_producto'));
+                var $btn = $(this);
+                var $resultado = $('#importar_resultado');
+
+                $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Importando...');
+                $resultado.hide().html('');
+
+                $.ajax({
+                    url: "{{ tenant_url('tenant.inventario.producto.importar') }}",
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(data) {
+                        var r = data.resumen;
+                        var html = '<div class="alert alert-success mb-2">' +
+                            '<b>' + r.creados + '</b> productos creados, ' +
+                            '<b>' + r.con_stock_agregado + '</b> ya existían (se les agregó stock), ' +
+                            '<b>' + r.errores + '</b> filas con error.' +
+                            '</div>';
+
+                        if (r.categorias_creadas.length) {
+                            html += '<div class="alert alert-info mb-2"><b>Categorías nuevas creadas:</b> ' +
+                                r.categorias_creadas.join(', ') + '</div>';
+                        }
+
+                        var errores = data.detalle.filter(function(d) { return d.estado === 'error'; });
+                        if (errores.length) {
+                            html += '<div class="alert alert-warning mb-0"><b>Filas con error:</b><ul class="mb-0">';
+                            errores.forEach(function(e) {
+                                html += '<li>Fila ' + e.fila + ': ' + e.detalle + '</li>';
+                            });
+                            html += '</ul></div>';
+                        }
+
+                        $resultado.html(html).show();
+                        table.ajax.reload(null, false);
+
+                        Toast.fire({
+                            type: 'success',
+                            title: 'Importación procesada',
+                            icon: 'success'
+                        });
+                    },
+                    error: function(data) {
+                        console.log('Error:', data);
+                        var msg = (data.responseJSON && data.responseJSON.error) ? data.responseJSON.error :
+                            'No se pudo importar el archivo.';
+                        $resultado.html('<div class="alert alert-danger mb-0">' + msg + '</div>').show();
+                        Toast.fire({
+                            type: 'error',
+                            title: 'Fallo la importación',
+                            icon: 'error'
+                        });
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).html('<i class="fa fa-upload mr-1"></i> Importar');
+                    }
+                });
             });
         })
     </script>

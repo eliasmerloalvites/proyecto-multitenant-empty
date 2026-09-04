@@ -17,6 +17,7 @@ class Producto extends Model
         'PRO_PrecioVenta',
         'PRO_Marca',
         'PRO_Imagen',
+        'PRO_StockMinimo',
         'CAT_Id',
         'PRO_Status'
     ];
