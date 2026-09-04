@@ -56,6 +56,26 @@ class VentaController extends Controller
     }
 
     /**
+     * Id del metodo de pago "Pago Mixto" (se usa en venta.MEP_Id cuando la
+     * venta se cobro con mas de un metodo). Se crea una sola vez por tenant,
+     * la primera vez que se registra un pago mixto.
+     */
+    private function metodoPagoMixtoId(): int
+    {
+        $existente = DB::table('metodo_pago')->where('MEP_Pago', 'Pago Mixto')->first();
+
+        if ($existente) {
+            return $existente->MEP_Id;
+        }
+
+        return DB::table('metodo_pago')->insertGetId([
+            'MEP_Pago' => 'Pago Mixto',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
      * Arma la consulta de ventas aplicando todos los filtros del listado:
      * rango de fechas, estado SUNAT, tipo de comprobante, anulado/baja,
      * almacen, metodo de pago y cliente (nombre o numero de documento).
@@ -653,14 +673,45 @@ class VentaController extends Controller
             $idUsuario = Auth::user()->id;
             $idCliente = $request->get('cliente_id') ? $request->get('cliente_id') : 1;
 
+            // Pago mixto: el POS puede mandar "pagos" = [{metodo_pago, monto}, ...]
+            // (ej. mitad efectivo, mitad Yape) en vez de un solo metodo_pago +
+            // pago_recibido. Si no llega "pagos", se arma uno solo con lo de
+            // siempre, para no romper flujos que aun mandan el formato viejo.
+            $pagos = $request->get('pagos');
+            if (!is_array($pagos) || count($pagos) === 0) {
+                $pagos = [[
+                    'metodo_pago' => $request->get('metodo_pago'),
+                    'monto' => $request->get('pago_recibido'),
+                ]];
+            }
+
+            $pagos = array_values(array_filter(
+                $pagos,
+                fn ($p) => !empty($p['metodo_pago']) && (float) ($p['monto'] ?? 0) > 0
+            ));
+
+            if (count($pagos) === 0) {
+                throw new Exception('Debe indicar al menos un metodo de pago con un monto valido.');
+            }
+
+            $totalPagado = array_sum(array_map(fn ($p) => (float) $p['monto'], $pagos));
+            $metodosDistintos = array_values(array_unique(array_map(fn ($p) => (int) $p['metodo_pago'], $pagos)));
+
+            // Con un solo metodo, la venta se etiqueta con ese metodo (como
+            // siempre); con varios, se etiqueta con un metodo "Pago Mixto" de
+            // referencia y el detalle real queda en venta_pago.
+            $mepIdVenta = count($metodosDistintos) === 1
+                ? $metodosDistintos[0]
+                : $this->metodoPagoMixtoId();
+
             $venta = new Venta;
             // El punto de venta cobra siempre al contado (pide pago recibido y
             // calcula vuelto). Antes no se enviaba nada y quedaba en null, con
             // lo que el ticket lo imprimia como CREDITO. 1 = contado.
             $venta->VEN_TipoPago = $request->get('VEN_TipoPago', 1) ?: 1;
             $venta->VEN_Vuelto = $request->get('vuelto');
-            $venta->VEN_Pagado = $request->get('pago_recibido');
-            $venta->MEP_Id = $request->get('metodo_pago');
+            $venta->VEN_Pagado = $totalPagado;
+            $venta->MEP_Id = $mepIdVenta;
             $venta->USU_Id = $idUsuario;
             $venta->CLI_Id = $idCliente;
             $venta->ALM_Id = $idAlmacen;
@@ -668,6 +719,16 @@ class VentaController extends Controller
             $venta->CS_Id = tenant_caja_sesion_activa_id();
             $venta->VEN_FechaEnvio = $fechaactual . ' ' . $horaactual;
             $venta->save();
+
+            foreach ($pagos as $pago) {
+                DB::table('venta_pago')->insert([
+                    'VEN_Id' => $venta->VEN_Id,
+                    'MEP_Id' => (int) $pago['metodo_pago'],
+                    'VNP_Monto' => (float) $pago['monto'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             $VentaTipo = $request->get('comprobante');
 
@@ -1173,7 +1234,15 @@ class VentaController extends Controller
             ->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'c.CAT_Nombre', 'd.DEV_PrecioUnitario', 'd.DEV_Descuento')
             ->get();
 
-        return response()->json(['venta' => $venta, 'detalle' => $detalle]);
+        // Desglose de pagos: en una venta simple es una sola fila (el mismo
+        // metodo que ya trae mp.MEP_Pago); en un pago mixto son dos o mas.
+        $pagos = DB::table('venta_pago as vp')
+            ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'vp.MEP_Id')
+            ->select('mp.MEP_Pago as metodo', 'vp.VNP_Monto as monto')
+            ->where('vp.VEN_Id', $id)
+            ->get();
+
+        return response()->json(['venta' => $venta, 'detalle' => $detalle, 'pagos' => $pagos]);
     }
 
     /**

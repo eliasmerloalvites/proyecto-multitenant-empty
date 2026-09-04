@@ -736,7 +736,16 @@
                         $('#ver_VEN_FechaEmision').text(data.venta.fechaVenta + " " + data.venta
                             .fechaVentaT);
                         $('#ver_VEN_TipoPago').text(data.venta.tipopago == 1 ? "CONTADO" : "CREDITO");
-                        $('#ver_MEP_Pago').text(data.venta.MEP_Pago);
+                        // Si el pago fue mixto, se muestra el desglose por metodo
+                        // en vez de solo la etiqueta generica "Pago Mixto".
+                        if (data.venta.MEP_Pago === 'Pago Mixto' && data.pagos && data.pagos.length) {
+                            var desglosePago = data.pagos.map(function(p) {
+                                return p.metodo + ' S/ ' + parseFloat(p.monto).toFixed(2);
+                            }).join(' + ');
+                            $('#ver_MEP_Pago').text(desglosePago);
+                        } else {
+                            $('#ver_MEP_Pago').text(data.venta.MEP_Pago);
+                        }
                         $('#ver_DOV_TipoComprobante').text(data.venta.tipoDoc == "PRO" ? "NOTA VENTA" :
                             data.venta.tipoDoc == "BOL" ? "BOLETA" : "FACTURA");
                         $('#ver_NumComprobante').text(data.venta.serDoc + " - " + data.venta.numDoc);
