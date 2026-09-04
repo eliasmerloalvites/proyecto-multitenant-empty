@@ -41,7 +41,8 @@ class ProductoController extends Controller
         }
 
         $categorias = DB::table('categoria')->get();
-        return view('tenant_'.tenant('tipo_negocio').'.inventario.producto.index', compact('categorias'));
+        $almacenes = DB::table('almacen')->orderBy('ALM_NombreAlmacen')->get();
+        return view('tenant_'.tenant('tipo_negocio').'.inventario.producto.index', compact('categorias', 'almacenes'));
     }
 
     /**
@@ -112,6 +113,185 @@ class ProductoController extends Controller
             return response()->json(['error' => $e->getMessage()], 422);
         }
         return response()->json(['success' => 'Producto Registrado Exitosamente!', compact('producto')]);
+    }
+
+    /**
+     * Plantilla Excel para la carga masiva de productos con su stock inicial.
+     */
+    public function plantillaImportacion()
+    {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Productos');
+
+        $encabezados = ['Nombre', 'Categoria', 'Marca', 'Descripcion', 'Precio Compra', 'Precio Venta', 'Stock Inicial'];
+        $sheet->fromArray($encabezados, null, 'A1');
+        $sheet->getStyle('A1:G1')->getFont()->setBold(true);
+        foreach (range('A', 'G') as $col) {
+            $sheet->getColumnDimension($col)->setWidth(20);
+        }
+
+        // Fila de ejemplo, para que quede claro el formato esperado.
+        $sheet->fromArray(
+            ['ACEITE 20W50 1L', 'LUBRICANTES', 'LIQUI MOLY', 'Aceite mineral para motor', 25.00, 35.00, 10],
+            null,
+            'A2'
+        );
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, 'plantilla_productos.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    /**
+     * Carga masiva de productos desde un Excel: crea los que no existen (por
+     * nombre) y a los que ya existen les agrega el stock como un lote nuevo,
+     * sin duplicar el producto. Las categorias que no existan se crean solas.
+     */
+    public function importar(Request $request)
+    {
+        $request->validate([
+            'ALM_Id' => 'required|integer|exists:almacen,ALM_Id',
+            'archivo' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+
+        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($request->file('archivo')->getRealPath());
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($request->file('archivo')->getRealPath());
+        $filas = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
+
+        // La primera fila son encabezados; se ignora.
+        array_shift($filas);
+
+        $categoriasCache = collect(
+            DB::table('categoria')->get(['CAT_Id', 'CAT_Nombre'])
+        )->mapWithKeys(fn ($c) => [mb_strtolower(trim($c->CAT_Nombre)) => $c->CAT_Id]);
+
+        $claseGeneral = null;
+        $categoriasCreadas = [];
+        $resultados = [];
+        $creados = 0;
+        $conStockAgregado = 0;
+        $errores = 0;
+        $numeroFila = 1; // fila 1 = encabezados
+
+        DB::beginTransaction();
+        try {
+            foreach ($filas as $fila) {
+                $numeroFila++;
+
+                [$nombre, $categoriaNombre, $marca, $descripcion, $precioCompra, $precioVenta, $stockInicial] = array_pad($fila, 7, null);
+
+                $nombre = trim((string) $nombre);
+                $categoriaNombre = trim((string) $categoriaNombre);
+
+                // Fila totalmente vacia (ej. al final del archivo): se ignora en silencio.
+                if ($nombre === '' && $categoriaNombre === '') {
+                    continue;
+                }
+
+                if ($nombre === '') {
+                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => 'Falta el nombre del producto.'];
+                    $errores++;
+                    continue;
+                }
+
+                if ($categoriaNombre === '') {
+                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": falta la categoria."];
+                    $errores++;
+                    continue;
+                }
+
+                if (!is_numeric($precioVenta) || (float) $precioVenta < 0) {
+                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": el precio de venta no es un numero valido."];
+                    $errores++;
+                    continue;
+                }
+
+                if (!is_numeric($stockInicial) || (float) $stockInicial < 0) {
+                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": el stock inicial no es un numero valido."];
+                    $errores++;
+                    continue;
+                }
+
+                $claveCategoria = mb_strtolower($categoriaNombre);
+                if (!$categoriasCache->has($claveCategoria)) {
+                    if (!$claseGeneral) {
+                        $claseGeneral = DB::table('clase')->orderBy('CLA_Id')->first()
+                            ?? (object) ['CLA_Id' => DB::table('clase')->insertGetId(['CLA_Nombre' => 'General'])];
+                    }
+
+                    $nuevaCatId = DB::table('categoria')->insertGetId([
+                        'CAT_Nombre' => $categoriaNombre,
+                        'CLA_Id' => $claseGeneral->CLA_Id,
+                    ]);
+                    $categoriasCache[$claveCategoria] = $nuevaCatId;
+                    $categoriasCreadas[] = $categoriaNombre;
+                }
+                $catId = $categoriasCache[$claveCategoria];
+
+                $precioCompra = is_numeric($precioCompra) ? (float) $precioCompra : 0;
+                $precioVenta = (float) $precioVenta;
+                $stockInicial = (float) $stockInicial;
+
+                $productoExistente = DB::table('producto')->whereRaw('LOWER(PRO_Nombre) = ?', [mb_strtolower($nombre)])->first();
+
+                if ($productoExistente) {
+                    $proId = $productoExistente->PRO_Id;
+                    $estado = 'stock_agregado';
+                    $conStockAgregado++;
+                } else {
+                    $proId = DB::table('producto')->insertGetId([
+                        'PRO_Nombre' => $nombre,
+                        'PRO_Descripcion' => $descripcion,
+                        'PRO_PrecioCompra' => $precioCompra,
+                        'PRO_PrecioVenta' => $precioVenta,
+                        'PRO_Marca' => $marca,
+                        'PRO_Status' => 1,
+                        'CAT_Id' => $catId,
+                    ]);
+                    $estado = 'creado';
+                    $creados++;
+                }
+
+                if ($stockInicial > 0) {
+                    DB::table('lote')->insert([
+                        'ALM_Id' => $request->ALM_Id,
+                        'PRO_Id' => $proId,
+                        'LOT_TipoIngreso' => 'CARGA_MASIVA',
+                        'LOT_IdIngreso' => 0,
+                        'LOT_CantidadReal' => $stockInicial,
+                        'LOT_CantidadIngreso' => $stockInicial,
+                        'LOT_PrecioCompra' => $precioCompra,
+                        'LOT_PrecioVenta' => $precioVenta,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+
+                $resultados[] = ['fila' => $numeroFila, 'estado' => $estado, 'detalle' => $nombre];
+            }
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            return response()->json(['success' => false, 'error' => 'No se pudo procesar el archivo: ' . $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'resumen' => [
+                'creados' => $creados,
+                'con_stock_agregado' => $conStockAgregado,
+                'errores' => $errores,
+                'categorias_creadas' => array_values(array_unique($categoriasCreadas)),
+            ],
+            'detalle' => $resultados,
+        ]);
     }
 
     /**

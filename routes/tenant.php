@@ -461,6 +461,9 @@ Route::middleware([
             ])->parameters([
                 'producto' => 'producto'
             ]);
+
+            Route::get('/tenant/inventario/producto/importar/plantilla', [ProductoController::class, 'plantillaImportacion'])->name('tenant.inventario.producto.importar.plantilla');
+            Route::post('/tenant/inventario/producto/importar', [ProductoController::class, 'importar'])->name('tenant.inventario.producto.importar');
         });
 
         Route::middleware(['tenant.module:inventario'])->group(function () {
