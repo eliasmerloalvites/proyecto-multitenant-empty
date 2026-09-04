@@ -333,20 +333,22 @@
                     'tenant.inventario.producto.index'
                 ])
                     <li
-                        class="nav-item has-treeview 
+                        class="nav-item has-treeview
                 {{ request()->routeIs('tenant.inventario.clase*') ||
                 request()->routeIs('tenant.inventario.categoria*') ||
                 request()->routeIs('tenant.inventario.almacen*') ||
                 request()->routeIs('tenant.inventario.producto*') ||
+                request()->routeIs('tenant.inventario.traslado*') ||
                 request()->routeIs('tenant.inventario.controlinventario*')
                     ? 'menu-open'
                     : '' }}">
                         <a href="#"
-                            class="nav-link 
+                            class="nav-link
                     {{ request()->routeIs('tenant.inventario.clase*') ||
                     request()->routeIs('tenant.inventario.categoria*') ||
                     request()->routeIs('tenant.inventario.almacen*') ||
                     request()->routeIs('tenant.inventario.producto*') ||
+                    request()->routeIs('tenant.inventario.traslado*') ||
                     request()->routeIs('tenant.inventario.controlinventario*')
                         ? 'active'
                         : '' }}">
@@ -370,6 +372,13 @@
                                         class="nav-link {{ request()->routeIs('tenant.inventario.producto*') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Productos</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ tenant_url('tenant.inventario.traslado.index') }}"
+                                        class="nav-link {{ request()->routeIs('tenant.inventario.traslado*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Traslado de Stock</p>
                                     </a>
                                 </li>
                             @endcan
