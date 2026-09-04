@@ -179,12 +179,48 @@ class SunatService
             $valorVenta = round($totalLinea / (1 + $porcentajeIgv / 100), 2);
             $igv        = round($totalLinea - $valorVenta, 2);
 
+            // Si el POS aplico un descuento en esta linea (DEV_Descuento, con
+            // IGV incluido), se declara como AllowanceCharge de item: monto y
+            // monto_base van sin IGV (son valor de venta, no precio de
+            // venta). SUNAT valida que valor_venta = valor_unitario*cantidad
+            // - descuento.monto, asi que valor_unitario debe ir BRUTO (antes
+            // del descuento); mandarlo ya neto es lo que SUNAT observo como
+            // "el valor de venta por item difiere de los importes
+            // consignados" en la primera prueba.
+            $descuentoConIgv = round((float) ($item->DEV_Descuento ?? 0), 2);
+            $valorVentaBruto = $valorVenta;
+            $descuentos = null;
+
+            if ($descuentoConIgv > 0) {
+                $totalLineaBruto = round($totalLinea + $descuentoConIgv, 2);
+                $valorVentaBrutoCalc = round($totalLineaBruto / (1 + $porcentajeIgv / 100), 2);
+                $descuentoValorVenta = round($valorVentaBrutoCalc - $valorVenta, 2);
+
+                if ($descuentoValorVenta > 0) {
+                    $valorVentaBruto = $valorVentaBrutoCalc;
+                    $descuentos = [[
+                        // Catalogo 53 SUNAT: '00' = descuento por item que SI
+                        // afecta la base imponible del IGV (asi lo usa el
+                        // ejemplo oficial de Greenter, InvoiceDiscountStore).
+                        // '02' es para el descuento GLOBAL a nivel de
+                        // documento, no de linea; usarlo aqui SUNAT lo
+                        // rechazo como formato invalido.
+                        'cod_tipo'   => '00',
+                        'monto'      => $descuentoValorVenta,
+                        'monto_base' => $valorVentaBruto,
+                        // SUNAT valida el formato de este factor con pocos
+                        // decimales; el ejemplo oficial usa 2 (ej. 0.30).
+                        'factor'     => $valorVentaBruto > 0 ? round($descuentoValorVenta / $valorVentaBruto, 2) : 0,
+                    ]];
+                }
+            }
+
             $fila = [
                 'codigo'          => $item->PRO_Id,
                 'descripcion'     => $item->PRO_Nombre,
                 'unidad'          => 'NIU',
                 'cantidad'        => $cantidad,
-                'valor_unitario'  => $cantidad > 0 ? round($valorVenta / $cantidad, 10) : 0,
+                'valor_unitario'  => $cantidad > 0 ? round($valorVentaBruto / $cantidad, 10) : 0,
                 'precio_unitario' => $precio,
                 'valor_venta'     => $valorVenta,
                 'base_igv'        => $valorVenta,
@@ -194,34 +230,8 @@ class SunatService
                 'porcentaje_igv'  => $porcentajeIgv,
             ];
 
-            // Si el POS aplico un descuento en esta linea (DEV_Descuento, con
-            // IGV incluido), se declara como AllowanceCharge de item: monto y
-            // monto_base van sin IGV (son valor de venta, no precio de
-            // venta). valor_venta de la linea ya quedo neto arriba; esto solo
-            // deja evidencia de por que es menor a su precio de lista.
-            $descuentoConIgv = round((float) ($item->DEV_Descuento ?? 0), 2);
-
-            if ($descuentoConIgv > 0) {
-                $totalLineaBruto = round($totalLinea + $descuentoConIgv, 2);
-                $valorVentaBruto = round($totalLineaBruto / (1 + $porcentajeIgv / 100), 2);
-                $descuentoValorVenta = round($valorVentaBruto - $valorVenta, 2);
-
-                if ($descuentoValorVenta > 0) {
-                    $fila['descuentos'] = [[
-                        // Catalogo 53 SUNAT: '00' = descuento por item que SI
-                        // afecta la base imponible del IGV (asi lo usa el
-                        // ejemplo oficial de Greenter, InvoiceDiscountStore).
-                        // '02' es para el descuento GLOBAL a nivel de
-                        // documento, no de linea; usarlo aqui es lo que
-                        // SUNAT rechazo como formato invalido.
-                        'cod_tipo'   => '00',
-                        'monto'      => $descuentoValorVenta,
-                        'monto_base' => $valorVentaBruto,
-                        // SUNAT valida el formato de este factor con pocos
-                        // decimales; el ejemplo oficial usa 2 (ej. 0.30).
-                        'factor'     => $valorVentaBruto > 0 ? round($descuentoValorVenta / $valorVentaBruto, 2) : 0,
-                    ]];
-                }
+            if ($descuentos) {
+                $fila['descuentos'] = $descuentos;
             }
 
             $items[] = $fila;
