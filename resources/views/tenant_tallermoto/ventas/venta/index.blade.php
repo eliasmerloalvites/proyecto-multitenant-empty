@@ -749,8 +749,10 @@
                             pVenta = det.precio_venta;
                             cantidad = det.cantidad;
                             subtotal = parseFloat(cantidad * pVenta);
+                            // det.descuento es el total ya descontado en esta linea
+                            // (informativo: pVenta ya viene con el descuento aplicado).
                             var fila1 = [idProducto, producto, pVenta, cantidad, subtotal
-                                .toFixed(1), "0"
+                                .toFixed(1), parseFloat(det.descuento || 0)
                             ];
                             ListPedido.push(fila1);
                         });
@@ -772,8 +774,11 @@
                                 '</label><small style="color: gray;display: inline; "> Unit x S/ <label id="precioUnitLabel' +
                                 i + '" style="font-size: 11px;">' + ListPedido[i][2] +
                                 '</label></small> ';
+                            var descuentoLinea = parseFloat(ListPedido[i][5]) || 0;
                             fila += '<label id="descuentoLabel' + i +
-                                '" style="font-size: 11px;"></label> ';
+                                '" style="font-size: 11px; color: #DC3545;">' +
+                                (descuentoLinea > 0 ? ' (dscto. S/ ' + descuentoLinea.toFixed(2) + ')' : '') +
+                                '</label> ';
                             fila +=
                                 '<input readonly="true" hidden  type="number"   name="DEV_PrecioUnitario[]" id="precioUnit' +
                                 i + '" value="' + ListPedido[i][2] + '" >' +

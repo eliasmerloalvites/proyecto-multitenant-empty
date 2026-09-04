@@ -97,7 +97,10 @@ class VentaController extends Controller
             return datatables()::of($data)
                 ->addIndexColumn()
                 ->addColumn('importe', function ($row) {
-                    $btn = 'S/ ' . number_format($row->total_venta - $row->total_descuento, 2);
+                    // DEV_PrecioUnitario ya es el precio final con el
+                    // descuento aplicado, asi que total_venta ya es neto:
+                    // no se le vuelve a restar el descuento aqui.
+                    $btn = 'S/ ' . number_format($row->total_venta, 2);
                     return $btn;
                 })
                 ->addColumn('fecha', function ($row) {
@@ -259,7 +262,10 @@ class VentaController extends Controller
             return datatables()::of($data)
                 ->addIndexColumn()
                 ->addColumn('importe', function ($row) {
-                    $btn = 'S/ ' . number_format($row->total_venta - $row->total_descuento, 2);
+                    // DEV_PrecioUnitario ya es el precio final con el
+                    // descuento aplicado, asi que total_venta ya es neto:
+                    // no se le vuelve a restar el descuento aqui.
+                    $btn = 'S/ ' . number_format($row->total_venta, 2);
                     return $btn;
                 })
                 ->addColumn('fecha', function ($row) {
@@ -699,8 +705,13 @@ class VentaController extends Controller
                 $rdst = self::ReducirStock($item['PRO_Id'], $item['quantity'], $idAlmacen, $permitirSinStock);
 
                 // El precio y el descuento por unidad son editables desde el
-                // carrito (POS): "descuentoUnitario" solo se resta para
-                // calcular el precio final, nunca deja el precio en negativo.
+                // carrito (POS). DEV_PrecioUnitario guarda el precio final YA
+                // con el descuento aplicado (nunca negativo): es el monto real
+                // cobrado, el mismo que se declara en el comprobante
+                // electronico ante SUNAT (SunatService solo lee
+                // DEV_Cantidad/DEV_PrecioUnitario, nunca DEV_Descuento).
+                // DEV_Descuento queda solo como registro informativo de cuanto
+                // se descontio, para mostrarlo aparte en el ticket/PDF.
                 $descuentoUnitario = isset($item['descuentoUnitario']) ? max(0, (float) $item['descuentoUnitario']) : 0;
                 $precioBase = isset($item['precioUnitario']) ? (float) $item['precioUnitario'] : (float) $item['PRO_PrecioBaseVenta'];
                 $precioBase = max(0, $precioBase);
@@ -797,7 +808,9 @@ class VentaController extends Controller
             $Subtotal = round($Subtotal, 2);
 
             $codi = $ventae->fechaVenta . "| " . $datosalmacen->ruc . " | " . $datosalmacen->ALM_Celular . " " . $ventae->numDoc . "|" . $ventae->total_venta;
-            $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
+            // total_venta ya es el monto neto (DEV_PrecioUnitario trae el
+            // descuento aplicado); total_descuento es solo informativo.
+            $Total = round($ventae->total_venta, 2);
 
             $UbiDoc = $ventae->serDoc;
             $numDocu = $ventae->numDoc;
@@ -827,7 +840,9 @@ class VentaController extends Controller
             $datosdecuenta = 0;
         }
         $NumDoc = self::IndiceNumeroDocumentoVenta($numDocu);
-        $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
+        // total_venta ya es el monto neto (DEV_PrecioUnitario trae el
+            // descuento aplicado); total_descuento es solo informativo.
+            $Total = round($ventae->total_venta, 2);
         $x = str_replace(',', '.', $Total);
         $LetrasTotal = self::numletras($x);
 
@@ -869,7 +884,9 @@ class VentaController extends Controller
             $Subtotal = round($Subtotal, 2);
 
             $codi = $ventae->fechaVenta . "| " . $datosalmacen->ruc . " | " . $datosalmacen->ALM_Celular . " " . $ventae->numDoc . "|" . $ventae->total_venta;
-            $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
+            // total_venta ya es el monto neto (DEV_PrecioUnitario trae el
+            // descuento aplicado); total_descuento es solo informativo.
+            $Total = round($ventae->total_venta, 2);
 
             $UbiDoc = $ventae->serDoc;
             $numDocu = $ventae->numDoc;
@@ -899,7 +916,9 @@ class VentaController extends Controller
             $datosdecuenta = 0;
         }
         $NumDoc = self::IndiceNumeroDocumentoVenta($numDocu);
-        $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
+        // total_venta ya es el monto neto (DEV_PrecioUnitario trae el
+            // descuento aplicado); total_descuento es solo informativo.
+            $Total = round($ventae->total_venta, 2);
         $x = str_replace(',', '.', $Total);
         $LetrasTotal = self::numletras($x);
 
@@ -943,7 +962,9 @@ class VentaController extends Controller
             $Subtotal = round($Subtotal, 2);
 
             $codi = $ventae->fechaVenta . "| " . $datosalmacen->ruc . " | " . $datosalmacen->ALM_Celular . " " . $ventae->numDoc . "|" . $ventae->total_venta;
-            $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
+            // total_venta ya es el monto neto (DEV_PrecioUnitario trae el
+            // descuento aplicado); total_descuento es solo informativo.
+            $Total = round($ventae->total_venta, 2);
 
             $UbiDoc = $ventae->serDoc;
             $numDocu = $ventae->numDoc;
@@ -973,7 +994,9 @@ class VentaController extends Controller
             $datosdecuenta = 0;
         }
         $NumDoc = self::IndiceNumeroDocumentoVenta($numDocu);
-        $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
+        // total_venta ya es el monto neto (DEV_PrecioUnitario trae el
+            // descuento aplicado); total_descuento es solo informativo.
+            $Total = round($ventae->total_venta, 2);
         $x = str_replace(',', '.', $Total);
         $LetrasTotal = self::numletras($x);
 
