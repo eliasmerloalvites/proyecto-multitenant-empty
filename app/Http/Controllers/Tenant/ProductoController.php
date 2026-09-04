@@ -138,6 +138,41 @@ class ProductoController extends Controller
             'A2'
         );
 
+        // Hoja aparte con las categorias que ya existen en el sistema, para
+        // que el usuario las escriba tal cual y no cree una nueva por error
+        // de tipeo (ej. "Lubricantes" vs "Lubricante").
+        $categorias = DB::table('categoria')->orderBy('CAT_Nombre')->pluck('CAT_Nombre')->filter()->values();
+
+        $hojaCategorias = $spreadsheet->createSheet();
+        $hojaCategorias->setTitle('Categorias existentes');
+        $hojaCategorias->fromArray(['Categorias ya registradas en el sistema'], null, 'A1');
+        $hojaCategorias->getStyle('A1')->getFont()->setBold(true);
+        $hojaCategorias->getColumnDimension('A')->setWidth(35);
+        if ($categorias->isNotEmpty()) {
+            $hojaCategorias->fromArray($categorias->map(fn ($c) => [$c])->toArray(), null, 'A2');
+        }
+
+        // Desplegable en la columna Categoria (filas 2 a 500) que sugiere las
+        // existentes, pero sin bloquear que se escriba una categoria nueva.
+        if ($categorias->isNotEmpty()) {
+            $ultimaFila = 1 + $categorias->count();
+            $rango = "'Categorias existentes'!\$A\$2:\$A\$$ultimaFila";
+            for ($fila = 2; $fila <= 500; $fila++) {
+                $validacion = $sheet->getCell("B$fila")->getDataValidation();
+                $validacion->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
+                $validacion->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_INFORMATION);
+                $validacion->setAllowBlank(true);
+                $validacion->setShowDropDown(true);
+                $validacion->setShowInputMessage(true);
+                $validacion->setShowErrorMessage(false);
+                $validacion->setPromptTitle('Categoria');
+                $validacion->setPrompt('Elige una existente o escribe una nueva.');
+                $validacion->setFormula1($rango);
+            }
+        }
+
+        $spreadsheet->setActiveSheetIndex(0);
+
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
 
         return response()->streamDownload(function () use ($writer) {
