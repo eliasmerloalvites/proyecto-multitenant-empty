@@ -208,10 +208,18 @@ class SunatService
 
                 if ($descuentoValorVenta > 0) {
                     $fila['descuentos'] = [[
-                        'cod_tipo'   => '02',
+                        // Catalogo 53 SUNAT: '00' = descuento por item que SI
+                        // afecta la base imponible del IGV (asi lo usa el
+                        // ejemplo oficial de Greenter, InvoiceDiscountStore).
+                        // '02' es para el descuento GLOBAL a nivel de
+                        // documento, no de linea; usarlo aqui es lo que
+                        // SUNAT rechazo como formato invalido.
+                        'cod_tipo'   => '00',
                         'monto'      => $descuentoValorVenta,
                         'monto_base' => $valorVentaBruto,
-                        'factor'     => $valorVentaBruto > 0 ? round($descuentoValorVenta / $valorVentaBruto, 8) : 0,
+                        // SUNAT valida el formato de este factor con pocos
+                        // decimales; el ejemplo oficial usa 2 (ej. 0.30).
+                        'factor'     => $valorVentaBruto > 0 ? round($descuentoValorVenta / $valorVentaBruto, 2) : 0,
                     ]];
                 }
             }
