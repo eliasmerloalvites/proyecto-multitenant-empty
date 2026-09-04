@@ -350,7 +350,7 @@ body{
 
             <span>
                 S/
-                {{ number_format($ventae->total_venta - $ventae->total_descuento, 2) }}
+                {{ number_format($ventae->total_venta, 2) }}
             </span>
 
         </div>

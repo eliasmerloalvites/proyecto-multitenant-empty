@@ -132,7 +132,11 @@ class CajaSesionController extends Controller
             ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
             ->where('v.CS_Id', $csId)
             ->where('v.VEN_Status', 1)
-            ->select('v.VEN_Id', 'v.MEP_Id', DB::raw('SUM((dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento) as revenue'))
+            // DEV_PrecioUnitario ya es el precio final con el descuento
+            // aplicado (ver VentaController::store): restar DEV_Descuento
+            // aqui lo volveria a descontar, dejando el ingreso por debajo
+            // de lo realmente cobrado.
+            ->select('v.VEN_Id', 'v.MEP_Id', DB::raw('SUM(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) as revenue'))
             ->groupBy('v.VEN_Id', 'v.MEP_Id')
             ->get();
 
@@ -266,7 +270,10 @@ class CajaSesionController extends Controller
             ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
             ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
             ->where('v.CS_Id', $id)
-            ->select('v.VEN_Id', 'c.CLI_Nombre', 'mp.MEP_Pago', 'v.created_at', DB::raw('SUM((dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento) as total'))
+            // DEV_PrecioUnitario ya es el precio final con descuento
+            // aplicado; no se resta DEV_Descuento de nuevo (ver nota en
+            // ventasPorMetodoEnSesion).
+            ->select('v.VEN_Id', 'c.CLI_Nombre', 'mp.MEP_Pago', 'v.created_at', DB::raw('SUM(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) as total'))
             ->groupBy('v.VEN_Id', 'c.CLI_Nombre', 'mp.MEP_Pago', 'v.created_at')
             ->orderByDesc('v.VEN_Id')
             ->get();

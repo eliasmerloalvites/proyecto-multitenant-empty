@@ -40,8 +40,10 @@ class HomeController extends Controller
 
         if ($mostrarVentas) {
             // Expresión reutilizada en todo el dashboard para el importe real
-            // de una línea de venta (misma fórmula que usa VentaController).
-            $totalVentaExpr = '(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento';
+            // de una línea de venta. DEV_PrecioUnitario ya es el precio final
+            // con el descuento aplicado (ver VentaController::store); restar
+            // DEV_Descuento de nuevo lo descontaría dos veces.
+            $totalVentaExpr = 'dv.DEV_Cantidad * dv.DEV_PrecioUnitario';
 
             // ================= KPIs =================
 
