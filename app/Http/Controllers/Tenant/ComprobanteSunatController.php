@@ -87,10 +87,11 @@ class ComprobanteSunatController extends Controller
             $respuesta = Http::timeout(60)->post(
                 rtrim(config('facturacion.api_url'), '/') . '/api/consulta-comprobante.php',
                 [
-                    'tipo_doc'    => $tipoSunat,
-                    'serie'       => $documento->DOV_Serie,
-                    'correlativo' => $documento->DOV_Numero,
-                    'empresa'     => [
+                    'tipo_doc'     => $tipoSunat,
+                    'serie'        => $documento->DOV_Serie,
+                    'correlativo'  => $documento->DOV_Numero,
+                    'incluir_cdr'  => true,
+                    'empresa'      => [
                         'modo'        => $empresa->modoApi(),
                         'ruc'         => $empresa->ruc,
                         'usuario_sol' => $empresa->sol_usuario,
@@ -200,10 +201,11 @@ class ComprobanteSunatController extends Controller
             $respuesta = Http::timeout(60)->post(
                 rtrim(config('facturacion.api_url'), '/') . '/api/consulta-comprobante.php',
                 [
-                    'tipo_doc'    => self::TIPOS_SUNAT[$documento->DOV_Tipo],
-                    'serie'       => $documento->DOV_Serie,
-                    'correlativo' => $documento->DOV_Numero,
-                    'empresa'     => [
+                    'tipo_doc'     => self::TIPOS_SUNAT[$documento->DOV_Tipo],
+                    'serie'        => $documento->DOV_Serie,
+                    'correlativo'  => $documento->DOV_Numero,
+                    'incluir_cdr'  => true,
+                    'empresa'      => [
                         'modo'        => $empresa->modoApi(),
                         'ruc'         => $empresa->ruc,
                         'usuario_sol' => $empresa->sol_usuario,
