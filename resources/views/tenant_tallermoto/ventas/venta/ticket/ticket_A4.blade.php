@@ -934,7 +934,7 @@
                     <td class="text-right">
 
                         S/
-                        {{ number_format(($ventae->total_venta ?? 0) - ($ventae->total_descuento ?? 0),2) }}
+                        {{ number_format($ventae->total_venta ?? 0,2) }}
 
                     </td>
 

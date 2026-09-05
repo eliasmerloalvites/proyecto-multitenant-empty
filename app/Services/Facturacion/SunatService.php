@@ -157,7 +157,8 @@ class SunatService
     /**
      * Traduce las lineas del detalle de venta al formato de la API.
      *
-     * @param iterable $detalle filas con DEV_Cantidad, DEV_PrecioUnitario, PRO_Id y PRO_Nombre
+     * @param iterable $detalle filas con DEV_Cantidad, DEV_PrecioUnitario,
+     *                          DEV_Descuento, PRO_Id y PRO_Nombre
      */
     public function mapearItems(iterable $detalle): array
     {
@@ -172,16 +173,54 @@ class SunatService
             // demas. El IGV se calcula como la diferencia contra el valor de
             // venta, no como un porcentaje del valor de venta; si no, la resta
             // de los redondeos deja al XML un centimo por debajo del ticket.
+            // DEV_PrecioUnitario ya viene neto (con el descuento del POS
+            // aplicado), asi que valor_venta/igv salen correctos sin mas.
             $totalLinea = round($precio * $cantidad, 2);
             $valorVenta = round($totalLinea / (1 + $porcentajeIgv / 100), 2);
             $igv        = round($totalLinea - $valorVenta, 2);
 
-            $items[] = [
+            // Si el POS aplico un descuento en esta linea (DEV_Descuento, con
+            // IGV incluido), se declara como AllowanceCharge de item: monto y
+            // monto_base van sin IGV (son valor de venta, no precio de
+            // venta). SUNAT valida que valor_venta = valor_unitario*cantidad
+            // - descuento.monto, asi que valor_unitario debe ir BRUTO (antes
+            // del descuento); mandarlo ya neto es lo que SUNAT observo como
+            // "el valor de venta por item difiere de los importes
+            // consignados" en la primera prueba.
+            $descuentoConIgv = round((float) ($item->DEV_Descuento ?? 0), 2);
+            $valorVentaBruto = $valorVenta;
+            $descuentos = null;
+
+            if ($descuentoConIgv > 0) {
+                $totalLineaBruto = round($totalLinea + $descuentoConIgv, 2);
+                $valorVentaBrutoCalc = round($totalLineaBruto / (1 + $porcentajeIgv / 100), 2);
+                $descuentoValorVenta = round($valorVentaBrutoCalc - $valorVenta, 2);
+
+                if ($descuentoValorVenta > 0) {
+                    $valorVentaBruto = $valorVentaBrutoCalc;
+                    $descuentos = [[
+                        // Catalogo 53 SUNAT: '00' = descuento por item que SI
+                        // afecta la base imponible del IGV (asi lo usa el
+                        // ejemplo oficial de Greenter, InvoiceDiscountStore).
+                        // '02' es para el descuento GLOBAL a nivel de
+                        // documento, no de linea; usarlo aqui SUNAT lo
+                        // rechazo como formato invalido.
+                        'cod_tipo'   => '00',
+                        'monto'      => $descuentoValorVenta,
+                        'monto_base' => $valorVentaBruto,
+                        // SUNAT valida el formato de este factor con pocos
+                        // decimales; el ejemplo oficial usa 2 (ej. 0.30).
+                        'factor'     => $valorVentaBruto > 0 ? round($descuentoValorVenta / $valorVentaBruto, 2) : 0,
+                    ]];
+                }
+            }
+
+            $fila = [
                 'codigo'          => $item->PRO_Id,
                 'descripcion'     => $item->PRO_Nombre,
                 'unidad'          => 'NIU',
                 'cantidad'        => $cantidad,
-                'valor_unitario'  => $cantidad > 0 ? round($valorVenta / $cantidad, 10) : 0,
+                'valor_unitario'  => $cantidad > 0 ? round($valorVentaBruto / $cantidad, 10) : 0,
                 'precio_unitario' => $precio,
                 'valor_venta'     => $valorVenta,
                 'base_igv'        => $valorVenta,
@@ -190,6 +229,12 @@ class SunatService
                 'tipo_afectacion' => '10',
                 'porcentaje_igv'  => $porcentajeIgv,
             ];
+
+            if ($descuentos) {
+                $fila['descuentos'] = $descuentos;
+            }
+
+            $items[] = $fila;
         }
 
         return $items;

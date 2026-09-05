@@ -322,6 +322,35 @@
             font-size: 12px;
         }
 
+        .cart-edit-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+
+        .cart-edit-row label {
+            font-size: 10px;
+            color: var(--gray);
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .cart-edit-input {
+            width: 62px;
+            font-size: 11px;
+            padding: 2px 4px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .cart-price-original {
+            font-size: 10px;
+            color: var(--gray);
+            text-decoration: line-through;
+        }
+
         /* =========================
                             TOTAL
                             ========================= */
@@ -601,6 +630,80 @@
             box-shadow:
                 0 0 0 4px rgba(124, 58, 237, .08);
 
+        }
+
+        /* =========================================
+                            PAGO MIXTO
+                            ========================================= */
+
+        .mixed-payment-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .payment-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .payment-row select,
+        .payment-row input {
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            padding: 0 10px;
+            font-size: 13px;
+        }
+
+        .payment-row select {
+            flex: 1.4;
+        }
+
+        .payment-row input {
+            flex: 1;
+        }
+
+        .btn-remove-payment {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 8px;
+            background: #FEF2F2;
+            color: #EF4444;
+            flex-shrink: 0;
+        }
+
+        .payment-assign-summary {
+            font-size: 12px;
+            color: #ffffff;
+            margin-top: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .payment-assign-summary.ok {
+            color: #86EFAC;
+        }
+
+        .payment-assign-summary.warn {
+            color: #FCA5A5;
+        }
+
+        .btn-add-payment {
+            background: transparent;
+            border: 1px dashed rgba(255, 255, 255, .5);
+            color: #ffffff;
+            border-radius: 10px;
+            font-size: 12px;
+            padding: 6px 12px;
+            margin-top: 4px;
         }
 
         /* =========================================
@@ -1766,6 +1869,25 @@
 
                                 </select>
 
+                                <label class="mixed-payment-toggle">
+                                    <input type="checkbox" id="pagoMixtoToggle" onchange="togglePagoMixto()">
+                                    Pago mixto (dividir entre dos o más métodos)
+                                </label>
+
+                                <div id="pagoMixtoContainer" style="display:none; margin-top:10px;">
+
+                                    <div id="paymentRows"></div>
+
+                                    <button type="button" class="btn-add-payment" onclick="agregarFilaPago()">
+                                        <i class="fa fa-plus"></i> Agregar método
+                                    </button>
+
+                                    <div class="payment-assign-summary" id="pagoMixtoResumen">
+                                        Asignado: S/ 0.00 de S/ 0.00
+                                    </div>
+
+                                </div>
+
                             </div>
 
                             <!-- OBSERVACION -->
@@ -1803,7 +1925,7 @@
                                 </div>
 
                                 <!-- PAGO -->
-                                <div class="checkout-block">
+                                <div class="checkout-block" id="pagoSimpleBlock">
 
                                     <label class="checkout-label">
 
@@ -2358,14 +2480,39 @@
                 existing.quantity++;
             } else {
                 // NUEVO PRODUCTO
+                // precioUnitario: precio de venta al que se cobra (editable).
+                // descuentoUnitario: monto que se descuenta por unidad, informativo,
+                // se resta de precioUnitario para calcular el subtotal de la linea.
                 cart.push({
                     ...product,
-                    quantity: 1
+                    quantity: 1,
+                    precioUnitario: parseFloat(product.PRO_PrecioBaseVenta),
+                    descuentoUnitario: 0
                 });
             }
 
             renderCart();
 
+        }
+
+        function precioFinalItem(item) {
+            let precio = parseFloat(item.precioUnitario);
+            let descuento = parseFloat(item.descuentoUnitario) || 0;
+            return Math.max(0, precio - descuento);
+        }
+
+        function updatePrecioItem(id, value) {
+            let item = cart.find(x => x.PRO_Id == id);
+            let precio = parseFloat(value);
+            item.precioUnitario = (isNaN(precio) || precio < 0) ? 0 : precio;
+            renderCart();
+        }
+
+        function updateDescuentoItem(id, value) {
+            let item = cart.find(x => x.PRO_Id == id);
+            let descuento = parseFloat(value);
+            item.descuentoUnitario = (isNaN(descuento) || descuento < 0) ? 0 : descuento;
+            renderCart();
         }
 
         function renderCart() {
@@ -2374,9 +2521,13 @@
             let totalItems = 0;
             cart.forEach(item => {
 
-                let subtotal = item.quantity * parseFloat(item.PRO_PrecioBaseVenta);
+                let precioFinal = precioFinalItem(item);
+                let subtotal = item.quantity * precioFinal;
                 total += subtotal;
                 totalItems += item.quantity;
+
+                let precioOriginal = parseFloat(item.PRO_PrecioBaseVenta);
+                let tieneAjuste = precioFinal !== precioOriginal;
 
                 let image = item.PRO_Imagen ?
                     `/storage/{{ tenant('tipo_negocio') }}/{{ tenant('id') }}/archivos/producto/${item.PRO_Imagen}` :
@@ -2389,7 +2540,17 @@
                     </div>
                     <div class="cart-info">
                         <div class="cart-name">${item.PRO_Nombre}</div>
-                        <div class="cart-price">Unit. S/ ${item.PRO_PrecioBaseVenta}</div>
+                        ${tieneAjuste ? `<div class="cart-price-original">Precio lista: S/ ${precioOriginal.toFixed(2)}</div>` : ''}
+                        <div class="cart-edit-row">
+                            <label>Precio</label>
+                            <input type="number" min="0" step="0.01" class="cart-edit-input"
+                                value="${item.precioUnitario}"
+                                onchange="updatePrecioItem(${item.PRO_Id}, this.value)">
+                            <label>Desc. x unid.</label>
+                            <input type="number" min="0" step="0.01" class="cart-edit-input"
+                                value="${item.descuentoUnitario}"
+                                onchange="updateDescuentoItem(${item.PRO_Id}, this.value)">
+                        </div>
                         <div class="cart-bottom">
                             <div class="qty-control">
                                 <button class="qty-btn" onclick="decreaseQty(${item.PRO_Id})">-</button>
@@ -2506,6 +2667,94 @@
             }
         }
 
+        // ==========================================================
+        // PAGO MIXTO: dividir el total entre dos o mas metodos de pago
+        // (ej. mitad efectivo, mitad Yape).
+        // ==========================================================
+        let filaPagoContador = 0;
+
+        function opcionesMetodoPago() {
+            let html = '';
+            @foreach ($metodo_pago as $mt)
+                html += '<option value="{{ $mt->MEP_Id }}">{{ $mt->MEP_Pago }}</option>';
+            @endforeach
+            return html;
+        }
+
+        function togglePagoMixto() {
+            let activo = $('#pagoMixtoToggle').is(':checked');
+
+            if (activo) {
+                $('#paymentMethod').prop('disabled', true);
+                $('#pagoSimpleBlock').hide();
+                $('#pagoMixtoContainer').show();
+                $('#paymentRows').empty();
+                filaPagoContador = 0;
+                agregarFilaPago();
+                agregarFilaPago();
+            } else {
+                $('#paymentMethod').prop('disabled', false);
+                $('#pagoSimpleBlock').show();
+                $('#pagoMixtoContainer').hide();
+                $('#paymentRows').empty();
+                calculateChange();
+            }
+        }
+
+        function agregarFilaPago() {
+            let id = filaPagoContador++;
+            let fila = $(
+                '<div class="payment-row" data-fila-pago="' + id + '">' +
+                    '<select class="fila-pago-metodo">' + opcionesMetodoPago() + '</select>' +
+                    '<input type="number" min="0" step="0.01" class="fila-pago-monto" placeholder="0.00">' +
+                    '<button type="button" class="btn-remove-payment"><i class="fa fa-trash"></i></button>' +
+                '</div>'
+            );
+            $('#paymentRows').append(fila);
+        }
+
+        $(document).on('input', '.fila-pago-monto', actualizarResumenPagoMixto);
+        $(document).on('click', '.payment-row .btn-remove-payment', function() {
+            $(this).closest('.payment-row').remove();
+            actualizarResumenPagoMixto();
+        });
+
+        function actualizarResumenPagoMixto() {
+            let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
+            let asignado = 0;
+
+            $('.fila-pago-monto').each(function() {
+                asignado += parseFloat($(this).val()) || 0;
+            });
+
+            asignado = Math.round(asignado * 100) / 100;
+
+            let $resumen = $('#pagoMixtoResumen');
+            $resumen.text('Asignado: S/ ' + asignado.toFixed(2) + ' de S/ ' + total.toFixed(2));
+            $resumen.removeClass('ok warn');
+
+            let vuelto = asignado - total;
+            if (asignado + 0.009 >= total) {
+                $resumen.addClass('ok');
+                $('#inputVuelto').val(Math.max(0, vuelto).toFixed(2));
+            } else {
+                $resumen.addClass('warn');
+                $('#inputVuelto').val('0.00');
+            }
+        }
+
+        function obtenerPagosMixtos() {
+            let pagos = [];
+            $('.payment-row').each(function() {
+                let metodo = $(this).find('.fila-pago-metodo').val();
+                let monto = parseFloat($(this).find('.fila-pago-monto').val()) || 0;
+                if (metodo && monto > 0) {
+                    pagos.push({ metodo_pago: metodo, monto: monto });
+                }
+            });
+            return pagos;
+        }
+
         function openCheckout() {
             if(cart.length == 0){
                 showToast('warning', 'No hay productos en el carrito');
@@ -2538,6 +2787,28 @@
                 bahia_cuenta_id: window.CUENTA_BAHIA_ID || null,
                 _token: $('meta[name="csrf-token"]').attr('content')
             };
+
+            // PAGO MIXTO: si esta activo, se reemplaza metodo_pago/pago_recibido
+            // por el detalle real de cada metodo usado.
+            if ($('#pagoMixtoToggle').is(':checked')) {
+                let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
+                let pagos = obtenerPagosMixtos();
+
+                if (pagos.length < 2) {
+                    showToast('warning', 'Agrega al menos dos metodos de pago o desactiva el pago mixto');
+                    return;
+                }
+
+                let asignado = pagos.reduce((acc, p) => acc + p.monto, 0);
+                if (asignado + 0.009 < total) {
+                    showToast('warning', 'Lo asignado (S/ ' + asignado.toFixed(2) + ') no cubre el total (S/ ' + total.toFixed(2) + ')');
+                    return;
+                }
+
+                data.pagos = pagos;
+                data.pago_recibido = asignado;
+                data.vuelto = Math.max(0, asignado - total);
+            }
 
             // LOADING
             $('.btn-finish-sale').prop('disabled', true)
@@ -2628,6 +2899,9 @@
             // INPUTS
             $('#inputPago').val('');
             $('#inputVuelto').val('0.00');
+            // PAGO MIXTO
+            $('#pagoMixtoToggle').prop('checked', false);
+            togglePagoMixto();
         }
 
 

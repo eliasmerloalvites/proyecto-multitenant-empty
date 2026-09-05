@@ -113,9 +113,70 @@ class CajaSesionController extends Controller
     }
 
     /**
+     * Ingreso por venta ya prorrateado entre sus metodos de pago reales:
+     * [MEP_Id => monto]. Una venta de pago simple aporta toda su venta
+     * (cantidad*precio - descuento) a su unico metodo, igual que siempre.
+     * Una venta con pago mixto (venta_pago con 2+ filas) reparte esa misma
+     * venta proporcionalmente a lo que se pago con cada metodo, asi que el
+     * vuelto (que siempre sale del efectivo) queda descontado sin necesidad
+     * de rastrearlo aparte: si de S/100 en efectivo se dieron S/24 de
+     * vuelto sobre una venta de S/76, el efectivo tendido (100) prorratea
+     * el 100% de esa venta (76) porque fue el unico metodo usado.
+     *
+     * Ventas sin fila en venta_pago (de antes de que existiera esa tabla)
+     * caen al viejo criterio: toda la venta se atribuye a venta.MEP_Id.
+     */
+    private static function ventasPorMetodoEnSesion(string $csId): array
+    {
+        $revenuePorVenta = DB::table('venta as v')
+            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+            ->where('v.CS_Id', $csId)
+            ->where('v.VEN_Status', 1)
+            // DEV_PrecioUnitario ya es el precio final con el descuento
+            // aplicado (ver VentaController::store): restar DEV_Descuento
+            // aqui lo volveria a descontar, dejando el ingreso por debajo
+            // de lo realmente cobrado.
+            ->select('v.VEN_Id', 'v.MEP_Id', DB::raw('SUM(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) as revenue'))
+            ->groupBy('v.VEN_Id', 'v.MEP_Id')
+            ->get();
+
+        $pagosPorVenta = DB::table('venta_pago as vp')
+            ->join('venta as v', 'v.VEN_Id', '=', 'vp.VEN_Id')
+            ->where('v.CS_Id', $csId)
+            ->where('v.VEN_Status', 1)
+            ->select('vp.VEN_Id', 'vp.MEP_Id', 'vp.VNP_Monto')
+            ->get()
+            ->groupBy('VEN_Id');
+
+        $porMetodo = [];
+
+        foreach ($revenuePorVenta as $venta) {
+            $revenue = (float) $venta->revenue;
+            $pagos = $pagosPorVenta->get($venta->VEN_Id);
+
+            if (! $pagos || $pagos->isEmpty()) {
+                // Sin detalle de pagos (venta anterior a venta_pago): todo
+                // el ingreso va a su unico metodo, como antes.
+                $porMetodo[$venta->MEP_Id] = ($porMetodo[$venta->MEP_Id] ?? 0) + $revenue;
+                continue;
+            }
+
+            $totalTendido = (float) $pagos->sum('VNP_Monto');
+
+            foreach ($pagos as $pago) {
+                $porcion = $totalTendido > 0 ? $revenue * ((float) $pago->VNP_Monto / $totalTendido) : 0;
+                $porMetodo[$pago->MEP_Id] = ($porMetodo[$pago->MEP_Id] ?? 0) + $porcion;
+            }
+        }
+
+        return $porMetodo;
+    }
+
+    /**
      * Monto que debería haber en la caja al cierre: lo que abrió + ventas
      * en efectivo - compras en efectivo - gastos en efectivo, todo
-     * registrado dentro de ese turno (CS_Id).
+     * registrado dentro de ese turno (CS_Id). Las ventas con pago mixto
+     * solo aportan la porcion que realmente se pago en efectivo.
      */
     public static function calcularMontoEsperado(CajaSesion $sesion): float
     {
@@ -125,12 +186,7 @@ class CajaSesionController extends Controller
             return (float) $sesion->CS_MontoApertura;
         }
 
-        $ventasEfectivo = DB::table('venta as v')
-            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
-            ->where('v.CS_Id', $sesion->CS_Id)
-            ->where('v.MEP_Id', $mepEfectivoId)
-            ->where('v.VEN_Status', 1)
-            ->sum(DB::raw('(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento'));
+        $ventasEfectivo = self::ventasPorMetodoEnSesion((string) $sesion->CS_Id)[$mepEfectivoId] ?? 0;
 
         $comprasEfectivo = DB::table('compra as co')
             ->join('detalle_compra as dc', 'dc.COM_Id', '=', 'co.COM_Id')
@@ -213,9 +269,17 @@ class CajaSesionController extends Controller
             ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
             ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
             ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
+            ->leftJoin('documento_venta as dov', 'dov.VEN_Id', '=', 'v.VEN_Id')
             ->where('v.CS_Id', $id)
-            ->select('v.VEN_Id', 'c.CLI_Nombre', 'mp.MEP_Pago', 'v.created_at', DB::raw('SUM((dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento) as total'))
-            ->groupBy('v.VEN_Id', 'c.CLI_Nombre', 'mp.MEP_Pago', 'v.created_at')
+            // DEV_PrecioUnitario ya es el precio final con descuento
+            // aplicado; no se resta DEV_Descuento de nuevo (ver nota en
+            // ventasPorMetodoEnSesion). Se trae DOV_Anulado para que el
+            // detalle del turno pueda marcar las ventas/notas anuladas en
+            // vez de mostrarlas como si siguieran activas (el resumen por
+            // metodo ya las excluye via VEN_Status, pero este listado es
+            // historico y las sigue mostrando a proposito).
+            ->select('v.VEN_Id', 'c.CLI_Nombre', 'mp.MEP_Pago', 'v.created_at', 'v.VEN_Status', DB::raw('MAX(dov.DOV_Anulado) as DOV_Anulado'), DB::raw('SUM(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) as total'))
+            ->groupBy('v.VEN_Id', 'c.CLI_Nombre', 'mp.MEP_Pago', 'v.created_at', 'v.VEN_Status')
             ->orderByDesc('v.VEN_Id')
             ->get();
 
@@ -266,13 +330,9 @@ class CajaSesionController extends Controller
     {
         $metodos = DB::table('metodo_pago')->orderBy('MEP_Id')->pluck('MEP_Pago', 'MEP_Id');
 
-        $ventasPorMetodo = DB::table('venta as v')
-            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
-            ->where('v.CS_Id', $csId)
-            ->where('v.VEN_Status', 1)
-            ->select('v.MEP_Id', DB::raw('SUM((dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento) as total'))
-            ->groupBy('v.MEP_Id')
-            ->pluck('total', 'MEP_Id');
+        // Prorrateado por metodo real de pago (ver ventasPorMetodoEnSesion):
+        // una venta con pago mixto ya no aparece entera bajo "Pago Mixto".
+        $ventasPorMetodo = self::ventasPorMetodoEnSesion($csId);
 
         $comprasPorMetodo = DB::table('compra as co')
             ->join('detalle_compra as dc', 'dc.COM_Id', '=', 'co.COM_Id')

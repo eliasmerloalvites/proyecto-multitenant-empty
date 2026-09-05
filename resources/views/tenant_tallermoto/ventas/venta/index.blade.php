@@ -698,6 +698,64 @@
                 });
             });
 
+            // Anular una Nota de Venta: documento interno, no requiere
+            // tramite ante SUNAT (a diferencia de .anularComprobante).
+            $('body').on('click', '.anularNota', function() {
+                var id = $(this).data('id');
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Anular nota de venta',
+                    html:
+                        '<label for="swalMotivoAnularNota" class="swal2-input-label" style="display:block;text-align:left;margin-bottom:.25rem">Motivo de la anulacion</label>' +
+                        '<input id="swalMotivoAnularNota" class="swal2-input" placeholder="Ej. El cliente se arrepintio" style="margin:0 0 .5rem">' +
+                        '<div style="text-align:left;margin-top:.5rem">' +
+                        '<label style="font-weight:normal">' +
+                        '<input type="checkbox" id="swalDevolverStockNota" checked> Devolver estos productos al stock del almacen' +
+                        '</label></div>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Anular',
+                    cancelButtonText: 'Cancelar',
+                    focusConfirm: false,
+                    preConfirm: function() {
+                        var motivo = $('#swalMotivoAnularNota').val();
+                        if (!motivo || !motivo.trim()) {
+                            Swal.showValidationMessage('Escribe el motivo.');
+                            return false;
+                        }
+                        return {
+                            motivo: motivo,
+                            devolverStock: $('#swalDevolverStockNota').is(':checked')
+                        };
+                    }
+                }).then(function(res) {
+                    if (!res.isConfirmed) return;
+
+                    $.ajax({
+                        url: '/tenant/ventas/venta/' + id + '/anular-nota',
+                        method: 'POST',
+                        data: {
+                            motivo: res.value.motivo,
+                            devolver_stock: res.value.devolverStock ? 1 : 0,
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        }
+                    }).done(function(r) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Nota anulada',
+                            text: r.success
+                        }).then(function() { table.ajax.reload(null, false); });
+                    }).fail(function(xhr) {
+                        var r = xhr.responseJSON || {};
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'No se pudo anular',
+                            text: r.error || 'Error de conexion.'
+                        });
+                    });
+                });
+            });
+
             // Consultar el resultado de una anulacion que quedo en tramite.
             $('body').on('click', '.bajaConsultar', function() {
                 var id = $(this).data('id');
@@ -736,7 +794,16 @@
                         $('#ver_VEN_FechaEmision').text(data.venta.fechaVenta + " " + data.venta
                             .fechaVentaT);
                         $('#ver_VEN_TipoPago').text(data.venta.tipopago == 1 ? "CONTADO" : "CREDITO");
-                        $('#ver_MEP_Pago').text(data.venta.MEP_Pago);
+                        // Si el pago fue mixto, se muestra el desglose por metodo
+                        // en vez de solo la etiqueta generica "Pago Mixto".
+                        if (data.venta.MEP_Pago === 'Pago Mixto' && data.pagos && data.pagos.length) {
+                            var desglosePago = data.pagos.map(function(p) {
+                                return p.metodo + ' S/ ' + parseFloat(p.monto).toFixed(2);
+                            }).join(' + ');
+                            $('#ver_MEP_Pago').text(desglosePago);
+                        } else {
+                            $('#ver_MEP_Pago').text(data.venta.MEP_Pago);
+                        }
                         $('#ver_DOV_TipoComprobante').text(data.venta.tipoDoc == "PRO" ? "NOTA VENTA" :
                             data.venta.tipoDoc == "BOL" ? "BOLETA" : "FACTURA");
                         $('#ver_NumComprobante').text(data.venta.serDoc + " - " + data.venta.numDoc);
@@ -749,8 +816,10 @@
                             pVenta = det.precio_venta;
                             cantidad = det.cantidad;
                             subtotal = parseFloat(cantidad * pVenta);
+                            // det.descuento es el total ya descontado en esta linea
+                            // (informativo: pVenta ya viene con el descuento aplicado).
                             var fila1 = [idProducto, producto, pVenta, cantidad, subtotal
-                                .toFixed(1), "0"
+                                .toFixed(1), parseFloat(det.descuento || 0)
                             ];
                             ListPedido.push(fila1);
                         });
@@ -772,8 +841,11 @@
                                 '</label><small style="color: gray;display: inline; "> Unit x S/ <label id="precioUnitLabel' +
                                 i + '" style="font-size: 11px;">' + ListPedido[i][2] +
                                 '</label></small> ';
+                            var descuentoLinea = parseFloat(ListPedido[i][5]) || 0;
                             fila += '<label id="descuentoLabel' + i +
-                                '" style="font-size: 11px;"></label> ';
+                                '" style="font-size: 11px; color: #DC3545;">' +
+                                (descuentoLinea > 0 ? ' (dscto. S/ ' + descuentoLinea.toFixed(2) + ')' : '') +
+                                '</label> ';
                             fila +=
                                 '<input readonly="true" hidden  type="number"   name="DEV_PrecioUnitario[]" id="precioUnit' +
                                 i + '" value="' + ListPedido[i][2] + '" >' +

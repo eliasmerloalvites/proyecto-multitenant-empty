@@ -373,6 +373,7 @@ Route::middleware([
             /* Anulacion de un comprobante ya aceptado (boleta, factura, nota) */
             Route::get('/tenant/ventas/anulaciones', [AnulacionController::class, 'index'])->name('tenant.ventas.anulaciones.index');
             Route::post('/tenant/ventas/venta/{id}/anular', [AnulacionController::class, 'solicitar'])->name('tenant.ventas.venta.anular.solicitar');
+            Route::post('/tenant/ventas/venta/{id}/anular-nota', [VentaController::class, 'anularNota'])->name('tenant.ventas.venta.anular.nota');
             Route::post('/tenant/ventas/venta/{id}/anular/consultar', [AnulacionController::class, 'consultar'])->name('tenant.ventas.venta.anular.consultar');
 
             Route::resource('/tenant/ventas/metodopago', MetodoPagoController::class)->names([

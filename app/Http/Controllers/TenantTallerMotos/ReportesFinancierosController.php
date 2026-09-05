@@ -46,7 +46,7 @@ class ReportesFinancierosController extends Controller
                 ->whereBetween('v.created_at', [$desde, $hasta])
                 ->when($almacenId, fn ($q) => $q->where('v.ALM_Id', $almacenId))
                 ->selectRaw('
-                    COALESCE(SUM((dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento), 0) as ingresos,
+                    COALESCE(SUM(dv.DEV_Cantidad * dv.DEV_PrecioUnitario), 0) as ingresos,
                     COALESCE(SUM(dv.DEV_Cantidad * COALESCE(l.LOT_PrecioCompra, 0)), 0) as costo
                 ')
                 ->first();
@@ -85,7 +85,7 @@ class ReportesFinancierosController extends Controller
                 'p.PRO_Id',
                 'p.PRO_Nombre',
                 DB::raw('SUM(dv.DEV_Cantidad) as unidades'),
-                DB::raw('COALESCE(SUM((dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento), 0) as ingreso'),
+                DB::raw('COALESCE(SUM(dv.DEV_Cantidad * dv.DEV_PrecioUnitario), 0) as ingreso'),
                 DB::raw('COALESCE(SUM(dv.DEV_Cantidad * COALESCE(l.LOT_PrecioCompra, 0)), 0) as costo')
             )
             ->orderByDesc('ingreso')
@@ -108,7 +108,7 @@ class ReportesFinancierosController extends Controller
             ->when($almacenId, fn ($q) => $q->where('v.ALM_Id', $almacenId))
             ->selectRaw("
                 DATE(v.created_at) as fecha,
-                COALESCE(SUM((dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento), 0) as ingreso,
+                COALESCE(SUM(dv.DEV_Cantidad * dv.DEV_PrecioUnitario), 0) as ingreso,
                 COALESCE(SUM(dv.DEV_Cantidad * COALESCE(l.LOT_PrecioCompra, 0)), 0) as costo
             ")
             ->groupBy(DB::raw('DATE(v.created_at)'))
@@ -383,7 +383,10 @@ class ReportesFinancierosController extends Controller
         [$inicio, $fin] = $this->resolverPeriodo($request);
         $almacenId = $request->input('almacen_id');
 
-        $totalVentaExpr = '(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) - dv.DEV_Descuento';
+        // DEV_PrecioUnitario ya es el precio final con el descuento aplicado
+        // (ver VentaController::store); restar DEV_Descuento de nuevo lo
+        // descontaria dos veces.
+        $totalVentaExpr = 'dv.DEV_Cantidad * dv.DEV_PrecioUnitario';
 
         $porCliente = DB::table('venta as v')
             ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')

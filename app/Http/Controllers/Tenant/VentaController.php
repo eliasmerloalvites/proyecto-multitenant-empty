@@ -56,6 +56,26 @@ class VentaController extends Controller
     }
 
     /**
+     * Id del metodo de pago "Pago Mixto" (se usa en venta.MEP_Id cuando la
+     * venta se cobro con mas de un metodo). Se crea una sola vez por tenant,
+     * la primera vez que se registra un pago mixto.
+     */
+    private function metodoPagoMixtoId(): int
+    {
+        $existente = DB::table('metodo_pago')->where('MEP_Pago', 'Pago Mixto')->first();
+
+        if ($existente) {
+            return $existente->MEP_Id;
+        }
+
+        return DB::table('metodo_pago')->insertGetId([
+            'MEP_Pago' => 'Pago Mixto',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
      * Arma la consulta de ventas aplicando todos los filtros del listado:
      * rango de fechas, estado SUNAT, tipo de comprobante, anulado/baja,
      * almacen, metodo de pago y cliente (nombre o numero de documento).
@@ -97,7 +117,10 @@ class VentaController extends Controller
             return datatables()::of($data)
                 ->addIndexColumn()
                 ->addColumn('importe', function ($row) {
-                    $btn = 'S/ ' . number_format($row->total_venta - $row->total_descuento, 2);
+                    // DEV_PrecioUnitario ya es el precio final con el
+                    // descuento aplicado, asi que total_venta ya es neto:
+                    // no se le vuelve a restar el descuento aqui.
+                    $btn = 'S/ ' . number_format($row->total_venta, 2);
                     return $btn;
                 })
                 ->addColumn('fecha', function ($row) {
@@ -157,9 +180,14 @@ class VentaController extends Controller
      */
     private function columnaSunat($row): string
     {
-        // Las notas de venta no van a SUNAT.
+        // Las notas de venta no van a SUNAT, pero si se pueden anular: es un
+        // documento interno, asi que no hace falta ningun tramite externo.
         if (!in_array($row->DOV_Tipo, ['BOL', 'FAC', 'NCR'], true)) {
-            return '<span class="text-muted">&mdash;</span>';
+            if ($row->DOV_Anulado) {
+                return '<span class="badge badge-dark" title="Esta nota de venta fue anulada">ANULADA</span>';
+            }
+
+            return '<button type="button" class="btn btn-outline-danger btn-sm anularNota" data-id="' . $row->VEN_Id . '" title="Anular esta nota de venta"><i class="fa fa-ban"></i> Anular</button>';
         }
 
         $estados = [
@@ -259,7 +287,10 @@ class VentaController extends Controller
             return datatables()::of($data)
                 ->addIndexColumn()
                 ->addColumn('importe', function ($row) {
-                    $btn = 'S/ ' . number_format($row->total_venta - $row->total_descuento, 2);
+                    // DEV_PrecioUnitario ya es el precio final con el
+                    // descuento aplicado, asi que total_venta ya es neto:
+                    // no se le vuelve a restar el descuento aqui.
+                    $btn = 'S/ ' . number_format($row->total_venta, 2);
                     return $btn;
                 })
                 ->addColumn('fecha', function ($row) {
@@ -647,14 +678,45 @@ class VentaController extends Controller
             $idUsuario = Auth::user()->id;
             $idCliente = $request->get('cliente_id') ? $request->get('cliente_id') : 1;
 
+            // Pago mixto: el POS puede mandar "pagos" = [{metodo_pago, monto}, ...]
+            // (ej. mitad efectivo, mitad Yape) en vez de un solo metodo_pago +
+            // pago_recibido. Si no llega "pagos", se arma uno solo con lo de
+            // siempre, para no romper flujos que aun mandan el formato viejo.
+            $pagos = $request->get('pagos');
+            if (!is_array($pagos) || count($pagos) === 0) {
+                $pagos = [[
+                    'metodo_pago' => $request->get('metodo_pago'),
+                    'monto' => $request->get('pago_recibido'),
+                ]];
+            }
+
+            $pagos = array_values(array_filter(
+                $pagos,
+                fn ($p) => !empty($p['metodo_pago']) && (float) ($p['monto'] ?? 0) > 0
+            ));
+
+            if (count($pagos) === 0) {
+                throw new Exception('Debe indicar al menos un metodo de pago con un monto valido.');
+            }
+
+            $totalPagado = array_sum(array_map(fn ($p) => (float) $p['monto'], $pagos));
+            $metodosDistintos = array_values(array_unique(array_map(fn ($p) => (int) $p['metodo_pago'], $pagos)));
+
+            // Con un solo metodo, la venta se etiqueta con ese metodo (como
+            // siempre); con varios, se etiqueta con un metodo "Pago Mixto" de
+            // referencia y el detalle real queda en venta_pago.
+            $mepIdVenta = count($metodosDistintos) === 1
+                ? $metodosDistintos[0]
+                : $this->metodoPagoMixtoId();
+
             $venta = new Venta;
             // El punto de venta cobra siempre al contado (pide pago recibido y
             // calcula vuelto). Antes no se enviaba nada y quedaba en null, con
             // lo que el ticket lo imprimia como CREDITO. 1 = contado.
             $venta->VEN_TipoPago = $request->get('VEN_TipoPago', 1) ?: 1;
             $venta->VEN_Vuelto = $request->get('vuelto');
-            $venta->VEN_Pagado = $request->get('pago_recibido');
-            $venta->MEP_Id = $request->get('metodo_pago');
+            $venta->VEN_Pagado = $totalPagado;
+            $venta->MEP_Id = $mepIdVenta;
             $venta->USU_Id = $idUsuario;
             $venta->CLI_Id = $idCliente;
             $venta->ALM_Id = $idAlmacen;
@@ -662,6 +724,16 @@ class VentaController extends Controller
             $venta->CS_Id = tenant_caja_sesion_activa_id();
             $venta->VEN_FechaEnvio = $fechaactual . ' ' . $horaactual;
             $venta->save();
+
+            foreach ($pagos as $pago) {
+                DB::table('venta_pago')->insert([
+                    'VEN_Id' => $venta->VEN_Id,
+                    'MEP_Id' => (int) $pago['metodo_pago'],
+                    'VNP_Monto' => (float) $pago['monto'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             $VentaTipo = $request->get('comprobante');
 
@@ -698,15 +770,28 @@ class VentaController extends Controller
 
                 $rdst = self::ReducirStock($item['PRO_Id'], $item['quantity'], $idAlmacen, $permitirSinStock);
 
+                // El precio y el descuento por unidad son editables desde el
+                // carrito (POS). DEV_PrecioUnitario guarda el precio final YA
+                // con el descuento aplicado (nunca negativo): es el monto real
+                // cobrado, el mismo que se declara en el comprobante
+                // electronico ante SUNAT (SunatService solo lee
+                // DEV_Cantidad/DEV_PrecioUnitario, nunca DEV_Descuento).
+                // DEV_Descuento queda solo como registro informativo de cuanto
+                // se descontio, para mostrarlo aparte en el ticket/PDF.
+                $descuentoUnitario = isset($item['descuentoUnitario']) ? max(0, (float) $item['descuentoUnitario']) : 0;
+                $precioBase = isset($item['precioUnitario']) ? (float) $item['precioUnitario'] : (float) $item['PRO_PrecioBaseVenta'];
+                $precioBase = max(0, $precioBase);
+                $precioFinal = max(0, $precioBase - $descuentoUnitario);
+
                 for ($i = 0; $i < count($rdst); $i = $i + 2) {
                     $detalle = new DetalleVenta();
                     $detalle->VEN_Id = $venta->VEN_Id;
                     $detalle->DEV_Item = $it + 1;
                     $detalle->PRO_Id = $item['PRO_Id'];
                     $detalle->DEV_Cantidad = $rdst[$i + 1];
-                    $detalle->DEV_PrecioUnitario = $item['PRO_PrecioBaseVenta'];
+                    $detalle->DEV_PrecioUnitario = $precioFinal;
                     $detalle->LOT_Id = $rdst[$i];
-                    $detalle->DEV_Descuento = 0;
+                    $detalle->DEV_Descuento = $descuentoUnitario * $rdst[$i + 1];
                     $detalle->save();
                     $it = $it + 1;
                 }
@@ -789,7 +874,9 @@ class VentaController extends Controller
             $Subtotal = round($Subtotal, 2);
 
             $codi = $ventae->fechaVenta . "| " . $datosalmacen->ruc . " | " . $datosalmacen->ALM_Celular . " " . $ventae->numDoc . "|" . $ventae->total_venta;
-            $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
+            // total_venta ya es el monto neto (DEV_PrecioUnitario trae el
+            // descuento aplicado); total_descuento es solo informativo.
+            $Total = round($ventae->total_venta, 2);
 
             $UbiDoc = $ventae->serDoc;
             $numDocu = $ventae->numDoc;
@@ -819,7 +906,9 @@ class VentaController extends Controller
             $datosdecuenta = 0;
         }
         $NumDoc = self::IndiceNumeroDocumentoVenta($numDocu);
-        $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
+        // total_venta ya es el monto neto (DEV_PrecioUnitario trae el
+            // descuento aplicado); total_descuento es solo informativo.
+            $Total = round($ventae->total_venta, 2);
         $x = str_replace(',', '.', $Total);
         $LetrasTotal = self::numletras($x);
 
@@ -861,7 +950,9 @@ class VentaController extends Controller
             $Subtotal = round($Subtotal, 2);
 
             $codi = $ventae->fechaVenta . "| " . $datosalmacen->ruc . " | " . $datosalmacen->ALM_Celular . " " . $ventae->numDoc . "|" . $ventae->total_venta;
-            $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
+            // total_venta ya es el monto neto (DEV_PrecioUnitario trae el
+            // descuento aplicado); total_descuento es solo informativo.
+            $Total = round($ventae->total_venta, 2);
 
             $UbiDoc = $ventae->serDoc;
             $numDocu = $ventae->numDoc;
@@ -891,7 +982,9 @@ class VentaController extends Controller
             $datosdecuenta = 0;
         }
         $NumDoc = self::IndiceNumeroDocumentoVenta($numDocu);
-        $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
+        // total_venta ya es el monto neto (DEV_PrecioUnitario trae el
+            // descuento aplicado); total_descuento es solo informativo.
+            $Total = round($ventae->total_venta, 2);
         $x = str_replace(',', '.', $Total);
         $LetrasTotal = self::numletras($x);
 
@@ -935,7 +1028,9 @@ class VentaController extends Controller
             $Subtotal = round($Subtotal, 2);
 
             $codi = $ventae->fechaVenta . "| " . $datosalmacen->ruc . " | " . $datosalmacen->ALM_Celular . " " . $ventae->numDoc . "|" . $ventae->total_venta;
-            $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
+            // total_venta ya es el monto neto (DEV_PrecioUnitario trae el
+            // descuento aplicado); total_descuento es solo informativo.
+            $Total = round($ventae->total_venta, 2);
 
             $UbiDoc = $ventae->serDoc;
             $numDocu = $ventae->numDoc;
@@ -965,7 +1060,9 @@ class VentaController extends Controller
             $datosdecuenta = 0;
         }
         $NumDoc = self::IndiceNumeroDocumentoVenta($numDocu);
-        $Total = round($ventae->total_venta - $ventae->total_descuento, 2);
+        // total_venta ya es el monto neto (DEV_PrecioUnitario trae el
+            // descuento aplicado); total_descuento es solo informativo.
+            $Total = round($ventae->total_venta, 2);
         $x = str_replace(',', '.', $Total);
         $LetrasTotal = self::numletras($x);
 
@@ -1142,7 +1239,15 @@ class VentaController extends Controller
             ->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'c.CAT_Nombre', 'd.DEV_PrecioUnitario', 'd.DEV_Descuento')
             ->get();
 
-        return response()->json(['venta' => $venta, 'detalle' => $detalle]);
+        // Desglose de pagos: en una venta simple es una sola fila (el mismo
+        // metodo que ya trae mp.MEP_Pago); en un pago mixto son dos o mas.
+        $pagos = DB::table('venta_pago as vp')
+            ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'vp.MEP_Id')
+            ->select('mp.MEP_Pago as metodo', 'vp.VNP_Monto as monto')
+            ->where('vp.VEN_Id', $id)
+            ->get();
+
+        return response()->json(['venta' => $venta, 'detalle' => $detalle, 'pagos' => $pagos]);
     }
 
     /**
@@ -1180,6 +1285,69 @@ class VentaController extends Controller
         $Venta = Venta::find($id);
         $Venta->delete();
         return response()->json(['success' => 'Venta Eliminado Exitosamente.']);
+    }
+
+    /**
+     * Anula una Nota de Venta (no un comprobante electronico: eso se hace
+     * desde AnulacionController, que si tramita la baja ante SUNAT). Una
+     * nota es un documento interno, asi que anularla no requiere ningun
+     * tramite externo: solo se marca como anulada y, si se pide, se
+     * devuelve el stock que desconto al venderse.
+     */
+    public function anularNota(Request $request, string $id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $documento = DB::table('documento_venta')->where('VEN_Id', $id)->first();
+
+            if (!$documento) {
+                throw new Exception('Esta venta no tiene un documento asociado.');
+            }
+
+            if (in_array($documento->DOV_Tipo, ['BOL', 'FAC', 'NCR'], true)) {
+                throw new Exception('Una Boleta, Factura o Nota de Credito se anula con el boton "Anular comprobante" (tramita la baja ante SUNAT).');
+            }
+
+            if ($documento->DOV_Anulado) {
+                throw new Exception('Esta nota de venta ya esta anulada.');
+            }
+
+            $motivo = trim((string) $request->input('motivo'));
+
+            if ($motivo === '') {
+                throw new Exception('Indica el motivo de la anulacion.');
+            }
+
+            if ($request->boolean('devolver_stock', true)) {
+                $detalle = DB::table('detalle_venta')->where('VEN_Id', $id)->get(['LOT_Id', 'DEV_Cantidad']);
+
+                foreach ($detalle as $linea) {
+                    Lote::devolver($linea->LOT_Id, (float) $linea->DEV_Cantidad);
+                }
+            }
+
+            DB::table('documento_venta')->where('VEN_Id', $id)->update([
+                'DOV_Anulado'            => 1,
+                'DOV_MotivoBaja'         => $motivo,
+                'DOV_FechaSolicitudBaja' => now(),
+                'updated_at'             => now(),
+            ]);
+
+            // A diferencia de boleta/factura (donde VEN_Status nunca se toca,
+            // por compatibilidad con lo que ya habia), aqui si se apaga: es
+            // lo que hace que los reportes de caja dejen de contar esta nota
+            // como ingreso una vez anulada.
+            DB::table('venta')->where('VEN_Id', $id)->update(['VEN_Status' => 0]);
+
+            DB::commit();
+
+            return response()->json(['success' => 'Nota de venta anulada.']);
+        } catch (Exception $e) {
+            DB::rollback();
+
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
     }
 
 

@@ -129,9 +129,15 @@
 
                     html += '<h6 class="font-weight-bold">Ventas (' + data.ventas.length + ')</h6>';
                     if (data.ventas.length) {
-                        html += '<div class="table-responsive mb-3"><table class="table table-sm"><thead><tr><th>#</th><th>Cliente</th><th>Método</th><th>Total</th><th>Fecha</th></tr></thead><tbody>';
+                        html += '<div class="table-responsive mb-3"><table class="table table-sm"><thead><tr><th>#</th><th>Cliente</th><th>Método</th><th>Total</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>';
                         data.ventas.forEach(function(v) {
-                            html += '<tr><td>' + v.VEN_Id + '</td><td>' + v.CLI_Nombre + '</td><td>' + v.MEP_Pago + '</td><td>S/ ' + parseFloat(v.total).toFixed(2) + '</td><td>' + v.created_at + '</td></tr>';
+                            // Anulada: no cuenta en los totales de arriba (ya
+                            // sale con VEN_Status=0), pero se sigue mostrando
+                            // aqui para no perder el historial del turno.
+                            var anulada = String(v.DOV_Anulado) === '1';
+                            var estilo = anulada ? ' style="opacity:.6;text-decoration:line-through;"' : '';
+                            var badge = anulada ? '<span class="badge badge-dark" style="text-decoration:none;display:inline-block;">ANULADA</span>' : '<span class="badge badge-success">Activa</span>';
+                            html += '<tr' + estilo + '><td>' + v.VEN_Id + '</td><td>' + v.CLI_Nombre + '</td><td>' + v.MEP_Pago + '</td><td>S/ ' + parseFloat(v.total).toFixed(2) + '</td><td>' + v.created_at + '</td><td style="text-decoration:none;">' + badge + '</td></tr>';
                         });
                         html += '</tbody></table></div>';
                     } else {
