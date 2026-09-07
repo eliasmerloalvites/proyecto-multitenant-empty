@@ -1904,6 +1904,17 @@
                                     <small style="color:#ffffff; opacity:.75; display:block; margin-top:4px;">
                                         Necesita un cliente identificado (no "Sin cliente").
                                     </small>
+
+                                    <label class="checkout-label" style="margin-top:10px;">Monto inicial (opcional)</label>
+                                    <input type="number" min="0" step="0.01" id="montoInicialCredito" class="checkout-input" placeholder="0.00" oninput="actualizarSaldoCredito()">
+
+                                    <select id="metodoPagoInicialCredito" class="checkout-input" style="margin-top:6px; display:none;">
+                                        @foreach ($metodo_pago as $mt)
+                                            <option value="{{ $mt->MEP_Id }}">{{ $mt->MEP_Pago }}</option>
+                                        @endforeach
+                                    </select>
+
+                                    <small id="saldoCreditoResumen" style="color:#ffffff; opacity:.75; display:block; margin-top:4px;"></small>
                                 </div>
 
                             </div>
@@ -2737,13 +2748,33 @@
                 $('#pagoSimpleBlock').hide();
                 $('#changeContainer').hide();
                 $('#ventaCreditoContainer').show();
+                actualizarSaldoCredito();
             } else {
                 $('#metodoPagoBlock').show();
                 $('#pagoSimpleBlock').show();
                 $('#changeContainer').show();
                 $('#ventaCreditoContainer').hide();
                 $('#fechaVencimientoCredito').val('');
+                $('#montoInicialCredito').val('');
+                $('#metodoPagoInicialCredito').hide();
             }
+        }
+
+        // Monto inicial de una venta al credito: parte se cobra ya (queda
+        // en caja como abono) y el resto queda pendiente en Cuentas por
+        // Cobrar. Se limita al total del carrito para que nunca se pueda
+        // "abonar" mas de lo que vale la venta.
+        function actualizarSaldoCredito() {
+            let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
+            let inicialRaw = parseFloat($('#montoInicialCredito').val()) || 0;
+            let inicial = Math.max(0, Math.min(inicialRaw, total));
+
+            if (inicial !== inicialRaw) {
+                $('#montoInicialCredito').val(inicial > 0 ? inicial.toFixed(2) : '');
+            }
+
+            $('#metodoPagoInicialCredito').toggle(inicial > 0);
+            $('#saldoCreditoResumen').text('Saldo pendiente: S/ ' + Math.max(0, total - inicial).toFixed(2));
         }
 
         function agregarFilaPago() {
@@ -2831,6 +2862,13 @@
                 return;
             }
 
+            let montoInicialCredito = parseFloat($('#montoInicialCredito').val()) || 0;
+
+            if (esCredito && montoInicialCredito > 0 && !$('#metodoPagoInicialCredito').val()) {
+                showToast('warning', 'Indica el metodo de pago del monto inicial');
+                return;
+            }
+
             //  DATA
 
             let data = {
@@ -2848,9 +2886,12 @@
             };
 
             // VENTA AL CREDITO: no se manda metodo de pago ni pagos, el
-            // backend crea directo la cuenta por cobrar.
+            // backend crea directo la cuenta por cobrar (y, si hay monto
+            // inicial, un abono inmediato sobre ella).
             if (esCredito) {
                 delete data.pagos;
+                data.monto_inicial = montoInicialCredito;
+                data.metodo_pago_inicial = montoInicialCredito > 0 ? $('#metodoPagoInicialCredito').val() : null;
             } else if ($('#pagoMixtoToggle').is(':checked')) {
                 // PAGO MIXTO: si esta activo, se reemplaza
                 // metodo_pago/pago_recibido por el detalle real de cada

@@ -724,6 +724,29 @@ class VentaController extends Controller
                     throw new Exception('Indica la fecha de vencimiento de la venta al credito.');
                 }
 
+                // Monto inicial opcional: parte se cobra ya (efectivo, Yape,
+                // etc.) y el resto queda pendiente en Cuentas por Cobrar. No
+                // se registra como venta_pago de la venta (eso la contaria
+                // como cobrada al contado en el reporte de caja); se
+                // registra mas abajo como un abono inmediato sobre la cuenta
+                // por cobrar recien creada, igual que si el cajero hubiera
+                // ido a Cuentas por Cobrar a abonar apenas despues de la
+                // venta. Asi se reusa el mismo mecanismo ya probado en vez
+                // de inventar una atribucion de ingresos nueva.
+                $montoInicialCredito = round((float) $request->get('monto_inicial', 0), 2);
+                $metodoPagoInicialCredito = $request->get('metodo_pago_inicial');
+
+                if ($montoInicialCredito > 0) {
+                    $metodoValido = DB::table('metodo_pago')
+                        ->whereNotIn('MEP_Pago', ['Credito', 'Pago Mixto'])
+                        ->where('MEP_Id', $metodoPagoInicialCredito)
+                        ->exists();
+
+                    if (!$metodoValido) {
+                        throw new Exception('Indica un metodo de pago valido para el monto inicial.');
+                    }
+                }
+
                 $pagos = [];
                 $totalPagado = 0;
                 $mepIdVenta = $this->metodoPagoCreditoId();
@@ -860,17 +883,38 @@ class VentaController extends Controller
                     ->where('VEN_Id', $venta->VEN_Id)
                     ->sum(DB::raw('DEV_Cantidad * DEV_PrecioUnitario'));
 
-                DB::table('cuenta_por_cobrar')->insert([
+                if ($montoInicialCredito > $montoTotal + 0.009) {
+                    throw new Exception('El monto inicial (S/ ' . number_format($montoInicialCredito, 2) . ') no puede ser mayor al total de la venta (S/ ' . number_format($montoTotal, 2) . ').');
+                }
+
+                $montoAbonadoInicial = min($montoInicialCredito, $montoTotal);
+                $montoFaltante = max(0, round($montoTotal - $montoAbonadoInicial, 2));
+
+                $cpcId = DB::table('cuenta_por_cobrar')->insertGetId([
                     'VEN_Id'               => $venta->VEN_Id,
                     'CPC_MontoTotal'       => $montoTotal,
-                    'CPC_MontoAbonado'     => 0,
-                    'CPC_MontoFaltante'    => $montoTotal,
+                    'CPC_MontoAbonado'     => $montoAbonadoInicial,
+                    'CPC_MontoFaltante'    => $montoFaltante,
                     'CPC_FechaEmision'     => $fechaactual,
                     'CPC_FechaVencimiento' => $fechaVencimientoCredito,
-                    'CPC_Estado'           => 'PENDIENTE',
+                    'CPC_Estado'           => $montoFaltante <= 0.009 ? 'PAGADA' : 'PENDIENTE',
                     'created_at'           => now(),
                     'updated_at'           => now(),
                 ]);
+
+                if ($montoAbonadoInicial > 0) {
+                    DB::table('cuenta_por_cobrar_abono')->insert([
+                        'CPC_Id'          => $cpcId,
+                        'MEP_Id'          => $metodoPagoInicialCredito,
+                        'USU_Id'          => $idUsuario,
+                        'CAJ_Id'          => tenant_caja_activa_id(),
+                        'CS_Id'           => tenant_caja_sesion_activa_id(),
+                        'CPA_Monto'       => $montoAbonadoInicial,
+                        'CPA_Observacion' => 'Monto inicial cobrado al momento de la venta.',
+                        'created_at'      => now(),
+                        'updated_at'      => now(),
+                    ]);
+                }
             }
 
             $movi = new Movimiento();
