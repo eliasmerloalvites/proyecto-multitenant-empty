@@ -101,6 +101,41 @@ class MotoController extends Controller
     }
 
     /**
+     * Autocompletar al crear un mantenimiento nuevo: dada una placa, trae
+     * propietario/celular/unidad de su registro mas reciente (cualquiera de
+     * los 5 tipos), para no volver a tipear los datos de un cliente que ya
+     * vino antes. Lo consume el boton de lupa junto al campo PLACA en los
+     * formularios de "Datos de la Unidad".
+     */
+    public function buscarPorPlaca(string $placa)
+    {
+        $placa = strtoupper(trim($placa));
+
+        if ($placa === '') {
+            return response()->json(['success' => ['validacion' => 'false']]);
+        }
+
+        $sql = "SELECT propietario AS Propietario, celular, unidad AS Unidad
+            FROM ({$this->queryUnificada()}) AS combinado
+            WHERE UPPER(placa) = ?
+            ORDER BY fecha DESC
+            LIMIT 1";
+
+        $resultado = DB::select($sql, [$placa]);
+
+        if (empty($resultado)) {
+            return response()->json(['success' => ['validacion' => 'false']]);
+        }
+
+        return response()->json([
+            'success' => [
+                'validacion' => 'true',
+                'mtto' => $resultado,
+            ],
+        ]);
+    }
+
+    /**
      * Detalle de una placa específica: datos básicos del último
      * mantenimiento + el historial completo (los 5 tipos combinados,
      * ordenados del más reciente al más antiguo).

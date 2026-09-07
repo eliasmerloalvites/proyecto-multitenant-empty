@@ -259,6 +259,11 @@ Route::middleware([
         Route::get('/tenant/motos', [MotoController::class, 'index'])->name('tenant.motos.index');
         Route::get('/tenant/motos/{placa}', [MotoController::class, 'detalle'])->name('tenant.motos.detalle');
 
+        // Boton de lupa junto al campo PLACA en "Datos de la Unidad" (los 5
+        // formularios de crear mantenimiento/actividad ya llaman a esta ruta
+        // tal cual, hardcodeada en su JS, desde antes de que existiera).
+        Route::get('/busquedaplaca/responsable/{placa}', [MotoController::class, 'buscarPorPlaca'])->name('tenant.motos.buscarplaca');
+
         Route::put('/tenant/configuracion/horario/{horario}/activar', [HorarioController::class, 'activar'])->name('tenant.configuracion.horario.activar');
         Route::resource('/tenant/configuracion/horario', HorarioController::class)->names([
             'index' => 'tenant.configuracion.horario.index',
