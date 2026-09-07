@@ -16,6 +16,7 @@ use App\Http\Controllers\Tenant\HomeController;
 use App\Http\Controllers\Tenant\MetodoPagoController;
 use App\Http\Controllers\Tenant\CajaController;
 use App\Http\Controllers\Tenant\CajaSesionController;
+use App\Http\Controllers\Tenant\CuentaPorCobrarController;
 use App\Http\Controllers\Tenant\ProductoController;
 use App\Http\Controllers\Tenant\ProveedorController;
 use App\Http\Controllers\Tenant\SedeController;
@@ -136,6 +137,10 @@ Route::middleware([
         Route::post('/tenant/caja-sesion/cerrar', [CajaSesionController::class, 'cerrar'])->name('tenant.caja-sesion.cerrar');
         Route::get('/tenant/ventas/caja/historial', [CajaSesionController::class, 'historial'])->name('tenant.ventas.caja.historial');
         Route::get('/tenant/ventas/caja/historial/{id}', [CajaSesionController::class, 'detalle'])->name('tenant.ventas.caja.historial.detalle');
+
+        Route::get('/tenant/ventas/cuentasporcobrar', [CuentaPorCobrarController::class, 'index'])->name('tenant.ventas.cuentasporcobrar.index');
+        Route::get('/tenant/ventas/cuentasporcobrar/{id}', [CuentaPorCobrarController::class, 'show'])->name('tenant.ventas.cuentasporcobrar.show');
+        Route::post('/tenant/ventas/cuentasporcobrar/{id}/abonar', [CuentaPorCobrarController::class, 'abonar'])->name('tenant.ventas.cuentasporcobrar.abonar');
         
         //REPORTES
         Route::get('/tenant/reportes/listageneral',[ReportesController::class, 'listageneral'])->name('tenant.reportes.listageneral');
@@ -258,6 +263,11 @@ Route::middleware([
 
         Route::get('/tenant/motos', [MotoController::class, 'index'])->name('tenant.motos.index');
         Route::get('/tenant/motos/{placa}', [MotoController::class, 'detalle'])->name('tenant.motos.detalle');
+
+        // Boton de lupa junto al campo PLACA en "Datos de la Unidad" (los 5
+        // formularios de crear mantenimiento/actividad ya llaman a esta ruta
+        // tal cual, hardcodeada en su JS, desde antes de que existiera).
+        Route::get('/busquedaplaca/responsable/{placa}', [MotoController::class, 'buscarPorPlaca'])->name('tenant.motos.buscarplaca');
 
         Route::put('/tenant/configuracion/horario/{horario}/activar', [HorarioController::class, 'activar'])->name('tenant.configuracion.horario.activar');
         Route::resource('/tenant/configuracion/horario', HorarioController::class)->names([

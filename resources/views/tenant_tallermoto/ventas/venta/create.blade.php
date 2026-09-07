@@ -1854,7 +1854,7 @@
 
 
                             <!-- METODO -->
-                            <div class="checkout-block">
+                            <div class="checkout-block" id="metodoPagoBlock">
 
                                 <label class="checkout-label">
 
@@ -1886,6 +1886,35 @@
                                         Asignado: S/ 0.00 de S/ 0.00
                                     </div>
 
+                                </div>
+
+                            </div>
+
+                            <!-- CREDITO -->
+                            <div class="checkout-block">
+
+                                <label class="mixed-payment-toggle">
+                                    <input type="checkbox" id="ventaCreditoToggle" onchange="toggleVentaCredito()">
+                                    Venta al crédito (no se cobra ahora, queda en Cuentas por Cobrar)
+                                </label>
+
+                                <div id="ventaCreditoContainer" style="display:none; margin-top:10px;">
+                                    <label class="checkout-label">Fecha de vencimiento</label>
+                                    <input type="date" id="fechaVencimientoCredito" class="checkout-input">
+                                    <small style="color:#ffffff; opacity:.75; display:block; margin-top:4px;">
+                                        Necesita un cliente identificado (no "Sin cliente").
+                                    </small>
+
+                                    <label class="checkout-label" style="margin-top:10px;">Monto inicial (opcional)</label>
+                                    <input type="number" min="0" step="0.01" id="montoInicialCredito" class="checkout-input" placeholder="0.00" oninput="actualizarSaldoCredito()">
+
+                                    <select id="metodoPagoInicialCredito" class="checkout-input" style="margin-top:6px; display:none;">
+                                        @foreach ($metodo_pago as $mt)
+                                            <option value="{{ $mt->MEP_Id }}">{{ $mt->MEP_Pago }}</option>
+                                        @endforeach
+                                    </select>
+
+                                    <small id="saldoCreditoResumen" style="color:#ffffff; opacity:.75; display:block; margin-top:4px;"></small>
                                 </div>
 
                             </div>
@@ -2701,6 +2730,53 @@
             }
         }
 
+        // ==========================================================
+        // VENTA AL CREDITO: no se cobra nada ahora, la venta queda en
+        // Cuentas por Cobrar. Oculta todo lo de metodo/pago/vuelto y pide
+        // la fecha de vencimiento en su lugar.
+        // ==========================================================
+        function toggleVentaCredito() {
+            let esCredito = $('#ventaCreditoToggle').is(':checked');
+
+            if (esCredito) {
+                // Si estaba en pago mixto, se apaga: al credito no aplica.
+                $('#pagoMixtoToggle').prop('checked', false);
+                $('#pagoMixtoContainer').hide();
+                $('#paymentRows').empty();
+
+                $('#metodoPagoBlock').hide();
+                $('#pagoSimpleBlock').hide();
+                $('#changeContainer').hide();
+                $('#ventaCreditoContainer').show();
+                actualizarSaldoCredito();
+            } else {
+                $('#metodoPagoBlock').show();
+                $('#pagoSimpleBlock').show();
+                $('#changeContainer').show();
+                $('#ventaCreditoContainer').hide();
+                $('#fechaVencimientoCredito').val('');
+                $('#montoInicialCredito').val('');
+                $('#metodoPagoInicialCredito').hide();
+            }
+        }
+
+        // Monto inicial de una venta al credito: parte se cobra ya (queda
+        // en caja como abono) y el resto queda pendiente en Cuentas por
+        // Cobrar. Se limita al total del carrito para que nunca se pueda
+        // "abonar" mas de lo que vale la venta.
+        function actualizarSaldoCredito() {
+            let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
+            let inicialRaw = parseFloat($('#montoInicialCredito').val()) || 0;
+            let inicial = Math.max(0, Math.min(inicialRaw, total));
+
+            if (inicial !== inicialRaw) {
+                $('#montoInicialCredito').val(inicial > 0 ? inicial.toFixed(2) : '');
+            }
+
+            $('#metodoPagoInicialCredito').toggle(inicial > 0);
+            $('#saldoCreditoResumen').text('Saldo pendiente: S/ ' + Math.max(0, total - inicial).toFixed(2));
+        }
+
         function agregarFilaPago() {
             let id = filaPagoContador++;
             let fila = $(
@@ -2774,6 +2850,25 @@
                 return;
             }
 
+            let esCredito = $('#ventaCreditoToggle').is(':checked');
+
+            if (esCredito && !$('#cliente_id').val()) {
+                showToast('warning', 'Una venta al credito necesita un cliente identificado');
+                return;
+            }
+
+            if (esCredito && !$('#fechaVencimientoCredito').val()) {
+                showToast('warning', 'Indica la fecha de vencimiento del credito');
+                return;
+            }
+
+            let montoInicialCredito = parseFloat($('#montoInicialCredito').val()) || 0;
+
+            if (esCredito && montoInicialCredito > 0 && !$('#metodoPagoInicialCredito').val()) {
+                showToast('warning', 'Indica el metodo de pago del monto inicial');
+                return;
+            }
+
             //  DATA
 
             let data = {
@@ -2785,12 +2880,22 @@
                 observacion: $('#observacion').val(),
                 productos: cart,
                 bahia_cuenta_id: window.CUENTA_BAHIA_ID || null,
+                es_credito: esCredito ? 1 : 0,
+                fecha_vencimiento: $('#fechaVencimientoCredito').val(),
                 _token: $('meta[name="csrf-token"]').attr('content')
             };
 
-            // PAGO MIXTO: si esta activo, se reemplaza metodo_pago/pago_recibido
-            // por el detalle real de cada metodo usado.
-            if ($('#pagoMixtoToggle').is(':checked')) {
+            // VENTA AL CREDITO: no se manda metodo de pago ni pagos, el
+            // backend crea directo la cuenta por cobrar (y, si hay monto
+            // inicial, un abono inmediato sobre ella).
+            if (esCredito) {
+                delete data.pagos;
+                data.monto_inicial = montoInicialCredito;
+                data.metodo_pago_inicial = montoInicialCredito > 0 ? $('#metodoPagoInicialCredito').val() : null;
+            } else if ($('#pagoMixtoToggle').is(':checked')) {
+                // PAGO MIXTO: si esta activo, se reemplaza
+                // metodo_pago/pago_recibido por el detalle real de cada
+                // metodo usado.
                 let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
                 let pagos = obtenerPagosMixtos();
 
@@ -2902,6 +3007,9 @@
             // PAGO MIXTO
             $('#pagoMixtoToggle').prop('checked', false);
             togglePagoMixto();
+            // VENTA AL CREDITO
+            $('#ventaCreditoToggle').prop('checked', false);
+            toggleVentaCredito();
         }
 
 

@@ -43,7 +43,12 @@ class GastoController extends Controller
                 ->rawColumns(['action1','action2','action3'])
                 ->make(true);
         }
-        $metodo_pago = DB::table('metodo_pago')->orderBy('MEP_Pago', 'asc')->get();
+        // "Credito" y "Pago Mixto" son etiquetas de referencia que crea el
+        // modulo de ventas, no metodos reales con los que se pague un gasto.
+        $metodo_pago = DB::table('metodo_pago')
+            ->whereNotIn('MEP_Pago', ['Credito', 'Pago Mixto'])
+            ->orderBy('MEP_Pago', 'asc')
+            ->get();
         $tipo_gasto = DB::table('tipo_gasto')->orderBy('TG_Descripcion', 'asc')->get();
         $proveedor = Proveedor::all();
         $requiereAperturarCaja = tenant_requiere_apertura_caja();

@@ -563,6 +563,13 @@
                                         <p>Notas de crédito</p>
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="{{ tenant_url('tenant.ventas.cuentasporcobrar.index') }}"
+                                        class="nav-link {{ request()->routeIs('tenant.ventas.cuentasporcobrar*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Cuentas por Cobrar</p>
+                                    </a>
+                                </li>
                             @endcan
                             @can('tenant.ventas.guiaremision.index')
                                 <li class="nav-item">

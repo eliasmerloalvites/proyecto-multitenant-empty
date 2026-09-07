@@ -140,6 +140,31 @@ class SunatService
         return $venta;
     }
 
+    /**
+     * Si la venta quedo en cuentas por cobrar, arma el bloque forma_pago
+     * (una sola cuota, por el saldo pendiente al momento de enviar). Null si
+     * la venta es al contado.
+     */
+    private function formaPagoPayload($ventaId): ?array
+    {
+        $cxc = DB::table('cuenta_por_cobrar')->where('VEN_Id', $ventaId)->first();
+
+        if (!$cxc) {
+            return null;
+        }
+
+        $montoPendiente = round((float) $cxc->CPC_MontoFaltante, 2);
+
+        return [
+            'tipo'            => 'Credito',
+            'monto_pendiente' => $montoPendiente,
+            'cuotas'          => [[
+                'monto'      => $montoPendiente,
+                'fecha_pago' => (string) $cxc->CPC_FechaVencimiento,
+            ]],
+        ];
+    }
+
     private function obtenerItems($ventaId): array
     {
         $detalle = DB::table('detalle_venta as dv')
@@ -300,6 +325,16 @@ class SunatService
             'clave_certificado'     => $empresa->certificado_password,
             'extension_certificado' => $empresa->extensionCertificado(),
         ];
+
+        // Venta al credito: se declara la forma de pago "Credito" con una
+        // sola cuota (el saldo pendiente vence en CPC_FechaVencimiento). El
+        // servicio facturador ya sabe armar esto (DocumentBuilder::
+        // applyFormaPago), solo hacia falta mandarle los datos.
+        $formaPago = $this->formaPagoPayload($venta->VEN_Id);
+
+        if ($formaPago) {
+            $payload['forma_pago'] = $formaPago;
+        }
 
         // La nota de credito necesita ademas el motivo y el documento que
         // afecta; esos datos viven en el propio documento_venta de la nota.
