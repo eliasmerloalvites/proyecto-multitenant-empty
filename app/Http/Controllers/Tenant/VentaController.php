@@ -76,6 +76,25 @@ class VentaController extends Controller
     }
 
     /**
+     * Id del metodo de pago "Credito" (se usa en venta.MEP_Id cuando la
+     * venta no se cobra al momento sino que queda en cuentas por cobrar).
+     */
+    private function metodoPagoCreditoId(): int
+    {
+        $existente = DB::table('metodo_pago')->where('MEP_Pago', 'Credito')->first();
+
+        if ($existente) {
+            return $existente->MEP_Id;
+        }
+
+        return DB::table('metodo_pago')->insertGetId([
+            'MEP_Pago' => 'Credito',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
      * Arma la consulta de ventas aplicando todos los filtros del listado:
      * rango de fechas, estado SUNAT, tipo de comprobante, anulado/baja,
      * almacen, metodo de pago y cliente (nombre o numero de documento).
@@ -678,43 +697,65 @@ class VentaController extends Controller
             $idUsuario = Auth::user()->id;
             $idCliente = $request->get('cliente_id') ? $request->get('cliente_id') : 1;
 
-            // Pago mixto: el POS puede mandar "pagos" = [{metodo_pago, monto}, ...]
-            // (ej. mitad efectivo, mitad Yape) en vez de un solo metodo_pago +
-            // pago_recibido. Si no llega "pagos", se arma uno solo con lo de
-            // siempre, para no romper flujos que aun mandan el formato viejo.
-            $pagos = $request->get('pagos');
-            if (!is_array($pagos) || count($pagos) === 0) {
-                $pagos = [[
-                    'metodo_pago' => $request->get('metodo_pago'),
-                    'monto' => $request->get('pago_recibido'),
-                ]];
+            // Venta al credito: no se cobra nada ahora, queda en cuentas por
+            // cobrar (se crea mas abajo, cuando ya se conoce el total real de
+            // la venta a partir del detalle). Requiere un cliente real (no el
+            // "Cliente Generico"): sin eso no hay a quien cobrarle despues.
+            $esCredito = $request->boolean('es_credito');
+            $fechaVencimientoCredito = trim((string) $request->get('fecha_vencimiento'));
+
+            if ($esCredito) {
+                if ((int) $idCliente === 1) {
+                    throw new Exception('Una venta al credito necesita un cliente identificado, no "Cliente Generico".');
+                }
+
+                if ($fechaVencimientoCredito === '') {
+                    throw new Exception('Indica la fecha de vencimiento de la venta al credito.');
+                }
+
+                $pagos = [];
+                $totalPagado = 0;
+                $mepIdVenta = $this->metodoPagoCreditoId();
+            } else {
+                // Pago mixto: el POS puede mandar "pagos" = [{metodo_pago, monto}, ...]
+                // (ej. mitad efectivo, mitad Yape) en vez de un solo metodo_pago +
+                // pago_recibido. Si no llega "pagos", se arma uno solo con lo de
+                // siempre, para no romper flujos que aun mandan el formato viejo.
+                $pagos = $request->get('pagos');
+                if (!is_array($pagos) || count($pagos) === 0) {
+                    $pagos = [[
+                        'metodo_pago' => $request->get('metodo_pago'),
+                        'monto' => $request->get('pago_recibido'),
+                    ]];
+                }
+
+                $pagos = array_values(array_filter(
+                    $pagos,
+                    fn ($p) => !empty($p['metodo_pago']) && (float) ($p['monto'] ?? 0) > 0
+                ));
+
+                if (count($pagos) === 0) {
+                    throw new Exception('Debe indicar al menos un metodo de pago con un monto valido.');
+                }
+
+                $totalPagado = array_sum(array_map(fn ($p) => (float) $p['monto'], $pagos));
+                $metodosDistintos = array_values(array_unique(array_map(fn ($p) => (int) $p['metodo_pago'], $pagos)));
+
+                // Con un solo metodo, la venta se etiqueta con ese metodo (como
+                // siempre); con varios, se etiqueta con un metodo "Pago Mixto" de
+                // referencia y el detalle real queda en venta_pago.
+                $mepIdVenta = count($metodosDistintos) === 1
+                    ? $metodosDistintos[0]
+                    : $this->metodoPagoMixtoId();
             }
-
-            $pagos = array_values(array_filter(
-                $pagos,
-                fn ($p) => !empty($p['metodo_pago']) && (float) ($p['monto'] ?? 0) > 0
-            ));
-
-            if (count($pagos) === 0) {
-                throw new Exception('Debe indicar al menos un metodo de pago con un monto valido.');
-            }
-
-            $totalPagado = array_sum(array_map(fn ($p) => (float) $p['monto'], $pagos));
-            $metodosDistintos = array_values(array_unique(array_map(fn ($p) => (int) $p['metodo_pago'], $pagos)));
-
-            // Con un solo metodo, la venta se etiqueta con ese metodo (como
-            // siempre); con varios, se etiqueta con un metodo "Pago Mixto" de
-            // referencia y el detalle real queda en venta_pago.
-            $mepIdVenta = count($metodosDistintos) === 1
-                ? $metodosDistintos[0]
-                : $this->metodoPagoMixtoId();
 
             $venta = new Venta;
-            // El punto de venta cobra siempre al contado (pide pago recibido y
-            // calcula vuelto). Antes no se enviaba nada y quedaba en null, con
-            // lo que el ticket lo imprimia como CREDITO. 1 = contado.
-            $venta->VEN_TipoPago = $request->get('VEN_TipoPago', 1) ?: 1;
-            $venta->VEN_Vuelto = $request->get('vuelto');
+            // El punto de venta cobra siempre al contado salvo que sea al
+            // credito (pide pago recibido y calcula vuelto). Antes no se
+            // enviaba nada y quedaba en null, con lo que el ticket lo
+            // imprimia como CREDITO sin serlo. 1 = contado, 2 = credito.
+            $venta->VEN_TipoPago = $esCredito ? 2 : ($request->get('VEN_TipoPago', 1) ?: 1);
+            $venta->VEN_Vuelto = $esCredito ? 0 : $request->get('vuelto');
             $venta->VEN_Pagado = $totalPagado;
             $venta->MEP_Id = $mepIdVenta;
             $venta->USU_Id = $idUsuario;
@@ -797,6 +838,28 @@ class VentaController extends Controller
                 }
 
                 $cont = $cont + 1;
+            }
+
+            // Venta al credito: recien aqui se sabe el total real (suma de
+            // DEV_Cantidad*DEV_PrecioUnitario ya con descuento aplicado), asi
+            // que la cuenta por cobrar se crea al final, no al momento de
+            // guardar la venta.
+            if ($esCredito) {
+                $montoTotal = (float) DB::table('detalle_venta')
+                    ->where('VEN_Id', $venta->VEN_Id)
+                    ->sum(DB::raw('DEV_Cantidad * DEV_PrecioUnitario'));
+
+                DB::table('cuenta_por_cobrar')->insert([
+                    'VEN_Id'               => $venta->VEN_Id,
+                    'CPC_MontoTotal'       => $montoTotal,
+                    'CPC_MontoAbonado'     => 0,
+                    'CPC_MontoFaltante'    => $montoTotal,
+                    'CPC_FechaEmision'     => $fechaactual,
+                    'CPC_FechaVencimiento' => $fechaVencimientoCredito,
+                    'CPC_Estado'           => 'PENDIENTE',
+                    'created_at'           => now(),
+                    'updated_at'           => now(),
+                ]);
             }
 
             $movi = new Movimiento();

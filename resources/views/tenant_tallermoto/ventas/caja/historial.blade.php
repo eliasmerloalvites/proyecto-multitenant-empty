@@ -113,6 +113,10 @@
                     r.columnas.forEach(function(c) { html += '<td class="text-center text-primary">' + c.ventas.toFixed(2) + '</td>'; });
                     html += '<td class="text-center"><strong>' + r.total_ventas.toFixed(2) + '</strong></td></tr>';
 
+                    html += '<tr><td><strong>Ingreso x Abonos (Cta. x Cobrar)</strong></td>';
+                    r.columnas.forEach(function(c) { html += '<td class="text-center text-primary">' + c.abonos.toFixed(2) + '</td>'; });
+                    html += '<td class="text-center"><strong>' + r.total_abonos.toFixed(2) + '</strong></td></tr>';
+
                     html += '<tr><td><strong>Egresos x Compras</strong></td>';
                     r.columnas.forEach(function(c) { html += '<td class="text-center">' + c.compras.toFixed(2) + '</td>'; });
                     html += '<td class="text-center"><strong>' + r.total_compras.toFixed(2) + '</strong></td></tr>';

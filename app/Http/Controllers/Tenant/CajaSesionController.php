@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CajaSesionController extends Controller
 {
@@ -140,13 +141,18 @@ class CajaSesionController extends Controller
             ->groupBy('v.VEN_Id', 'v.MEP_Id')
             ->get();
 
-        $pagosPorVenta = DB::table('venta_pago as vp')
-            ->join('venta as v', 'v.VEN_Id', '=', 'vp.VEN_Id')
-            ->where('v.CS_Id', $csId)
-            ->where('v.VEN_Status', 1)
-            ->select('vp.VEN_Id', 'vp.MEP_Id', 'vp.VNP_Monto')
-            ->get()
-            ->groupBy('VEN_Id');
+        // venta_pago solo existe para tenants tipo tallermoto; este
+        // controller tambien lo usan los genericos, que no tienen esa
+        // tabla. Sin ella, cae al criterio viejo (linea 157) para todas.
+        $pagosPorVenta = Schema::hasTable('venta_pago')
+            ? DB::table('venta_pago as vp')
+                ->join('venta as v', 'v.VEN_Id', '=', 'vp.VEN_Id')
+                ->where('v.CS_Id', $csId)
+                ->where('v.VEN_Status', 1)
+                ->select('vp.VEN_Id', 'vp.MEP_Id', 'vp.VNP_Monto')
+                ->get()
+                ->groupBy('VEN_Id')
+            : collect();
 
         $porMetodo = [];
 
@@ -173,10 +179,35 @@ class CajaSesionController extends Controller
     }
 
     /**
+     * Abonos (pagos parciales de cuentas por cobrar) recibidos DURANTE este
+     * turno, por metodo real: [MEP_Id => monto]. Un abono se liga a la
+     * caja/sesion activa al momento de registrarlo, no a la de la venta
+     * original (que pudo ser en un turno o hasta un dia distinto) - por eso
+     * va aparte de ventasPorMetodoEnSesion, que agrupa por CS_Id de la venta.
+     */
+    private static function abonosPorMetodoEnSesion(string $csId): array
+    {
+        // Cuentas por cobrar (y por lo tanto sus abonos) solo existe para
+        // tenants tipo tallermoto; los genericos no tienen esta tabla.
+        if (! Schema::hasTable('cuenta_por_cobrar_abono')) {
+            return [];
+        }
+
+        return DB::table('cuenta_por_cobrar_abono')
+            ->where('CS_Id', $csId)
+            ->select('MEP_Id', DB::raw('SUM(CPA_Monto) as total'))
+            ->groupBy('MEP_Id')
+            ->pluck('total', 'MEP_Id')
+            ->map(fn ($v) => (float) $v)
+            ->toArray();
+    }
+
+    /**
      * Monto que debería haber en la caja al cierre: lo que abrió + ventas
-     * en efectivo - compras en efectivo - gastos en efectivo, todo
-     * registrado dentro de ese turno (CS_Id). Las ventas con pago mixto
-     * solo aportan la porcion que realmente se pago en efectivo.
+     * en efectivo - compras en efectivo - gastos en efectivo + abonos de
+     * cuentas por cobrar cobrados en efectivo, todo registrado dentro de
+     * ese turno (CS_Id). Las ventas con pago mixto solo aportan la porcion
+     * que realmente se pago en efectivo.
      */
     public static function calcularMontoEsperado(CajaSesion $sesion): float
     {
@@ -187,6 +218,8 @@ class CajaSesionController extends Controller
         }
 
         $ventasEfectivo = self::ventasPorMetodoEnSesion((string) $sesion->CS_Id)[$mepEfectivoId] ?? 0;
+        $abonosEfectivo = self::abonosPorMetodoEnSesion((string) $sesion->CS_Id)[$mepEfectivoId] ?? 0;
+        $ventasEfectivo += $abonosEfectivo;
 
         $comprasEfectivo = DB::table('compra as co')
             ->join('detalle_compra as dc', 'dc.COM_Id', '=', 'co.COM_Id')
@@ -333,6 +366,7 @@ class CajaSesionController extends Controller
         // Prorrateado por metodo real de pago (ver ventasPorMetodoEnSesion):
         // una venta con pago mixto ya no aparece entera bajo "Pago Mixto".
         $ventasPorMetodo = self::ventasPorMetodoEnSesion($csId);
+        $abonosPorMetodo = self::abonosPorMetodoEnSesion($csId);
 
         $comprasPorMetodo = DB::table('compra as co')
             ->join('detalle_compra as dc', 'dc.COM_Id', '=', 'co.COM_Id')
@@ -352,23 +386,27 @@ class CajaSesionController extends Controller
 
         $columnas = [];
         $totalVentas = 0;
+        $totalAbonos = 0;
         $totalCompras = 0;
         $totalGastos = 0;
 
         foreach ($metodos as $mepId => $nombre) {
             $ventas = (float) ($ventasPorMetodo[$mepId] ?? 0);
+            $abonos = (float) ($abonosPorMetodo[$mepId] ?? 0);
             $compras = (float) ($comprasPorMetodo[$mepId] ?? 0);
             $gastos = (float) ($gastosPorMetodo[$mepId] ?? 0);
 
             $columnas[] = [
                 'nombre' => $nombre,
                 'ventas' => round($ventas, 2),
+                'abonos' => round($abonos, 2),
                 'compras' => round($compras, 2),
                 'gastos' => round($gastos, 2),
-                'neto' => round($ventas - $compras - $gastos, 2),
+                'neto' => round($ventas + $abonos - $compras - $gastos, 2),
             ];
 
             $totalVentas += $ventas;
+            $totalAbonos += $abonos;
             $totalCompras += $compras;
             $totalGastos += $gastos;
         }
@@ -376,9 +414,10 @@ class CajaSesionController extends Controller
         return [
             'columnas' => $columnas,
             'total_ventas' => round($totalVentas, 2),
+            'total_abonos' => round($totalAbonos, 2),
             'total_compras' => round($totalCompras, 2),
             'total_gastos' => round($totalGastos, 2),
-            'total_neto' => round($totalVentas - $totalCompras - $totalGastos, 2),
+            'total_neto' => round($totalVentas + $totalAbonos - $totalCompras - $totalGastos, 2),
         ];
     }
 }
