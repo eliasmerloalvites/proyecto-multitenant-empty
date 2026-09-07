@@ -373,7 +373,18 @@ class VentaController extends Controller
         $clase = DB::table('clase')->orderBy('CLA_Nombre', 'asc')->get();
         $categoria = DB::table('categoria')->orderBy('CAT_Nombre', 'asc')->get();
         $clientes = DB::table('cliente')->orderBy('CLI_NumDocumento', 'asc')->get();
-        $metodo_pago = DB::table('metodo_pago')->orderBy('MEP_Pago', 'asc')->get();
+        // "Credito" y "Pago Mixto" son etiquetas de referencia que el propio
+        // sistema crea para marcar venta.MEP_Id (ver metodoPagoCreditoId()/
+        // metodoPagoMixtoId()); no son metodos reales que alguien deba poder
+        // elegir a mano aqui. Si se dejan en la lista, ordenar alfabetico
+        // pone "Credito" antes que "Efectivo" y queda seleccionado por
+        // defecto - y peor, permite armar un "pago mixto" con una pata en
+        // "Credito" que el sistema toma como dinero ya cobrado, perdiendo
+        // ese monto de Cuentas por Cobrar en vez de dejarlo pendiente.
+        $metodo_pago = DB::table('metodo_pago')
+            ->whereNotIn('MEP_Pago', ['Credito', 'Pago Mixto'])
+            ->orderBy('MEP_Pago', 'asc')
+            ->get();
 
         // Si faltan datos de facturacion, el punto de venta esconde Boleta y
         // Factura y explica que hay que completar.

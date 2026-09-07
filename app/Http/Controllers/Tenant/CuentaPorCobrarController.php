@@ -87,7 +87,13 @@ class CuentaPorCobrarController extends Controller
                 ->make(true);
         }
 
-        $metodosPago = DB::table('metodo_pago')->orderBy('MEP_Pago')->get();
+        // "Credito" y "Pago Mixto" son etiquetas de referencia, no metodos
+        // reales con los que se pueda cobrar un abono (ver la nota en
+        // VentaController::create()).
+        $metodosPago = DB::table('metodo_pago')
+            ->whereNotIn('MEP_Pago', ['Credito', 'Pago Mixto'])
+            ->orderBy('MEP_Pago')
+            ->get();
 
         return view('tenant_' . tenant('tipo_negocio') . '.ventas.cuentasporcobrar.index', compact('metodosPago'));
     }

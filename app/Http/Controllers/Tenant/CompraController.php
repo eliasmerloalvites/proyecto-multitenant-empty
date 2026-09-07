@@ -53,7 +53,9 @@ class CompraController extends Controller
                 ->make(true);
         }
         $proveedor = Proveedor::all();
-        $metodo_pago = MetodoPago::all();
+        // "Credito" y "Pago Mixto" son etiquetas de referencia que crea el
+        // modulo de ventas, no metodos reales con los que se pague una compra.
+        $metodo_pago = MetodoPago::whereNotIn('MEP_Pago', ['Credito', 'Pago Mixto'])->get();
         return view('tenant_'.tenant('tipo_negocio').'.compras.compra.index', compact('proveedor', 'metodo_pago'));
     }
 
@@ -72,7 +74,9 @@ class CompraController extends Controller
         }
 
         $proveedor = Proveedor::all();
-        $metodo_pago = MetodoPago::all();
+        // "Credito" y "Pago Mixto" son etiquetas de referencia que crea el
+        // modulo de ventas, no metodos reales con los que se pague una compra.
+        $metodo_pago = MetodoPago::whereNotIn('MEP_Pago', ['Credito', 'Pago Mixto'])->get();
         $detalleCompra = DetalleCompra::all();
         $almacen = Almacen::all();
         $producto =  DB::table('producto as p')
@@ -186,7 +190,9 @@ class CompraController extends Controller
     public function edit(string $id)
     {
         $proveedor = Proveedor::all();
-        $metodo_pago = MetodoPago::all();
+        // "Credito" y "Pago Mixto" son etiquetas de referencia que crea el
+        // modulo de ventas, no metodos reales con los que se pague una compra.
+        $metodo_pago = MetodoPago::whereNotIn('MEP_Pago', ['Credito', 'Pago Mixto'])->get();
         $detalleCompra = DetalleCompra::all();
         $almacen = Almacen::all();
         $producto =  DB::table('producto as p')
