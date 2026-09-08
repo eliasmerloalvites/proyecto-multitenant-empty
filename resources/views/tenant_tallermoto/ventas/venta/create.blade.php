@@ -2179,6 +2179,7 @@
         // con lo que ya se le habia cargado a la cuenta.
         window.CUENTA_BAHIA_ID = @json($cuentaBahiaId ?? null);
         const PREFILL_CARRITO = @json($prefillCarrito ?? []);
+        const PREFILL_CLIENTE = @json($prefillCliente ?? null);
 
         // Ambiente de facturacion del tenant: en pruebas el comprobante que
         // devuelve SUNAT no tiene validez tributaria.
@@ -2208,6 +2209,13 @@
             if (PREFILL_CARRITO.length) {
                 cart = PREFILL_CARRITO.map(p => ({ ...p, quantity: parseFloat(p.quantity) }));
                 renderCart();
+            }
+
+            // Cliente de la reserva ya identificado por celular (ver
+            // VentaController::create): se autoselecciona para no tener que
+            // buscarlo a mano, por ejemplo para poder usar "Venta al credito".
+            if (PREFILL_CLIENTE && PREFILL_CLIENTE.cliente_id) {
+                selectClient(PREFILL_CLIENTE.nombre, PREFILL_CLIENTE.documento || PREFILL_CLIENTE.celular || '', PREFILL_CLIENTE.cliente_id);
             }
 
             $('body').addClass('sidebar-collapse');

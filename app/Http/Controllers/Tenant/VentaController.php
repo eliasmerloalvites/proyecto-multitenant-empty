@@ -426,6 +426,24 @@ class VentaController extends Controller
                         'moto' => $cuenta->reservacion->RES_Moto,
                         'placa' => $cuenta->reservacion->RES_Placa,
                     ];
+
+                    // La reserva no guarda CLI_Id (son solo datos sueltos
+                    // escritos al reservar), asi que se busca un cliente ya
+                    // registrado por celular. Si hay match, se autoselecciona
+                    // para no tener que buscarlo a mano (necesario, por
+                    // ejemplo, para poder usar "Venta al credito", que exige
+                    // un cliente real). Sin match, se deja igual que antes:
+                    // el cajero lo busca o lo crea el mismo.
+                    $celularReserva = trim((string) $cuenta->reservacion->RES_Celular);
+
+                    if ($celularReserva !== '') {
+                        $clienteMatch = Cliente::where('CLI_Celular', $celularReserva)->first();
+
+                        if ($clienteMatch) {
+                            $prefillCliente['cliente_id'] = $clienteMatch->CLI_Id;
+                            $prefillCliente['documento'] = $clienteMatch->CLI_NumDocumento;
+                        }
+                    }
                 }
             }
         }
