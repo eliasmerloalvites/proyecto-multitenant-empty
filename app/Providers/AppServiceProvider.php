@@ -33,9 +33,12 @@ class AppServiceProvider extends ServiceProvider
         // de SMTP (puertos 587/465): el VPS de producción tiene esos puertos
         // bloqueados por el proveedor de hosting, así que se evita el
         // problema hablando por HTTPS en lugar de una conexión SMTP directa.
+        // Se lee vía config() (no env() directo): con el config cacheado en
+        // producción, env() fuera de un archivo config/*.php devuelve null
+        // aunque la variable exista en el .env.
         Mail::extend('brevo', function () {
             return (new BrevoTransportFactory())->create(
-                new Dsn('brevo+api', 'default', env('BREVO_API_KEY'))
+                new Dsn('brevo+api', 'default', config('mail.mailers.brevo.key'))
             );
         });
 
