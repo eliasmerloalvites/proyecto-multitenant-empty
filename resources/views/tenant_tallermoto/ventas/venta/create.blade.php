@@ -1643,6 +1643,19 @@
                 </a>
             </div>
         @endif
+        @if ($reemitirInfo ?? null)
+            <div class="alert alert-warning d-flex justify-content-between align-items-center mb-2 py-2">
+                <div>
+                    <i class="fa fa-file-invoice mr-1"></i>
+                    Reemitiendo la Nota de Venta <strong>{{ $reemitirInfo['documento'] }}</strong> como Boleta o Factura
+                    — <strong>{{ $prefillCliente['nombre'] ?? '' }}</strong>.
+                    El carrito es una copia exacta y no se puede modificar.
+                </div>
+                <a href="{{ tenant_url('tenant.ventas.venta.index') }}" class="btn btn-sm btn-outline-dark">
+                    <i class="fa fa-arrow-left"></i> Volver al listado
+                </a>
+            </div>
+        @endif
         <div class="row g-2">
             <!-- LEFT -->
             <div class="col-lg-4">
@@ -1790,11 +1803,13 @@
                             <div class="checkout-block">
                                 <label class="checkout-label">Tipo Comprobante</label>
                                 <div class="voucher-switch">
-                                    <button class="voucher-option active" onclick="changeVoucher(this,'NOTA')">
-                                        Nota Venta
-                                    </button>
+                                    @unless ($reemitirInfo ?? null)
+                                        <button class="voucher-option active" onclick="changeVoucher(this,'NOTA')">
+                                            Nota Venta
+                                        </button>
+                                    @endunless
                                     @if ($puedeFacturar)
-                                        <button class="voucher-option" onclick="changeVoucher(this,'BOLETA')">
+                                        <button class="voucher-option{{ ($reemitirInfo ?? null) ? ' active' : '' }}" onclick="changeVoucher(this,'BOLETA')">
                                             Boleta
                                         </button>
                                         <button class="voucher-option" onclick="changeVoucher(this,'FACTURA')">
@@ -2179,6 +2194,20 @@
         // con lo que ya se le habia cargado a la cuenta.
         window.CUENTA_BAHIA_ID = @json($cuentaBahiaId ?? null);
         const PREFILL_CARRITO = @json($prefillCarrito ?? []);
+        const PREFILL_CLIENTE = @json($prefillCliente ?? null);
+
+        // Reemitir una Nota de Venta como Boleta/Factura: el carrito y el
+        // cliente vienen precargados de la nota original y quedan de solo
+        // lectura (ver bloqueo mas abajo); si la nota tenia saldo pendiente
+        // en Cuentas por Cobrar, se fuerza "Venta al credito" para no perder
+        // ese saldo (ver VentaController::store()).
+        const REEMITIR_INFO = @json($reemitirInfo ?? null);
+        window.REEMITIR_VENTA_ID = REEMITIR_INFO ? REEMITIR_INFO.ven_id : null;
+        let creditoYaAbonado = REEMITIR_INFO ? (REEMITIR_INFO.ya_abonado || 0) : 0;
+
+        if (REEMITIR_INFO) {
+            voucherType = 'BOLETA';
+        }
 
         // Ambiente de facturacion del tenant: en pruebas el comprobante que
         // devuelve SUNAT no tiene validez tributaria.
@@ -2206,8 +2235,32 @@
         $(document).ready(function() {
 
             if (PREFILL_CARRITO.length) {
-                cart = PREFILL_CARRITO.map(p => ({ ...p, quantity: parseFloat(p.quantity) }));
+                // precioUnitario/descuentoUnitario no vienen del prefill (solo
+                // PRO_PrecioBaseVenta): sin esto, precioFinalItem() calculaba
+                // con NaN y el total salia vacio.
+                cart = PREFILL_CARRITO.map(p => ({
+                    ...p,
+                    quantity: parseFloat(p.quantity),
+                    precioUnitario: parseFloat(p.PRO_PrecioBaseVenta),
+                    descuentoUnitario: 0
+                }));
                 renderCart();
+            }
+
+            // Cliente de la reserva ya identificado por celular (ver
+            // VentaController::create): se autoselecciona para no tener que
+            // buscarlo a mano, por ejemplo para poder usar "Venta al credito".
+            if (PREFILL_CLIENTE && PREFILL_CLIENTE.cliente_id) {
+                selectClient(PREFILL_CLIENTE.nombre, PREFILL_CLIENTE.documento || PREFILL_CLIENTE.celular || '', PREFILL_CLIENTE.cliente_id);
+            }
+
+            // Reemitir una nota con saldo pendiente en Cuentas por Cobrar:
+            // se fuerza "Venta al credito" (no se puede desactivar) para no
+            // perder ese saldo, con la fecha de vencimiento ya cargada.
+            if (REEMITIR_INFO && REEMITIR_INFO.forzar_credito) {
+                $('#ventaCreditoToggle').prop('checked', true).prop('disabled', true);
+                toggleVentaCredito();
+                $('#fechaVencimientoCredito').val(REEMITIR_INFO.fecha_vencimiento || '');
             }
 
             $('body').addClass('sidebar-collapse');
@@ -2502,6 +2555,10 @@
         });
 
         function addToCart(product) {
+            // En modo reemision el carrito es una copia exacta de la nota
+            // original: no se puede agregar, quitar ni editar nada.
+            if (window.REEMITIR_VENTA_ID) return;
+
             // BUSCAR SI YA EXISTE
             let existing = cart.find(item => item.PRO_Id == product.PRO_Id);
             // SI EXISTE
@@ -2531,6 +2588,7 @@
         }
 
         function updatePrecioItem(id, value) {
+            if (window.REEMITIR_VENTA_ID) return;
             let item = cart.find(x => x.PRO_Id == id);
             let precio = parseFloat(value);
             item.precioUnitario = (isNaN(precio) || precio < 0) ? 0 : precio;
@@ -2538,6 +2596,7 @@
         }
 
         function updateDescuentoItem(id, value) {
+            if (window.REEMITIR_VENTA_ID) return;
             let item = cart.find(x => x.PRO_Id == id);
             let descuento = parseFloat(value);
             item.descuentoUnitario = (isNaN(descuento) || descuento < 0) ? 0 : descuento;
@@ -2562,6 +2621,11 @@
                     `/storage/{{ tenant('tipo_negocio') }}/{{ tenant('id') }}/archivos/producto/${item.PRO_Imagen}` :
                     `/images/imagen_default.png`;
 
+                // En modo reemision el carrito es copia exacta de la nota
+                // original: se muestra solo lectura (sin inputs de
+                // precio/descuento, sin +/- ni boton de quitar).
+                let soloLectura = !!window.REEMITIR_VENTA_ID;
+
                 html += `
                 <div class="cart-item">
                     <div class="cart-image">
@@ -2570,6 +2634,7 @@
                     <div class="cart-info">
                         <div class="cart-name">${item.PRO_Nombre}</div>
                         ${tieneAjuste ? `<div class="cart-price-original">Precio lista: S/ ${precioOriginal.toFixed(2)}</div>` : ''}
+                        ${soloLectura ? '' : `
                         <div class="cart-edit-row">
                             <label>Precio</label>
                             <input type="number" min="0" step="0.01" class="cart-edit-input"
@@ -2580,18 +2645,27 @@
                                 value="${item.descuentoUnitario}"
                                 onchange="updateDescuentoItem(${item.PRO_Id}, this.value)">
                         </div>
+                        `}
                         <div class="cart-bottom">
+                            ${soloLectura ? `
+                            <div class="qty-control">
+                                <span class="qty-value">Cant: ${item.quantity}</span>
+                            </div>
+                            ` : `
                             <div class="qty-control">
                                 <button class="qty-btn" onclick="decreaseQty(${item.PRO_Id})">-</button>
                                 <span class="qty-value" >${item.quantity}</span>
                                 <button class="qty-btn" onclick="increaseQty(${item.PRO_Id})">+</button>
                             </div>
+                            `}
                             <div class="cart-total">S/ ${subtotal.toFixed(2)}</div>
                         </div>
                     </div>
+                    ${soloLectura ? '' : `
                     <button class="btn-remove" onclick="removeCart(${item.PRO_Id})">
                         <i class="fas fa-trash"></i>
                     </button>
+                    `}
                 </div>
                 `;
 
@@ -2608,12 +2682,14 @@
         }
 
         function increaseQty(id) {
+            if (window.REEMITIR_VENTA_ID) return;
             let item = cart.find(x => x.PRO_Id == id);
             item.quantity++;
             renderCart();
         }
 
         function decreaseQty(id) {
+            if (window.REEMITIR_VENTA_ID) return;
             let item = cart.find(x => x.PRO_Id == id);
             if (item.quantity > 1) {
                 item.quantity--;
@@ -2624,6 +2700,7 @@
         }
 
         function removeCart(id) {
+            if (window.REEMITIR_VENTA_ID) return;
             cart = cart.filter(x => x.PRO_Id != id);
             renderCart();
         }
@@ -2762,19 +2839,26 @@
 
         // Monto inicial de una venta al credito: parte se cobra ya (queda
         // en caja como abono) y el resto queda pendiente en Cuentas por
-        // Cobrar. Se limita al total del carrito para que nunca se pueda
-        // "abonar" mas de lo que vale la venta.
+        // Cobrar. Se limita al total del carrito (menos lo ya abonado antes,
+        // si esto es una reemision de una nota que ya tenia abonos) para que
+        // nunca se pueda "abonar" mas de lo que vale la venta.
         function actualizarSaldoCredito() {
             let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
+            let disponible = Math.max(0, total - creditoYaAbonado);
             let inicialRaw = parseFloat($('#montoInicialCredito').val()) || 0;
-            let inicial = Math.max(0, Math.min(inicialRaw, total));
+            let inicial = Math.max(0, Math.min(inicialRaw, disponible));
 
             if (inicial !== inicialRaw) {
                 $('#montoInicialCredito').val(inicial > 0 ? inicial.toFixed(2) : '');
             }
 
             $('#metodoPagoInicialCredito').toggle(inicial > 0);
-            $('#saldoCreditoResumen').text('Saldo pendiente: S/ ' + Math.max(0, total - inicial).toFixed(2));
+
+            let saldo = Math.max(0, disponible - inicial);
+            let leyendaAbonado = creditoYaAbonado > 0
+                ? (' (ya cobrado antes: S/ ' + creditoYaAbonado.toFixed(2) + ')')
+                : '';
+            $('#saldoCreditoResumen').text('Saldo pendiente: S/ ' + saldo.toFixed(2) + leyendaAbonado);
         }
 
         function agregarFilaPago() {
@@ -2882,6 +2966,7 @@
                 bahia_cuenta_id: window.CUENTA_BAHIA_ID || null,
                 es_credito: esCredito ? 1 : 0,
                 fecha_vencimiento: $('#fechaVencimientoCredito').val(),
+                reemitir_venta_id: window.REEMITIR_VENTA_ID || null,
                 _token: $('meta[name="csrf-token"]').attr('content')
             };
 

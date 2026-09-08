@@ -206,7 +206,15 @@ class VentaController extends Controller
                 return '<span class="badge badge-dark" title="Esta nota de venta fue anulada">ANULADA</span>';
             }
 
-            return '<button type="button" class="btn btn-outline-danger btn-sm anularNota" data-id="' . $row->VEN_Id . '" title="Anular esta nota de venta"><i class="fa fa-ban"></i> Anular</button>';
+            $html = '<button type="button" class="btn btn-outline-danger btn-sm anularNota" data-id="' . $row->VEN_Id . '" title="Anular esta nota de venta"><i class="fa fa-ban"></i> Anular</button>';
+
+            // Reemitir como Boleta/Factura: solo el mismo dia (SUNAT espera
+            // que el comprobante refleje la fecha real de la operacion).
+            if ($row->fechaVenta === now('America/Lima')->toDateString()) {
+                $html .= ' <a href="/tenant/ventas/venta/create?reemitir_venta_id=' . $row->VEN_Id . '" class="btn btn-outline-primary btn-sm" title="Reemitir esta nota como Boleta o Factura electronica"><i class="fa fa-file-invoice"></i> Reemitir</a>';
+            }
+
+            return $html;
         }
 
         $estados = [
@@ -430,6 +438,68 @@ class VentaController extends Controller
             }
         }
 
+        // Reemitir una Nota de Venta como Boleta/Factura: precarga el
+        // carrito y el cliente REALES de la nota (no un match por celular,
+        // aqui ya se conoce el CLI_Id exacto) y deja el carrito de solo
+        // lectura en la vista (ver create.blade.php) para garantizar que lo
+        // declarado a SUNAT sea igual a lo que se vendio originalmente.
+        $reemitirInfo = null;
+
+        if ($request->filled('reemitir_venta_id')) {
+            $ventaReemitir = Venta::find($request->input('reemitir_venta_id'));
+            $docReemitir = $ventaReemitir
+                ? DB::table('documento_venta')->where('VEN_Id', $ventaReemitir->VEN_Id)->first()
+                : null;
+
+            $reemitirValido = $ventaReemitir
+                && $docReemitir
+                && $docReemitir->DOV_Tipo === 'PRO'
+                && !$docReemitir->DOV_Anulado
+                && (int) $ventaReemitir->VEN_Status === 1
+                && $puedeFacturar
+                && Carbon::parse($ventaReemitir->VEN_FechaEnvio)->toDateString() === Carbon::now('America/Lima')->toDateString();
+
+            if ($reemitirValido) {
+                $clienteReemitir = Cliente::find($ventaReemitir->CLI_Id);
+
+                $productosOrigen = DB::table('detalle_venta as dv')
+                    ->join('producto as p', 'p.PRO_Id', '=', 'dv.PRO_Id')
+                    ->where('dv.VEN_Id', $ventaReemitir->VEN_Id)
+                    ->select(
+                        'dv.PRO_Id',
+                        'p.PRO_Nombre',
+                        DB::raw('SUM(dv.DEV_Cantidad) as cantidad'),
+                        DB::raw('SUM(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) as importe')
+                    )
+                    ->groupBy('dv.PRO_Id', 'p.PRO_Nombre')
+                    ->get();
+
+                $prefillCarrito = $productosOrigen->map(fn ($fila) => [
+                    'PRO_Id' => $fila->PRO_Id,
+                    'PRO_Nombre' => $fila->PRO_Nombre,
+                    'PRO_PrecioBaseVenta' => $fila->cantidad > 0 ? round($fila->importe / $fila->cantidad, 2) : 0,
+                    'quantity' => $fila->cantidad,
+                ])->values();
+
+                $prefillCliente = [
+                    'nombre' => $clienteReemitir->CLI_Nombre ?? '',
+                    'documento' => $clienteReemitir->CLI_NumDocumento ?? '',
+                    'cliente_id' => $ventaReemitir->CLI_Id,
+                ];
+
+                $cxcReemitir = DB::table('cuenta_por_cobrar')->where('VEN_Id', $ventaReemitir->VEN_Id)->first();
+                $creditoPendiente = $cxcReemitir && $cxcReemitir->CPC_Estado !== 'PAGADA';
+
+                $reemitirInfo = [
+                    'ven_id' => $ventaReemitir->VEN_Id,
+                    'documento' => $docReemitir->DOV_Serie . '-' . $docReemitir->DOV_Numero,
+                    'forzar_credito' => $creditoPendiente,
+                    'ya_abonado' => $creditoPendiente ? (float) $cxcReemitir->CPC_MontoAbonado : 0,
+                    'fecha_vencimiento' => $creditoPendiente ? $cxcReemitir->CPC_FechaVencimiento : null,
+                ];
+            }
+        }
+
         return view(
             'tenant_' . tenant('tipo_negocio') . '.ventas.venta.create',
             compact(
@@ -442,7 +512,8 @@ class VentaController extends Controller
                 'facturacionEnPruebas',
                 'cuentaBahiaId',
                 'prefillCarrito',
-                'prefillCliente'
+                'prefillCliente',
+                'reemitirInfo'
             )
         );
     }
@@ -708,12 +779,111 @@ class VentaController extends Controller
             $idUsuario = Auth::user()->id;
             $idCliente = $request->get('cliente_id') ? $request->get('cliente_id') : 1;
 
+            // Reemitir una Nota de Venta como Boleta/Factura: la nota nunca
+            // se declaro ante SUNAT (no tiene CDR ni correlativo fiscal), asi
+            // que no se puede "convertir" cambiandole el tipo; se anula la
+            // nota y se emite un comprobante nuevo que la referencia
+            // (DOV_DocAfectadoId), reusando exactamente los mismos
+            // productos/cliente/cantidades de la nota original (copia
+            // exacta, no editable) para que lo declarado a SUNAT sea
+            // consistente con lo que realmente se vendio.
+            $reemitirVentaId = $request->get('reemitir_venta_id');
+            $ventaOriginalReemitir = null;
+            $docOriginalReemitir = null;
+            $cxcOriginalReemitir = null;
+            $creditoPendienteReemitir = false;
+            $productosReemision = null;
+            $yaAbonadoPrevioReemitir = 0.0;
+
+            if ($reemitirVentaId) {
+                $ventaOriginalReemitir = Venta::find($reemitirVentaId);
+                $docOriginalReemitir = DB::table('documento_venta')->where('VEN_Id', $reemitirVentaId)->first();
+
+                if (!$ventaOriginalReemitir || !$docOriginalReemitir) {
+                    throw new Exception('La nota de venta que se intenta reemitir no existe.');
+                }
+
+                if ($docOriginalReemitir->DOV_Tipo !== 'PRO') {
+                    throw new Exception('Solo se puede reemitir una Nota de Venta.');
+                }
+
+                if ($docOriginalReemitir->DOV_Anulado) {
+                    throw new Exception('Esta nota de venta ya esta anulada.');
+                }
+
+                if ((int) $ventaOriginalReemitir->VEN_Status !== 1) {
+                    throw new Exception('Esta nota de venta ya no esta activa.');
+                }
+
+                if (Carbon::parse($ventaOriginalReemitir->VEN_FechaEnvio)->toDateString() !== $fechaactual) {
+                    throw new Exception('Solo se puede reemitir una nota de venta del mismo dia en que se registro.');
+                }
+
+                if (!$this->documentoVentaService->esComprobanteElectronico($request->get('comprobante'))) {
+                    throw new Exception('Una nota de venta solo se puede reemitir como Boleta o Factura.');
+                }
+
+                // Copia exacta: se ignoran cliente/productos del request y se
+                // reconstruyen desde la nota original.
+                $idCliente = $ventaOriginalReemitir->CLI_Id;
+
+                // Se devuelve el stock de la nota vieja ANTES de descontarlo
+                // de nuevo para la venta nueva: son los mismos productos, se
+                // vuelven a tomar de donde corresponda segun el stock
+                // disponible ahora mismo (mismo criterio que ReducirStock).
+                $detalleOriginalReemitir = DB::table('detalle_venta')
+                    ->where('VEN_Id', $reemitirVentaId)
+                    ->get(['LOT_Id', 'DEV_Cantidad']);
+
+                foreach ($detalleOriginalReemitir as $lineaOriginal) {
+                    Lote::devolver($lineaOriginal->LOT_Id, (float) $lineaOriginal->DEV_Cantidad);
+                }
+
+                $productosReemision = DB::table('detalle_venta')
+                    ->where('VEN_Id', $reemitirVentaId)
+                    ->select(
+                        'PRO_Id',
+                        DB::raw('SUM(DEV_Cantidad) as cantidad'),
+                        DB::raw('SUM(DEV_Cantidad * DEV_PrecioUnitario) as importe'),
+                        DB::raw('SUM(DEV_Descuento) as descuento_total')
+                    )
+                    ->groupBy('PRO_Id')
+                    ->get()
+                    ->map(function ($fila) {
+                        $cantidad = (float) $fila->cantidad;
+                        $precioFinalUnitario = $cantidad > 0 ? round($fila->importe / $cantidad, 2) : 0;
+                        $descuentoUnitario = $cantidad > 0 ? round($fila->descuento_total / $cantidad, 2) : 0;
+
+                        return [
+                            'PRO_Id' => $fila->PRO_Id,
+                            'quantity' => $cantidad,
+                            'PRO_PrecioBaseVenta' => $precioFinalUnitario + $descuentoUnitario,
+                            'precioUnitario' => $precioFinalUnitario + $descuentoUnitario,
+                            'descuentoUnitario' => $descuentoUnitario,
+                        ];
+                    })
+                    ->values()
+                    ->all();
+
+                $cxcOriginalReemitir = DB::table('cuenta_por_cobrar')->where('VEN_Id', $reemitirVentaId)->first();
+                $creditoPendienteReemitir = $cxcOriginalReemitir && $cxcOriginalReemitir->CPC_Estado !== 'PAGADA';
+                $yaAbonadoPrevioReemitir = $creditoPendienteReemitir ? (float) $cxcOriginalReemitir->CPC_MontoAbonado : 0.0;
+            }
+
             // Venta al credito: no se cobra nada ahora, queda en cuentas por
             // cobrar (se crea mas abajo, cuando ya se conoce el total real de
             // la venta a partir del detalle). Requiere un cliente real (no el
             // "Cliente Generico"): sin eso no hay a quien cobrarle despues.
             $esCredito = $request->boolean('es_credito');
             $fechaVencimientoCredito = trim((string) $request->get('fecha_vencimiento'));
+
+            // Si la nota que se reemite tenia un saldo pendiente en Cuentas
+            // por Cobrar, ese saldo no puede evaporarse solo porque ahora se
+            // emite como Boleta/Factura: se fuerza al credito para poder
+            // migrar lo ya abonado (mas abajo) sin perderlo ni duplicarlo.
+            if ($creditoPendienteReemitir) {
+                $esCredito = true;
+            }
 
             if ($esCredito) {
                 if ((int) $idCliente === 1) {
@@ -841,7 +1011,7 @@ class VentaController extends Controller
 
             $cont = 0;
             $it = 0;
-            foreach ($request->productos as $item) {
+            foreach ($productosReemision ?? $request->productos as $item) {
 
                 $rdst = self::ReducirStock($item['PRO_Id'], $item['quantity'], $idAlmacen, $permitirSinStock);
 
@@ -883,17 +1053,21 @@ class VentaController extends Controller
                     ->where('VEN_Id', $venta->VEN_Id)
                     ->sum(DB::raw('DEV_Cantidad * DEV_PrecioUnitario'));
 
-                if ($montoInicialCredito > $montoTotal + 0.009) {
-                    throw new Exception('El monto inicial (S/ ' . number_format($montoInicialCredito, 2) . ') no puede ser mayor al total de la venta (S/ ' . number_format($montoTotal, 2) . ').');
+                if ($montoInicialCredito + $yaAbonadoPrevioReemitir > $montoTotal + 0.009) {
+                    throw new Exception('El monto inicial mas lo ya cobrado antes (S/ ' . number_format($yaAbonadoPrevioReemitir, 2) . ') no puede superar el total de la venta (S/ ' . number_format($montoTotal, 2) . ').');
                 }
 
-                $montoAbonadoInicial = min($montoInicialCredito, $montoTotal);
-                $montoFaltante = max(0, round($montoTotal - $montoAbonadoInicial, 2));
+                // yaAbonadoPrevioReemitir es dinero de una nota reemitida que
+                // YA se cobro en una sesion de caja pasada (se migra tal cual
+                // mas abajo); no vuelve a insertarse como abono nuevo, solo
+                // cuenta para el total abonado de la cuenta por cobrar.
+                $montoAbonadoTotal = min($montoInicialCredito + $yaAbonadoPrevioReemitir, $montoTotal);
+                $montoFaltante = max(0, round($montoTotal - $montoAbonadoTotal, 2));
 
                 $cpcId = DB::table('cuenta_por_cobrar')->insertGetId([
                     'VEN_Id'               => $venta->VEN_Id,
                     'CPC_MontoTotal'       => $montoTotal,
-                    'CPC_MontoAbonado'     => $montoAbonadoInicial,
+                    'CPC_MontoAbonado'     => $montoAbonadoTotal,
                     'CPC_MontoFaltante'    => $montoFaltante,
                     'CPC_FechaEmision'     => $fechaactual,
                     'CPC_FechaVencimiento' => $fechaVencimientoCredito,
@@ -902,19 +1076,59 @@ class VentaController extends Controller
                     'updated_at'           => now(),
                 ]);
 
-                if ($montoAbonadoInicial > 0) {
+                if ($montoInicialCredito > 0) {
                     DB::table('cuenta_por_cobrar_abono')->insert([
                         'CPC_Id'          => $cpcId,
                         'MEP_Id'          => $metodoPagoInicialCredito,
                         'USU_Id'          => $idUsuario,
                         'CAJ_Id'          => tenant_caja_activa_id(),
                         'CS_Id'           => tenant_caja_sesion_activa_id(),
-                        'CPA_Monto'       => $montoAbonadoInicial,
+                        'CPA_Monto'       => $montoInicialCredito,
                         'CPA_Observacion' => 'Monto inicial cobrado al momento de la venta.',
                         'created_at'      => now(),
                         'updated_at'      => now(),
                     ]);
                 }
+
+                // Se migran los abonos ya cobrados de la nota reemitida a
+                // esta cuenta por cobrar nueva: conservan su CAJ_Id/CS_Id
+                // originales (no se altera ningun arqueo de caja pasado), y
+                // se cierra la cuenta vieja para que no quede un saldo
+                // fantasma sobre una venta ya anulada.
+                if ($creditoPendienteReemitir) {
+                    DB::table('cuenta_por_cobrar_abono')
+                        ->where('CPC_Id', $cxcOriginalReemitir->CPC_Id)
+                        ->update(['CPC_Id' => $cpcId]);
+
+                    DB::table('cuenta_por_cobrar')->where('CPC_Id', $cxcOriginalReemitir->CPC_Id)->delete();
+                }
+            }
+
+            // Cierra el reemplazo: la nota vieja queda anulada (mismo efecto
+            // que anularNota(), sin devolver stock de nuevo: ya se devolvio
+            // arriba, antes de descontarlo para esta venta nueva) y el
+            // comprobante nuevo queda con la referencia informativa a la
+            // nota que reemplaza (no se envia a SUNAT: esos campos solo se
+            // leen para Notas de Credito, ver SunatService::armarPayload).
+            if ($reemitirVentaId) {
+                DB::table('documento_venta')->where('VEN_Id', $reemitirVentaId)->update([
+                    'DOV_Anulado'            => 1,
+                    'DOV_MotivoBaja'         => 'Reemitida como ' . $VentaTipo . ' ' . $DocumentoVenta->DOV_Serie . '-' . $DocumentoVenta->DOV_Numero,
+                    'DOV_FechaSolicitudBaja' => now(),
+                    'updated_at'             => now(),
+                ]);
+
+                DB::table('venta')->where('VEN_Id', $reemitirVentaId)->update(['VEN_Status' => 0]);
+
+                // DOV_TipoDocAfectado es string(2) (pensado para codigos de
+                // catalogo SUNAT como '01'/'03'); 'PRO' no cabe y aqui es
+                // solo informativo (nunca se lee fuera del payload de Notas
+                // de Credito), asi que se usa un codigo interno corto.
+                $DocumentoVenta->update([
+                    'DOV_TipoDocAfectado' => 'NV',
+                    'DOV_NumDocAfectado'  => $docOriginalReemitir->DOV_Serie . '-' . $docOriginalReemitir->DOV_Numero,
+                    'DOV_DocAfectadoId'   => $ventaOriginalReemitir->VEN_Id,
+                ]);
             }
 
             $movi = new Movimiento();
