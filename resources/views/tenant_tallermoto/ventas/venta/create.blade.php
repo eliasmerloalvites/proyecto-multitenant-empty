@@ -2194,6 +2194,7 @@
         // con lo que ya se le habia cargado a la cuenta.
         window.CUENTA_BAHIA_ID = @json($cuentaBahiaId ?? null);
         const PREFILL_CARRITO = @json($prefillCarrito ?? []);
+        const PREFILL_CLIENTE = @json($prefillCliente ?? null);
 
         // Reemitir una Nota de Venta como Boleta/Factura: el carrito y el
         // cliente vienen precargados de la nota original y quedan de solo
