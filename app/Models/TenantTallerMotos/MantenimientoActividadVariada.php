@@ -36,6 +36,7 @@ class MantenimientoActividadVariada extends Model
 
         'PER_Id',
         'RES_Id',
+        'MAV_AvisoMecanico',
 
         'statevalidate',
         'notificar',
@@ -47,6 +48,7 @@ class MantenimientoActividadVariada extends Model
     protected $casts = [
 
         'statevalidate' => 'boolean',
+        'MAV_AvisoMecanico' => 'boolean',
         'notificar' => 'boolean',
 
         'MAV_FechaCreacion' => 'datetime',

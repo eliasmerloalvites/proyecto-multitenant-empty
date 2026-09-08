@@ -113,6 +113,16 @@ class DomainRoleSeeder extends Seeder
                 'tenant.reservaciones.administracion.notificar',
             ],
 
+            // Recibe la moto en el mostrador: ve el tablero del dia
+            // (Gestion de Proceso), hace el check-in (detalle + mecanico
+            // responsable) y puede editarlo despues. No aprueba/elimina
+            // mantenimientos ni gestiona reservas fuera de hoy — eso sigue
+            // siendo de Admin/Gerente/Reservas.
+            'Recepcion' => [
+                'tenant.procesos.index',
+                'tenant.procesos.checkin',
+            ],
+
             'Inventario' => [
                 'tenant.inventario.clase.index',
                 'tenant.inventario.clase.create',
@@ -175,6 +185,9 @@ class DomainRoleSeeder extends Seeder
                 'tenant.inventario.producto.show',
 
                 'tenant.reportes.listageneral',
+
+                'tenant.procesos.index',
+                'tenant.procesos.entendido',
             ],
         ];
 

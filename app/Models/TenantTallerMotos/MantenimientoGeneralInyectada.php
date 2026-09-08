@@ -88,6 +88,7 @@ class MantenimientoGeneralInyectada  extends Model
         'PER_Id',
         'PLAN_Id',
         'RES_Id',
+        'MGI_AvisoMecanico',
 
         'statevalidate',
         'notificar',
@@ -104,6 +105,7 @@ class MantenimientoGeneralInyectada  extends Model
         'MGI_FechaTermino' => 'datetime',
 
         'statevalidate' => 'boolean',
+        'MGI_AvisoMecanico' => 'boolean',
         'notificar' => 'boolean',
     ];
 

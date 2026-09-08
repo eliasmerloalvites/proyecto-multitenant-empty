@@ -45,6 +45,7 @@ use App\Http\Controllers\TenantTallerMotos\MantenimientoPlanController;
 use App\Http\Controllers\TenantTallerMotos\ReportesFinancierosController;
 use App\Http\Controllers\TenantTallerMotos\NotificacionReservaController;
 use App\Http\Controllers\TenantTallerMotos\ReservacionController;
+use App\Http\Controllers\TenantTallerMotos\ProcesoTallerController;
 use App\Http\Controllers\TenantTallerMotos\TurnoController;
 use App\Services\Facturacion\GreenterService;
 use Illuminate\Support\Facades\Route;
@@ -255,6 +256,14 @@ Route::middleware([
         ])->parameters([
             'mantenimientoactividadvariada' => 'mantenimientoactividadvariada'
         ]);
+
+        // GESTION DE PROCESO: tablero del dia (recepcion + mecanico).
+        Route::prefix('tenant/procesos')->name('tenant.procesos.')->group(function () {
+            Route::get('/', [ProcesoTallerController::class, 'index'])->name('index');
+            Route::post('/reservas/{reservacionId}/checkin', [ProcesoTallerController::class, 'checkIn'])->name('checkin');
+            Route::post('/mantenimiento/{tabla}/{id}/entendido', [ProcesoTallerController::class, 'entendido'])->name('entendido');
+            Route::get('/alertas', [ProcesoTallerController::class, 'alertas'])->name('alertas');
+        });
 
     });
 

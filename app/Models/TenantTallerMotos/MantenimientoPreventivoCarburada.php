@@ -58,6 +58,7 @@ class MantenimientoPreventivoCarburada  extends Model
         'PER_Id',
         'PLAN_Id',
         'RES_Id',
+        'MPC_AvisoMecanico',
 
         'statevalidate',
         'notificar',
@@ -74,6 +75,7 @@ class MantenimientoPreventivoCarburada  extends Model
         'MPC_FechaTermino' => 'datetime',
 
         'statevalidate' => 'boolean',
+        'MPC_AvisoMecanico' => 'boolean',
         'notificar' => 'boolean',
     ];
 

@@ -231,6 +231,11 @@ class RoleAndPermissionSeeder extends Seeder
             // Motos
             ['tenant.motos.index', 'Motos', 'Ver Motos Atendidas', 'Historial de motos atendidas en el taller'],
 
+            // Gestion de Proceso (tablero del dia: recepcion + mecanico)
+            ['tenant.procesos.index',     'GestionProceso', 'Ver Gestion de Proceso',      'Tablero del dia: reservas, check-in y avance por mecanico'],
+            ['tenant.procesos.checkin',   'GestionProceso', 'Check-in de Gestion de Proceso', 'Registrar/editar el detalle de atencion y asignar mecanico'],
+            ['tenant.procesos.entendido', 'GestionProceso', 'Confirmar aviso de Gestion de Proceso', 'El mecanico confirma que vio un cambio agregado por recepcion'],
+
         ];
 
         foreach ($permissions as [$name, $group, $nombre, $description]) {
@@ -442,6 +447,10 @@ class RoleAndPermissionSeeder extends Seeder
 
             'tenant.motos.index',
 
+            'tenant.procesos.index',
+            'tenant.procesos.checkin',
+            'tenant.procesos.entendido',
+
         ]);
 
         $gerenteRole->givePermissionTo([
@@ -604,6 +613,10 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.reservaciones.administracion.destroy',
 
             'tenant.motos.index',
+
+            'tenant.procesos.index',
+            'tenant.procesos.checkin',
+            'tenant.procesos.entendido',
         ]);
 
         /*
