@@ -923,15 +923,24 @@ class VentaController extends Controller
             $movi->save();
 
             // Si esta venta viene del tablero de "Ventas por Bahia", se cierra
-            // la cuenta y queda enlazada a la venta recien creada.
+            // la cuenta y queda enlazada a la venta recien creada. Ademas se
+            // libera el slot bahia+turno+dia de la reserva (el trabajo ya
+            // termino), para que se pueda reservar de nuevo hoy mismo esa
+            // misma bahia en ese turno.
             if ($request->filled('bahia_cuenta_id')) {
-                \App\Models\TenantTallerMotos\BahiaCuenta::where('BCT_Id', $request->input('bahia_cuenta_id'))
+                $cuentaBahia = \App\Models\TenantTallerMotos\BahiaCuenta::where('BCT_Id', $request->input('bahia_cuenta_id'))
                     ->where('BCT_Estado', \App\Models\TenantTallerMotos\BahiaCuenta::ESTADO_ABIERTA)
-                    ->update([
+                    ->first();
+
+                if ($cuentaBahia) {
+                    $cuentaBahia->update([
                         'BCT_Estado' => \App\Models\TenantTallerMotos\BahiaCuenta::ESTADO_CERRADA,
                         'VEN_Id' => $venta->VEN_Id,
                         'BCT_CerradoEn' => now(),
                     ]);
+
+                    \App\Models\TenantTallerMotos\Reservacion::liberarSlot($cuentaBahia->RES_Id);
+                }
             }
 
             DB::commit();

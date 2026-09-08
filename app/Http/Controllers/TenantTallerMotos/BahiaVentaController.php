@@ -221,6 +221,11 @@ class BahiaVentaController extends Controller
             'BCT_CerradoEn' => now(),
         ]);
 
+        // Libera el slot bahia+turno+dia de la reserva: la revision ya
+        // termino (aunque no genero venta), asi que no hace falta seguir
+        // bloqueando ese horario para una reserva nueva.
+        Reservacion::liberarSlot($cuenta->RES_Id);
+
         return response()->json(['success' => true]);
     }
 

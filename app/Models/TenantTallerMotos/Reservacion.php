@@ -76,4 +76,19 @@ class Reservacion extends Model
         return (int) ($e->errorInfo[1] ?? 0) === 1062
             && str_contains($e->getMessage(), self::SLOT_UNIQUE_INDEX);
     }
+
+    /**
+     * Libera el slot bahia+turno+fecha de esta reserva (RES_Estado='DESACT')
+     * para que se pueda crear una reserva nueva ahi mismo el mismo dia. Se
+     * usa cuando la bahia_cuenta ligada a la reserva se cierra (con venta o
+     * sin cobrar): el trabajo ya termino, no hace falta seguir bloqueando el
+     * horario. No toca RES_State (la reserva sigue mostrando APROBADO como
+     * antes en el listado); ver RES_SlotKey en la migracion
+     * add_slot_unique_constraint_to_reservacion_table, que ya trata las
+     * reservas desactivadas como libres para slotEstaOcupado().
+     */
+    public static function liberarSlot($resId): void
+    {
+        self::where('RES_Id', $resId)->update(['RES_Estado' => 'DESACT']);
+    }
 }
