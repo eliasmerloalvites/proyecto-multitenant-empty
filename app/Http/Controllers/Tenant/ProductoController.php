@@ -17,9 +17,16 @@ class ProductoController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
+            // Por defecto solo activos: un producto desactivado (ver
+            // destroy()) ya no deberia aparecer salvo que se pida
+            // explicitamente verlo (filtro "Estado" en la vista).
+            $estado = $request->input('estado', 'ACT');
+
             $data = DB::table('producto as pd')
                 ->join('categoria as ct', 'pd.CAT_Id', '=', 'ct.CAT_Id')
                 ->select('pd.*', 'ct.CAT_Nombre')
+                ->when($estado === 'ACT', fn ($q) => $q->where('pd.PRO_Status', 1))
+                ->when($estado === 'INA', fn ($q) => $q->where('pd.PRO_Status', 0))
                 ->get();
             return datatables()::of($data)
                 ->addIndexColumn()
@@ -364,9 +371,13 @@ class ProductoController extends Controller
     public function controlinventario(Request $request)
     {
         if ($request->ajax()) {
+            // Un producto desactivado (ver destroy()) ya no se repone ni se
+            // vende, asi que no tiene caso seguir contandolo aqui: ni en la
+            // tabla ni en el badge de stock bajo mas abajo.
             $data = DB::table('producto as pd')
                 ->join('categoria as ct', 'pd.CAT_Id', '=', 'ct.CAT_Id')
                 ->join('lote as lt','pd.PRO_Id','=','lt.PRO_Id')
+                ->where('pd.PRO_Status', 1)
                 ->select('pd.PRO_Id', 'pd.PRO_Nombre', 'pd.PRO_PrecioVenta', 'pd.PRO_PrecioCompra', 'pd.PRO_StockMinimo', 'ct.CAT_Nombre', DB::raw('SUM(lt.LOT_CantidadReal) as cantidad_total'))
                 ->groupBy('pd.PRO_Id', 'pd.PRO_Nombre', 'pd.PRO_PrecioVenta', 'pd.PRO_PrecioCompra', 'pd.PRO_StockMinimo', 'ct.CAT_Nombre')
                 ->get();
@@ -403,6 +414,7 @@ class ProductoController extends Controller
 
         $stockBajoCount = DB::table('producto as pd')
             ->join('lote as lt', 'pd.PRO_Id', '=', 'lt.PRO_Id')
+            ->where('pd.PRO_Status', 1)
             ->select('pd.PRO_Id')
             ->groupBy('pd.PRO_Id', 'pd.PRO_StockMinimo')
             ->havingRaw('SUM(lt.LOT_CantidadReal) <= pd.PRO_StockMinimo')

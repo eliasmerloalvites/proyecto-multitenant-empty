@@ -140,7 +140,14 @@
         <div class="col-12 col-md-8">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">LISTA DE PRODUCTOS</h5>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap:8px;">
+                        <h5 class="card-title mb-0">LISTA DE PRODUCTOS</h5>
+                        <select class="form-control form-control-sm" id="filtroEstadoProducto" style="width:auto;">
+                            <option value="ACT" selected>Activos</option>
+                            <option value="INA">Inactivos</option>
+                            <option value="TODOS">Todos</option>
+                        </select>
+                    </div>
                     <p class="card-text">
                     <div class="table-responsive" style="background:#FFF;">
                         <table class="table" id="lista_productos">
@@ -380,7 +387,12 @@
                     'excelHtml5',
                     'pdfHtml5'
                 ],
-                ajax: "{{ tenant_url('tenant.inventario.producto.index') }}",
+                ajax: {
+                    url: "{{ tenant_url('tenant.inventario.producto.index') }}",
+                    data: function (d) {
+                        d.estado = $('#filtroEstadoProducto').val();
+                    }
+                },
                 columns: [{
                         data: 'PRO_Id',
                         name: 'PRO_Id',
@@ -424,6 +436,10 @@
                         }
                     }
                 ],
+            });
+
+            $('#filtroEstadoProducto').on('change', function() {
+                table.draw();
             });
 
             $('#productosave').click(function(e) {
