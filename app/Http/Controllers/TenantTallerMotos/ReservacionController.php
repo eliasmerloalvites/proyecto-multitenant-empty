@@ -384,16 +384,14 @@ class ReservacionController extends Controller
 
     /**
      * Crea el registro de mantenimiento del tipo elegido al reservar, con el
-     * checklist en blanco (se completa cuando se atiende la moto). Cubre los
-     * 5 tipos existentes; antes solo cubria 3 y no tenia forma de invocarse
-     * desde la interfaz.
+     * checklist en blanco (se completa cuando se atiende la moto). El
+     * detalle inicial es un resumen automatico de lo elegido en el
+     * formulario de reserva (cambio de aceite, etc.) — el detalle REAL de
+     * trabajo se completa despues, al check-in, desde "Gestion de
+     * Proceso" (ver GestionProcesoService::checkIn).
      */
     private function crearMantenimientoDesdeReserva(array $datos, Reservacion $reserva): void
     {
-        $mytime = Carbon::now('America/Lima');
-        $idusu = Auth::id();
-        $idper = Auth::id();
-
         $tipoMantenimiento = $datos['TIP_Mantenimiento'];
         $cambioAceite = $datos['CAM_Aceite'] ?? null;
         $aceite = $datos['aceite'] ?? null;
@@ -410,165 +408,11 @@ class ReservacionController extends Controller
             $detalleServicio .= "*Cambio de Filtro de Aceite: " . $cambioFiltro . ". \n";
         }
 
-        $placa = $datos['RES_Placa'];
-        $propietario = $datos['RES_Cliente'];
-        $celular = $datos['RES_Celular'];
-        $unidad = $datos['RES_Moto'];
-        $detalleObservacion = $datos['RES_Detalle'] ?? null;
-
-        if ($tipoMantenimiento === 'MANTENIMIENTO GENERAL INYECTADA') {
-            $mtto = new MantenimientoGeneralInyectada;
-            $mtto->MGI_Placa = $placa;
-            $mtto->MGI_Propietario = $propietario;
-            $mtto->MGI_celular = $celular;
-            $mtto->MGI_Unidad = $unidad;
-            $mtto->MGI_KMEntrada = "";
-            $mtto->MGI_DetalleIngreso = $detalleServicio;
-            $mtto->MGI_DetalleObservacion = $detalleObservacion;
-            foreach (range(1, 27) as $n) {
-                $mtto->{"MGI_Det{$n}"} = "NO";
-            }
-            $mtto->MGI_Det1Informacion = "";
-            $mtto->MGI_Det9Admision = "";
-            $mtto->MGI_Det9Escape = "";
-            $mtto->MGI_Det10Medida = "";
-            $mtto->MGI_Det11Medida = "";
-            $mtto->MGI_Det18 = "";
-            $mtto->MGI_Det19 = "";
-            $mtto->MGI_Det20Humedad = "";
-            $mtto->MGI_Det22Ventilador = "";
-            $mtto->MGI_Det24Vida = "";
-            $mtto->MGI_Det24Carga = "";
-            $mtto->MGI_Det24Arranque = "";
-            $mtto->MGI_DetalleRealizado = "";
-            $mtto->MGI_CorrecionObservacion = "";
-            $mtto->MGI_ProximoCambioAceite = "";
-            $mtto->MGI_ProximoServicio = "";
-            $mtto->MGI_FechaCreacion = $mytime->toDateTimeString();
-            $mtto->MGI_FechaEdicion = $mytime->toDateTimeString();
-            $mtto->MGI_UsuarioCreacion = $idusu;
-            $mtto->MGI_UsuarioEditado = $idusu;
-            $mtto->PER_Id = $idper;
-            $mtto->RES_Id = $reserva->RES_Id;
-            $mtto->save();
-        } elseif ($tipoMantenimiento === 'MANTENIMIENTO PREVENTIVO INYECTADA') {
-            $mtto = new MantenimientoPreventivoInyectada;
-            $mtto->MPI_Placa = $placa;
-            $mtto->MPI_Propietario = $propietario;
-            $mtto->MPI_celular = $celular;
-            $mtto->MPI_Unidad = $unidad;
-            $mtto->MPI_KMEntrada = "";
-            $mtto->MPI_DetalleIngreso = $detalleServicio;
-            $mtto->MPI_DetalleObservacion = $detalleObservacion;
-            foreach (range(1, 20) as $n) {
-                $mtto->{"MPI_Det{$n}"} = "NO";
-            }
-            $mtto->MPI_Det1Informacion = "";
-            $mtto->MPI_Det7Admision = "";
-            $mtto->MPI_Det7Escape = "";
-            $mtto->MPI_Det8Medida = "";
-            $mtto->MPI_Det15 = "";
-            $mtto->MPI_Det16 = "";
-            $mtto->MPI_Det17Ventilador = "";
-            $mtto->MPI_Det19Vida = "";
-            $mtto->MPI_Det19Carga = "";
-            $mtto->MPI_Det19Arranque = "";
-            $mtto->MPI_DetalleRealizado = "";
-            $mtto->MPI_CorrecionObservacion = "";
-            $mtto->MPI_ProximoCambioAceite = "";
-            $mtto->MPI_ProximoServicio = "";
-            $mtto->MPI_FechaCreacion = $mytime->toDateTimeString();
-            $mtto->MPI_FechaEdicion = $mytime->toDateTimeString();
-            $mtto->MPI_UsuarioCreacion = $idusu;
-            $mtto->MPI_UsuarioEditado = $idusu;
-            $mtto->PER_Id = $idper;
-            $mtto->RES_Id = $reserva->RES_Id;
-            $mtto->save();
-        } elseif ($tipoMantenimiento === 'MANTENIMIENTO GENERAL CARBURADA') {
-            $mtto = new MantenimientoGeneralCarburada;
-            $mtto->MGC_Placa = $placa;
-            $mtto->MGC_Propietario = $propietario;
-            $mtto->MGC_celular = $celular;
-            $mtto->MGC_Unidad = $unidad;
-            $mtto->MGC_KMEntrada = "";
-            $mtto->MGC_DetalleIngreso = $detalleServicio;
-            $mtto->MGC_DetalleObservacion = $detalleObservacion;
-            foreach (range(1, 21) as $n) {
-                $mtto->{"MGC_Det{$n}"} = "NO";
-            }
-            $mtto->MGC_Det1Informacion = "";
-            $mtto->MGC_Det8Admision = "";
-            $mtto->MGC_Det8Escape = "";
-            $mtto->MGC_Det9Medida = "";
-            $mtto->MGC_Det16 = "";
-            $mtto->MGC_Det17 = "";
-            $mtto->MGC_Det18Humedad = "";
-            $mtto->MGC_Det19Ventilador = "";
-            $mtto->MGC_Det21Vida = "";
-            $mtto->MGC_Det21Carga = "";
-            $mtto->MGC_Det21Arranque = "";
-            $mtto->MGC_DetalleRealizado = "";
-            $mtto->MGC_CorrecionObservacion = "";
-            $mtto->MGC_ProximoCambioAceite = "";
-            $mtto->MGC_ProximoServicio = "";
-            $mtto->MGC_FechaCreacion = $mytime->toDateTimeString();
-            $mtto->MGC_FechaEdicion = $mytime->toDateTimeString();
-            $mtto->MGC_UsuarioCreacion = $idusu;
-            $mtto->MGC_UsuarioEditado = $idusu;
-            $mtto->PER_Id = $idper;
-            $mtto->RES_Id = $reserva->RES_Id;
-            $mtto->save();
-        } elseif ($tipoMantenimiento === 'MANTENIMIENTO PREVENTIVO CARBURADA') {
-            $mtto = new MantenimientoPreventivoCarburada;
-            $mtto->MPC_Placa = $placa;
-            $mtto->MPC_Propietario = $propietario;
-            $mtto->MPC_celular = $celular;
-            $mtto->MPC_Unidad = $unidad;
-            $mtto->MPC_KMEntrada = "";
-            $mtto->MPC_DetalleIngreso = $detalleServicio;
-            $mtto->MPC_DetalleObservacion = $detalleObservacion;
-            foreach (range(1, 11) as $n) {
-                $mtto->{"MPC_Det{$n}"} = "NO";
-            }
-            $mtto->MPC_Det1Informacion = "";
-            $mtto->MPC_Det7Admision = "";
-            $mtto->MPC_Det7Escape = "";
-            $mtto->MPC_Det8Medida = "";
-            $mtto->MPC_Det11Vida = "";
-            $mtto->MPC_Det11Carga = "";
-            $mtto->MPC_Det11Arranque = "";
-            $mtto->MPC_DetalleRealizado = "";
-            $mtto->MPC_CorrecionObservacion = "";
-            $mtto->MPC_ProximoCambioAceite = "";
-            $mtto->MPC_ProximoServicio = "";
-            $mtto->MPC_FechaCreacion = $mytime->toDateTimeString();
-            $mtto->MPC_FechaEdicion = $mytime->toDateTimeString();
-            $mtto->MPC_UsuarioCreacion = $idusu;
-            $mtto->MPC_UsuarioEditado = $idusu;
-            $mtto->PER_Id = $idper;
-            $mtto->RES_Id = $reserva->RES_Id;
-            $mtto->save();
-        } elseif ($tipoMantenimiento === 'ACTIVIDAD VARIADA') {
-            $mtto = new MantenimientoActividadVariada;
-            $mtto->MAV_Placa = $placa;
-            $mtto->MAV_Propietario = $propietario;
-            $mtto->MAV_celular = $celular;
-            $mtto->MAV_Unidad = $unidad;
-            $mtto->MAV_KMEntrada = "";
-            $mtto->MAV_DetalleIngreso = $detalleServicio;
-            $mtto->MAV_DetalleObservacion = $detalleObservacion;
-            $mtto->MAV_DetalleRealizado = "";
-            $mtto->MAV_CorrecionObservacion = "";
-            $mtto->MAV_ProximoCambioAceite = "";
-            $mtto->MAV_ProximoServicio = "";
-            $mtto->MAV_FechaCreacion = $mytime->toDateTimeString();
-            $mtto->MAV_FechaEdicion = $mytime->toDateTimeString();
-            $mtto->MAV_UsuarioCreacion = $idusu;
-            $mtto->MAV_UsuarioEditado = $idusu;
-            $mtto->PER_Id = $idper;
-            $mtto->RES_Id = $reserva->RES_Id;
-            $mtto->save();
-        }
+        \App\Services\TenantTallerMotos\GestionProcesoService::crearDesdeReserva(
+            $tipoMantenimiento,
+            $reserva,
+            $detalleServicio
+        );
     }
 
 	public function show($id)

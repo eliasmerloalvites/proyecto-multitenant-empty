@@ -78,6 +78,7 @@ class MantenimientoGeneralCarburada  extends Model
         'PER_Id',
         'PLAN_Id',
         'RES_Id',
+        'MGC_AvisoMecanico',
 
         'statevalidate',
         'notificar',
@@ -94,6 +95,7 @@ class MantenimientoGeneralCarburada  extends Model
         'MGC_FechaTermino' => 'datetime',
 
         'statevalidate' => 'boolean',
+        'MGC_AvisoMecanico' => 'boolean',
         'notificar' => 'boolean',
     ];
 

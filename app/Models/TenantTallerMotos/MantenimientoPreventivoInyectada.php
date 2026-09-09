@@ -68,6 +68,7 @@ class MantenimientoPreventivoInyectada  extends Model
         'PER_Id',
         'PLAN_Id',
         'RES_Id',
+        'MPI_AvisoMecanico',
 
         'statevalidate',
         'notificar',
@@ -84,6 +85,7 @@ class MantenimientoPreventivoInyectada  extends Model
         'MPI_FechaTermino' => 'datetime',
 
         'statevalidate' => 'boolean',
+        'MPI_AvisoMecanico' => 'boolean',
         'notificar' => 'boolean',
     ];
 

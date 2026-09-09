@@ -35,6 +35,17 @@
                 </li>
                 @endhasanyrole
 
+                @if(tenant_has_module('mantenimientos') && auth()->user()->can('tenant.procesos.index'))
+                <li class="nav-item">
+                    <a href="{{ tenant_url('tenant.procesos.index') }}" class="nav-link {{ request()->routeIs('tenant.procesos*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-clipboard-list"></i>
+                        <p>
+                            Gestión de Proceso
+                        </p>
+                    </a>
+                </li>
+                @endif
+
                 @if(tenant_has_module('mantenimientos') && auth()->user()->can('tenant.motos.index'))
                 <li class="nav-item">
                     <a href="{{ tenant_url('tenant.motos.index') }}" class="nav-link {{ request()->routeIs('tenant.motos*') ? 'active' : '' }}">

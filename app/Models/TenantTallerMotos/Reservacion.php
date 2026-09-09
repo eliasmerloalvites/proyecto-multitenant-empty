@@ -27,6 +27,7 @@ class Reservacion extends Model
     	'RES_Estado',
     	'RES_Notificado',
     	'RES_NotificadoEn',
+    	'RES_CheckIn',
     ];
 
     protected $guarded =[
@@ -36,7 +37,18 @@ class Reservacion extends Model
     protected $casts = [
         'RES_Notificado' => 'boolean',
         'RES_NotificadoEn' => 'datetime',
+        'RES_CheckIn' => 'datetime',
     ];
+
+    /**
+     * True si la moto ya llego fisicamente y recepcion hizo el check-in
+     * (tablero de "Gestion de Proceso"). Antes de eso es solo una cita
+     * agendada, no un trabajo activo para el mecanico.
+     */
+    public function tieneCheckIn(): bool
+    {
+        return $this->RES_CheckIn !== null;
+    }
 
     /**
      * Nombre del índice único (ver migración add_slot_unique_constraint_to_reservacion_table)
