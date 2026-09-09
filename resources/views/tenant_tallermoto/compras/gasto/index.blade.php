@@ -149,7 +149,7 @@
                                         S/.
                                     </div>
                                 </div>
-                                <input type="number" class="form-control" id="idGAS_Monto" name="GAS_Monto">
+                                <input type="number" step="0.01" min="0" class="form-control" id="idGAS_Monto" name="GAS_Monto">
                                 </input>
                             </div>
                         </div>
