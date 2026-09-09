@@ -742,7 +742,21 @@ class ProductoController extends Controller
             ]);
         }
 
-        $producto->delete();
+        try {
+            $producto->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Red de seguridad: si hay algun otro tipo de registro ligado a
+            // este producto que $tieneHistorial no llego a contemplar, la
+            // base de datos igual rechaza el DELETE (foreign key en
+            // RESTRICT, ver migracion restrict_producto_delete_cascades).
+            // Se desactiva en vez de dejar pasar un error crudo de SQL.
+            $producto->PRO_Status = 0;
+            $producto->save();
+
+            return response()->json([
+                'success' => 'Este producto tiene otros registros relacionados y no se pudo eliminar sin perder informacion. Se desactivo en su lugar: ya no aparece para vender ni reponer stock.',
+            ]);
+        }
 
         return response()->json(['success' => 'Producto Eliminado Exitosamente.']);
     }
