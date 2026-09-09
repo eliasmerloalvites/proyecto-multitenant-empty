@@ -7,6 +7,7 @@ use App\Models\Tenant\Producto;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ProductoController extends Controller
 {
@@ -27,9 +28,11 @@ class ProductoController extends Controller
                     return $btn;
                 })
                 ->addColumn('action2', function ($row) {
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->PRO_Id . '" data-original-title="Delete" class="btn btn-danger btn-sm deleteProducto"><i class="fa fa-trash"></i></a>';
+                    if ((int) $row->PRO_Status === 0) {
+                        return '<a href="javascript:void(0)" data-toggle="tooltip" data-id="' . $row->PRO_Id . '" data-original-title="Activar" class="btn btn-success btn-sm activarProducto"><i class="fa fa-check"></i></a>';
+                    }
 
-                    return $btn;
+                    return '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->PRO_Id . '" data-original-title="Delete" class="btn btn-danger btn-sm deleteProducto"><i class="fa fa-trash"></i></a>';
                 })
                 ->addColumn('action3', function ($row) {
                     $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->PRO_Id . '" data-original-title="Ver" class="btn btn-warning btn-sm eyeProducto"><i class="fa fa-eye" aria-hidden="true"></i></a>';
@@ -705,11 +708,74 @@ class ProductoController extends Controller
 
     /**
      * Remove the specified resource from storage.
+     *
+     * Un producto con historial (lotes, ventas, compras, traslados o
+     * items de bahia) ya NO se borra de verdad: se desactiva
+     * (PRO_Status = 0), igual que el resto de "eliminar" en la app (ver
+     * BahiaController::destroy(), Reservacion, etc.). Antes se hacia un
+     * DELETE liso y las foreign keys en cascada de lote/detalle_venta/
+     * detalle_compra se llevaban por delante ventas y compras ya
+     * facturadas -- ver migracion restrict_producto_delete_cascades, que
+     * ademas bloquea esto a nivel de base de datos por si algun otro
+     * codigo intenta un DELETE directo.
      */
     public function destroy(string $id)
     {
         $producto = Producto::find($id);
-        $producto->delete();
+
+        if (!$producto) {
+            return response()->json(['error' => 'Producto no encontrado.'], 404);
+        }
+
+        $tieneHistorial = DB::table('lote')->where('PRO_Id', $id)->exists()
+            || DB::table('detalle_venta')->where('PRO_Id', $id)->exists()
+            || DB::table('detalle_compra')->where('PRO_Id', $id)->exists()
+            || (Schema::hasTable('traslado_detalle') && DB::table('traslado_detalle')->where('PRO_Id', $id)->exists())
+            || (Schema::hasTable('bahia_cuenta_item') && DB::table('bahia_cuenta_item')->where('PRO_Id', $id)->exists());
+
+        if ($tieneHistorial) {
+            $producto->PRO_Status = 0;
+            $producto->save();
+
+            return response()->json([
+                'success' => 'Este producto tiene historial de ventas, compras o inventario, asi que no se puede eliminar sin perder esos registros. Se desactivo en su lugar: ya no aparece para vender ni reponer stock, pero su historial queda intacto.',
+            ]);
+        }
+
+        try {
+            $producto->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Red de seguridad: si hay algun otro tipo de registro ligado a
+            // este producto que $tieneHistorial no llego a contemplar, la
+            // base de datos igual rechaza el DELETE (foreign key en
+            // RESTRICT, ver migracion restrict_producto_delete_cascades).
+            // Se desactiva en vez de dejar pasar un error crudo de SQL.
+            $producto->PRO_Status = 0;
+            $producto->save();
+
+            return response()->json([
+                'success' => 'Este producto tiene otros registros relacionados y no se pudo eliminar sin perder informacion. Se desactivo en su lugar: ya no aparece para vender ni reponer stock.',
+            ]);
+        }
+
         return response()->json(['success' => 'Producto Eliminado Exitosamente.']);
+    }
+
+    /**
+     * Reactiva un producto que quedo desactivado (ver destroy()): vuelve a
+     * aparecer para vender y reponer stock.
+     */
+    public function activar(string $id)
+    {
+        $producto = Producto::find($id);
+
+        if (!$producto) {
+            return response()->json(['error' => 'Producto no encontrado.'], 404);
+        }
+
+        $producto->PRO_Status = 1;
+        $producto->save();
+
+        return response()->json(['success' => 'Producto activado exitosamente.']);
     }
 }
