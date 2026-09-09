@@ -608,6 +608,34 @@
                     });
                 }
             });
+
+            $('body').on('click', '.activarProducto', function() {
+                var Producto_id_activar = $(this).data("id");
+
+                $.ajax({
+                    type: "PUT",
+                    url: '{{ tenant_url('tenant.inventario.producto.activar', ['producto' => ':producto']) }}'
+                        .replace(':producto', Producto_id_activar),
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(data) {
+                        table.draw();
+                        Toast.fire({
+                            type: 'success',
+                            title: String(data.success),
+                            icon: 'success'
+                        });
+                    },
+                    error: function(data) {
+                        Toast.fire({
+                            type: 'error',
+                            title: 'No se pudo activar el producto.',
+                            icon: 'error'
+                        });
+                    }
+                });
+            });
         })
     </script>
 @endsection
