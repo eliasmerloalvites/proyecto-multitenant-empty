@@ -6,6 +6,13 @@
       "runtimeExecutable": "cmd",
       "runtimeArgs": ["/c", "cd /d C:\\xampp\\htdocs\\Proyectos-Laravel-12\\ManualesTecnicos && php artisan serve --port=8010"],
       "port": 8010
+    },
+    {
+      "name": "proyecto-multitenant",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd /d C:\\xampp\\htdocs\\Proyectos-Laravel-12\\proyecto-multitenant-empty && php artisan serve --port=8000"],
+      "port": 8000,
+      "url": "http://motoclub9.localhost:8000"
     }
   ]
 }

@@ -298,6 +298,12 @@
                                     <button class="btn btn-primary btn-sm btn-block" onclick="abrirCuenta({{ $reserva->RES_Id }})">
                                         <i class="fa fa-play"></i> Abrir cuenta
                                     </button>
+                                    @can('tenant.ventas.cotizacion.create')
+                                        <a class="btn btn-outline-secondary btn-sm btn-block mt-1"
+                                            href="{{ tenant_url('tenant.ventas.cotizacion.create', ['res_id' => $reserva->RES_Id]) }}">
+                                            <i class="fa fa-file-invoice"></i> Cotizar
+                                        </a>
+                                    @endcan
                                 @elseif ($estado === 'en-atencion')
                                     <button type="button" class="btn-agregar-item mb-2" onclick="abrirModalItem({{ $cuenta->BCT_Id }})">
                                         <i class="fa fa-plus"></i> Agregar producto / item rápido

@@ -743,7 +743,8 @@ class ProductoController extends Controller
             || DB::table('detalle_venta')->where('PRO_Id', $id)->exists()
             || DB::table('detalle_compra')->where('PRO_Id', $id)->exists()
             || (Schema::hasTable('traslado_detalle') && DB::table('traslado_detalle')->where('PRO_Id', $id)->exists())
-            || (Schema::hasTable('bahia_cuenta_item') && DB::table('bahia_cuenta_item')->where('PRO_Id', $id)->exists());
+            || (Schema::hasTable('bahia_cuenta_item') && DB::table('bahia_cuenta_item')->where('PRO_Id', $id)->exists())
+            || (Schema::hasTable('cotizacion_item') && DB::table('cotizacion_item')->where('PRO_Id', $id)->exists());
 
         if ($tieneHistorial) {
             $producto->PRO_Status = 0;

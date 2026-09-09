@@ -518,6 +518,56 @@ class VentaController extends Controller
             }
         }
 
+        // Si se viene de aprobar una Cotizacion (?cotizacion= en la URL), se
+        // precarga el carrito y el cliente de esa cotizacion. Los items
+        // "libres" (sin PRO_Id, ej. "Mano de obra") todavia no existen como
+        // Producto real -- se materializan aqui la primera vez (Producto +
+        // Lote via ItemRapidoService, igual que "producto rapido" del POS) y
+        // el PRO_Id resultante queda guardado en el propio item de la
+        // cotizacion, para no volver a crear un producto duplicado si esta
+        // pantalla se recarga sin llegar a completar la venta.
+        $cotizacionId = null;
+
+        if ($request->filled('cotizacion') && $prefillCarrito === [] && !$cuentaBahiaId && !$reemitirInfo) {
+            $cotizacion = \App\Models\Tenant\Cotizacion::with(['items.producto', 'cliente'])
+                ->find($request->input('cotizacion'));
+
+            if ($cotizacion && $cotizacion->estaPendiente() && !$cotizacion->estaVencida()) {
+                $cotizacionId = $cotizacion->COT_Id;
+                $idAlmacen = tenant_caja_activa_almacen_id() ?? 1;
+                $itemRapidoService = app(\App\Services\Ventas\ItemRapidoService::class);
+
+                $prefillCarrito = $cotizacion->items->map(function ($item) use ($itemRapidoService, $idAlmacen) {
+                    if (!$item->PRO_Id) {
+                        $creado = $itemRapidoService->crear($item->COI_Nombre, (float) $item->COI_Cantidad, (float) $item->COI_PrecioUnitario, $idAlmacen);
+                        $item->update(['PRO_Id' => $creado['PRO_Id']]);
+
+                        return [
+                            'PRO_Id' => $creado['PRO_Id'],
+                            'PRO_Nombre' => $item->COI_Nombre,
+                            'PRO_PrecioBaseVenta' => $item->COI_PrecioUnitario,
+                            'quantity' => $item->COI_Cantidad,
+                        ];
+                    }
+
+                    return [
+                        'PRO_Id' => $item->PRO_Id,
+                        'PRO_Nombre' => $item->producto->PRO_Nombre ?? ('Producto #' . $item->PRO_Id),
+                        'PRO_PrecioBaseVenta' => $item->COI_PrecioUnitario,
+                        'quantity' => $item->COI_Cantidad,
+                    ];
+                })->values();
+
+                if ($cotizacion->cliente) {
+                    $prefillCliente = [
+                        'nombre' => $cotizacion->cliente->CLI_Nombre,
+                        'documento' => $cotizacion->cliente->CLI_NumDocumento,
+                        'cliente_id' => $cotizacion->cliente->CLI_Id,
+                    ];
+                }
+            }
+        }
+
         return view(
             'tenant_' . tenant('tipo_negocio') . '.ventas.venta.create',
             compact(
@@ -531,7 +581,8 @@ class VentaController extends Controller
                 'cuentaBahiaId',
                 'prefillCarrito',
                 'prefillCliente',
-                'reemitirInfo'
+                'reemitirInfo',
+                'cotizacionId'
             )
         );
     }
@@ -1172,6 +1223,21 @@ class VentaController extends Controller
                     ]);
 
                     \App\Models\TenantTallerMotos\Reservacion::liberarSlot($cuentaBahia->RES_Id);
+                }
+            }
+
+            // Si esta venta viene de aprobar una Cotizacion, se marca como
+            // APROBADA y queda enlazada a la venta recien creada.
+            if ($request->filled('cotizacion_id')) {
+                $cotizacion = \App\Models\Tenant\Cotizacion::where('COT_Id', $request->input('cotizacion_id'))
+                    ->where('COT_Estado', \App\Models\Tenant\Cotizacion::ESTADO_PENDIENTE)
+                    ->first();
+
+                if ($cotizacion) {
+                    $cotizacion->update([
+                        'COT_Estado' => \App\Models\Tenant\Cotizacion::ESTADO_APROBADA,
+                        'VEN_Id' => $venta->VEN_Id,
+                    ]);
                 }
             }
 

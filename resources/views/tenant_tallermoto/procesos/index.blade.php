@@ -275,6 +275,12 @@
                                         <button class="btn btn-primary btn-sm btn-block" onclick="abrirModalCheckIn({{ $reserva->RES_Id }})">
                                             <i class="fa fa-right-to-bracket"></i> Recibir moto (check-in)
                                         </button>
+                                        @can('tenant.ventas.cotizacion.create')
+                                            <a class="btn btn-outline-secondary btn-sm btn-block mt-1"
+                                                href="{{ tenant_url('tenant.ventas.cotizacion.create', ['res_id' => $reserva->RES_Id]) }}">
+                                                <i class="fa fa-file-invoice"></i> Cotizar
+                                            </a>
+                                        @endcan
                                     @else
                                         <div class="fila-btns">
                                             <button class="btn btn-outline-secondary btn-sm" onclick="abrirModalCheckIn({{ $reserva->RES_Id }})">
@@ -288,6 +294,12 @@
                                         <button class="btn btn-success btn-sm btn-block" onclick="cargarProductos({{ $reserva->RES_Id }})">
                                             <i class="fa fa-cart-plus"></i> Cargar productos (bahía)
                                         </button>
+                                        @can('tenant.ventas.cotizacion.create')
+                                            <a class="btn btn-outline-secondary btn-sm btn-block mt-1"
+                                                href="{{ tenant_url('tenant.ventas.cotizacion.create', ['res_id' => $reserva->RES_Id]) }}">
+                                                <i class="fa fa-file-invoice"></i> Cotizar
+                                            </a>
+                                        @endcan
                                     @endif
                                 @else
                                     <div class="fila-btns">

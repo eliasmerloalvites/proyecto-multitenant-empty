@@ -30,6 +30,7 @@ use App\Http\Controllers\Tenant\TestFacturacionController;
 use App\Http\Controllers\Tenant\TipoGastoController;
 use App\Http\Controllers\Tenant\UserController;
 use App\Http\Controllers\Tenant\VentaController;
+use App\Http\Controllers\Tenant\CotizacionController;
 use App\Http\Controllers\TenantTallerMotos\BahiaController;
 use App\Http\Controllers\TenantTallerMotos\AsistenteConfiguracionController;
 use App\Http\Controllers\TenantTallerMotos\MotoController;
@@ -99,6 +100,9 @@ Route::middleware([
     // Link corto/opaco para compartir el PDF de una venta (ej. por WhatsApp):
     // no expone el tenant ni la ruta interna de storage, y fuerza la descarga.
     Route::get('/t/{codigo}', [VentaController::class, 'compartirTicket'])->name('tenant.ventas.venta.compartir');
+
+    // Link corto/opaco para compartir el PDF de una cotizacion (WhatsApp).
+    Route::get('/q/{codigo}', [CotizacionController::class, 'compartir'])->name('tenant.ventas.cotizacion.compartir');
 
     Route::get('/consulta', [ConsultaDocumentoController::class,'index'])->name('consulta');
     Route::get('/consultardni/{id}', [ConsultaDocumentoController::class,'buscarDni'] )->name('consultar.reniec');
@@ -360,6 +364,22 @@ Route::middleware([
             ])->parameters([
                 'cliente' => 'cliente'
             ]);
+
+            Route::resource('/tenant/ventas/cotizacion', CotizacionController::class)->names([
+                'index' => 'tenant.ventas.cotizacion.index',
+                'create' => 'tenant.ventas.cotizacion.create',
+                'store' => 'tenant.ventas.cotizacion.store',
+                'edit' => 'tenant.ventas.cotizacion.edit',
+                'update' => 'tenant.ventas.cotizacion.update',
+                'destroy' => 'tenant.ventas.cotizacion.destroy',
+                'show' => 'tenant.ventas.cotizacion.show'
+            ])->parameters([
+                'cotizacion' => 'cotizacion'
+            ]);
+            Route::get('/tenant/ventas/cotizacion/{cotizacion}/aprobar', [CotizacionController::class, 'aprobar'])->name('tenant.ventas.cotizacion.aprobar');
+            Route::post('/tenant/ventas/cotizacion/{cotizacion}/rechazar', [CotizacionController::class, 'rechazar'])->name('tenant.ventas.cotizacion.rechazar');
+            Route::get('/tenant/ventas/cotizacion/{cotizacion}/pdf', [CotizacionController::class, 'pdf'])->name('tenant.ventas.cotizacion.pdf');
+            Route::get('/tenant/ventas/cotizacion/{cotizacion}/whatsapp', [CotizacionController::class, 'whatsapp'])->name('tenant.ventas.cotizacion.whatsapp');
 
             Route::get('/tenant/ventas/venta/{id}/ticket', [VentaController::class,'ticket'] )->name('tenant.ventas.venta.ticket');
             Route::get('/tenant/ventas/venta/{id}/pdf', [VentaController::class,'pdf'] )->name('tenant.ventas.venta.pdf');
