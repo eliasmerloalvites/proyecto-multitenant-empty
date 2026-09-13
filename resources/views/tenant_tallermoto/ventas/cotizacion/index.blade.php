@@ -9,13 +9,12 @@
             flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
         }
         .cot-header h4 { margin: 0; font-weight: 700; }
-        /* Esta tarjeta es siempre clara (fondo blanco), independiente del
-           tema oscuro/claro que tenga el panel: por eso fija su propio color
-           de texto en vez de heredar el del body (gris muy claro en modo
-           oscuro, ilegible sobre fondo blanco). */
-        .cot-card { background: #fff; color: #1F2937; border-radius: 16px; border: 1px solid #EEF2F7; box-shadow: 0 4px 18px rgba(0,0,0,.04); padding: 18px; }
-        .cot-card #tabla_cotizaciones { color: #1F2937; }
-        .cot-card .dataTables_empty { color: #9CA3AF; }
+        /* Mismas variables de tema (--bg-card, --text-main) que usan Ventas
+           y los demas modulos del panel: la tarjeta se oscurece sola en
+           modo oscuro y queda blanca en modo claro, sin fondo fijo. */
+        .cot-card { background: var(--bg-card, #fff); color: var(--text-main, #1F2937); border-radius: 16px; border: 1px solid rgba(127,127,127,.15); box-shadow: 0 4px 18px rgba(0,0,0,.08); padding: 18px; }
+        .cot-card #tabla_cotizaciones { color: var(--text-main, #1F2937); }
+        .cot-card .dataTables_empty { color: var(--text-muted, #9CA3AF); }
         .filtro-estado { min-width: 190px; }
     </style>
 
