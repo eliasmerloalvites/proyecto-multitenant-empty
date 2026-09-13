@@ -581,7 +581,7 @@
             font-size: 13px;
             font-weight: 700;
 
-            color: #ffffff;
+            color: #111827;
 
             margin-bottom: 8px;
 
@@ -642,7 +642,7 @@
             gap: 8px;
             margin-top: 10px;
             font-size: 12px;
-            color: #ffffff;
+            color: #374151;
             cursor: pointer;
         }
 
@@ -682,7 +682,7 @@
 
         .payment-assign-summary {
             font-size: 12px;
-            color: #ffffff;
+            color: #374151;
             margin-top: 6px;
             display: flex;
             justify-content: space-between;
@@ -698,8 +698,8 @@
 
         .btn-add-payment {
             background: transparent;
-            border: 1px dashed rgba(255, 255, 255, .5);
-            color: #ffffff;
+            border: 1px dashed #C4B5FD;
+            color: #7C3AED;
             border-radius: 10px;
             font-size: 12px;
             padding: 6px 12px;
