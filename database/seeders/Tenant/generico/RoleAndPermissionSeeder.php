@@ -132,12 +132,6 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.ventas.venta.show',    'Ventas', 'Ver Venta',        'Ver Venta'],
             ['tenant.ventas.venta.destroy', 'Ventas', 'Eliminar Ventas',  'Eliminar Ventas'],
 
-            ['tenant.ventas.cotizacion.index',   'Cotizaciones', 'Ver Lista Cotizaciones', 'Listar Cotizaciones'],
-            ['tenant.ventas.cotizacion.create',  'Cotizaciones', 'Crear Cotizaciones',     'Crear Cotizaciones'],
-            ['tenant.ventas.cotizacion.edit',    'Cotizaciones', 'Editar Cotizaciones',    'Editar Cotizaciones'],
-            ['tenant.ventas.cotizacion.show',    'Cotizaciones', 'Ver Cotizacion',         'Ver Cotizacion'],
-            ['tenant.ventas.cotizacion.destroy', 'Cotizaciones', 'Eliminar Cotizaciones',  'Eliminar Cotizaciones'],
-
         ];
 
         foreach ($permissions as [$name, $group, $nombre, $description]) {
@@ -268,12 +262,6 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.ventas.venta.show',
             'tenant.ventas.venta.destroy',
 
-            'tenant.ventas.cotizacion.index',
-            'tenant.ventas.cotizacion.create',
-            'tenant.ventas.cotizacion.edit',
-            'tenant.ventas.cotizacion.show',
-            'tenant.ventas.cotizacion.destroy',
-
         ]);
 
         $gerenteRole->givePermissionTo([
@@ -354,12 +342,6 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.ventas.venta.edit',
             'tenant.ventas.venta.show',
             'tenant.ventas.venta.destroy',
-
-            'tenant.ventas.cotizacion.index',
-            'tenant.ventas.cotizacion.create',
-            'tenant.ventas.cotizacion.edit',
-            'tenant.ventas.cotizacion.show',
-            'tenant.ventas.cotizacion.destroy',
 
         ]);
 

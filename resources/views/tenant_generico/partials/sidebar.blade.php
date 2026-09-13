@@ -160,14 +160,12 @@
                 {{ request()->routeIs('tenant.ventas.metodopago*') ||
                 request()->routeIs('tenant.ventas.cliente*') ||
                 request()->routeIs('tenant.ventas.caja*') ||
-                request()->routeIs('tenant.ventas.cotizacion*') ||
                 request()->routeIs('tenant.ventas.venta*')  ? 'menu-open' : '' }}" >
                 <a href="#"
                     class="nav-link
                     {{ request()->routeIs('tenant.ventas.metodopago*') ||
                     request()->routeIs('tenant.ventas.cliente*') ||
                     request()->routeIs('tenant.ventas.caja*') ||
-                    request()->routeIs('tenant.ventas.cotizacion*') ||
                     request()->routeIs('tenant.ventas.venta*')  ? 'active' : '' }}" >
                     <i class="nav-icon fas fa-cash-register"></i>
                     <p>
@@ -182,15 +180,6 @@
                             class="nav-link {{ request()->routeIs('tenant.ventas.venta*') ? 'active' : '' }}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Ventas</p>
-                        </a>
-                    </li>
-                    @endcan
-                    @can('tenant.ventas.cotizacion.index')
-                    <li class="nav-item">
-                        <a href="{{ tenant_url('tenant.ventas.cotizacion.index') }}"
-                            class="nav-link {{ request()->routeIs('tenant.ventas.cotizacion*') ? 'active' : '' }}">
-                            <i class="far fa-circle nav-icon"></i>
-                            <p>Cotizaciones</p>
                         </a>
                     </li>
                     @endcan

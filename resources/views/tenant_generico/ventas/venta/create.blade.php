@@ -1527,21 +1527,6 @@
     </style>
 
     <div class="container-fluid pos-wrapper">
-        @if ($cotizacionId ?? null)
-            <div class="alert alert-success d-flex justify-content-between align-items-center mb-2 py-2">
-                <div>
-                    <i class="fa fa-file-invoice mr-1"></i>
-                    Aprobando cotización COT-{{ str_pad($cotizacionId, 5, '0', STR_PAD_LEFT) }}
-                    @if ($prefillCliente ?? null)
-                        — <strong>{{ $prefillCliente['nombre'] }}</strong>
-                    @endif
-                    · el carrito quedó precargado, puedes ajustarlo antes de cobrar.
-                </div>
-                <a href="{{ tenant_url('tenant.ventas.cotizacion.index') }}" class="btn btn-sm btn-outline-dark">
-                    <i class="fa fa-arrow-left"></i> Volver a cotizaciones
-                </a>
-            </div>
-        @endif
         <div class="row g-2">
             <!-- LEFT -->
             <div class="col-lg-4">
@@ -1989,12 +1974,6 @@
         // devuelve SUNAT no tiene validez tributaria.
         const FACTURACION_EN_PRUEBAS = @json($facturacionEnPruebas ?? true);
 
-        // Si se viene de aprobar una Cotizacion (?cotizacion= en la URL), se
-        // precarga el carrito y el cliente de esa cotizacion.
-        const PREFILL_CARRITO = @json($prefillCarrito ?? []);
-        const PREFILL_CLIENTE = @json($prefillCliente ?? null);
-        window.COTIZACION_ID = @json($cotizacionId ?? null);
-
         const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -2015,15 +1994,6 @@
         };
 
         $(document).ready(function() {
-
-            if (PREFILL_CARRITO.length) {
-                cart = PREFILL_CARRITO.map(p => ({ ...p, quantity: parseFloat(p.quantity) }));
-                renderCart();
-            }
-
-            if (PREFILL_CLIENTE && PREFILL_CLIENTE.cliente_id) {
-                selectClient(PREFILL_CLIENTE.nombre, PREFILL_CLIENTE.documento || PREFILL_CLIENTE.celular || '', PREFILL_CLIENTE.cliente_id);
-            }
 
             $('body').addClass('sidebar-collapse');
             $('.category-btn').on('click', function() {
@@ -2440,7 +2410,6 @@
                 vuelto: $('#inputVuelto').val(),
                 observacion: $('#observacion').val(),
                 productos: cart,
-                cotizacion_id: window.COTIZACION_ID || null,
                 _token: $('meta[name="csrf-token"]').attr('content')
             };
 
