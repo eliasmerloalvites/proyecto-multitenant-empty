@@ -527,6 +527,37 @@ class ProductoController extends Controller
             )
             ->where('td.PRO_Id', $id);
 
+        // Ajustes de inventario (merma, rotura, conteo fisico, etc): a
+        // diferencia del traslado, aqui si cambia el stock total del
+        // producto, para bien (INCREMENTO) o para mal (DECREMENTO).
+        $EntradasAjusteBase = DB::table('ajuste_detalle as ad')
+            ->join('ajuste as a', 'ad.AJU_Id', '=', 'a.AJU_Id')
+            ->select(
+                'a.AJU_Id as id',
+                DB::raw("CONCAT('Ajuste: ', a.AJU_Motivo) as documento"),
+                'a.created_at as fecha',
+                'ad.LOT_Id as lote_id',
+                'ad.AJD_Cantidad as entrada',
+                DB::raw('0 as salida'),
+                DB::raw('"Entrada" as tipo')
+            )
+            ->where('ad.PRO_Id', $id)
+            ->where('ad.AJD_Tipo', 'INCREMENTO');
+
+        $SalidasAjusteBase = DB::table('ajuste_detalle as ad')
+            ->join('ajuste as a', 'ad.AJU_Id', '=', 'a.AJU_Id')
+            ->select(
+                'a.AJU_Id as id',
+                DB::raw("CONCAT('Ajuste: ', a.AJU_Motivo) as documento"),
+                'a.created_at as fecha',
+                'ad.LOT_Id as lote_id',
+                DB::raw('0 as entrada'),
+                'ad.AJD_Cantidad as salida',
+                DB::raw('"Salida" as tipo')
+            )
+            ->where('ad.PRO_Id', $id)
+            ->where('ad.AJD_Tipo', 'DECREMENTO');
+
         /*
         |--------------------------------------------------------------------------
         | CLONAR QUERIES
@@ -535,8 +566,10 @@ class ProductoController extends Controller
 
         $EntradasCompra = clone $EntradasCompraBase;
         $EntradasTraslado = clone $EntradasTrasladoBase;
+        $EntradasAjuste = clone $EntradasAjusteBase;
         $SalidasVenta = clone $SalidasVentaBase;
         $SalidasTraslado = clone $SalidasTrasladoBase;
+        $SalidasAjuste = clone $SalidasAjusteBase;
 
         /*
         |--------------------------------------------------------------------------
@@ -554,7 +587,10 @@ class ProductoController extends Controller
                 ->sum('lt.LOT_CantidadIngreso')
                 + (clone $EntradasTrasladoBase)
                 ->where('t.created_at','<',$fecha_inicio . ' 00:00:00')
-                ->sum('td.TRD_Cantidad');
+                ->sum('td.TRD_Cantidad')
+                + (clone $EntradasAjusteBase)
+                ->where('a.created_at','<',$fecha_inicio . ' 00:00:00')
+                ->sum('ad.AJD_Cantidad');
 
             // SALIDAS PREVIAS
             $salidasPrevias = (clone $SalidasVentaBase)
@@ -562,7 +598,10 @@ class ProductoController extends Controller
                 ->sum('dv.DEV_Cantidad')
                 + (clone $SalidasTrasladoBase)
                 ->where('t.created_at','<',$fecha_inicio . ' 00:00:00')
-                ->sum('td.TRD_Cantidad');
+                ->sum('td.TRD_Cantidad')
+                + (clone $SalidasAjusteBase)
+                ->where('a.created_at','<',$fecha_inicio . ' 00:00:00')
+                ->sum('ad.AJD_Cantidad');
 
             // STOCK INICIAL
             $stock = $entradasPrevias - $salidasPrevias;
@@ -570,8 +609,10 @@ class ProductoController extends Controller
             // FILTRO FECHA INICIO
             $EntradasCompra->where('cp.created_at','>=',$fecha_inicio . ' 00:00:00');
             $EntradasTraslado->where('t.created_at','>=',$fecha_inicio . ' 00:00:00');
+            $EntradasAjuste->where('a.created_at','>=',$fecha_inicio . ' 00:00:00');
             $SalidasVenta->where('v.created_at','>=',$fecha_inicio . ' 00:00:00');
             $SalidasTraslado->where('t.created_at','>=',$fecha_inicio . ' 00:00:00');
+            $SalidasAjuste->where('a.created_at','>=',$fecha_inicio . ' 00:00:00');
         }
 
         /*
@@ -583,8 +624,10 @@ class ProductoController extends Controller
         if ($fecha_fin) {
             $EntradasCompra->where('cp.created_at','<=',$fecha_fin . ' 23:59:59');
             $EntradasTraslado->where('t.created_at','<=',$fecha_fin . ' 23:59:59');
+            $EntradasAjuste->where('a.created_at','<=',$fecha_fin . ' 23:59:59');
             $SalidasVenta->where('v.created_at','<=',$fecha_fin . ' 23:59:59');
             $SalidasTraslado->where('t.created_at','<=',$fecha_fin . ' 23:59:59');
+            $SalidasAjuste->where('a.created_at','<=',$fecha_fin . ' 23:59:59');
         }
 
         /*
@@ -594,14 +637,16 @@ class ProductoController extends Controller
         */
 
         if ($tipo == 'Entrada') {
-            $kardex = $EntradasCompra->unionAll($EntradasTraslado)->get();
+            $kardex = $EntradasCompra->unionAll($EntradasTraslado)->unionAll($EntradasAjuste)->get();
         } elseif ($tipo == 'Salida') {
-            $kardex = $SalidasVenta->unionAll($SalidasTraslado)->get();
+            $kardex = $SalidasVenta->unionAll($SalidasTraslado)->unionAll($SalidasAjuste)->get();
         } else {
             $kardex = $EntradasCompra
                 ->unionAll($EntradasTraslado)
+                ->unionAll($EntradasAjuste)
                 ->unionAll($SalidasVenta)
                 ->unionAll($SalidasTraslado)
+                ->unionAll($SalidasAjuste)
                 ->get();
         }
 
