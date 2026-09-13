@@ -99,6 +99,18 @@ class VentaController extends Controller
      * rango de fechas, estado SUNAT, tipo de comprobante, anulado/baja,
      * almacen, metodo de pago y cliente (nombre o numero de documento).
      */
+    /**
+     * Cotizaciones solo existen en el vertical tallermoto (ver revert del
+     * 2026-09-13): en generico la tabla `cotizacion` no existe. venta.COT_Id
+     * si existe en ambos verticales (se agrego sin FK en generico) para que
+     * este controlador compartido pueda leerla/mostrarla igual sin ramificar
+     * por tipo_negocio en cada punto; en generico siempre viene en null.
+     */
+    private function tenantTieneCotizaciones(): bool
+    {
+        return tenant('tipo_negocio') === 'tallermoto';
+    }
+
     private function consultaVentas(Request $request)
     {
         $query = DB::table('detalle_venta as dv')
@@ -108,8 +120,8 @@ class VentaController extends Controller
             ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
             ->join('users as u', 'u.id', '=', 'v.USU_Id')
             ->join('almacen as a', 'a.ALM_Id', '=', 'v.ALM_Id')
-            ->select('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado as estadoDocVenta', 'dov.DOV_DescripcionSunat', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Id', 'mp.MEP_Pago', 'u.name as empleado', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id as EMP_Codigo', 'v.VEN_TipoPago as tipopago', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'))
-            ->groupBy('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado', 'dov.DOV_DescripcionSunat', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'mp.MEP_Id', 'mp.MEP_Pago', 'u.name', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id', 'v.VEN_TipoPago', 'v.created_at')
+            ->select('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado as estadoDocVenta', 'dov.DOV_DescripcionSunat', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'v.COT_Id as cotizacion_id', 'mp.MEP_Id', 'mp.MEP_Pago', 'u.name as empleado', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id as EMP_Codigo', 'v.VEN_TipoPago as tipopago', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'))
+            ->groupBy('dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'dov.DOV_Numero', 'dov.DOV_Serie', 'dov.DOV_Estado', 'dov.DOV_DescripcionSunat', 'dov.DOV_Anulado', 'dov.DOV_EstadoBaja', 'v.VEN_Id', 'v.COT_Id', 'mp.MEP_Id', 'mp.MEP_Pago', 'u.name', 'c.CLI_Nombre', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'a.ALM_Id', 'a.ALM_NombreAlmacen', 'u.id', 'v.VEN_TipoPago', 'v.created_at')
             ->when($request->filled('fecha_inicio'), fn ($q) => $q->where(DB::raw('DATE(v.created_at)'), '>=', $request->input('fecha_inicio')))
             ->when($request->filled('fecha_fin'), fn ($q) => $q->where(DB::raw('DATE(v.created_at)'), '<=', $request->input('fecha_fin')))
             ->when($request->filled('estado'), fn ($q) => $q->where('dov.DOV_Estado', $request->input('estado')))
@@ -180,17 +192,36 @@ class VentaController extends Controller
                     return $btn;
                 })
                 ->addColumn('sunat', fn ($row) => $this->columnaSunat($row))
+                ->addColumn('cotizacion', fn ($row) => $this->columnaCotizacion($row))
 
-                ->rawColumns(['action1', 'action2', 'action3', 'ticket', 'pdf', 'whatsapp', 'sunat'])
+                ->rawColumns(['action1', 'action2', 'action3', 'ticket', 'pdf', 'whatsapp', 'sunat', 'cotizacion'])
                 ->make(true);
         }
 
         return view('tenant_' . tenant('tipo_negocio') . '.ventas.venta.index', [
             // La columna de SUNAT solo tiene sentido si ya hay certificado.
             'mostrarSunat' => tenant_tiene_certificado(),
+            'mostrarCotizacion' => $this->tenantTieneCotizaciones(),
             'almacenes' => DB::table('almacen')->orderBy('ALM_NombreAlmacen')->get(),
             'metodosPago' => DB::table('metodo_pago')->orderBy('MEP_Pago')->get(),
         ]);
+    }
+
+    /**
+     * Badge que indica que la venta viene de una Cotizacion aprobada, con
+     * link directo a verla. Vacio si la venta no tiene cotizacion de origen
+     * (o el tenant es generico, donde esta columna nunca viene seleccionada).
+     */
+    private function columnaCotizacion($row): string
+    {
+        if (empty($row->cotizacion_id)) {
+            return '';
+        }
+
+        $codigo = 'COT-' . str_pad($row->cotizacion_id, 5, '0', STR_PAD_LEFT);
+        $url = route('tenant.ventas.cotizacion.show', $row->cotizacion_id);
+
+        return '<a href="' . $url . '" class="badge badge-info" title="Ver la cotizacion de origen"><i class="fa fa-file-invoice"></i> ' . $codigo . '</a>';
     }
 
     /**
@@ -358,8 +389,9 @@ class VentaController extends Controller
                     return $btn;
                 })
                 ->addColumn('sunat', fn ($row) => $this->columnaSunat($row))
+                ->addColumn('cotizacion', fn ($row) => $this->columnaCotizacion($row))
 
-                ->rawColumns(['action1', 'action2', 'action3', 'ticket', 'pdf', 'whatsapp', 'sunat'])
+                ->rawColumns(['action1', 'action2', 'action3', 'ticket', 'pdf', 'whatsapp', 'sunat', 'cotizacion'])
                 ->make(true);
         }
     }
@@ -1238,6 +1270,8 @@ class VentaController extends Controller
                         'COT_Estado' => \App\Models\Tenant\Cotizacion::ESTADO_APROBADA,
                         'VEN_Id' => $venta->VEN_Id,
                     ]);
+
+                    $venta->update(['COT_Id' => $cotizacion->COT_Id]);
                 }
             }
 
@@ -1275,9 +1309,9 @@ class VentaController extends Controller
             ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
             ->join('users as u', 'u.id', '=', 'v.USU_Id')
             ->join('almacen as a', 'a.ALM_Id', '=', 'v.ALM_Id')
-            ->select('dov.DOV_Id as codigoDoc', 'dov.DOV_Nombre as nombre', 'dov.DOV_Pdf as pdf', 'v.VEN_Id as codigoVenta', 'dov.DOV_Tipo as tipoDoc', 'dov.DOV_Numero as numDoc', 'dov.DOV_Serie as serDoc', 'c.CLI_Nombre as cliente', 'c.CLI_Celular as celular', 'c.CLI_NumDocumento as clienteNumero', 'c.CLI_TipoDocumento as tipoDocumento', 'c.CLI_Direccion as clienteDireccion', 'a.ALM_Id', 'u.id as EMP_Codigo', 'u.name as empleado', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), 'dov.DOV_Estado as estadoDocVenta', DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'), 'v.VEN_TipoPago as tipopago', 'a.ALM_Id as ubica')
+            ->select('dov.DOV_Id as codigoDoc', 'dov.DOV_Nombre as nombre', 'dov.DOV_Pdf as pdf', 'v.VEN_Id as codigoVenta', 'v.COT_Id as cotizacionId', 'dov.DOV_Tipo as tipoDoc', 'dov.DOV_Numero as numDoc', 'dov.DOV_Serie as serDoc', 'c.CLI_Nombre as cliente', 'c.CLI_Celular as celular', 'c.CLI_Correo as clienteCorreo', 'c.CLI_NumDocumento as clienteNumero', 'c.CLI_TipoDocumento as tipoDocumento', 'c.CLI_Direccion as clienteDireccion', 'a.ALM_Id', 'u.id as EMP_Codigo', 'u.name as empleado', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), 'dov.DOV_Estado as estadoDocVenta', DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'), 'v.VEN_TipoPago as tipopago', 'a.ALM_Id as ubica')
             ->where('v.VEN_Id', '=', $idventa)
-            ->groupBy('dov.DOV_Id', 'dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'u.name', 'c.CLI_Nombre', 'v.VEN_Id', 'dov.DOV_Numero', 'dov.DOV_Estado', 'v.created_at', 'v.VEN_TipoPago', 'c.CLI_Celular', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'c.CLI_Direccion', 'a.ALM_Id', 'u.id', 'dov.DOV_Serie')
+            ->groupBy('dov.DOV_Id', 'dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'u.name', 'c.CLI_Nombre', 'v.VEN_Id', 'v.COT_Id', 'dov.DOV_Numero', 'dov.DOV_Estado', 'v.created_at', 'v.VEN_TipoPago', 'c.CLI_Celular', 'c.CLI_Correo', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'c.CLI_Direccion', 'a.ALM_Id', 'u.id', 'dov.DOV_Serie')
             ->distinct()
             ->first();
 
@@ -1338,8 +1372,9 @@ class VentaController extends Controller
         $LetrasTotal = self::numletras($x);
 
         $generaimagen = false;
+        $cotizacionCodigo = !empty($ventae->cotizacionId) ? 'COT-' . str_pad($ventae->cotizacionId, 5, '0', STR_PAD_LEFT) : null;
 
-        return view('tenant_' . tenant('tipo_negocio') . '/ventas/venta/ticket/ticketventa9cm', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal', 'generaimagen'));
+        return view('tenant_' . tenant('tipo_negocio') . '/ventas/venta/ticket/ticketventa9cm', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal', 'generaimagen', 'cotizacionCodigo'));
     }
 
     function pdf(string $idventa)
@@ -1351,9 +1386,9 @@ class VentaController extends Controller
             ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
             ->join('users as u', 'u.id', '=', 'v.USU_Id')
             ->join('almacen as a', 'a.ALM_Id', '=', 'v.ALM_Id')
-            ->select('dov.DOV_Id as codigoDoc', 'dov.DOV_Nombre as nombre', 'dov.DOV_Pdf as pdf', 'v.VEN_Id as codigoVenta', 'dov.DOV_Tipo as tipoDoc', 'dov.DOV_Numero as numDoc', 'dov.DOV_Serie as serDoc', 'c.CLI_Nombre as cliente', 'c.CLI_Celular as celular', 'c.CLI_NumDocumento as clienteNumero', 'c.CLI_TipoDocumento as tipoDocumento', 'c.CLI_Direccion as clienteDireccion', 'a.ALM_Id', 'u.id as EMP_Codigo', 'u.name as empleado', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), 'dov.DOV_Estado as estadoDocVenta', DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'), 'v.VEN_TipoPago as tipopago', 'a.ALM_Id as ubica')
+            ->select('dov.DOV_Id as codigoDoc', 'dov.DOV_Nombre as nombre', 'dov.DOV_Pdf as pdf', 'v.VEN_Id as codigoVenta', 'v.COT_Id as cotizacionId', 'dov.DOV_Tipo as tipoDoc', 'dov.DOV_Numero as numDoc', 'dov.DOV_Serie as serDoc', 'c.CLI_Nombre as cliente', 'c.CLI_Celular as celular', 'c.CLI_Correo as clienteCorreo', 'c.CLI_NumDocumento as clienteNumero', 'c.CLI_TipoDocumento as tipoDocumento', 'c.CLI_Direccion as clienteDireccion', 'a.ALM_Id', 'u.id as EMP_Codigo', 'u.name as empleado', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), 'dov.DOV_Estado as estadoDocVenta', DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'), 'v.VEN_TipoPago as tipopago', 'a.ALM_Id as ubica')
             ->where('v.VEN_Id', '=', $idventa)
-            ->groupBy('dov.DOV_Id', 'dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'u.name', 'c.CLI_Nombre', 'v.VEN_Id', 'dov.DOV_Numero', 'dov.DOV_Estado', 'v.created_at', 'v.VEN_TipoPago', 'c.CLI_Celular', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'c.CLI_Direccion', 'a.ALM_Id', 'u.id', 'dov.DOV_Serie')
+            ->groupBy('dov.DOV_Id', 'dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'u.name', 'c.CLI_Nombre', 'v.VEN_Id', 'v.COT_Id', 'dov.DOV_Numero', 'dov.DOV_Estado', 'v.created_at', 'v.VEN_TipoPago', 'c.CLI_Celular', 'c.CLI_Correo', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'c.CLI_Direccion', 'a.ALM_Id', 'u.id', 'dov.DOV_Serie')
             ->distinct()
             ->first();
 
@@ -1414,8 +1449,9 @@ class VentaController extends Controller
         $LetrasTotal = self::numletras($x);
 
         $generaimagen = false;
+        $cotizacionCodigo = !empty($ventae->cotizacionId) ? 'COT-' . str_pad($ventae->cotizacionId, 5, '0', STR_PAD_LEFT) : null;
 
-        return view('tenant_' . tenant('tipo_negocio') . '/ventas/venta/ticket/ticket_A4', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal', 'generaimagen'));
+        return view('tenant_' . tenant('tipo_negocio') . '/ventas/venta/ticket/ticket_A4', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal', 'generaimagen', 'cotizacionCodigo'));
     }
 
     public static function ticketImagen($idventa)
@@ -1427,9 +1463,9 @@ class VentaController extends Controller
             ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
             ->join('users as u', 'u.id', '=', 'v.USU_Id')
             ->join('almacen as a', 'a.ALM_Id', '=', 'v.ALM_Id')
-            ->select('dov.DOV_Id as codigoDoc', 'dov.DOV_Nombre as nombre', 'dov.DOV_Pdf as pdf', 'v.VEN_Id as codigoVenta', 'dov.DOV_Tipo as tipoDoc', 'dov.DOV_Numero as numDoc', 'dov.DOV_Serie as serDoc', 'c.CLI_Nombre as cliente', 'c.CLI_Celular as celular', 'c.CLI_NumDocumento as clienteNumero', 'c.CLI_TipoDocumento as tipoDocumento', 'c.CLI_Direccion as clienteDireccion', 'a.ALM_Id', 'u.id as EMP_Codigo', 'u.name as empleado', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), 'dov.DOV_Estado as estadoDocVenta', DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'), 'v.VEN_TipoPago as tipopago', 'a.ALM_Id as ubica')
+            ->select('dov.DOV_Id as codigoDoc', 'dov.DOV_Nombre as nombre', 'dov.DOV_Pdf as pdf', 'v.VEN_Id as codigoVenta', 'v.COT_Id as cotizacionId', 'dov.DOV_Tipo as tipoDoc', 'dov.DOV_Numero as numDoc', 'dov.DOV_Serie as serDoc', 'c.CLI_Nombre as cliente', 'c.CLI_Celular as celular', 'c.CLI_Correo as clienteCorreo', 'c.CLI_NumDocumento as clienteNumero', 'c.CLI_TipoDocumento as tipoDocumento', 'c.CLI_Direccion as clienteDireccion', 'a.ALM_Id', 'u.id as EMP_Codigo', 'u.name as empleado', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), 'dov.DOV_Estado as estadoDocVenta', DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'), 'v.VEN_TipoPago as tipopago', 'a.ALM_Id as ubica')
             ->where('v.VEN_Id', '=', $idventa)
-            ->groupBy('dov.DOV_Id', 'dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'u.name', 'c.CLI_Nombre', 'v.VEN_Id', 'dov.DOV_Numero', 'dov.DOV_Estado', 'v.created_at', 'v.VEN_TipoPago', 'c.CLI_Celular', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'c.CLI_Direccion', 'a.ALM_Id', 'u.id', 'dov.DOV_Serie')
+            ->groupBy('dov.DOV_Id', 'dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'u.name', 'c.CLI_Nombre', 'v.VEN_Id', 'v.COT_Id', 'dov.DOV_Numero', 'dov.DOV_Estado', 'v.created_at', 'v.VEN_TipoPago', 'c.CLI_Celular', 'c.CLI_Correo', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'c.CLI_Direccion', 'a.ALM_Id', 'u.id', 'dov.DOV_Serie')
             ->distinct()
             ->first();
 
@@ -1492,9 +1528,10 @@ class VentaController extends Controller
         $LetrasTotal = self::numletras($x);
 
         $generaimagen = true;
+        $cotizacionCodigo = !empty($ventae->cotizacionId) ? 'COT-' . str_pad($ventae->cotizacionId, 5, '0', STR_PAD_LEFT) : null;
 
         $html = view(
-            'tenant_generico/ventas/venta/ticket/ticket_A4',
+            'tenant_' . tenant('tipo_negocio') . '/ventas/venta/ticket/ticket_A4',
             compact(
                 'ventae',
                 'detallese',
@@ -1507,7 +1544,8 @@ class VentaController extends Controller
                 'calificarventa',
                 'datosdecuenta',
                 'LetrasTotal',
-                'generaimagen'
+                'generaimagen',
+                'cotizacionCodigo'
             )
         )->render();
 
@@ -1650,9 +1688,9 @@ class VentaController extends Controller
             ->join('users as u', 'u.id', '=', 'v.USU_Id')
             ->join('almacen as a', 'a.ALM_Id', '=', 'v.ALM_Id')
             ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
-            ->select('dov.DOV_Id as codigoDoc', 'dov.DOV_Nombre as nombre', 'dov.DOV_Pdf as pdf', 'v.VEN_Id as codigoVenta', 'mp.MEP_Pago', 'dov.DOV_Tipo as tipoDoc', 'dov.DOV_Numero as numDoc', 'dov.DOV_Serie as serDoc', 'c.CLI_Nombre as cliente', 'c.CLI_Celular as celular', 'c.CLI_NumDocumento as clienteNumero', 'c.CLI_TipoDocumento as tipoDocumento', 'c.CLI_Direccion as clienteDireccion', 'a.ALM_Id', 'u.id as EMP_Codigo', 'u.name as empleado', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), 'dov.DOV_Estado as estadoDocVenta', DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'), 'v.VEN_TipoPago as tipopago', 'a.ALM_Id as ubica')
+            ->select('dov.DOV_Id as codigoDoc', 'dov.DOV_Nombre as nombre', 'dov.DOV_Pdf as pdf', 'v.VEN_Id as codigoVenta', 'v.COT_Id as cotizacionId', 'mp.MEP_Pago', 'dov.DOV_Tipo as tipoDoc', 'dov.DOV_Numero as numDoc', 'dov.DOV_Serie as serDoc', 'c.CLI_Nombre as cliente', 'c.CLI_Celular as celular', 'c.CLI_NumDocumento as clienteNumero', 'c.CLI_TipoDocumento as tipoDocumento', 'c.CLI_Direccion as clienteDireccion', 'a.ALM_Id', 'u.id as EMP_Codigo', 'u.name as empleado', DB::raw('CAST(sum((dv.DEV_Cantidad*dv.DEV_PrecioUnitario) ) as decimal(10,2)) as total_venta'), DB::raw('CAST(sum(dv.DEV_Descuento) as decimal(10,2)) as total_descuento'), 'dov.DOV_Estado as estadoDocVenta', DB::raw('date(v.created_at) AS fechaVenta'), DB::raw('time(v.created_at) AS fechaVentaT'), 'v.VEN_TipoPago as tipopago', 'a.ALM_Id as ubica')
             ->where('v.VEN_Id', '=', $id)
-            ->groupBy('dov.DOV_Id', 'dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'mp.MEP_Pago', 'u.name', 'c.CLI_Nombre', 'v.VEN_Id', 'dov.DOV_Numero', 'dov.DOV_Estado', 'v.created_at', 'v.VEN_TipoPago', 'c.CLI_Celular', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'c.CLI_Direccion', 'a.ALM_Id', 'u.id', 'dov.DOV_Serie')
+            ->groupBy('dov.DOV_Id', 'dov.DOV_Nombre', 'dov.DOV_Pdf', 'dov.DOV_Tipo', 'mp.MEP_Pago', 'u.name', 'c.CLI_Nombre', 'v.VEN_Id', 'v.COT_Id', 'dov.DOV_Numero', 'dov.DOV_Estado', 'v.created_at', 'v.VEN_TipoPago', 'c.CLI_Celular', 'c.CLI_NumDocumento', 'c.CLI_TipoDocumento', 'c.CLI_Direccion', 'a.ALM_Id', 'u.id', 'dov.DOV_Serie')
             ->distinct()
             ->first();
 

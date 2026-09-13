@@ -1,8 +1,38 @@
+@php
+    // Mismo criterio que ticket_A4: color_principal es el unico color que el
+    // tenant configura pensando en documentos, asi que el ticket termico se
+    // acenta con ese color (el navegador igual lo reduce a escala de grises
+    // al imprimir en una termica real, pero en pantalla/PDF se ve con marca).
+    $mezclarColor = function (string $hex, string $hexMezcla, float $peso) {
+        $hex = ltrim(trim($hex), '#');
+        $hexMezcla = ltrim(trim($hexMezcla), '#');
+        if (strlen($hex) !== 6 || !ctype_xdigit($hex)) {
+            $hex = '111111';
+        }
+        if (strlen($hexMezcla) === 3) {
+            $hexMezcla = $hexMezcla[0].$hexMezcla[0].$hexMezcla[1].$hexMezcla[1].$hexMezcla[2].$hexMezcla[2];
+        }
+        [$r1, $g1, $b1] = array_map('hexdec', str_split($hex, 2));
+        [$r2, $g2, $b2] = array_map('hexdec', str_split($hexMezcla, 2));
+        $r = (int) round($r1 + ($r2 - $r1) * $peso);
+        $g = (int) round($g1 + ($g2 - $g1) * $peso);
+        $b = (int) round($b1 + ($b2 - $b1) * $peso);
+        return sprintf('#%02x%02x%02x', $r, $g, $b);
+    };
+
+    $colorPrincipal = $datosalmacen->color_principal ?? '#111111';
+    $colorSuave = $mezclarColor($colorPrincipal, 'ffffff', 0.92);
+@endphp
 <style>
     *{
     margin:0;
     padding:0;
     box-sizing:border-box;
+}
+
+:root{
+    --primary:{{ $colorPrincipal }};
+    --primary-soft:{{ $colorSuave }};
 }
 
 body{
@@ -23,6 +53,8 @@ body{
 
 .logo{
     width:90px;
+    max-height:70px;
+    object-fit:contain;
     margin:auto;
     margin-bottom:8px;
 }
@@ -30,6 +62,7 @@ body{
 .empresa{
     font-size:24px;
     font-weight:800;
+    color:var(--primary);
 }
 
 .ruc{
@@ -45,12 +78,24 @@ body{
 
 .documento{
     margin-top:14px;
-    border:2px dashed #000;
+    border:2px dashed var(--primary);
     padding:10px;
     text-align:center;
     font-weight:800;
     font-size:18px;
     border-radius:10px;
+    color:var(--primary);
+}
+
+.cotizacion-pill{
+    margin-top:8px;
+    text-align:center;
+    font-size:11px;
+    font-weight:700;
+    background:var(--primary-soft);
+    border-radius:20px;
+    padding:4px 8px;
+    color:#000;
 }
 
 .fecha{
@@ -61,7 +106,7 @@ body{
 }
 
 .linea{
-    border-top:2px dashed #000;
+    border-top:2px dashed var(--primary);
     margin:12px 0;
 }
 
@@ -82,12 +127,13 @@ body{
 }
 
 .productos thead{
-    border-bottom:2px solid #000;
+    border-bottom:2px solid var(--primary);
 }
 
 .productos th{
     padding:8px 2px;
     font-size:12px;
+    color:var(--primary);
 }
 
 .productos td{
@@ -117,7 +163,7 @@ body{
 
 .total-box{
     margin-top:12px;
-    background:#000;
+    background:var(--primary);
     color:#fff;
     padding:12px;
     border-radius:12px;
@@ -147,6 +193,7 @@ body{
     margin-top:10px;
     font-size:20px;
     font-weight:800;
+    color:var(--primary);
 }
 
 @media print{
@@ -205,7 +252,7 @@ body{
             if ($ventae->tipoDoc == 'BOL') {
                 echo 'BOLETA ELECTRÓNICA';
             }
-            
+
             if ($ventae->tipoDoc == 'FAC') {
                 echo 'FACTURA ELECTRÓNICA';
             }
@@ -216,6 +263,14 @@ body{
             {{ $UbiDoc }} - {{ $NumDoc }}
 
         </div>
+
+        @if(!empty($cotizacionCodigo ?? null))
+
+            <div class="cotizacion-pill">
+                Generada desde cotización {{ $cotizacionCodigo }}
+            </div>
+
+        @endif
 
         <!-- FECHA -->
         <div class="fecha">
@@ -383,6 +438,11 @@ body{
             CAJERO:
             {{ $ventae->EMP_Codigo }}
 
+            @if(!empty($ventae->clienteCorreo ?? null))
+                <br><br>
+                Correo: {{ $ventae->clienteCorreo }}
+            @endif
+
             <br><br>
 
             <div class="gracias">
@@ -397,7 +457,7 @@ body{
 
 <script>
 
-    
+
 
     window.onload = function () {
 

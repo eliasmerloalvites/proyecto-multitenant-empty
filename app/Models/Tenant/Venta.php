@@ -20,11 +20,17 @@ class Venta extends Model
         'ALM_Id',
         'CAJ_Id',
         'CS_Id',
+        'COT_Id',
         'VEN_Status',
         'VEN_FechaEnvio',
     ];
-    
+
     protected $guarded =[
 
     ];
+
+    public function cotizacion()
+    {
+        return $this->belongsTo(Cotizacion::class, 'COT_Id', 'COT_Id');
+    }
 }
