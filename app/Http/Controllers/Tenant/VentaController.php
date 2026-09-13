@@ -1723,24 +1723,6 @@ class VentaController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        $Venta = Venta::find($id);
-        $Venta->PRO_Nombre = $request->PRO_Nombre;
-        $Venta->PRO_Descripcion = $request->PRO_Descripcion;
-        $Venta->PRO_PrecioCompra = $request->PRO_PrecioCompra;
-        $Venta->PRO_PrecioVenta = $request->PRO_PrecioVenta;
-        $Venta->PRO_Marca = $request->PRO_Marca;
-        $Venta->PRO_Status = $request->PRO_Status ?? 1;
-        $Venta->CAT_Id = $request->CAT_Id;
-        $Venta->update();
-
-        return response()->json(['success' => 'Venta Editado Exitosamente.', compact('Venta')]);
-    }
-
-    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
