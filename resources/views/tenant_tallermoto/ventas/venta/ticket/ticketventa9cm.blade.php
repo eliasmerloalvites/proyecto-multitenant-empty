@@ -1,27 +1,8 @@
 @php
-    // Mismo criterio que ticket_A4: color_principal es el unico color que el
-    // tenant configura pensando en documentos, asi que el ticket termico se
-    // acenta con ese color (el navegador igual lo reduce a escala de grises
-    // al imprimir en una termica real, pero en pantalla/PDF se ve con marca).
-    $mezclarColor = function (string $hex, string $hexMezcla, float $peso) {
-        $hex = ltrim(trim($hex), '#');
-        $hexMezcla = ltrim(trim($hexMezcla), '#');
-        if (strlen($hex) !== 6 || !ctype_xdigit($hex)) {
-            $hex = '111111';
-        }
-        if (strlen($hexMezcla) === 3) {
-            $hexMezcla = $hexMezcla[0].$hexMezcla[0].$hexMezcla[1].$hexMezcla[1].$hexMezcla[2].$hexMezcla[2];
-        }
-        [$r1, $g1, $b1] = array_map('hexdec', str_split($hex, 2));
-        [$r2, $g2, $b2] = array_map('hexdec', str_split($hexMezcla, 2));
-        $r = (int) round($r1 + ($r2 - $r1) * $peso);
-        $g = (int) round($g1 + ($g2 - $g1) * $peso);
-        $b = (int) round($b1 + ($b2 - $b1) * $peso);
-        return sprintf('#%02x%02x%02x', $r, $g, $b);
-    };
-
-    $colorPrincipal = $datosalmacen->color_principal ?? '#111111';
-    $colorSuave = $mezclarColor($colorPrincipal, 'ffffff', 0.92);
+    // Mismo criterio que ticket_A4: se usa la marca configurada por el
+    // tenant (el navegador igual reduce a escala de grises al imprimir en
+    // una termica real, pero en pantalla/PDF se ve con la marca del negocio).
+    $paleta = paleta_documento($datosalmacen);
 @endphp
 <style>
     *{
@@ -31,8 +12,8 @@
 }
 
 :root{
-    --primary:{{ $colorPrincipal }};
-    --primary-soft:{{ $colorSuave }};
+    --primary:{{ $paleta['primary'] }};
+    --primary-soft:{{ $paleta['primary_soft'] }};
 }
 
 body{

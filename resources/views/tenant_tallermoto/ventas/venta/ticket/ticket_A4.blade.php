@@ -10,33 +10,9 @@
     </title>
 
     @php
-        // El unico color que el tenant configura pensando en documentos
-        // (facturas/tickets) es color_principal (Configuracion > Empresa).
-        // color_main/light/bg/card son para el landing publico (tema
-        // oscuro), asi que no encajan aqui. A partir de ese unico color se
-        // derivan un tono claro (para degradados) y uno oscuro (para
-        // sombras/acentos), mezclando con blanco/negro.
-        $mezclarColor = function (string $hex, string $hexMezcla, float $peso) {
-            $hex = ltrim(trim($hex), '#');
-            $hexMezcla = ltrim(trim($hexMezcla), '#');
-            if (strlen($hex) !== 6 || !ctype_xdigit($hex)) {
-                $hex = '0F2B70';
-            }
-            if (strlen($hexMezcla) === 3) {
-                $hexMezcla = $hexMezcla[0].$hexMezcla[0].$hexMezcla[1].$hexMezcla[1].$hexMezcla[2].$hexMezcla[2];
-            }
-            [$r1, $g1, $b1] = array_map('hexdec', str_split($hex, 2));
-            [$r2, $g2, $b2] = array_map('hexdec', str_split($hexMezcla, 2));
-            $r = (int) round($r1 + ($r2 - $r1) * $peso);
-            $g = (int) round($g1 + ($g2 - $g1) * $peso);
-            $b = (int) round($b1 + ($b2 - $b1) * $peso);
-            return sprintf('#%02x%02x%02x', $r, $g, $b);
-        };
-
-        $colorPrincipal = $datosalmacen->color_principal ?? '#0F2B70';
-        $colorClaro = $mezclarColor($colorPrincipal, 'ffffff', 0.22);
-        $colorOscuro = $mezclarColor($colorPrincipal, '000000', 0.35);
-        $colorSuave = $mezclarColor($colorPrincipal, 'ffffff', 0.94);
+        // Paleta de marca configurada por el tenant en Configuracion >
+        // Empresa (Color Marca Base/Hover = color_main/color_light).
+        $paleta = paleta_documento($datosalmacen);
     @endphp
 
     <style>
@@ -49,10 +25,10 @@
 
         :root{
 
-            --primary:{{ $colorPrincipal }};
-            --primary-light:{{ $colorClaro }};
-            --primary-dark:{{ $colorOscuro }};
-            --primary-soft:{{ $colorSuave }};
+            --primary:{{ $paleta['primary'] }};
+            --primary-light:{{ $paleta['primary_light'] }};
+            --primary-dark:{{ $paleta['primary_dark'] }};
+            --primary-soft:{{ $paleta['primary_soft'] }};
             --gray:#64748b;
             --border:#e2e8f0;
 
