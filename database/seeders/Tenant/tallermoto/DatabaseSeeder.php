@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             RoleAndPermissionSeeder::class,
             DomainRoleSeeder::class,
             ClaseTableSeeder::class,
+            CategoriaTableSeeder::class,
             TipoGastoTableSeeder::class,
             ProveedorTableSeeder::class,
             MetodoPagoTableSeeder::class,
