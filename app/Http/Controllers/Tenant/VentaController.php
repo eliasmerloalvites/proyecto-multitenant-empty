@@ -162,15 +162,6 @@ class VentaController extends Controller
                     $btn = $row->DOV_Serie . " - " . $row->DOV_Numero;
                     return $btn;
                 })
-                ->addColumn('action1', function ($row) {
-                    $btn = '<a data-toggle="tooltip"  data-id="' . $row->VEN_Id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm editVenta" ><i class="fa fa-edit"></i></a>';
-                    return $btn;
-                })
-                ->addColumn('action2', function ($row) {
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->VEN_Id . '" data-original-title="Delete" class="btn btn-danger btn-sm deleteVenta"><i class="fa fa-trash"></i></a>';
-
-                    return $btn;
-                })
                 ->addColumn('action3', function ($row) {
                     $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->VEN_Id . '" data-original-title="Ver" class="btn btn-warning btn-sm eyeVenta"><i class="fa fa-eye" aria-hidden="true"></i></a>';
 
@@ -194,7 +185,7 @@ class VentaController extends Controller
                 ->addColumn('sunat', fn ($row) => $this->columnaSunat($row))
                 ->addColumn('cotizacion', fn ($row) => $this->columnaCotizacion($row))
 
-                ->rawColumns(['action1', 'action2', 'action3', 'ticket', 'pdf', 'whatsapp', 'sunat', 'cotizacion'])
+                ->rawColumns(['action3', 'ticket', 'pdf', 'whatsapp', 'sunat', 'cotizacion'])
                 ->make(true);
         }
 
@@ -359,15 +350,6 @@ class VentaController extends Controller
                     $btn = $row->DOV_Serie . " - " . $row->DOV_Numero;
                     return $btn;
                 })
-                ->addColumn('action1', function ($row) {
-                    $btn = '<a data-toggle="tooltip"  data-id="' . $row->VEN_Id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm editVenta" ><i class="fa fa-edit"></i></a>';
-                    return $btn;
-                })
-                ->addColumn('action2', function ($row) {
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->VEN_Id . '" data-original-title="Delete" class="btn btn-danger btn-sm deleteVenta"><i class="fa fa-trash"></i></a>';
-
-                    return $btn;
-                })
                 ->addColumn('action3', function ($row) {
                     $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->VEN_Id . '" data-original-title="Ver" class="btn btn-warning btn-sm eyeVenta"><i class="fa fa-eye" aria-hidden="true"></i></a>';
 
@@ -391,7 +373,7 @@ class VentaController extends Controller
                 ->addColumn('sunat', fn ($row) => $this->columnaSunat($row))
                 ->addColumn('cotizacion', fn ($row) => $this->columnaCotizacion($row))
 
-                ->rawColumns(['action1', 'action2', 'action3', 'ticket', 'pdf', 'whatsapp', 'sunat', 'cotizacion'])
+                ->rawColumns(['action3', 'ticket', 'pdf', 'whatsapp', 'sunat', 'cotizacion'])
                 ->make(true);
         }
     }
