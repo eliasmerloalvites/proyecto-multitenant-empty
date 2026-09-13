@@ -229,7 +229,28 @@ class CotizacionController extends Controller
             $this->guardarItems($cotizacion, $validated['items']);
         });
 
+        // El PDF ya generado (si alguien lo vio o lo compartio antes de esta
+        // edicion) quedaria con los items/precios viejos: se borra para que
+        // la proxima vez que se pida (ver o compartir) se regenere solo,
+        // con los datos ya actualizados.
+        self::eliminarPdfCacheado($cotizacion);
+
         return response()->json(['success' => true, 'cotizacion_id' => $cotizacion->COT_Id]);
+    }
+
+    /**
+     * Borra el PDF cacheado de una cotizacion en disco, si existe. No borra
+     * el registro ni el codigo (COT_Pdf) — la proxima vez que se pida el PDF
+     * (ver o compartir), generarPdf()/compartir() lo regeneran solos, porque
+     * ambos ya chequean is_file() antes de servir.
+     */
+    private static function eliminarPdfCacheado(Cotizacion $cotizacion): void
+    {
+        $rutaCompleta = self::rutaPdf(tenant('tipo_negocio'), tenant('id'), $cotizacion->COT_Pdf);
+
+        if (is_file($rutaCompleta)) {
+            unlink($rutaCompleta);
+        }
     }
 
     public function destroy(string $id)
