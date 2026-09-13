@@ -9,7 +9,13 @@
             flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
         }
         .cot-header h4 { margin: 0; font-weight: 700; }
-        .cot-card { background: #fff; border-radius: 16px; border: 1px solid #EEF2F7; box-shadow: 0 4px 18px rgba(0,0,0,.04); padding: 18px; }
+        /* Esta tarjeta es siempre clara (fondo blanco), independiente del
+           tema oscuro/claro que tenga el panel: por eso fija su propio color
+           de texto en vez de heredar el del body (gris muy claro en modo
+           oscuro, ilegible sobre fondo blanco). */
+        .cot-card { background: #fff; color: #1F2937; border-radius: 16px; border: 1px solid #EEF2F7; box-shadow: 0 4px 18px rgba(0,0,0,.04); padding: 18px; }
+        .cot-card #tabla_cotizaciones { color: #1F2937; }
+        .cot-card .dataTables_empty { color: #9CA3AF; }
         .filtro-estado { min-width: 190px; }
     </style>
 
