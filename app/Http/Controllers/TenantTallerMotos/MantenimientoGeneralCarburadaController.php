@@ -34,7 +34,7 @@ class MantenimientoGeneralCarburadaController extends Controller
             $idpersonal = Auth::user()->id;
 
             $rolAdmin = false;
-            if ($roles->contains('Admin') || $roles->contains('Gerente')) {
+            if ($roles->contains('Admin') || $roles->contains('Gerente') || $roles->contains('Recepcion')) {
                 $rolAdmin = true;
             }
 
@@ -165,7 +165,7 @@ class MantenimientoGeneralCarburadaController extends Controller
         $roles = Auth::user()->getRoleNames();
 
         $rolAdmin = false;
-        if ($roles->contains('Admin') || $roles->contains('Gerente')) {
+        if ($roles->contains('Admin') || $roles->contains('Gerente') || $roles->contains('Recepcion')) {
             $rolAdmin = true;
         }
         $personal = (tenant('plan') ?? 'start') === 'start'
@@ -272,7 +272,7 @@ class MantenimientoGeneralCarburadaController extends Controller
         $roles = Auth::user()->getRoleNames();
 
         $rolAdmin = false;
-        if ($roles->contains('Admin') || $roles->contains('Gerente')) {
+        if ($roles->contains('Admin') || $roles->contains('Gerente') || $roles->contains('Recepcion')) {
             $rolAdmin = true;
         }
         $personal = (tenant('plan') ?? 'start') === 'start'
@@ -477,7 +477,7 @@ class MantenimientoGeneralCarburadaController extends Controller
             $idusu = Auth::user()->id;
             $roles = Auth::user()->getRoleNames();
             $rolAdmin = false;
-            if ($roles->contains('Admin') || $roles->contains('Gerente')) {
+            if ($roles->contains('Admin') || $roles->contains('Gerente') || $roles->contains('Recepcion')) {
                 $rolAdmin = true;
             }
 

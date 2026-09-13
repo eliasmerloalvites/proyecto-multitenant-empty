@@ -956,8 +956,20 @@
                                     Placa *
                                 </label>
 
-                                <input type="text" name="RES_Placa" onkeyup="this.value=this.value.toUpperCase();"
-                                    class="form-control reservation-input" placeholder="ABC-123">
+                                <div class="input-group">
+                                    <input type="text" id="crearRES_Placa" name="RES_Placa" onkeyup="this.value=this.value.toUpperCase();"
+                                        class="form-control reservation-input" placeholder="ABC-123">
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-info" id="btnBuscarPlacaReserva"
+                                            title="Buscar placa en el historial" onclick="BuscarClienteReserva()">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-default" id="cargandoPlacaReserva" style="display:none;">
+                                            <img width="15px" src="{{ asset_root('images/gif/cargando1.gif') }}">
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted" id="crearRES_PlacaAyuda" style="display:none;"></small>
 
                             </div>
 
@@ -968,7 +980,7 @@
                                     Motocicleta *
                                 </label>
 
-                                <input type="text" name="RES_Moto" onkeyup="this.value=this.value.toUpperCase();"
+                                <input type="text" id="crearRES_Moto" name="RES_Moto" onkeyup="this.value=this.value.toUpperCase();"
                                     class="form-control reservation-input" placeholder="Ej. Yamaha FZ 2.0">
 
                             </div>
@@ -980,7 +992,7 @@
                                     Nombre solicitante *
                                 </label>
 
-                                <input type="text" name="RES_Cliente" onkeyup="this.value=this.value.toUpperCase();"
+                                <input type="text" id="crearRES_Cliente" name="RES_Cliente" onkeyup="this.value=this.value.toUpperCase();"
                                     class="form-control reservation-input" placeholder="Ingrese su nombre completo">
 
                             </div>
@@ -992,7 +1004,7 @@
                                     Celular *
                                 </label>
 
-                                <input type="text" name="RES_Celular" class="form-control reservation-input"
+                                <input type="text" id="crearRES_Celular" name="RES_Celular" class="form-control reservation-input"
                                     placeholder="Ej. 999888777">
 
                             </div>
@@ -1289,6 +1301,82 @@
 
                             </div>
 
+                            {{-- Si la reserva vino de la web, el cliente no elige tipo de
+                                 mantenimiento ni aceite/filtro -- se completa aqui, al
+                                 aprobar, para que el mantenimiento se cree con lo que
+                                 corresponde. Si ya tiene un mantenimiento asignado (ej.
+                                 se eligio el tipo al reservar desde el panel), esta
+                                 seccion se oculta: ya no hay nada que completar. --}}
+                            <div id="edit_grupoMantenimiento" style="display:none;">
+
+                                <hr>
+                                <div class="reservation-section-subtitle">
+                                    Servicio a realizar
+                                </div>
+
+                                {{-- TIPO DE MANTENIMIENTO --}}
+                                <div class="form-group" style="margin-bottom:2px">
+
+                                    <label style="font-size: 13px;">
+                                        Tipo de mantenimiento *
+                                    </label>
+
+                                    <select name="TIP_Mantenimiento" id="edit_TIP_Mantenimiento"
+                                        class="form-control reservation-input">
+                                        <option value="">Seleccione...</option>
+                                        <option value="MANTENIMIENTO GENERAL CARBURADA">Mantenimiento General (Carburada)</option>
+                                        <option value="MANTENIMIENTO GENERAL INYECTADA">Mantenimiento General (Inyectada)</option>
+                                        <option value="MANTENIMIENTO PREVENTIVO CARBURADA">Mantenimiento Preventivo (Carburada)</option>
+                                        <option value="MANTENIMIENTO PREVENTIVO INYECTADA">Mantenimiento Preventivo (Inyectada)</option>
+                                        <option value="ACTIVIDAD VARIADA">Otro / Actividad variada</option>
+                                    </select>
+
+                                </div>
+
+                                {{-- CAMBIO DE ACEITE --}}
+                                <div class="form-group" style="margin-bottom:2px">
+
+                                    <label style="font-size: 13px;">
+                                        ¿Cambio de aceite?
+                                    </label>
+
+                                    <select name="CAM_Aceite" id="edit_CAM_Aceite" class="form-control reservation-input">
+                                        <option value="NO">No</option>
+                                        <option value="SI">Sí</option>
+                                    </select>
+
+                                </div>
+
+                                {{-- TIPO DE ACEITE (solo si hay cambio de aceite) --}}
+                                <div class="form-group" id="edit_grupoAceite" style="margin-bottom:2px; display:none;">
+
+                                    <label style="font-size: 13px;">
+                                        Tipo / marca de aceite
+                                    </label>
+
+                                    <input type="text" name="aceite" class="form-control reservation-input"
+                                        placeholder="Ej. 20W50 semisintético">
+
+                                </div>
+
+                                {{-- CAMBIO DE FILTRO DE ACEITE --}}
+                                <div class="form-group" style="margin-bottom:2px">
+
+                                    <label style="font-size: 13px;">
+                                        ¿Cambio de filtro de aceite?
+                                    </label>
+
+                                    <select name="CAM_FiltroAceite" class="form-control reservation-input">
+                                        <option value="NO">No</option>
+                                        <option value="SI">Sí</option>
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                            <div id="edit_avisoMantenimientoAsignado" class="alert alert-info" style="display:none; margin-top:8px;"></div>
+
                         </div>
 
                     </div>
@@ -1323,6 +1411,49 @@
                 showConfirmButton: false,
                 timer: 3000
             });
+
+            /**
+             * Busca la placa en el historial de mantenimientos (mismo
+             * endpoint que usan los formularios de Mantenimientos) y
+             * autocompleta motocicleta, cliente y celular si encuentra
+             * un registro previo con esa placa.
+             */
+            function BuscarClienteReserva() {
+                var placa = $('#crearRES_Placa').val().trim();
+                var ayuda = $('#crearRES_PlacaAyuda');
+                ayuda.hide();
+
+                if (!placa) {
+                    return;
+                }
+
+                $('#btnBuscarPlacaReserva').hide();
+                $('#cargandoPlacaReserva').show();
+
+                $.ajax({
+                    type: 'GET',
+                    url: "/busquedaplaca/responsable/" + encodeURIComponent(placa),
+                    success: function(data) {
+                        if (data.success.validacion == 'true') {
+                            var mtto = data.success.mtto[0];
+                            $('#crearRES_Moto').val(mtto.Unidad);
+                            $('#crearRES_Cliente').val(mtto.Propietario);
+                            $('#crearRES_Celular').val(mtto.celular);
+                        } else {
+                            ayuda.text('No se encontró historial para esta placa. Completa los datos manualmente.').show();
+                        }
+                    },
+                    error: function(data) {
+                        console.log('Error buscando placa:', data);
+                        ayuda.text('No se pudo buscar la placa. Completa los datos manualmente.').show();
+                    },
+                    complete: function() {
+                        $('#btnBuscarPlacaReserva').show();
+                        $('#cargandoPlacaReserva').hide();
+                    }
+                });
+            }
+
             var table;
             $(document).ready(function() {
                 $id = "{{ $localFirst->ALM_Id }}";
@@ -1372,6 +1503,14 @@
                     var Mecanico_id_ver = $(this).data('mecanico');
                     var FechaProgramada_id_ver = $(this).data('fechaprogramadadata');
                     var FechaProgramada = $(this).data('fechaprogramada');
+                    // Se limpia primero: si el GET tarda, no debe quedar visible
+                    // lo de la reserva anterior mientras carga la nueva.
+                    $('#edit_TIP_Mantenimiento').val('').prop('required', false);
+                    $('#edit_CAM_Aceite').val('NO');
+                    $('#edit_grupoAceite').hide();
+                    $('#edit_grupoMantenimiento').hide();
+                    $('#edit_avisoMantenimientoAsignado').hide();
+
                     $.get("{{ route('tenant.reservaciones.administracion.index') }}" + '/' +
                         Reservacion_id_ver + '/edit',
                         function(data) {
@@ -1380,6 +1519,18 @@
                             $('#idRES_Cliente').val(data.RES_Cliente);
                             $('#idRES_Celular').val(data.RES_Celular);
                             document.getElementById('idRES_Detalle').value = data.RES_Detalle;
+
+                            // La reserva vino de la web (o de un flujo que no eligio
+                            // tipo): todavia no tiene mantenimiento creado. Se pide
+                            // el tipo/aceite/filtro aqui para crearlo al aprobar.
+                            if (data.tiene_mantenimiento) {
+                                $('#edit_avisoMantenimientoAsignado')
+                                    .text('Esta reserva ya tiene un mantenimiento asignado: ' + data.tipo_mantenimiento_asignado + '.')
+                                    .show();
+                            } else {
+                                $('#edit_TIP_Mantenimiento').prop('required', true);
+                                $('#edit_grupoMantenimiento').show();
+                            }
                         })
 
                     $('#edit_reservacion_id').val(Reservacion_id_ver);
@@ -1410,6 +1561,10 @@
                     $('#ver_BAH_Nombre').text(BahiaNombre_id_ver);
                     $('#ver_Mecanico').text(Mecanico_id_ver);
                     $('#ver_FechaProgramada').text(FechaProgramada_id_ver);
+                });
+
+                $('#edit_CAM_Aceite').on('change', function() {
+                    $('#edit_grupoAceite').toggle($(this).val() === 'SI');
                 });
 
                 $('#idCAM_Aceite').on('change', function() {

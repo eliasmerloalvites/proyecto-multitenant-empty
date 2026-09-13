@@ -13,6 +13,7 @@ use App\Models\TenantTallerMotos\MantenimientoGeneralInyectada;
 use App\Models\TenantTallerMotos\MantenimientoPreventivoCarburada;
 use App\Models\TenantTallerMotos\MantenimientoPreventivoInyectada;
 use App\Models\TenantTallerMotos\Turno;
+use App\Services\TenantTallerMotos\GestionProcesoService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Redirect;
 use Yajra\DataTables\Facades\DataTables;
@@ -422,7 +423,17 @@ class ReservacionController extends Controller
 
 	public function edit($id)
 	{
-		return $datos = Reservacion::findOrFail($id);
+		$reservacion = Reservacion::findOrFail($id);
+
+		// El modal de aprobacion necesita saber si ya existe un mantenimiento
+		// ligado (ej. se eligio el tipo al reservar desde el panel): si ya
+		// hay uno, no tiene sentido volver a pedir tipo/aceite/filtro.
+		$mantenimiento = GestionProcesoService::mantenimientoDeReserva((int) $id);
+
+		return array_merge($reservacion->toArray(), [
+			'tiene_mantenimiento' => (bool) $mantenimiento,
+			'tipo_mantenimiento_asignado' => $mantenimiento['etiqueta'] ?? null,
+		]);
 	}
 
 	public function update(Request $request,$id)
@@ -446,6 +457,17 @@ class ReservacionController extends Controller
 				return response()->json(['success' => false, 'message' => 'Esa bahía y turno acaban de ser reservados por otra persona. Elige otro horario.'], 409);
 			}
 			throw $e;
+		}
+
+		// Reservas que llegan sin tipo de mantenimiento (ej. las hechas desde
+		// la web, donde el cliente no elige eso) no tienen todavia un
+		// registro de mantenimiento creado. Si al aprobar se completo el
+		// tipo, se crea aqui -- pero solo si de verdad no existia ya uno
+		// (una reserva creada desde el panel ya pudo traerlo desde el inicio).
+		if ($request->filled('TIP_Mantenimiento') && !GestionProcesoService::mantenimientoDeReserva($Reservacion->RES_Id)) {
+			$this->crearMantenimientoDesdeReserva($request->only([
+				'TIP_Mantenimiento', 'CAM_Aceite', 'aceite', 'CAM_FiltroAceite',
+			]), $Reservacion);
 		}
 
 		return response()->json(['success' => 'Reservacion Editado Exitosamente.']);
