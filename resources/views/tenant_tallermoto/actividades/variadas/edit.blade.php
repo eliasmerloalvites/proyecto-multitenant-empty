@@ -505,6 +505,11 @@
                 </div>
 
 
+                @include('tenant_tallermoto.mantenimientos.partials.estado-recepcion', [
+                    'tabla' => 'mantenimiento_actividad_variadas',
+                    'id' => $datos->MAV_Id,
+                ])
+
                 <!-- BOTONES -->
                 <div class="row mt-3 mb-4">
                     <div class="col-12">

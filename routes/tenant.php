@@ -49,6 +49,8 @@ use App\Http\Controllers\TenantTallerMotos\NotificacionReservaController;
 use App\Http\Controllers\TenantTallerMotos\ReservacionController;
 use App\Http\Controllers\TenantTallerMotos\ProcesoTallerController;
 use App\Http\Controllers\TenantTallerMotos\TurnoController;
+use App\Http\Controllers\TenantTallerMotos\EstadoRecepcionController;
+use App\Http\Controllers\TenantTallerMotos\RecepcionConfigController;
 use App\Services\Facturacion\GreenterService;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
@@ -268,6 +270,27 @@ Route::middleware([
             Route::post('/reservas/{reservacionId}/checkin', [ProcesoTallerController::class, 'checkIn'])->name('checkin');
             Route::post('/mantenimiento/{tabla}/{id}/entendido', [ProcesoTallerController::class, 'entendido'])->name('entendido');
             Route::get('/alertas', [ProcesoTallerController::class, 'alertas'])->name('alertas');
+        });
+
+        // ESTADO DE RECEPCION DE LA MOTOCICLETA: checklist de condiciones de
+        // un mantenimiento puntual (con o sin check-in de por medio). Vive
+        // dentro de la ficha de cada uno de los 5 tipos, ver el partial
+        // mantenimientos/partials/estado-recepcion.blade.php.
+        Route::prefix('tenant/mantenimientos/{tabla}/{id}/recepcion')->name('tenant.mantenimientos.recepcion.')->group(function () {
+            Route::get('/', [EstadoRecepcionController::class, 'mostrar'])->name('mostrar');
+            Route::post('/', [EstadoRecepcionController::class, 'guardar'])->name('guardar');
+        });
+
+        // Configuracion de categorias/items del Estado de Recepcion (100%
+        // editable desde el panel, ver RecepcionConfigController).
+        Route::prefix('tenant/configuracion/recepcion')->name('tenant.configuracion.recepcion.')->group(function () {
+            Route::get('/', [RecepcionConfigController::class, 'index'])->name('index');
+            Route::post('/categoria', [RecepcionConfigController::class, 'storeCategoria'])->name('categoria.store');
+            Route::put('/categoria/{categoria}', [RecepcionConfigController::class, 'updateCategoria'])->name('categoria.update');
+            Route::put('/categoria/{categoria}/activar', [RecepcionConfigController::class, 'toggleCategoria'])->name('categoria.activar');
+            Route::post('/item', [RecepcionConfigController::class, 'storeItem'])->name('item.store');
+            Route::put('/item/{item}', [RecepcionConfigController::class, 'updateItem'])->name('item.update');
+            Route::put('/item/{item}/activar', [RecepcionConfigController::class, 'toggleItem'])->name('item.activar');
         });
 
     });

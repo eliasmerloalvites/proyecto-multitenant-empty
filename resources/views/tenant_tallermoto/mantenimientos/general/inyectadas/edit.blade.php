@@ -999,6 +999,11 @@
                 </div>
 
 
+                @include('tenant_tallermoto.mantenimientos.partials.estado-recepcion', [
+                    'tabla' => 'mantenimiento_general_inyectada',
+                    'id' => $datos->MGI_Id,
+                ])
+
                 <!-- BOTONES -->
                 <div class="row mt-3 mb-4">
                     <div class="col-12">

@@ -165,7 +165,10 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.configuracion.horario.show',    'Horarios', 'Ver Horario',        'Ver Horario'],
             ['tenant.configuracion.horario.destroy', 'Horarios', 'Eliminar Horarios',  'Eliminar Horarios'],
 
-            
+            // Estado de Recepcion (config de categorias/items del checklist)
+            ['tenant.configuracion.recepcion.index', 'Estado de Recepción', 'Gestionar Estado de Recepción', 'Crear/editar categorias e items del checklist de recepcion de motos'],
+
+
             
             // Mtto Preventivo Carburada
             ['tenant.actividades.mantenimientoactividadvariada.index',   'Actividad Variadas', 'Ver Lista Actividad Variadas', 'Listar Actividad Variadas'],
@@ -441,6 +444,7 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.mantenimientos.generalinyectada.notificar',
 
             'tenant.mantenimientos.planes.index',
+            'tenant.configuracion.recepcion.index',
 
             'tenant.reportes.listageneral',
             'tenant.reportes.rendimientomecanicos',
@@ -614,6 +618,7 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.mantenimientos.generalinyectada.notificar',
 
             'tenant.mantenimientos.planes.index',
+            'tenant.configuracion.recepcion.index',
 
             'tenant.reportes.listageneral',
             'tenant.reportes.rendimientomecanicos',

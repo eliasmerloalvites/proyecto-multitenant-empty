@@ -929,6 +929,11 @@
                 </div>
 
 
+                @include('tenant_tallermoto.mantenimientos.partials.estado-recepcion', [
+                    'tabla' => 'mantenimiento_preventivo_inyectada',
+                    'id' => $datos->MPI_Id,
+                ])
+
                 <!-- BOTONES -->
                 <div class="row mt-3 mb-4">
                     <div class="col-12">

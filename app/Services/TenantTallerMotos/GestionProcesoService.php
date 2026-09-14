@@ -7,6 +7,10 @@ use App\Models\TenantTallerMotos\MantenimientoGeneralCarburada;
 use App\Models\TenantTallerMotos\MantenimientoGeneralInyectada;
 use App\Models\TenantTallerMotos\MantenimientoPreventivoCarburada;
 use App\Models\TenantTallerMotos\MantenimientoPreventivoInyectada;
+use App\Models\TenantTallerMotos\RecepcionCategoria;
+use App\Models\TenantTallerMotos\RecepcionItem;
+use App\Models\TenantTallerMotos\RecepcionObservacion;
+use App\Models\TenantTallerMotos\RecepcionRespuesta;
 use App\Models\TenantTallerMotos\Reservacion;
 use Carbon\Carbon;
 use Exception;
@@ -332,5 +336,99 @@ class GestionProcesoService
             $mtto->RES_Id = $reserva->RES_Id;
             $mtto->save();
         }
+    }
+
+    /**
+     * Valida que ($tabla, $id) sea un mantenimiento real de alguno de los
+     * 5 tipos. Se usa antes de leer/guardar su Estado de Recepcion.
+     *
+     * @throws Exception si la tabla no es una de las 5 validas o el id no existe ahi.
+     */
+    public static function validarMantenimiento(string $tabla, int $id): array
+    {
+        $meta = collect(self::TIPOS)->firstWhere('tabla', $tabla);
+
+        if (!$meta) {
+            throw new Exception('Tipo de mantenimiento no valido.');
+        }
+
+        $idColumna = $meta['prefijo'] . '_Id';
+        $registro = DB::table($tabla)->where($idColumna, $id)->first();
+
+        if (!$registro) {
+            throw new Exception('El mantenimiento indicado no existe.');
+        }
+
+        return array_merge($meta, ['registro' => $registro]);
+    }
+
+    /**
+     * Estado de Recepcion de un mantenimiento puntual: categorias/items
+     * activos (agrupados por RCT_Grupo/categoria) + las respuestas y
+     * observaciones ya guardadas para ese ($tabla, $id), si las hay. Los
+     * items ya inactivos no aparecen aqui aunque el mantenimiento tenga
+     * una respuesta vieja guardada para ellos (esta funcion es para
+     * pintar el formulario editable, no el historico crudo).
+     */
+    public static function estadoRecepcion(string $tabla, int $id): array
+    {
+        self::validarMantenimiento($tabla, $id);
+
+        $categorias = RecepcionCategoria::activas()->with(['items' => fn ($q) => $q->activos()])->get();
+
+        $respuestas = RecepcionRespuesta::deMantenimiento($tabla, $id)->pluck('RRP_Valor', 'RIT_Id');
+        $observaciones = RecepcionObservacion::deMantenimiento($tabla, $id)->get()->keyBy(fn ($o) => $o->RCT_Id ?? 'general');
+
+        return [
+            'categorias' => $categorias,
+            'respuestas' => $respuestas,
+            'observaciones' => $observaciones,
+        ];
+    }
+
+    /**
+     * Guarda el Estado de Recepcion de un mantenimiento puntual. No
+     * depende de que haya existido un check-in ni de una reserva: sirve
+     * igual para un mantenimiento creado por check-in, por aprobacion de
+     * reserva sin check-in, o creado directo (walk-in, sin reserva).
+     *
+     * $respuestas: [RIT_Id => valor, ...]
+     * $observaciones: [RCT_Id o 'general' => texto, ...]
+     *
+     * @throws Exception si $tabla/$id no son un mantenimiento real, o si
+     *                    algun RIT_Id/RCT_Id no existe o esta inactivo.
+     */
+    public static function guardarEstadoRecepcion(string $tabla, int $id, array $respuestas, array $observaciones): void
+    {
+        self::validarMantenimiento($tabla, $id);
+
+        $itemsActivos = RecepcionItem::activos()->pluck('RIT_Id')->flip();
+        $categoriasActivas = RecepcionCategoria::activas()->pluck('RCT_Id')->flip();
+
+        DB::transaction(function () use ($tabla, $id, $respuestas, $observaciones, $itemsActivos, $categoriasActivas) {
+            foreach ($respuestas as $itemId => $valor) {
+                if (!isset($itemsActivos[$itemId])) {
+                    throw new Exception("El item de recepcion #{$itemId} no existe o esta inactivo.");
+                }
+
+                RecepcionRespuesta::updateOrCreate(
+                    ['MTO_Tabla' => $tabla, 'MTO_Id' => $id, 'RIT_Id' => $itemId],
+                    ['RRP_Valor' => $valor]
+                );
+            }
+
+            foreach ($observaciones as $categoriaId => $texto) {
+                $esGeneral = $categoriaId === 'general' || $categoriaId === null;
+
+                if (!$esGeneral && !isset($categoriasActivas[$categoriaId])) {
+                    throw new Exception("La categoria de recepcion #{$categoriaId} no existe o esta inactiva.");
+                }
+
+                RecepcionObservacion::updateOrCreate(
+                    ['MTO_Tabla' => $tabla, 'MTO_Id' => $id, 'RCT_Id' => $esGeneral ? null : $categoriaId],
+                    ['ROB_Texto' => $texto]
+                );
+            }
+        });
     }
 }
