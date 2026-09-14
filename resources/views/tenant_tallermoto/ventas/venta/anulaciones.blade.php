@@ -103,6 +103,12 @@
                                                 data-id="{{ $a->VEN_Id }}" title="Consultar resultado">
                                             <i class="fa fa-history"></i>
                                         </button>
+                                    @elseif ($a->DOV_EstadoBaja === 'ERROR')
+                                        <button type="button" class="btn btn-outline-warning btn-sm bajaReintentar"
+                                                data-id="{{ $a->VEN_Id }}" data-tipo="{{ $a->DOV_Tipo }}"
+                                                data-motivo="{{ $a->DOV_MotivoBaja }}" title="Volver a enviar la anulación">
+                                            <i class="fa fa-paper-plane"></i>
+                                        </button>
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
@@ -136,6 +142,74 @@
                     search: 'Buscar:',
                     paginate: { next: 'Siguiente', previous: 'Anterior' }
                 }
+            });
+
+            $('body').on('click', '.bajaReintentar', function () {
+                var id = $(this).data('id');
+                var tipo = $(this).data('tipo');
+                var motivoPrevio = $(this).data('motivo') || '';
+                var ofrecerStock = (tipo === 'BOL' || tipo === 'FAC');
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Volver a enviar la anulación',
+                    text: 'La solicitud anterior quedó en ERROR y nunca llegó a tener ticket; esto la manda de nuevo a SUNAT.',
+                    html:
+                        '<label for="swalMotivoReintentar" class="swal2-input-label" style="display:block;text-align:left;margin-bottom:.25rem">Motivo de la anulación</label>' +
+                        '<input id="swalMotivoReintentar" class="swal2-input" style="margin:0 0 .5rem" value="' + motivoPrevio.replace(/"/g, '&quot;') + '">' +
+                        (ofrecerStock
+                            ? '<div style="text-align:left;margin-top:.5rem">' +
+                              '<label style="font-weight:normal">' +
+                              '<input type="checkbox" id="swalDevolverStockReintentar"> Devolver estos productos al stock del almacén' +
+                              '</label></div>'
+                            : ''),
+                    showCancelButton: true,
+                    confirmButtonText: 'Reenviar a SUNAT',
+                    cancelButtonText: 'Cancelar',
+                    focusConfirm: false,
+                    preConfirm: function () {
+                        var motivo = $('#swalMotivoReintentar').val();
+                        if (!motivo || !motivo.trim()) {
+                            Swal.showValidationMessage('Escribe el motivo.');
+                            return false;
+                        }
+                        return {
+                            motivo: motivo,
+                            devolverStock: ofrecerStock && $('#swalDevolverStockReintentar').is(':checked')
+                        };
+                    }
+                }).then(function (res) {
+                    if (!res.isConfirmed) return;
+
+                    Swal.fire({
+                        title: 'Enviando a SUNAT...',
+                        allowOutsideClick: false,
+                        didOpen: function () { Swal.showLoading(); }
+                    });
+
+                    $.ajax({
+                        url: '/tenant/ventas/venta/' + id + '/anular',
+                        method: 'POST',
+                        data: {
+                            motivo: res.value.motivo,
+                            devolver_stock: res.value.devolverStock ? 1 : 0,
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        }
+                    }).done(function (r) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Anulación reenviada',
+                            text: 'SUNAT la está procesando; el resultado se sabe en unos minutos.'
+                        }).then(function () { location.reload(); });
+                    }).fail(function (xhr) {
+                        var r = xhr.responseJSON || {};
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'No se pudo reenviar',
+                            text: r.descripcion || 'Error de conexión.'
+                        });
+                    });
+                });
             });
 
             $('body').on('click', '.bajaConsultar', function () {
