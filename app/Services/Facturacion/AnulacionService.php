@@ -359,16 +359,20 @@ class AnulacionService
      * Bloque "cliente" del Resumen de Baja (RC). La emision original de la
      * boleta acepta un DNI placeholder como "00000000" (SUNAT es laxo con
      * boletas de monto bajo sin cliente identificado), pero el endpoint de
-     * Resumen de Baja SI valida el formato del documento y lo rechaza como
-     * "Bad Request" si el numero no tiene pinta de documento real. Por eso
-     * aqui, a diferencia de SunatService (emision), un documento invalido/
-     * placeholder se manda como "Varios" (tipo_doc '-', sin numero) en vez
-     * de forzar un DNI que no es real.
+     * Resumen de Baja SI valida el formato del documento. Aqui, a diferencia
+     * de SunatService (emision), un documento invalido/placeholder se manda
+     * como "Varios" (tipo_doc '-') en vez de forzar un DNI que no es real —
+     * pero el campo 'numero' es obligatorio para la API facturadora aunque
+     * el tipo sea "Varios", asi que nunca se manda vacio: se usa el numero
+     * que ya estaba guardado (aunque sea el placeholder) o un relleno fijo
+     * si de verdad no hay nada.
      */
     private function clienteParaBaja(?string $tipoDocumento, ?string $numeroDocumento): array
     {
+        $numero = trim((string) $numeroDocumento);
+
         if (!$this->esDocumentoValido($tipoDocumento, $numeroDocumento)) {
-            return ['tipo_doc' => '-', 'numero' => ''];
+            return ['tipo_doc' => '-', 'numero' => $numero !== '' ? $numero : '00000000'];
         }
 
         return [
