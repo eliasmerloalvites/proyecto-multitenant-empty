@@ -52,11 +52,11 @@ class AnulacionService
      *
      * Devuelve siempre un arreglo con 'success'; nunca lanza.
      */
-    public function solicitarBaja(int $ventaId, string $motivo, bool $devolverStock = false): array
+    public function solicitarBaja(int $ventaId, string $motivo, bool $devolverStock = false, bool $forzarReintento = false): array
     {
         try {
             $documento = $this->documento($ventaId);
-            $this->verificarPuedeAnularse($documento);
+            $this->verificarPuedeAnularse($documento, $forzarReintento);
             $this->verificarConfiguracion();
 
             $sede = $this->obtenerSede($documento);
@@ -191,7 +191,16 @@ class AnulacionService
     |--------------------------------------------------------------------------
     */
 
-    private function verificarPuedeAnularse(DocumentoVenta $documento): void
+    /**
+     * $forzarReintento salta el bloqueo de "ya hay una PENDIENTE" — lo usa
+     * unicamente el boton explicito "Reintentar" (no el "Anular" normal,
+     * que nunca se muestra para un comprobante ya PENDIENTE). Sirve para
+     * los casos en que SUNAT/el OSE rechazo el ticket de forma definitiva
+     * (ej. error de permisos de cuenta) y "consultar" nunca va a resolverlo
+     * solo: el ticket viejo se pierde (se pisa con el nuevo), que es lo que
+     * se busca al reintentar desde cero.
+     */
+    private function verificarPuedeAnularse(DocumentoVenta $documento, bool $forzarReintento = false): void
     {
         if (!isset(self::ENDPOINTS[$documento->DOV_Tipo])) {
             throw new RuntimeException('Este tipo de documento no se puede anular desde aqui.');
@@ -201,7 +210,7 @@ class AnulacionService
             throw new RuntimeException('Este comprobante ya esta anulado.');
         }
 
-        if ($documento->DOV_EstadoBaja === 'PENDIENTE') {
+        if ($documento->DOV_EstadoBaja === 'PENDIENTE' && !$forzarReintento) {
             throw new RuntimeException(
                 'Ya hay una solicitud de baja en curso para este comprobante; consulta su resultado antes de pedir otra.'
             );

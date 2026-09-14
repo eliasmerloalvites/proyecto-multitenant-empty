@@ -76,7 +76,8 @@ class AnulacionController extends Controller
         $resultado = $this->service->solicitarBaja(
             (int) $ventaId,
             $motivo,
-            $request->boolean('devolver_stock')
+            $request->boolean('devolver_stock'),
+            $request->boolean('reintentar')
         );
 
         return response()->json($resultado, $resultado['success'] ? 200 : 422);

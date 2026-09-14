@@ -103,10 +103,17 @@
                                                 data-id="{{ $a->VEN_Id }}" title="Consultar resultado">
                                             <i class="fa fa-history"></i>
                                         </button>
+                                        <button type="button" class="btn btn-outline-warning btn-sm bajaReintentar"
+                                                data-id="{{ $a->VEN_Id }}" data-tipo="{{ $a->DOV_Tipo }}"
+                                                data-estado="PENDIENTE" data-motivo="{{ $a->DOV_MotivoBaja }}"
+                                                title="Enviar una solicitud nueva (la actual queda reemplazada)">
+                                            <i class="fa fa-paper-plane"></i>
+                                        </button>
                                     @elseif ($a->DOV_EstadoBaja === 'ERROR')
                                         <button type="button" class="btn btn-outline-warning btn-sm bajaReintentar"
                                                 data-id="{{ $a->VEN_Id }}" data-tipo="{{ $a->DOV_Tipo }}"
-                                                data-motivo="{{ $a->DOV_MotivoBaja }}" title="Volver a enviar la anulación">
+                                                data-estado="ERROR" data-motivo="{{ $a->DOV_MotivoBaja }}"
+                                                title="Volver a enviar la anulación">
                                             <i class="fa fa-paper-plane"></i>
                                         </button>
                                     @else
@@ -127,6 +134,8 @@
         </div>
     </div>
 
+@endsection
+@section('script')
     <script>
         $(function () {
             $('#tablaAnulaciones').DataTable({
@@ -147,14 +156,18 @@
             $('body').on('click', '.bajaReintentar', function () {
                 var id = $(this).data('id');
                 var tipo = $(this).data('tipo');
+                var estado = $(this).data('estado');
                 var motivoPrevio = $(this).data('motivo') || '';
                 var ofrecerStock = (tipo === 'BOL' || tipo === 'FAC');
+                var aviso = estado === 'PENDIENTE'
+                    ? 'Ya hay un ticket en trámite para este comprobante. Esto envía una solicitud <strong>nueva e independiente</strong>; el ticket anterior queda reemplazado.'
+                    : 'La solicitud anterior quedó en ERROR y nunca llegó a tener ticket; esto la manda de nuevo a SUNAT.';
 
                 Swal.fire({
                     icon: 'warning',
                     title: 'Volver a enviar la anulación',
-                    text: 'La solicitud anterior quedó en ERROR y nunca llegó a tener ticket; esto la manda de nuevo a SUNAT.',
                     html:
+                        '<p style="text-align:left;">' + aviso + '</p>' +
                         '<label for="swalMotivoReintentar" class="swal2-input-label" style="display:block;text-align:left;margin-bottom:.25rem">Motivo de la anulación</label>' +
                         '<input id="swalMotivoReintentar" class="swal2-input" style="margin:0 0 .5rem" value="' + motivoPrevio.replace(/"/g, '&quot;') + '">' +
                         (ofrecerStock
@@ -193,6 +206,7 @@
                         data: {
                             motivo: res.value.motivo,
                             devolver_stock: res.value.devolverStock ? 1 : 0,
+                            reintentar: 1,
                             _token: $('meta[name="csrf-token"]').attr('content')
                         }
                     }).done(function (r) {
