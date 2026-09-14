@@ -113,7 +113,14 @@
                                     <option
                                         value="{{ $itemProducto->PRO_Id }}_{{ $itemProducto->PRO_PrecioCompra }}_{{ $itemProducto->PRO_PrecioVenta }}">
                                         {{ $itemProducto->CAT_Nombre }} -
-                                        {{ $itemProducto->PRO_Nombre }}</option>
+                                        {{ $itemProducto->PRO_Nombre }}
+                                        @if ($itemProducto->PRO_CodigoInterno)
+                                            [{{ $itemProducto->PRO_CodigoInterno }}]
+                                        @endif
+                                        @if ($itemProducto->PRO_CodigoFabricacion)
+                                            [{{ $itemProducto->PRO_CodigoFabricacion }}]
+                                        @endif
+                                    </option>
                                 @endforeach
                             </select>
                         </div>

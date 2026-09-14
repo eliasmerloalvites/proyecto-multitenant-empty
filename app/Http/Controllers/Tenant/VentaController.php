@@ -650,6 +650,8 @@ class VentaController extends Controller
                 'p.PRO_Descripcion',
                 'p.PRO_Imagen',
                 'p.CAT_Id',
+                'p.PRO_CodigoInterno',
+                'p.PRO_CodigoFabricacion',
                 DB::raw('COALESCE(SUM(lt.LOT_CantidadReal), 0) as PRO_Cantidad'),
                 DB::raw('COALESCE(MAX(lt.LOT_PrecioVenta), p.PRO_PrecioVenta) as PRO_PrecioBaseVenta')
             )
@@ -660,18 +662,19 @@ class VentaController extends Controller
             $query->where('p.CAT_Id', $request->categoria);
         }
 
-        // BUSQUEDA
+        // BUSQUEDA: por nombre o por cualquiera de los dos codigos (interno
+        // o de fabricacion), asi el cajero puede escanear/tipear el que
+        // tenga a mano sin tener que saber cual es cual.
         if ($request->search) {
             $query->where(function ($q) use ($request) {
-                $q->where(
-                    'p.PRO_Nombre',
-                    'like',
-                    '%' . $request->search . '%'
-                );
+                $busqueda = '%' . $request->search . '%';
+                $q->where('p.PRO_Nombre', 'like', $busqueda)
+                    ->orWhere('p.PRO_CodigoInterno', 'like', $busqueda)
+                    ->orWhere('p.PRO_CodigoFabricacion', 'like', $busqueda);
             });
         }
 
-        $query->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Descripcion', 'p.PRO_Imagen', 'p.CAT_Id', 'p.PRO_PrecioVenta');
+        $query->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Descripcion', 'p.PRO_Imagen', 'p.CAT_Id', 'p.PRO_CodigoInterno', 'p.PRO_CodigoFabricacion', 'p.PRO_PrecioVenta');
 
         // Sin el permiso de la sede, se mantiene el filtro de siempre: solo
         // lo que tenga stock disponible en esta sede.

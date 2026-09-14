@@ -2484,6 +2484,10 @@
                 let image = product.PRO_Imagen ?
                     `/storage/{{ tenant('tipo_negocio') }}/{{ tenant('id') }}/archivos/producto/${product.PRO_Imagen}` :
                     `/images/imagen_default.png`;
+                let codigos = [
+                    product.PRO_CodigoInterno ? `Cód. interno: ${product.PRO_CodigoInterno}` : null,
+                    product.PRO_CodigoFabricacion ? `Cód. fabricación: ${product.PRO_CodigoFabricacion}` : null,
+                ].filter(Boolean).join(' · ');
                 html += `
                 <div class="product-card">
                     <div class="product-image">
@@ -2492,6 +2496,7 @@
 
                     <div class="product-name">${product.PRO_Nombre}</div>
                     <div class="product-description">${product.PRO_Descripcion ?? ''}</div>
+                    ${codigos ? `<div class="product-description" style="font-size:11px;opacity:.7;">${codigos}</div>` : ''}
                     <div class="product-footer">
                         <div>
                             <div class="product-price">S/ ${product.PRO_PrecioBaseVenta}</div>

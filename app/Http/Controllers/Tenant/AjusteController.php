@@ -70,10 +70,17 @@ class AjusteController extends Controller
                 $join->on('lt.PRO_Id', '=', 'p.PRO_Id')
                     ->where('lt.ALM_Id', '=', $request->ALM_Id);
             })
-            ->select('p.PRO_Id', 'p.PRO_Nombre', DB::raw('COALESCE(SUM(lt.LOT_CantidadReal), 0) as stock'))
+            ->select('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_CodigoInterno', 'p.PRO_CodigoFabricacion', DB::raw('COALESCE(SUM(lt.LOT_CantidadReal), 0) as stock'))
             ->where('p.PRO_Status', 1)
-            ->when($request->filled('search'), fn ($q) => $q->where('p.PRO_Nombre', 'like', '%' . $request->search . '%'))
-            ->groupBy('p.PRO_Id', 'p.PRO_Nombre')
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $busqueda = '%' . $request->search . '%';
+                $q->where(function ($qq) use ($busqueda) {
+                    $qq->where('p.PRO_Nombre', 'like', $busqueda)
+                        ->orWhere('p.PRO_CodigoInterno', 'like', $busqueda)
+                        ->orWhere('p.PRO_CodigoFabricacion', 'like', $busqueda);
+                });
+            })
+            ->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_CodigoInterno', 'p.PRO_CodigoFabricacion')
             ->orderBy('p.PRO_Nombre')
             ->limit(30)
             ->get();

@@ -64,11 +64,18 @@ class TrasladoController extends Controller
 
         $productos = DB::table('producto as p')
             ->join('lote as lt', 'lt.PRO_Id', '=', 'p.PRO_Id')
-            ->select('p.PRO_Id', 'p.PRO_Nombre', DB::raw('SUM(lt.LOT_CantidadReal) as stock'))
+            ->select('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_CodigoInterno', 'p.PRO_CodigoFabricacion', DB::raw('SUM(lt.LOT_CantidadReal) as stock'))
             ->where('lt.ALM_Id', $request->ALM_Id)
             ->where('p.PRO_Status', 1)
-            ->when($request->filled('search'), fn ($q) => $q->where('p.PRO_Nombre', 'like', '%' . $request->search . '%'))
-            ->groupBy('p.PRO_Id', 'p.PRO_Nombre')
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $busqueda = '%' . $request->search . '%';
+                $q->where(function ($qq) use ($busqueda) {
+                    $qq->where('p.PRO_Nombre', 'like', $busqueda)
+                        ->orWhere('p.PRO_CodigoInterno', 'like', $busqueda)
+                        ->orWhere('p.PRO_CodigoFabricacion', 'like', $busqueda);
+                });
+            })
+            ->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_CodigoInterno', 'p.PRO_CodigoFabricacion')
             ->havingRaw('SUM(lt.LOT_CantidadReal) > 0')
             ->orderBy('p.PRO_Nombre')
             ->limit(30)

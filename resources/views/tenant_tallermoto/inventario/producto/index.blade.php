@@ -115,6 +115,18 @@
                             </div>
                         </div>
                         <div class="form-group row">
+                            <div class="col-6">
+                                <label class="control-label" style=" text-align: left; display: block;">Código Interno:</label>
+                                <input type="text" id="PRO_CodigoInterno" name="PRO_CodigoInterno"
+                                    class="form-control input_user " placeholder="Ej. INT-0001">
+                            </div>
+                            <div class="col-6">
+                                <label class="control-label" style=" text-align: left; display: block;">Código de Fabricación:</label>
+                                <input type="text" id="PRO_CodigoFabricacion" name="PRO_CodigoFabricacion"
+                                    class="form-control input_user " placeholder="Ej. SKU del proveedor">
+                            </div>
+                        </div>
+                        <div class="form-group row">
                             <div class="col-12">
                                 <label class="control-label" style=" text-align: left; display: block;">Stock Mínimo:</label>
                                 <input type="number" id="PRO_StockMinimo" name="PRO_StockMinimo" min="0" step="1"
@@ -170,6 +182,7 @@
                                 <tr>
                                     <th scope="col">Id</th>
                                     <th scope="col">Nombre</th>
+                                    <th scope="col">Cód. Interno</th>
                                     <th scope="col">Categoria</th>
                                     <th scope="col">P. Venta</th>
                                     <th scope="col">P. Compra</th>
@@ -294,6 +307,27 @@
                                         </small>
 
                                         <div class="fw-semibold" id="ver_PRO_Marca">
+                                        </div>
+
+                                    </div>
+
+                                    <!-- CODIGOS -->
+                                    <div class="row mb-4">
+
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">
+                                                Código Interno
+                                            </small>
+                                            <div class="fw-semibold" id="ver_PRO_CodigoInterno">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">
+                                                Código de Fabricación
+                                            </small>
+                                            <div class="fw-semibold" id="ver_PRO_CodigoFabricacion">
+                                            </div>
                                         </div>
 
                                     </div>
@@ -478,6 +512,12 @@
                         className: 'text-start'
                     },
                     {
+                        data: 'PRO_CodigoInterno',
+                        name: 'PRO_CodigoInterno',
+                        className: 'text-start',
+                        defaultContent: '-'
+                    },
+                    {
                         data: 'CAT_Nombre',
                         name: 'CAT_Nombre',
                         className: 'text-start'
@@ -571,6 +611,8 @@
                         $('#PRO_PrecioCompra').val(result.data.PRO_PrecioCompra);
                         $('#PRO_PrecioVenta').val(result.data.PRO_PrecioVenta);
                         $('#PRO_Marca').val(result.data.PRO_Marca);
+                        $('#PRO_CodigoInterno').val(result.data.PRO_CodigoInterno);
+                        $('#PRO_CodigoFabricacion').val(result.data.PRO_CodigoFabricacion);
                         $('#PRO_StockMinimo').val(result.data.PRO_StockMinimo);
                         $('#CAT_Id').val(result.data.CAT_Id);
                         $('#CAT_Id').change();
@@ -595,6 +637,8 @@
                         $('#ver_PRO_Nombre').text(data.data.PRO_Nombre);
                         $('#ver_PRO_Descripcion').text(data.data.PRO_Descripcion);
                         $('#ver_PRO_Marca').text(data.data.PRO_Marca);
+                        $('#ver_PRO_CodigoInterno').text(data.data.PRO_CodigoInterno || '-');
+                        $('#ver_PRO_CodigoFabricacion').text(data.data.PRO_CodigoFabricacion || '-');
                         $('#ver_PRO_PrecioCompra').text(data.data.PRO_PrecioCompra);
                         $('#ver_PRO_PrecioVenta').text(data.data.PRO_PrecioVenta);
                         $('#ver_Imagen').attr('src', data.imagen);
