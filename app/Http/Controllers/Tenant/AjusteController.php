@@ -65,15 +65,38 @@ class AjusteController extends Controller
     {
         $request->validate(['ALM_Id' => 'required|integer|exists:almacen,ALM_Id']);
 
+        // PRO_CodigoInterno/PRO_CodigoFabricacion solo existen en tallermoto
+        // (ver ProductoController::tenantTieneCodigosProducto()): este
+        // controlador es compartido con generico.
+        $tieneCodigos = tenant('tipo_negocio') === 'tallermoto';
+
+        $columnas = ['p.PRO_Id', 'p.PRO_Nombre'];
+        $agrupar = ['p.PRO_Id', 'p.PRO_Nombre'];
+        if ($tieneCodigos) {
+            $columnas[] = 'p.PRO_CodigoInterno';
+            $columnas[] = 'p.PRO_CodigoFabricacion';
+            $agrupar[] = 'p.PRO_CodigoInterno';
+            $agrupar[] = 'p.PRO_CodigoFabricacion';
+        }
+
         $productos = DB::table('producto as p')
             ->leftJoin('lote as lt', function ($join) use ($request) {
                 $join->on('lt.PRO_Id', '=', 'p.PRO_Id')
                     ->where('lt.ALM_Id', '=', $request->ALM_Id);
             })
-            ->select('p.PRO_Id', 'p.PRO_Nombre', DB::raw('COALESCE(SUM(lt.LOT_CantidadReal), 0) as stock'))
+            ->select(array_merge($columnas, [DB::raw('COALESCE(SUM(lt.LOT_CantidadReal), 0) as stock')]))
             ->where('p.PRO_Status', 1)
-            ->when($request->filled('search'), fn ($q) => $q->where('p.PRO_Nombre', 'like', '%' . $request->search . '%'))
-            ->groupBy('p.PRO_Id', 'p.PRO_Nombre')
+            ->when($request->filled('search'), function ($q) use ($request, $tieneCodigos) {
+                $busqueda = '%' . $request->search . '%';
+                $q->where(function ($qq) use ($busqueda, $tieneCodigos) {
+                    $qq->where('p.PRO_Nombre', 'like', $busqueda);
+                    if ($tieneCodigos) {
+                        $qq->orWhere('p.PRO_CodigoInterno', 'like', $busqueda)
+                            ->orWhere('p.PRO_CodigoFabricacion', 'like', $busqueda);
+                    }
+                });
+            })
+            ->groupBy($agrupar)
             ->orderBy('p.PRO_Nombre')
             ->limit(30)
             ->get();

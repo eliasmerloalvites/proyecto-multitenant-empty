@@ -9,7 +9,12 @@
             flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
         }
         .cot-header h4 { margin: 0; font-weight: 700; }
-        .cot-card { background: #fff; border-radius: 16px; border: 1px solid #EEF2F7; box-shadow: 0 4px 18px rgba(0,0,0,.04); padding: 18px; }
+        /* Mismas variables de tema (--bg-card, --text-main) que usan Ventas
+           y los demas modulos del panel: la tarjeta se oscurece sola en
+           modo oscuro y queda blanca en modo claro, sin fondo fijo. */
+        .cot-card { background: var(--bg-card, #fff); color: var(--text-main, #1F2937); border-radius: 16px; border: 1px solid rgba(127,127,127,.15); box-shadow: 0 4px 18px rgba(0,0,0,.08); padding: 18px; }
+        .cot-card #tabla_cotizaciones { color: var(--text-main, #1F2937); }
+        .cot-card .dataTables_empty { color: var(--text-muted, #9CA3AF); }
         .filtro-estado { min-width: 190px; }
     </style>
 

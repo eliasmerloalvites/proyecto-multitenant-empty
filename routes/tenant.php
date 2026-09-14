@@ -342,12 +342,11 @@ Route::middleware([
                 Route::post('/cuenta/{cuenta}/cerrar-sin-cobrar', [BahiaVentaController::class, 'cerrarSinCobrar'])->name('cerrarSinCobrar');
                 Route::get('/cuenta/{cuenta}/cobrar', [BahiaVentaController::class, 'cobrar'])->name('cobrar');
             });
-            Route::resource('/tenant/ventas/venta', VentaController::class)->names([
+            Route::resource('/tenant/ventas/venta', VentaController::class)->except(['update'])->names([
                 'index' => 'tenant.ventas.venta.index',
                 'create' => 'tenant.ventas.venta.create',
                 'store' => 'tenant.ventas.venta.store',
                 'edit' => 'tenant.ventas.venta.edit',
-                'update' => 'tenant.ventas.venta.update',
                 'destroy' => 'tenant.ventas.venta.destroy',
                 'show' => 'tenant.ventas.venta.show'
             ])->parameters([

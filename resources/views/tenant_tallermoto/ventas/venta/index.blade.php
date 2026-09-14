@@ -136,6 +136,9 @@
                                 <th scope="col">Met. Pago</th>
                                 <th scope="col">Importe</th>
                                 <th scope="col">Fecha</th>
+                                @if ($mostrarCotizacion ?? false)
+                                    <th scope="col">Cotización</th>
+                                @endif
                                 @if ($mostrarSunat ?? false)
                                     <th scope="col">SUNAT</th>
                                 @endif
@@ -213,6 +216,13 @@
                                     <div class="detalle-item">
                                         <span>Cliente</span>
                                         <strong id="ver_Cliente"></strong>
+                                    </div>
+
+                                    <div class="detalle-item" id="ver_filaCotizacion" style="display:none;">
+                                        <span>Cotización de origen</span>
+                                        <strong>
+                                            <a href="#" id="ver_CotizacionLink" target="_blank" class="badge bg-info text-white"></a>
+                                        </strong>
                                     </div>
 
                                     <div class="detalle-item border-bottom-0 pb-0">
@@ -534,6 +544,15 @@
                         name: 'fecha',
                         className: 'text-start'
                     },
+                    @if ($mostrarCotizacion ?? false)
+                    {
+                        data: 'cotizacion',
+                        name: 'cotizacion',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-start text-nowrap'
+                    },
+                    @endif
                     @if ($mostrarSunat ?? false)
                     {
                         data: 'sunat',
@@ -809,6 +828,15 @@
                         $('#ver_NumComprobante').text(data.venta.serDoc + " - " + data.venta.numDoc);
                         $('#ver_Cliente').text(data.venta.cliente);
                         $('#ver_Empleado').text(data.venta.empleado);
+
+                        if (data.venta.cotizacionId) {
+                            var codigoCot = 'COT-' + String(data.venta.cotizacionId).padStart(5, '0');
+                            $('#ver_CotizacionLink').text(codigoCot)
+                                .attr('href', '{{ tenant_url('tenant.ventas.cotizacion.show', ['cotizacion' => ':cot']) }}'.replace(':cot', data.venta.cotizacionId));
+                            $('#ver_filaCotizacion').show();
+                        } else {
+                            $('#ver_filaCotizacion').hide();
+                        }
 
                         data.detalle.forEach(det => {
                             idProducto = det.PRO_Id;

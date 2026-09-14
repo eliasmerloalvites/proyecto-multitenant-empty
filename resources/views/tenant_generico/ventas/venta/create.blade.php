@@ -554,7 +554,7 @@
             font-size: 13px;
             font-weight: 700;
 
-            color: #ffffff;
+            color: #111827;
 
             margin-bottom: 8px;
 

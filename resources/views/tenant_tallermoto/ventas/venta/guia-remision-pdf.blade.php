@@ -5,7 +5,17 @@
     <meta charset="UTF-8">
     <title>Guía de Remisión {{ $guia->GRM_Serie }}-{{ str_pad($guia->GRM_Numero, 8, '0', STR_PAD_LEFT) }}</title>
 
+    @php
+        // Paleta de marca configurada por el tenant en Configuracion >
+        // Empresa (Color Marca Base/Hover = color_main/color_light).
+        $paleta = paleta_documento($empresa);
+    @endphp
     <style>
+        :root {
+            --primary: {{ $paleta['primary'] }};
+            --primary-dark: {{ $paleta['primary_dark'] }};
+        }
+
         @page {
             margin: 0px;
             padding: 10px;
@@ -46,7 +56,7 @@
 
         .header {
             padding: 16px 22px 14px 22px;
-            border-bottom: 4px solid #00398A;
+            border-bottom: 4px solid var(--primary);
         }
 
         .header-table {
@@ -76,7 +86,7 @@
         }
 
         .doc-box {
-            border: 2px solid #00398A;
+            border: 2px solid var(--primary);
             border-radius: 4px;
             padding: 10px 14px;
             text-align: center;
@@ -85,7 +95,7 @@
         .doc-box .doc-title {
             font-size: 10px;
             font-weight: bold;
-            color: #00398A;
+            color: var(--primary);
         }
 
         .doc-box .doc-numero {
@@ -111,7 +121,7 @@
         }
 
         .section-title {
-            background: #00398A;
+            background: var(--primary);
             color: white;
             padding: 8px 14px;
             font-size: 11px;
@@ -159,7 +169,7 @@
         }
 
         .items-table th {
-            background: #00398A;
+            background: var(--primary);
             color: white;
             padding: 8px;
             border: 1px solid #2563eb;
@@ -183,7 +193,7 @@
 
         .footer {
             margin-top: 15px;
-            background: #00398A;
+            background: var(--primary);
             color: white;
             padding: 10px 18px;
             font-size: 9px;

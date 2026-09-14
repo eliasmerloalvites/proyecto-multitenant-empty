@@ -9,6 +9,12 @@
         Factura Electrónica
     </title>
 
+    @php
+        // Paleta de marca configurada por el tenant en Configuracion >
+        // Empresa (Color Marca Base/Hover = color_main/color_light).
+        $paleta = paleta_documento($datosalmacen);
+    @endphp
+
     <style>
 
         *{
@@ -19,8 +25,10 @@
 
         :root{
 
-            --primary:#0F2B70;
-            --primary-light:#163c99;
+            --primary:{{ $paleta['primary'] }};
+            --primary-light:{{ $paleta['primary_light'] }};
+            --primary-dark:{{ $paleta['primary_dark'] }};
+            --primary-soft:{{ $paleta['primary_soft'] }};
             --gray:#64748b;
             --border:#e2e8f0;
 
@@ -44,6 +52,18 @@
             border-radius:10px;
             box-shadow: 0 10px 35px rgba(15,43,112,.08);
             font-size:11.5px;
+            position:relative;
+            overflow:hidden;
+        }
+
+        .invoice::before{
+            content:'';
+            position:absolute;
+            top:0;
+            left:0;
+            right:0;
+            height:6px;
+            background:linear-gradient(90deg, var(--primary), var(--primary-light));
         }
 
         /* =======================================
@@ -55,6 +75,7 @@
             justify-content:space-between;
             align-items:flex-start;
             gap:16px;
+            margin-top:6px;
         }
 
         /* =======================================
@@ -66,19 +87,21 @@
         }
         .logo{
             width:120px;
+            max-height:70px;
+            object-fit:contain;
             margin-bottom:5px;
         }
 
         .company-name{
             font-size:20px;
             font-weight:900;
-            color:var(--primary);
+            color:var(--primary-dark);
             margin-bottom:4px;
             line-height:1.1;
         }
 
         .company-subtitle{
-            color:#2563eb;
+            color:var(--primary);
             font-size:12px;
             font-weight:700;
             margin-bottom:8px;
@@ -104,6 +127,7 @@
             overflow:hidden;
             background:white;
             box-shadow: 0 6px 16px rgba(15,43,112,.15);
+            border:1px solid var(--primary-soft);
 
         }
 
@@ -138,7 +162,7 @@
             font-weight:900;
             text-align:center;
             line-height:1.05;
-            color:var(--primary);
+            color:var(--primary-dark);
             margin-bottom:10px;
 
         }
@@ -153,6 +177,20 @@
 
         .document-detail strong{
             color:#111827;
+        }
+
+        .cotizacion-pill{
+            display:block;
+            text-align:center;
+            margin:-2px 0 8px;
+            font-size:10px;
+            font-weight:800;
+            letter-spacing:.3px;
+            color:var(--primary-dark);
+            background:var(--primary-soft);
+            border:1px dashed var(--primary-light);
+            border-radius:20px;
+            padding:3px 8px;
         }
 
         /* =======================================
@@ -253,7 +291,7 @@
 
         tbody tr:nth-child(even){
 
-            background:#f8fbff;
+            background:var(--primary-soft);
 
         }
 
@@ -303,7 +341,7 @@
         }
 
         .amount-letters h4{
-            color:var(--primary);
+            color:var(--primary-dark);
             font-size:13px;
             margin-bottom:6px;
             font-weight:800;
@@ -364,7 +402,7 @@
             border:1px solid var(--border);
             border-radius:8px;
             padding:8px;
-            background:#f8fbff;
+            background:var(--primary-soft);
             display:flex;
             gap:10px;
             align-items:center;
@@ -386,7 +424,7 @@
         }
 
         .aditional-title{
-            color:var(--primary);
+            color:var(--primary-dark);
             font-size:12.5px;
             font-weight:800;
             margin-bottom:6px;
@@ -405,6 +443,17 @@
             width:95px;
         }
 
+        .aditional-item .badge-cotizacion{
+            display:inline-block;
+            background:var(--primary-soft);
+            color:var(--primary-dark);
+            border:1px solid var(--primary-light);
+            border-radius:10px;
+            padding:0 6px;
+            font-weight:800;
+            font-size:10px;
+        }
+
         /* =======================================
             THANKS
         ======================================= */
@@ -419,7 +468,7 @@
         .thanks-title{
             font-size:18px;
             font-weight:800;
-            color:var(--primary);
+            color:var(--primary-dark);
             margin-bottom:4px;
         }
 
@@ -484,7 +533,7 @@
         }
 
         .download-btn:hover{
-            background:var(--primary-light);
+            background:var(--primary-dark);
         }
 
     </style>
@@ -561,13 +610,17 @@
 
                 </div>
 
-                <div>
+                @if(!empty($datosalmacen->correo))
 
-                    <strong>Email:</strong>
+                    <div>
 
-                    ventas@empresa.com.pe
+                        <strong>Email:</strong>
 
-                </div>
+                        {{ $datosalmacen->correo }}
+
+                    </div>
+
+                @endif
 
             </div>
 
@@ -599,6 +652,16 @@
                     {{ $UbiDoc ?? 'F001' }} - {{ $NumDoc ?? '00000001' }}
 
                 </div>
+
+                @if(!empty($cotizacionCodigo ?? null))
+
+                    <div class="cotizacion-pill">
+
+                        <i>Generada desde cotización {{ $cotizacionCodigo }}</i>
+
+                    </div>
+
+                @endif
 
                 <div class="document-detail">
 
@@ -694,15 +757,19 @@
 
                     </div>
 
-                    <div class="client-item">
+                    @if(!empty($ventae->clienteCorreo ?? null))
 
-                        <strong>Correo:</strong>
+                        <div class="client-item">
 
-                        <span>
-                            cliente@gmail.com
-                        </span>
+                            <strong>Correo:</strong>
 
-                    </div>
+                            <span>
+                                {{ $ventae->clienteCorreo }}
+                            </span>
+
+                        </div>
+
+                    @endif
 
                 </div>
 
@@ -1001,6 +1068,20 @@
                 </span>
 
             </div>
+
+            @if(!empty($cotizacionCodigo ?? null))
+
+                <div class="aditional-item">
+
+                    <strong>Cotización:</strong>
+
+                    <span class="badge-cotizacion">
+                        {{ $cotizacionCodigo }}
+                    </span>
+
+                </div>
+
+            @endif
 
             <div class="aditional-item">
 

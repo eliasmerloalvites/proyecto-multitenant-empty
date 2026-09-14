@@ -6,7 +6,19 @@
 
     <title>Formato Mantenimiento General Inyectada</title>
 
+    @php
+        // Paleta de marca configurada por el tenant en Configuracion >
+        // Empresa (Color Marca Base/Hover = color_main/color_light).
+        $paleta = paleta_documento($empresa);
+    @endphp
+
     <style>
+
+        :root {
+            --primary: {{ $paleta['primary'] }};
+            --primary-light: {{ $paleta['primary_light'] }};
+            --primary-dark: {{ $paleta['primary_dark'] }};
+        }
 
         @page {
             margin: 0px;
@@ -64,7 +76,7 @@
 
         .header {
             padding: 16px 22px 14px 22px;
-            border-bottom: 4px solid #00398A;
+            border-bottom: 4px solid var(--primary);
             position: relative;
         }
 
@@ -99,7 +111,7 @@
         }
 
         .header-info strong {
-            color: #00398A;
+            color: var(--primary);
         }
 
         .blue-shape {
@@ -108,7 +120,7 @@
             left: 0;
             width: 180px;
             height: 14px;
-            background: #00398A;
+            background: var(--primary);
             border-radius: 0 20px 20px 0;
         }
 
@@ -123,7 +135,7 @@
         }
 
         .section-title {
-            background: #00398A;
+            background: var(--primary);
             color: white;
             padding: 10px 14px;
             font-size: 12px;
@@ -166,7 +178,7 @@
         }
 
         .company-label {
-            color: #00398A;
+            color: var(--primary);
             font-size: 11px;
             font-weight: bold;
             margin-bottom: 4px;
@@ -226,7 +238,7 @@
         }
 
         .small-title {
-            background: #00398A;
+            background: var(--primary);
             color: white;
             padding: 10px 14px;
             font-size: 12px;
@@ -272,11 +284,11 @@
         }
 
         .parts-table th {
-            background: #00398A;
+            background: var(--primary);
             /* Cabezeras Azul oscuro */
             color: white;
             padding: 9px;
-            border: 1px solid #2563eb;
+            border: 1px solid var(--primary-light);
             font-size: 10px;
         }
 
@@ -289,7 +301,7 @@
         .parts-total {
             font-size: 12px;
             font-weight: bold;
-            color: #00398A;
+            color: var(--primary);
         }
 
         /* =========================================
@@ -305,7 +317,7 @@
 
         .service-title {
             background: #f8fbff;
-            color: #00398A;
+            color: var(--primary);
             padding: 10px 12px;
             font-size: 11px;
             font-weight: bold;
@@ -377,7 +389,7 @@
 
         .footer {
             margin-top: 15px;
-            background: #00398A;
+            background: var(--primary);
             color: white;
             padding: 12px 18px;
         }
@@ -401,7 +413,7 @@
         
         .service-box {
             width: 100%;
-            border: 2px solid #00398A;
+            border: 2px solid var(--primary);
             border-radius: 6px;
             overflow: hidden;
             font-family: Arial, sans-serif;
@@ -410,7 +422,7 @@
         }
 
         .service-title {
-            background: #00398A;
+            background: var(--primary);
             color: white;
             padding: 8px 12px;
             font-weight: bold;
@@ -436,7 +448,7 @@
         .number {
             width: 40px;
             font-weight: bold;
-            color: #0d47b5;
+            color: var(--primary-dark);
         }
 
         .description {
@@ -451,7 +463,7 @@
 
         .status-ok {
             display: inline-block;
-            background: #0d6efd;
+            background: var(--primary);
             color: white;
             font-size: 10px;
             font-weight: bold;
@@ -482,7 +494,7 @@
             min-width: 50px;
             border-bottom: 1px solid #d8d8d8;
             text-align: center;
-            color: #0d47b5;
+            color: var(--primary-dark);
             font-weight: bold;
         }
 
@@ -509,7 +521,7 @@
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            background: #0d6efd;
+            background: var(--primary);
         }
 
         .circle-empty {
@@ -902,7 +914,7 @@
                                                 border-radius:4px;
                                                 padding:4px;
                                                 font-weight:bold;
-                                                color:#0d47b5;
+                                                color:var(--primary-dark);
                                                 background:#fff;
                                             ">
                                             {{ $mttoPreventivo->MGI_Det9Admision }}
@@ -926,7 +938,7 @@
                                                 border-radius:4px;
                                                 padding:4px;
                                                 font-weight:bold;
-                                                color:#0d47b5;
+                                                color:var(--primary-dark);
                                                 background:#fff;
                                             ">
                                             {{ $mttoPreventivo->MGI_Det9Escape }}
@@ -966,7 +978,7 @@
                                                 border-radius:4px;
                                                 padding:4px;
                                                 font-weight:bold;
-                                                color:#0d47b5;
+                                                color:var(--primary-dark);
                                                 background:#fff;
                                             ">
                                             {{ $mttoPreventivo->MGI_Det10Medida }}
@@ -1010,7 +1022,7 @@
                                                 border-radius:4px;
                                                 padding:4px;
                                                 font-weight:bold;
-                                                color:#0d47b5;
+                                                color:var(--primary-dark);
                                                 background:#fff;
                                             ">
                                             {{ $mttoPreventivo->MGI_Det11Medida }}
@@ -1157,7 +1169,7 @@
                                                 border-radius:4px;
                                                 padding:4px;
                                                 font-weight:bold;
-                                                color:#0d47b5;
+                                                color:var(--primary-dark);
                                                 background:#fff;
                                             ">
                                             {{ $mttoPreventivo->MGI_Det20Humedad }}
@@ -1213,7 +1225,7 @@
                                                 border-radius:4px;
                                                 padding:4px;
                                                 font-weight:bold;
-                                                color:#0d47b5;
+                                                color:var(--primary-dark);
                                                 background:#fff;
                                             ">
                                             {{ $mttoPreventivo->MGI_Det22Ventilador }}
@@ -1270,7 +1282,7 @@
                                                 border-radius:4px;
                                                 padding:4px;
                                                 font-weight:bold;
-                                                color:#0d47b5;
+                                                color:var(--primary-dark);
                                                 background:#fff;
                                             ">
                                             {{ $mttoPreventivo->MGI_Det24Vida }}
@@ -1293,7 +1305,7 @@
                                                 border-radius:4px;
                                                 padding:4px;
                                                 font-weight:bold;
-                                                color:#0d47b5;
+                                                color:var(--primary-dark);
                                                 background:#fff;
                                             ">
                                             {{ $mttoPreventivo->MGI_Det24Carga }}
@@ -1316,7 +1328,7 @@
                                                 border-radius:4px;
                                                 padding:4px;
                                                 font-weight:bold;
-                                                color:#0d47b5;
+                                                color:var(--primary-dark);
                                                 background:#fff;
                                             ">
                                             {{ $mttoPreventivo->MGI_Det24Arranque }}

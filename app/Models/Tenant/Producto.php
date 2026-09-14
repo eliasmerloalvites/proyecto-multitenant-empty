@@ -18,6 +18,8 @@ class Producto extends Model
         'PRO_Marca',
         'PRO_Imagen',
         'PRO_StockMinimo',
+        'PRO_CodigoInterno',
+        'PRO_CodigoFabricacion',
         'CAT_Id',
         'PRO_Status'
     ];

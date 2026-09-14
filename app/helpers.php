@@ -22,6 +22,66 @@ if (! function_exists('tenant_url')) {
     }
 }
 
+if (! function_exists('mezclar_color')) {
+
+    /**
+     * Mezcla un color hex con otro (blanco/negro tipicamente) en el
+     * porcentaje indicado (0 = igual al original, 1 = igual al de mezcla).
+     * Se usa para derivar tonos claros/oscuros de un solo color de marca
+     * configurado por el tenant, sin pedirle que arme una paleta completa.
+     */
+    function mezclar_color(?string $hex, string $hexMezcla, float $peso): string
+    {
+        $hex = ltrim(trim((string) $hex), '#');
+        $hexMezcla = ltrim(trim($hexMezcla), '#');
+
+        if (strlen($hex) === 3) {
+            $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+        }
+        if (strlen($hexMezcla) === 3) {
+            $hexMezcla = $hexMezcla[0] . $hexMezcla[0] . $hexMezcla[1] . $hexMezcla[1] . $hexMezcla[2] . $hexMezcla[2];
+        }
+        if (strlen($hex) !== 6 || !ctype_xdigit($hex)) {
+            $hex = '3b82f6';
+        }
+
+        [$r1, $g1, $b1] = array_map('hexdec', str_split($hex, 2));
+        [$r2, $g2, $b2] = array_map('hexdec', str_split($hexMezcla, 2));
+
+        $r = (int) round($r1 + ($r2 - $r1) * $peso);
+        $g = (int) round($g1 + ($g2 - $g1) * $peso);
+        $b = (int) round($b1 + ($b2 - $b1) * $peso);
+
+        return sprintf('#%02x%02x%02x', $r, $g, $b);
+    }
+}
+
+if (! function_exists('paleta_documento')) {
+
+    /**
+     * Paleta de color para PDFs/tickets a partir de la marca que el tenant
+     * configura en Configuracion > Empresa: color_main ("Color Marca Base")
+     * y color_light ("Color Marca Hover"). El resto de tonos (oscuro para
+     * texto/titulos, suave para fondos de zebra/pills) se derivan de esos
+     * dos para no pedirle al tenant una paleta completa solo para
+     * documentos. $fuente puede ser el modelo EmpresaFacturacion o
+     * cualquier objeto/stdClass con esas mismas columnas (por ejemplo el
+     * join almacen+empresa_facturacion que usan los tickets de venta).
+     */
+    function paleta_documento($fuente): array
+    {
+        $base = $fuente->color_main ?? '#3b82f6';
+        $hover = $fuente->color_light ?? mezclar_color($base, 'ffffff', 0.25);
+
+        return [
+            'primary'       => $base,
+            'primary_light' => $hover,
+            'primary_dark'  => mezclar_color($base, '000000', 0.35),
+            'primary_soft'  => mezclar_color($base, 'ffffff', 0.92),
+        ];
+    }
+}
+
 if (! function_exists('saas_plans_config')) {
 
     /**
