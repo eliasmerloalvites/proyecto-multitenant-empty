@@ -333,10 +333,7 @@ class AnulacionService
             'boletas'                   => [[
                 'serie'       => $documento->DOV_Serie,
                 'correlativo' => (string) $documento->DOV_Numero,
-                'cliente'     => [
-                    'tipo_doc' => SunatService::tipoDocumentoSunat($venta->CLI_TipoDocumento),
-                    'numero'   => $venta->CLI_NumDocumento,
-                ],
+                'cliente'     => $this->clienteParaBaja($venta->CLI_TipoDocumento, $venta->CLI_NumDocumento),
                 'mto_oper_gravadas' => round($gravadas, 2),
                 'igv'               => round($igv, 2),
                 'icbper'            => round($icbper, 2),
@@ -347,6 +344,49 @@ class AnulacionService
             'clave_certificado'         => $this->empresa->certificado_password,
             'extension_certificado'     => $this->empresa->extensionCertificado(),
         ];
+    }
+
+    /**
+     * Bloque "cliente" del Resumen de Baja (RC). La emision original de la
+     * boleta acepta un DNI placeholder como "00000000" (SUNAT es laxo con
+     * boletas de monto bajo sin cliente identificado), pero el endpoint de
+     * Resumen de Baja SI valida el formato del documento y lo rechaza como
+     * "Bad Request" si el numero no tiene pinta de documento real. Por eso
+     * aqui, a diferencia de SunatService (emision), un documento invalido/
+     * placeholder se manda como "Varios" (tipo_doc '-', sin numero) en vez
+     * de forzar un DNI que no es real.
+     */
+    private function clienteParaBaja(?string $tipoDocumento, ?string $numeroDocumento): array
+    {
+        if (!$this->esDocumentoValido($tipoDocumento, $numeroDocumento)) {
+            return ['tipo_doc' => '-', 'numero' => ''];
+        }
+
+        return [
+            'tipo_doc' => SunatService::tipoDocumentoSunat($tipoDocumento),
+            'numero'   => $numeroDocumento,
+        ];
+    }
+
+    /**
+     * Valida que el numero tenga la pinta minima de un documento real para
+     * el tipo declarado (no que exista de verdad, eso ya lo decidio SUNAT
+     * al aceptar la boleta original). Un DNI de puros ceros u otro numero
+     * repetido es el patron clasico del cliente generico/placeholder.
+     */
+    private function esDocumentoValido(?string $tipoDocumento, ?string $numeroDocumento): bool
+    {
+        $numero = trim((string) $numeroDocumento);
+
+        if ($numero === '' || preg_match('/^0+$/', $numero)) {
+            return false;
+        }
+
+        return match (strtoupper(trim((string) $tipoDocumento))) {
+            'DNI' => (bool) preg_match('/^\d{8}$/', $numero),
+            'RUC' => (bool) preg_match('/^\d{11}$/', $numero),
+            default => true,
+        };
     }
 
     /**
