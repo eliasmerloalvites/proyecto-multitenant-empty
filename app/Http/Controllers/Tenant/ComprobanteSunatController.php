@@ -106,6 +106,15 @@ class ComprobanteSunatController extends Controller
                 throw new RuntimeException('La API facturadora no respondio JSON.');
             }
 
+            // Si SUNAT da una respuesta confirmada, se aprovecha para dejar el
+            // documento local al dia: estado real + XML/CDR (se piden con
+            // 'incluir_cdr' arriba). Sin esto, consultar era de solo lectura y
+            // un estado local desactualizado (ej. un reenvio que marco
+            // ACEPTADO pero sin guardar la constancia) nunca se autocorregia.
+            if (($data['success'] ?? false) && in_array($data['estado'] ?? null, self::ESTADOS_CONFIRMADOS, true)) {
+                $this->marcarComoRegistrado($ventaId, $data);
+            }
+
             return response()->json([
                 'success'     => $data['success'] ?? false,
                 'codigo'      => $data['codigo'] ?? null,
@@ -235,30 +244,55 @@ class ComprobanteSunatController extends Controller
             return null;
         }
 
-        return [
-            'codigo'      => (string) ($data['codigo'] ?? ''),
-            'descripcion' => $data['descripcion'] ?? 'sin detalle',
-            'estado'      => $estado,
-        ];
+        // Se devuelve la respuesta completa (no solo codigo/descripcion/estado):
+        // si vino con 'incluir_cdr', trae xml_base64/cdr_base64 que hay que
+        // guardar para que el documento quede realmente descargable.
+        return $data;
     }
 
     /**
      * Alinea el documento local con lo que SUNAT dice tener, para que la lista
-     * deje de ofrecer el reenvio.
+     * deje de ofrecer el reenvio. Tambien guarda el XML/CDR si la consulta los
+     * trajo: antes solo se actualizaba el estado y la constancia quedaba sin
+     * archivo, aunque SUNAT si la tuviera.
      */
     private function marcarComoRegistrado($ventaId, array $sunat): void
     {
+        $this->guardarArchivosSunat($sunat);
+
+        $respuesta = $sunat;
+        unset($respuesta['xml_base64'], $respuesta['cdr_base64'], $respuesta['certificado']);
+
         // $sunat['estado'] siempre viene de ESTADOS_CONFIRMADOS (ver
         // yaEstaEnSunat), nunca vacio: no hay fallback a 'ACEPTADO' a ciegas.
         DB::table('documento_venta')
             ->where('VEN_Id', $ventaId)
             ->update([
                 'DOV_Estado'              => $sunat['estado'],
-                'DOV_CodigoSunat'         => $sunat['codigo'],
-                'DOV_DescripcionSunat'    => $sunat['descripcion'],
+                'DOV_EstadoSunat'         => $sunat['estado'],
+                'DOV_CodigoSunat'         => (string) ($sunat['codigo'] ?? ''),
+                'DOV_DescripcionSunat'    => $sunat['descripcion'] ?? 'sin detalle',
+                'DOV_ResponseSunat'       => json_encode($respuesta),
                 'DOV_FechaRespuestaSunat' => now(),
                 'updated_at'              => now(),
             ]);
+    }
+
+    /**
+     * Mismo formato que usa el envio normal (SunatService::guardarArchivos):
+     * xml_base64/xml_name y cdr_base64/cdr_name.
+     */
+    private function guardarArchivosSunat(array $data): void
+    {
+        $base = 'tenant/' . tenant('tipo_negocio') . '/' . tenant('id') . '/sunat/';
+
+        if (!empty($data['xml_base64']) && !empty($data['xml_name'])) {
+            Storage::put($base . 'xml/' . $data['xml_name'], base64_decode($data['xml_base64']));
+        }
+
+        if (!empty($data['cdr_base64']) && !empty($data['cdr_name'])) {
+            Storage::put($base . 'cdr/' . $data['cdr_name'], base64_decode($data['cdr_base64']));
+        }
     }
 
     private function documento($ventaId)
