@@ -62,20 +62,36 @@ class TrasladoController extends Controller
     {
         $request->validate(['ALM_Id' => 'required|integer|exists:almacen,ALM_Id']);
 
+        // PRO_CodigoInterno/PRO_CodigoFabricacion solo existen en tallermoto
+        // (ver ProductoController::tenantTieneCodigosProducto()): este
+        // controlador es compartido con generico.
+        $tieneCodigos = tenant('tipo_negocio') === 'tallermoto';
+
+        $columnas = ['p.PRO_Id', 'p.PRO_Nombre'];
+        $agrupar = ['p.PRO_Id', 'p.PRO_Nombre'];
+        if ($tieneCodigos) {
+            $columnas[] = 'p.PRO_CodigoInterno';
+            $columnas[] = 'p.PRO_CodigoFabricacion';
+            $agrupar[] = 'p.PRO_CodigoInterno';
+            $agrupar[] = 'p.PRO_CodigoFabricacion';
+        }
+
         $productos = DB::table('producto as p')
             ->join('lote as lt', 'lt.PRO_Id', '=', 'p.PRO_Id')
-            ->select('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_CodigoInterno', 'p.PRO_CodigoFabricacion', DB::raw('SUM(lt.LOT_CantidadReal) as stock'))
+            ->select(array_merge($columnas, [DB::raw('SUM(lt.LOT_CantidadReal) as stock')]))
             ->where('lt.ALM_Id', $request->ALM_Id)
             ->where('p.PRO_Status', 1)
-            ->when($request->filled('search'), function ($q) use ($request) {
+            ->when($request->filled('search'), function ($q) use ($request, $tieneCodigos) {
                 $busqueda = '%' . $request->search . '%';
-                $q->where(function ($qq) use ($busqueda) {
-                    $qq->where('p.PRO_Nombre', 'like', $busqueda)
-                        ->orWhere('p.PRO_CodigoInterno', 'like', $busqueda)
-                        ->orWhere('p.PRO_CodigoFabricacion', 'like', $busqueda);
+                $q->where(function ($qq) use ($busqueda, $tieneCodigos) {
+                    $qq->where('p.PRO_Nombre', 'like', $busqueda);
+                    if ($tieneCodigos) {
+                        $qq->orWhere('p.PRO_CodigoInterno', 'like', $busqueda)
+                            ->orWhere('p.PRO_CodigoFabricacion', 'like', $busqueda);
+                    }
                 });
             })
-            ->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_CodigoInterno', 'p.PRO_CodigoFabricacion')
+            ->groupBy($agrupar)
             ->havingRaw('SUM(lt.LOT_CantidadReal) > 0')
             ->orderBy('p.PRO_Nombre')
             ->limit(30)

@@ -12,6 +12,17 @@ use Illuminate\Support\Facades\Schema;
 class ProductoController extends Controller
 {
     /**
+     * PRO_CodigoInterno/PRO_CodigoFabricacion solo existen en la tabla
+     * `producto` de tallermoto: este controlador es compartido entre
+     * verticales, asi que este flag evita tocar esas columnas (que no
+     * existen en generico) desde aqui, en store()/update()/importar().
+     */
+    private function tenantTieneCodigosProducto(): bool
+    {
+        return tenant('tipo_negocio') === 'tallermoto';
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
@@ -82,8 +93,10 @@ class ProductoController extends Controller
                 $producto->PRO_PrecioVenta = $request->PRO_PrecioVenta;
                 $producto->PRO_Marca = $request->PRO_Marca;
                 $producto->PRO_StockMinimo = $request->PRO_StockMinimo ?? 0;
-                $producto->PRO_CodigoInterno = $request->PRO_CodigoInterno ?: null;
-                $producto->PRO_CodigoFabricacion = $request->PRO_CodigoFabricacion ?: null;
+                if ($this->tenantTieneCodigosProducto()) {
+                    $producto->PRO_CodigoInterno = $request->PRO_CodigoInterno ?: null;
+                    $producto->PRO_CodigoFabricacion = $request->PRO_CodigoFabricacion ?: null;
+                }
                 $producto->PRO_Status = $request->PRO_Status ?? 1;
                 $producto->CAT_Id = $request->CAT_Id;
                 $producto->save();
@@ -137,16 +150,28 @@ class ProductoController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Productos');
 
-        $encabezados = ['Nombre', 'Categoria', 'Marca', 'Descripcion', 'Precio Compra', 'Precio Venta', 'Stock Inicial', 'Stock Minimo', 'Codigo Interno', 'Codigo Fabricacion'];
+        $encabezados = ['Nombre', 'Categoria', 'Marca', 'Descripcion', 'Precio Compra', 'Precio Venta', 'Stock Inicial', 'Stock Minimo'];
+        $ejemplo = ['ACEITE 20W50 1L', 'LUBRICANTES', 'LIQUI MOLY', 'Aceite mineral para motor', 25.00, 35.00, 10, 3];
+
+        // Codigo Interno/Codigo Fabricacion solo existen en tallermoto.
+        if ($this->tenantTieneCodigosProducto()) {
+            $encabezados[] = 'Codigo Interno';
+            $encabezados[] = 'Codigo Fabricacion';
+            $ejemplo[] = 'INT-0001';
+            $ejemplo[] = 'LM-20W50-1L';
+        }
+
+        $ultimaColumna = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($encabezados));
+
         $sheet->fromArray($encabezados, null, 'A1');
-        $sheet->getStyle('A1:J1')->getFont()->setBold(true);
-        foreach (range('A', 'J') as $col) {
+        $sheet->getStyle("A1:{$ultimaColumna}1")->getFont()->setBold(true);
+        foreach (range('A', $ultimaColumna) as $col) {
             $sheet->getColumnDimension($col)->setWidth(20);
         }
 
         // Fila de ejemplo, para que quede claro el formato esperado.
         $sheet->fromArray(
-            ['ACEITE 20W50 1L', 'LUBRICANTES', 'LIQUI MOLY', 'Aceite mineral para motor', 25.00, 35.00, 10, 3, 'INT-0001', 'LM-20W50-1L'],
+            $ejemplo,
             null,
             'A2'
         );
@@ -304,18 +329,23 @@ class ProductoController extends Controller
                     $estado = 'stock_agregado';
                     $conStockAgregado++;
                 } else {
-                    $proId = DB::table('producto')->insertGetId([
+                    $datosProducto = [
                         'PRO_Nombre' => $nombre,
                         'PRO_Descripcion' => $descripcion,
                         'PRO_PrecioCompra' => $precioCompra,
                         'PRO_PrecioVenta' => $precioVenta,
                         'PRO_Marca' => $marca,
                         'PRO_StockMinimo' => $stockMinimo,
-                        'PRO_CodigoInterno' => $codigoInterno,
-                        'PRO_CodigoFabricacion' => $codigoFabricacion,
                         'PRO_Status' => 1,
                         'CAT_Id' => $catId,
-                    ]);
+                    ];
+
+                    if ($this->tenantTieneCodigosProducto()) {
+                        $datosProducto['PRO_CodigoInterno'] = $codigoInterno;
+                        $datosProducto['PRO_CodigoFabricacion'] = $codigoFabricacion;
+                    }
+
+                    $proId = DB::table('producto')->insertGetId($datosProducto);
                     $estado = 'creado';
                     $creados++;
                 }
@@ -727,8 +757,10 @@ class ProductoController extends Controller
             $producto->PRO_PrecioVenta = $request->PRO_PrecioVenta;
             $producto->PRO_Marca = $request->PRO_Marca;
             $producto->PRO_StockMinimo = $request->PRO_StockMinimo ?? 0;
-            $producto->PRO_CodigoInterno = $request->PRO_CodigoInterno ?: null;
-            $producto->PRO_CodigoFabricacion = $request->PRO_CodigoFabricacion ?: null;
+            if ($this->tenantTieneCodigosProducto()) {
+                $producto->PRO_CodigoInterno = $request->PRO_CodigoInterno ?: null;
+                $producto->PRO_CodigoFabricacion = $request->PRO_CodigoFabricacion ?: null;
+            }
             $producto->PRO_Status = $request->PRO_Status ?? 1;
             $producto->CAT_Id = $request->CAT_Id;
             $producto->update();

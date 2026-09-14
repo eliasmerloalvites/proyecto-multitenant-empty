@@ -637,6 +637,22 @@ class VentaController extends Controller
         $idAlmacen = tenant_caja_activa_almacen_id() ?? 1;
         $permitirSinStock = (bool) (Almacen::find($idAlmacen)->ALM_PermitirVentaSinStock ?? false);
 
+        // PRO_CodigoInterno/PRO_CodigoFabricacion solo existen en la tabla
+        // producto de tallermoto (ver ProductoController::tenantTieneCodigosProducto());
+        // este metodo es compartido con generico, asi que ninguna de esas
+        // columnas se toca salvo que el tenant sea tallermoto.
+        $tieneCodigos = tenant('tipo_negocio') === 'tallermoto';
+
+        $columnas = ['p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Descripcion', 'p.PRO_Imagen', 'p.CAT_Id'];
+        $agrupar = ['p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Descripcion', 'p.PRO_Imagen', 'p.CAT_Id', 'p.PRO_PrecioVenta'];
+
+        if ($tieneCodigos) {
+            $columnas[] = 'p.PRO_CodigoInterno';
+            $columnas[] = 'p.PRO_CodigoFabricacion';
+            $agrupar[] = 'p.PRO_CodigoInterno';
+            $agrupar[] = 'p.PRO_CodigoFabricacion';
+        }
+
         $query = DB::table('producto as p')
             ->join('categoria as cat', 'cat.CAT_Id', '=', 'p.CAT_Id')
             ->join('clase as cl', 'cl.CLA_Id', '=', 'cat.CLA_Id')
@@ -644,17 +660,10 @@ class VentaController extends Controller
                 $join->on('lt.PRO_Id', '=', 'p.PRO_Id')
                     ->where('lt.ALM_Id', '=', $idAlmacen);
             })
-            ->select(
-                'p.PRO_Id',
-                'p.PRO_Nombre',
-                'p.PRO_Descripcion',
-                'p.PRO_Imagen',
-                'p.CAT_Id',
-                'p.PRO_CodigoInterno',
-                'p.PRO_CodigoFabricacion',
+            ->select(array_merge($columnas, [
                 DB::raw('COALESCE(SUM(lt.LOT_CantidadReal), 0) as PRO_Cantidad'),
                 DB::raw('COALESCE(MAX(lt.LOT_PrecioVenta), p.PRO_PrecioVenta) as PRO_PrecioBaseVenta')
-            )
+            ]))
             ->where('p.PRO_Status', 1);
 
         // FILTRO CATEGORIA
@@ -662,19 +671,21 @@ class VentaController extends Controller
             $query->where('p.CAT_Id', $request->categoria);
         }
 
-        // BUSQUEDA: por nombre o por cualquiera de los dos codigos (interno
-        // o de fabricacion), asi el cajero puede escanear/tipear el que
-        // tenga a mano sin tener que saber cual es cual.
+        // BUSQUEDA: por nombre y, en tallermoto, tambien por cualquiera de
+        // los dos codigos (interno o de fabricacion), asi el cajero puede
+        // escanear/tipear el que tenga a mano sin saber cual es cual.
         if ($request->search) {
-            $query->where(function ($q) use ($request) {
+            $query->where(function ($q) use ($request, $tieneCodigos) {
                 $busqueda = '%' . $request->search . '%';
-                $q->where('p.PRO_Nombre', 'like', $busqueda)
-                    ->orWhere('p.PRO_CodigoInterno', 'like', $busqueda)
-                    ->orWhere('p.PRO_CodigoFabricacion', 'like', $busqueda);
+                $q->where('p.PRO_Nombre', 'like', $busqueda);
+                if ($tieneCodigos) {
+                    $q->orWhere('p.PRO_CodigoInterno', 'like', $busqueda)
+                        ->orWhere('p.PRO_CodigoFabricacion', 'like', $busqueda);
+                }
             });
         }
 
-        $query->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'p.PRO_Descripcion', 'p.PRO_Imagen', 'p.CAT_Id', 'p.PRO_CodigoInterno', 'p.PRO_CodigoFabricacion', 'p.PRO_PrecioVenta');
+        $query->groupBy($agrupar);
 
         // Sin el permiso de la sede, se mantiene el filtro de siempre: solo
         // lo que tenga stock disponible en esta sede.
