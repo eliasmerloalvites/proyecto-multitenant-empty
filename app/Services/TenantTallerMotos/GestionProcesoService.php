@@ -431,4 +431,39 @@ class GestionProcesoService
             }
         });
     }
+
+    /**
+     * Datos de facturacion (documento del cliente + forma de pago) de la
+     * venta real asociada a la reserva de este mantenimiento, si es que
+     * llegaron a cobrar la bahia. Cadena: reservacion -> bahia_cuenta
+     * (solo se llena VEN_Id al "Cobrar" desde Ventas por Bahia) -> venta ->
+     * cliente/metodo_pago.
+     *
+     * Devuelve null (nunca datos a medias o inventados) cuando el
+     * mantenimiento no vino de una reserva, cuando esa reserva no llego a
+     * cobrarse por bahia, o cuando la cuenta se cerro sin cobro.
+     */
+    public static function datosVentaAsociada(?int $resId): ?array
+    {
+        if (!$resId) {
+            return null;
+        }
+
+        $venta = DB::table('bahia_cuenta as bc')
+            ->join('venta as v', 'v.VEN_Id', '=', 'bc.VEN_Id')
+            ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
+            ->leftJoin('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
+            ->where('bc.RES_Id', $resId)
+            ->whereNotNull('bc.VEN_Id')
+            ->orderByDesc('bc.BCT_Id')
+            ->select(
+                'c.CLI_TipoDocumento',
+                'c.CLI_NumDocumento',
+                'c.CLI_Nombre',
+                'mp.MEP_Pago'
+            )
+            ->first();
+
+        return $venta ? (array) $venta : null;
+    }
 }

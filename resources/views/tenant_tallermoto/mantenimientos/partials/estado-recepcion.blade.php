@@ -80,9 +80,9 @@
     }
 
     .rec-pill {
-        border: 1px solid #d8dde3;
-        background: #fff;
-        color: #495057;
+        border: 1px solid rgba(148, 163, 184, .4);
+        background: transparent;
+        color: var(--text-main, #343a40);
         border-radius: 20px;
         padding: 5px 14px;
         font-size: 12.5px;
@@ -93,7 +93,7 @@
     }
 
     .rec-pill:hover {
-        border-color: #adb5bd;
+        border-color: var(--primary, #adb5bd);
     }
 
     .rec-pill.activa {
@@ -126,7 +126,7 @@
         justify-content: space-between;
         gap: 10px;
         padding: 8px 4px;
-        border-bottom: 1px solid #f1f2f5;
+        border-bottom: 1px solid rgba(148, 163, 184, .18);
     }
 
     .rec-item-row:last-child {
@@ -135,7 +135,7 @@
 
     .rec-item-label {
         font-size: 13.5px;
-        color: #343a40;
+        color: var(--text-main, #343a40);
     }
 
     .rec-item-boolean .custom-switch {
@@ -143,14 +143,15 @@
     }
 
     .rec-categoria-card {
-        border: 1px solid #e9ecef;
+        border: 1px solid rgba(148, 163, 184, .3);
         border-radius: 10px;
         margin-bottom: 10px;
         overflow: hidden;
     }
 
     .rec-categoria-header {
-        background: #f8f9fa;
+        background: rgba(148, 163, 184, .1);
+        color: var(--text-main, #343a40);
         padding: 10px 14px;
         font-weight: 700;
         font-size: 13.5px;
@@ -167,10 +168,25 @@
     .rec-item-text-full {
         width: 100%;
     }
+
+    #estadoRecepcionCard .card-title-custom {
+        color: var(--text-main, #343a40);
+    }
 </style>
 
 <script>
-    (function () {
+    // Este partial se incluye dentro del contenido principal de la ficha,
+    // que en el layout se renderiza antes de que cargue jQuery (jQuery entra
+    // recien casi al final del layout) — mismo patron de bug ya visto y
+    // arreglado en anulaciones.blade.php. Se difiere con un poll en vez de
+    // un listener de carga del documento, para no depender de si jQuery
+    // carga de forma sincrona o asincrona.
+    (function iniciarCuandoHayaJQuery() {
+        if (!window.jQuery) {
+            setTimeout(iniciarCuandoHayaJQuery, 30);
+            return;
+        }
+
         const $card = $('#estadoRecepcionCard');
         const tabla = $card.data('tabla');
         const mtoId = $card.data('id');
@@ -254,13 +270,25 @@
             return html;
         }
 
+        function mostrarErrorCarga(mensaje) {
+            $('#estadoRecepcionCargando').html(
+                '<i class="fas fa-exclamation-triangle text-warning mr-1"></i> ' +
+                (mensaje || 'No se pudo cargar el estado de recepción.') +
+                ' <a href="#" id="recReintentar">Reintentar</a>'
+            );
+            configCargada = false;
+        }
+
         function cargarConfig() {
             if (configCargada) return;
 
             $.get('{{ tenant_url("tenant.mantenimientos.recepcion.mostrar", ["tabla" => ":tabla", "id" => ":id"]) }}'
                 .replace(':tabla', tabla).replace(':id', mtoId))
                 .done(function (r) {
-                    if (!r.success) return;
+                    if (!r.success) {
+                        mostrarErrorCarga(r.message);
+                        return;
+                    }
 
                     const respuestas = r.respuestas || {};
                     const observaciones = r.observaciones || {};
@@ -297,10 +325,19 @@
                         .text(contestadas + ' / ' + totalItems + ' items');
 
                     configCargada = true;
+                })
+                .fail(function (xhr) {
+                    const r = xhr.responseJSON || {};
+                    mostrarErrorCarga(r.message);
                 });
         }
 
         $('#estadoRecepcionCard .card-header').on('click', cargarConfig);
+        $(document).on('click', '#recReintentar', function (e) {
+            e.preventDefault();
+            $('#estadoRecepcionCargando').html('<i class="fas fa-spinner fa-spin mr-1"></i> Cargando...');
+            cargarConfig();
+        });
 
         $(document).on('click', '.rec-pill', function () {
             const $grupo = $(this).closest('.rec-pill-group');
@@ -333,7 +370,10 @@
                 const campo = $(this).data('campo');
                 const itemId = String(campo).replace('item_', '');
                 const $activa = $(this).find('.rec-pill.activa');
-                respuestas[itemId] = $activa.length ? $activa.data('valor') : null;
+
+                if ($activa.length) {
+                    respuestas[itemId] = $activa.data('valor');
+                }
             });
 
             const $btn = $('#btnGuardarRecepcion').prop('disabled', true);

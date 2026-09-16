@@ -35,6 +35,7 @@ use App\Http\Controllers\Tenant\CotizacionController;
 use App\Http\Controllers\TenantTallerMotos\BahiaController;
 use App\Http\Controllers\TenantTallerMotos\AsistenteConfiguracionController;
 use App\Http\Controllers\TenantTallerMotos\MotoController;
+use App\Http\Controllers\TenantTallerMotos\AyudaController;
 use App\Http\Controllers\TenantTallerMotos\HorarioController;
 use App\Http\Controllers\TenantTallerMotos\MantenimientoActividadVariadaController;
 use App\Http\Controllers\TenantTallerMotos\MantenimientoGeneralInyectadaController;
@@ -119,6 +120,19 @@ Route::middleware([
     Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/pdf',[MantenimientoPreventivoInyectadaController::class, 'pdf'])->name('tenant.mantenimientos.preventivoinyectada.pdf');
     Route::get('/tenant/mantenimientos/preventivocarburada/{id}/pdf',[MantenimientoPreventivoCarburadaController::class, 'pdf'])->name('tenant.mantenimientos.preventivocarburada.pdf');
 
+    // ORDEN DE SERVICIO (documento nuevo: agrega Inventario Visual +
+    // Inspeccion de la Unidad al pdf() de arriba, sin tocarlo).
+    Route::get('/tenant/actividades/mantenimientoactividadvariada/{id}/orden-servicio',[MantenimientoActividadVariadaController::class, 'ordenServicio'])->name('tenant.actividades.mantenimientoactividadvariada.ordenservicio');
+    Route::get('/tenant/mantenimientos/generalinyectada/{id}/orden-servicio',[MantenimientoGeneralInyectadaController::class, 'ordenServicio'])->name('tenant.mantenimientos.generalinyectada.ordenservicio');
+    Route::get('/tenant/mantenimientos/generalinyectada/{id}/estado-recepcion-pdf',[MantenimientoGeneralInyectadaController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.generalinyectada.estadorecepcionpdf');
+    Route::get('/tenant/mantenimientos/generalcarburada/{id}/orden-servicio',[MantenimientoGeneralCarburadaController::class, 'ordenServicio'])->name('tenant.mantenimientos.generalcarburada.ordenservicio');
+    Route::get('/tenant/mantenimientos/generalcarburada/{id}/estado-recepcion-pdf',[MantenimientoGeneralCarburadaController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.generalcarburada.estadorecepcionpdf');
+    Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/orden-servicio',[MantenimientoPreventivoInyectadaController::class, 'ordenServicio'])->name('tenant.mantenimientos.preventivoinyectada.ordenservicio');
+    Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/estado-recepcion-pdf',[MantenimientoPreventivoInyectadaController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.preventivoinyectada.estadorecepcionpdf');
+    Route::get('/tenant/mantenimientos/preventivocarburada/{id}/orden-servicio',[MantenimientoPreventivoCarburadaController::class, 'ordenServicio'])->name('tenant.mantenimientos.preventivocarburada.ordenservicio');
+    Route::get('/tenant/mantenimientos/preventivocarburada/{id}/estado-recepcion-pdf',[MantenimientoPreventivoCarburadaController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.preventivocarburada.estadorecepcionpdf');
+    Route::get('/tenant/actividades/mantenimientoactividadvariada/{id}/estado-recepcion-pdf',[MantenimientoActividadVariadaController::class, 'estadoRecepcionPdf'])->name('tenant.actividades.mantenimientoactividadvariada.estadorecepcionpdf');
+
 
     // PDF
     Route::get('/tenant/actividades/mantenimientoactividadvariada/{id}/descargarpdf',[MantenimientoActividadVariadaController::class, 'descargarpdf'])->name('tenant.actividades.mantenimientoactividadvariada.descargarpdf');
@@ -139,6 +153,7 @@ Route::middleware([
     Route::middleware(['tenant.pagado'])->group(function () {
 
         Route::get('/tenant/home', [HomeController::class,'index'])->name('tenant.home');
+        Route::get('/tenant/ayuda', [AyudaController::class, 'index'])->name('tenant.ayuda.index');
         Route::get('/tenant/personal/getimagen', [ProfileController::class, 'getimagen'])->name('tenant.personal.getimagen');
         Route::post('/tenant/caja-sesion/seleccionar', [CajaSesionController::class, 'seleccionar'])->name('tenant.caja-sesion.seleccionar');
         Route::post('/tenant/caja-sesion/abrir', [CajaSesionController::class, 'abrir'])->name('tenant.caja-sesion.abrir');

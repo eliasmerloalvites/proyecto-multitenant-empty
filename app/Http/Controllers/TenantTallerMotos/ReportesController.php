@@ -117,6 +117,17 @@ class ReportesController extends Controller
                         $btn = '<a  target="_blank" href="' . $row->url . '/' . $row->Id . '/pdf" data-toggle="tooltip"  data-id="' . $row->Id . '" data-url="' . $row->url . '"  data-original-title="Pdf" class="btn btn-danger btn-sm "><i class="fas fa-file-pdf"></i></a>';
                         return $btn;
                     })
+                    ->addColumn('action5', function ($row) {
+                        $btn = '<a  target="_blank" href="' . $row->url . '/' . $row->Id . '/orden-servicio" data-toggle="tooltip"  data-id="' . $row->Id . '" data-url="' . $row->url . '" data-original-title="Orden de Servicio" class="btn btn-primary btn-sm "><i class="fas fa-clipboard-list"></i></a>';
+                        return $btn;
+                    })
+                    ->addColumn('action6', function ($row) {
+                        if (!$row->tiene_recepcion) {
+                            return '';
+                        }
+                        $btn = '<a  target="_blank" href="' . $row->url . '/' . $row->Id . '/estado-recepcion-pdf" data-toggle="tooltip"  data-id="' . $row->Id . '" data-url="' . $row->url . '" data-original-title="Estado de Recepción" class="btn btn-secondary btn-sm "><i class="fas fa-motorcycle"></i></a>';
+                        return $btn;
+                    })
                     ->addColumn('action4', function ($row) {
                         if ($row->estado == 'APROBADO') {
                             $btn = '<a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->Id . '" data-url="' . $row->url . '"  title="Activar" class="btn btn-info btn-sm activar"><i class="fa fa-check"></i></a>';
@@ -151,7 +162,7 @@ class ReportesController extends Controller
                         }
                         return $btn;
                     })
-                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'estado', 'celularnotificar', 'observaciones', 'respuestas'])
+                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'action5', 'action6', 'estado', 'celularnotificar', 'observaciones', 'respuestas'])
                     ->make(true);
             }
         }
@@ -480,7 +491,8 @@ class ReportesController extends Controller
                 "$alias.{$prefijo}_ProximoServicio as ProximoServicio",
                 "$alias.{$prefijo}_FechaCreacion as FechaCreacion",
                 "$alias.{$prefijo}_FechaTermino as FechaTermino",
-                DB::raw('CONCAT(u.name) as personal')
+                DB::raw('CONCAT(u.name) as personal'),
+                DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = '$tabla' AND MTO_Id = $alias.{$prefijo}_Id) as tiene_recepcion")
             );
 
         if ($request->filled('fecha_inicio')) {

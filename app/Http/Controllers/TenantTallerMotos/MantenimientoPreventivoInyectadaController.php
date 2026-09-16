@@ -10,6 +10,7 @@ use App\Models\TenantTallerMotos\MantenimientoPreventivoInyectada;
 use App\Models\TenantTallerMotos\MantenimientoPlan;
 use App\Models\TenantTallerMotos\MpiDetalleReemplazo;
 use App\Services\Mantenimiento\RepuestosBahiaSync;
+use App\Services\TenantTallerMotos\GestionProcesoService;
 use App\Models\TenantTallerMotos\MpiImagen;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -41,7 +42,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_preventivo_inyectada as mpi')
                     ->join('users as p', 'p.id', '=', 'mpi.PER_Id')
-                    ->select('mpi.MPI_Id', 'mpi.MPI_Placa', 'mpi.MPI_Propietario', 'mpi.MPI_celular', 'mpi.notificar', 'mpi.MPI_Unidad', 'mpi.MPI_KMEntrada', 'mpi.MPI_FechaCreacion', 'mpi.MPI_FechaTermino', 'mpi.MPI_Estado', DB::raw('CONCAT(p.name) as personal'));
+                    ->select('mpi.MPI_Id', 'mpi.MPI_Placa', 'mpi.MPI_Propietario', 'mpi.MPI_celular', 'mpi.notificar', 'mpi.MPI_Unidad', 'mpi.MPI_KMEntrada', 'mpi.MPI_FechaCreacion', 'mpi.MPI_FechaTermino', 'mpi.MPI_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_inyectada' AND MTO_Id = mpi.MPI_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MPI_FechaCreacion', '>=', $request->fecha_inicio);
@@ -87,6 +88,17 @@ class MantenimientoPreventivoInyectadaController extends Controller
                         }
                         return $btn;
                     })
+                    ->addColumn('action5', function ($row) {
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/preventivoinyectada/' . $row->MPI_Id . '/orden-servicio" data-toggle="tooltip"  data-id="' . $row->MPI_Id . '" data-original-title="Orden de Servicio" class="btn btn-primary btn-sm "><i class="fas fa-clipboard-list"></i></a>';
+                        return $btn;
+                    })
+                    ->addColumn('action6', function ($row) {
+                        if (!$row->tiene_recepcion) {
+                            return '';
+                        }
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/preventivoinyectada/' . $row->MPI_Id . '/estado-recepcion-pdf" data-toggle="tooltip"  data-id="' . $row->MPI_Id . '" data-original-title="Estado de Recepción" class="btn btn-secondary btn-sm "><i class="fas fa-motorcycle"></i></a>';
+                        return $btn;
+                    })
                     ->addColumn('celular', function ($row) {
                         if ($row->notificar == 1) {
                             $btn = $row->MPI_celular . ' <a target="_blank" href="https://wa.me/51' . $row->MPI_celular . '?text=Hola%20quiero%20informarte" data-toggle="tooltip"  data-id="' . $row->MPI_Id . '" title="Notificar" class="btn btn-success btn-sm"><i class="fab fa-whatsapp"></i></a>';
@@ -95,12 +107,12 @@ class MantenimientoPreventivoInyectadaController extends Controller
                         }
                         return $btn;
                     })
-                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'estado', 'celular'])
+                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'action5', 'action6', 'estado', 'celular'])
                     ->make(true);
             } else {
                 $data = DB::table('mantenimiento_preventivo_inyectada as mpi')
                     ->join('users as p', 'p.id', '=', 'mpi.PER_Id')
-                    ->select('mpi.MPI_Id', 'mpi.MPI_Placa', 'mpi.MPI_Propietario', 'mpi.MPI_celular', 'mpi.notificar', 'mpi.MPI_Unidad', 'mpi.MPI_KMEntrada', 'mpi.MPI_FechaCreacion', 'mpi.MPI_FechaTermino', 'mpi.MPI_Estado', DB::raw('CONCAT(p.name) as personal'))
+                    ->select('mpi.MPI_Id', 'mpi.MPI_Placa', 'mpi.MPI_Propietario', 'mpi.MPI_celular', 'mpi.notificar', 'mpi.MPI_Unidad', 'mpi.MPI_KMEntrada', 'mpi.MPI_FechaCreacion', 'mpi.MPI_FechaTermino', 'mpi.MPI_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_inyectada' AND MTO_Id = mpi.MPI_Id) as tiene_recepcion"))
                     ->where('mpi.PER_Id', '=', $idpersonal);
 
                 if ($request->filled('fecha_inicio')) {
@@ -147,11 +159,22 @@ class MantenimientoPreventivoInyectadaController extends Controller
                     ->addColumn('action4', function ($row) {
                         return '';
                     })
+                    ->addColumn('action5', function ($row) {
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/preventivoinyectada/' . $row->MPI_Id . '/orden-servicio" data-toggle="tooltip"  data-id="' . $row->MPI_Id . '" data-original-title="Orden de Servicio" class="btn btn-primary btn-sm "><i class="fas fa-clipboard-list"></i></a>';
+                        return $btn;
+                    })
+                    ->addColumn('action6', function ($row) {
+                        if (!$row->tiene_recepcion) {
+                            return '';
+                        }
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/preventivoinyectada/' . $row->MPI_Id . '/estado-recepcion-pdf" data-toggle="tooltip"  data-id="' . $row->MPI_Id . '" data-original-title="Estado de Recepción" class="btn btn-secondary btn-sm "><i class="fas fa-motorcycle"></i></a>';
+                        return $btn;
+                    })
                     ->addColumn('celular', function ($row) {
                         $btn = $row->MPI_celular;
                         return $btn;
                     })
-                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'estado', 'celular'])
+                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'action5', 'action6', 'estado', 'celular'])
                     ->make(true);
             }
         }
@@ -424,6 +447,104 @@ class MantenimientoPreventivoInyectadaController extends Controller
         return $pdf->stream('mantenimiento-preventivo-inyectada-' . tenant('id') . '.pdf');
     }
 
+    /**
+     * "Orden de Servicio": mismo contenido que pdf(), mas el Inventario
+     * Visual/Inspeccion de la Unidad (Estado de Recepcion) y los datos de
+     * facturacion de la venta asociada si la reserva llego a cobrarse. Es
+     * un documento nuevo aparte; pdf()/descargarpdf() no se tocan.
+     */
+    public function ordenServicio($id)
+    {
+        $datos = DB::table('mantenimiento_preventivo_inyectada as mpi')
+            ->join('users as u', 'u.id', '=', 'mpi.PER_Id')
+            ->select('mpi.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MPI_Id', '=', $id)
+            ->first();
+
+        $detalle_reemplazo = DB::table('mpi_detalle_reemplazo')
+            ->where('MPI_Id', '=', $id)
+            ->get();
+
+        $total_detalle = round($detalle_reemplazo->sum('MPI_Precio'), 2);
+
+        $imagenes = DB::table('mpi_imagen')
+            ->where('MPI_Id', '=', $id)
+            ->get();
+
+        $url = URL::to('');
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+        $estadoRecepcion = null;
+        try {
+            $estadoRecepcion = GestionProcesoService::estadoRecepcion('mantenimiento_preventivo_inyectada', (int) $id);
+        } catch (\Throwable $e) {
+            // Sin ficha de recepcion guardada: el partial simplemente no imprime esas secciones.
+        }
+
+        $pdf = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/preventivo/inyectadas/orden-servicio', [
+            "mttoPreventivo" => $datos,
+            "detalle" => $detalle_reemplazo,
+            "imagenes" => $imagenes,
+            "url" => $url,
+            "total_detalle" => $total_detalle,
+            "empresa" => $empresa,
+            "etiquetaTipo" => 'Preventivo Inyectada',
+            "estadoRecepcion" => $estadoRecepcion,
+            "datosVenta" => GestionProcesoService::datosVentaAsociada($datos->RES_Id ?? null),
+        ])->setOptions([
+            'defaultFont' => 'sans-serif',
+            'chroot' => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        return $pdf->stream('orden-servicio-preventivo-inyectada-' . tenant('id') . '.pdf');
+    }
+
+    /**
+     * PDF con SOLO el estado de recepcion (Inventario Visual +
+     * Inspeccion de la Unidad) — para imprimir/compartir nada mas lo de
+     * "como llego la moto". Usa una vista compartida por los 5 tipos
+     * (mantenimientos/estado-recepcion-pdf) porque esta parte no depende
+     * de columnas Det especificas de cada tipo.
+     */
+    public function estadoRecepcionPdf($id)
+    {
+        $datos = DB::table('mantenimiento_preventivo_inyectada as mpi')
+            ->join('users as u', 'u.id', '=', 'mpi.PER_Id')
+            ->select('mpi.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MPI_Id', '=', $id)
+            ->first();
+
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+        $estadoRecepcion = null;
+        try {
+            $estadoRecepcion = GestionProcesoService::estadoRecepcion('mantenimiento_preventivo_inyectada', (int) $id);
+        } catch (\Throwable $e) {
+            // Sin ficha de recepcion guardada: la vista muestra el aviso de "sin datos".
+        }
+
+        $pdf = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/estado-recepcion-pdf', [
+            "empresa" => $empresa,
+            "etiquetaTipo" => 'Preventivo Inyectada',
+            "numeroOrden" => 'MPI-' . str_pad($id, 6, '0', STR_PAD_LEFT),
+            "fecha" => $datos ? date('d/m/Y', strtotime($datos->MPI_FechaCreacion)) : '',
+            "hora" => $datos ? date('H:i', strtotime($datos->MPI_FechaCreacion)) : '',
+            "personal" => $datos->personal ?? '',
+            "propietario" => $datos->MPI_Propietario ?? '',
+            "placa" => $datos->MPI_Placa ?? '',
+            "unidad" => $datos->MPI_Unidad ?? '',
+            "km" => $datos->MPI_KMEntrada ?? '',
+            "estadoRecepcion" => $estadoRecepcion,
+        ])->setOptions([
+            'defaultFont' => 'sans-serif',
+            'chroot' => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        return $pdf->stream('estado-recepcion-preventivo-inyectada-' . tenant('id') . '.pdf');
+    }
+
     public function descargarpdf($id)
     {
         $datos = DB::table('mantenimiento_preventivo_inyectada as mpi')
@@ -520,6 +641,16 @@ class MantenimientoPreventivoInyectadaController extends Controller
             $mtto_preventivo_inyectadas->MPI_CorrecionObservacion = $request->get('MPI_CorrecionObservacion');
             $mtto_preventivo_inyectadas->MPI_ProximoCambioAceite = $request->get('MPI_ProximoCambioAceite');
             $mtto_preventivo_inyectadas->MPI_ProximoServicio = $request->get('MPI_ProximoServicio');
+            $mtto_preventivo_inyectadas->MPI_Recomendacion = $request->get('MPI_Recomendacion');
+            $mtto_preventivo_inyectadas->MPI_RecomendacionPrioridad = $request->get('MPI_RecomendacionPrioridad') ?: null;
+            $mtto_preventivo_inyectadas->MPI_VerifArranque = $request->boolean('MPI_VerifArranque');
+            $mtto_preventivo_inyectadas->MPI_VerifLuces = $request->boolean('MPI_VerifLuces');
+            $mtto_preventivo_inyectadas->MPI_VerifDireccionales = $request->boolean('MPI_VerifDireccionales');
+            $mtto_preventivo_inyectadas->MPI_VerifNivelAceite = $request->boolean('MPI_VerifNivelAceite');
+            $mtto_preventivo_inyectadas->MPI_VerifPruebaRuta = $request->boolean('MPI_VerifPruebaRuta');
+            $mtto_preventivo_inyectadas->MPI_VerifLavado = $request->boolean('MPI_VerifLavado');
+            $mtto_preventivo_inyectadas->MPI_VerifOtros = $request->get('MPI_VerifOtros');
+            $mtto_preventivo_inyectadas->MPI_VerifConforme = $request->boolean('MPI_VerifConforme');
             $mtto_preventivo_inyectadas->MPI_FechaEdicion = $mytime->toDateTimeString();
             $mtto_preventivo_inyectadas->MPI_FechaInicio = $request->get('MPI_FechaInicio') ? Carbon::parse($request->get('MPI_FechaInicio'))->toDateTimeString() : null;
             $mtto_preventivo_inyectadas->MPI_FechaTermino = $request->get('MPI_FechaTermino') ? Carbon::parse($request->get('MPI_FechaTermino'))->toDateTimeString() : null;

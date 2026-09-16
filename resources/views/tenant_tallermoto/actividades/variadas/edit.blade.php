@@ -18,9 +18,6 @@
         }
 
         .form-scroll-container {
-            max-height: calc(100vh - 120px);
-            overflow-y: auto;
-            overflow-x: hidden;
             padding-right: 5px;
         }
 
@@ -366,6 +363,11 @@
                     </div>
                 </div>
 
+                @include('tenant_tallermoto.mantenimientos.partials.estado-recepcion', [
+                    'tabla' => 'mantenimiento_actividad_variadas',
+                    'id' => $datos->MAV_Id,
+                ])
+
                 <!-- DESCRIPCION -->
                 <div class="row mt-3">
                     <div class="col-12">
@@ -504,11 +506,76 @@
                     </div>
                 </div>
 
+                <div class="row mt-3">
+                    <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="card card-outline card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title-custom">
+                                    <i class="fas fa-clipboard-check mr-1"></i>
+                                    Recomendaciones y Verificación Final
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="form-group col-lg-8 col-md-8 col-sm-12 col-12">
+                                        <label>Recomendación</label>
+                                        <textarea class="form-control" rows="2" name="MAV_Recomendacion"
+                                            onkeyup="this.value=this.value.toUpperCase();">{{ $datos->MAV_Recomendacion }}</textarea>
+                                    </div>
+                                    <div class="form-group col-lg-4 col-md-4 col-sm-12 col-12">
+                                        <label>Prioridad</label>
+                                        <select class="form-control" name="MAV_RecomendacionPrioridad">
+                                            <option value="">Sin prioridad</option>
+                                            @foreach (['ALTA' => 'Alta', 'MEDIA' => 'Media', 'BAJA' => 'Baja'] as $valor => $etiqueta)
+                                                <option value="{{ $valor }}" {{ $datos->MAV_RecomendacionPrioridad === $valor ? 'selected' : '' }}>{{ $etiqueta }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
 
-                @include('tenant_tallermoto.mantenimientos.partials.estado-recepcion', [
-                    'tabla' => 'mantenimiento_actividad_variadas',
-                    'id' => $datos->MAV_Id,
-                ])
+                                <hr>
+
+                                <label class="font-weight-bold">Verificación Final (control de calidad)</label>
+                                <div class="row">
+                                    @foreach ([
+                                        'MAV_VerifArranque' => 'Arranque correcto',
+                                        'MAV_VerifLuces' => 'Luces',
+                                        'MAV_VerifDireccionales' => 'Direccionales',
+                                        'MAV_VerifNivelAceite' => 'Nivel de aceite',
+                                        'MAV_VerifPruebaRuta' => 'Prueba de ruta',
+                                        'MAV_VerifLavado' => 'Lavado',
+                                    ] as $campo => $etiqueta)
+                                        <div class="form-group col-lg-4 col-md-4 col-sm-6 col-6">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input"
+                                                    {{ $datos->$campo ? 'checked' : '' }} name="{{ $campo }}"
+                                                    id="switch{{ $campo }}">
+                                                <label class="custom-control-label" for="switch{{ $campo }}">{{ $etiqueta }}</label>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-lg-8 col-md-8 col-sm-12 col-12">
+                                        <label>Otros</label>
+                                        <input type="text" class="form-control" name="MAV_VerifOtros"
+                                            onKeyUp="this.value=this.value.toUpperCase();"
+                                            value="{{ $datos->MAV_VerifOtros }}" maxlength="150">
+                                    </div>
+                                    <div class="form-group col-lg-4 col-md-4 col-sm-12 col-12">
+                                        <label>&nbsp;</label>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input"
+                                                {{ $datos->MAV_VerifConforme ? 'checked' : '' }} name="MAV_VerifConforme"
+                                                id="switchMAVVerifConforme">
+                                            <label class="custom-control-label" for="switchMAVVerifConforme">Conforme para entrega</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- BOTONES -->
                 <div class="row mt-3 mb-4">

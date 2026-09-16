@@ -10,6 +10,7 @@ use App\Models\TenantTallerMotos\MantenimientoPreventivoCarburada;
 use App\Models\TenantTallerMotos\MantenimientoPlan;
 use App\Models\TenantTallerMotos\MpcDetalleReemplazo;
 use App\Services\Mantenimiento\RepuestosBahiaSync;
+use App\Services\TenantTallerMotos\GestionProcesoService;
 use App\Models\TenantTallerMotos\MpcImagen;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -41,7 +42,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_preventivo_carburada as mpc')
                     ->join('users as p', 'p.id', '=', 'mpc.PER_Id')
-                    ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_FechaTermino', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'));
+                    ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_FechaTermino', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_carburada' AND MTO_Id = mpc.MPC_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MPC_FechaCreacion', '>=', $request->fecha_inicio);
@@ -87,6 +88,17 @@ class MantenimientoPreventivoCarburadaController extends Controller
                         }
                         return $btn;
                     })
+                    ->addColumn('action5', function ($row) {
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/preventivocarburada/' . $row->MPC_Id . '/orden-servicio" data-toggle="tooltip"  data-id="' . $row->MPC_Id . '" data-original-title="Orden de Servicio" class="btn btn-primary btn-sm "><i class="fas fa-clipboard-list"></i></a>';
+                        return $btn;
+                    })
+                    ->addColumn('action6', function ($row) {
+                        if (!$row->tiene_recepcion) {
+                            return '';
+                        }
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/preventivocarburada/' . $row->MPC_Id . '/estado-recepcion-pdf" data-toggle="tooltip"  data-id="' . $row->MPC_Id . '" data-original-title="Estado de Recepción" class="btn btn-secondary btn-sm "><i class="fas fa-motorcycle"></i></a>';
+                        return $btn;
+                    })
                     ->addColumn('celular', function ($row) {
                         if ($row->notificar == 1) {
                             $btn = $row->MPC_celular . ' <a target="_blank" href="https://wa.me/51' . $row->MPC_celular . '?text=Hola%20quiero%20informarte" data-toggle="tooltip"  data-id="' . $row->MPC_Id . '" title="Notificar" class="btn btn-success btn-sm"><i class="fab fa-whatsapp"></i></a>';
@@ -95,12 +107,12 @@ class MantenimientoPreventivoCarburadaController extends Controller
                         }
                         return $btn;
                     })
-                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'estado', 'celular'])
+                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'action5', 'action6', 'estado', 'celular'])
                     ->make(true);
             } else {
                 $data = DB::table('mantenimiento_preventivo_carburada as mpc')
                     ->join('users as p', 'p.id', '=', 'mpc.PER_Id')
-                    ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_FechaTermino', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'))
+                    ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_FechaTermino', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_carburada' AND MTO_Id = mpc.MPC_Id) as tiene_recepcion"))
                     ->where('mpc.PER_Id', '=', $idpersonal);
 
                 if ($request->filled('fecha_inicio')) {
@@ -147,11 +159,22 @@ class MantenimientoPreventivoCarburadaController extends Controller
                     ->addColumn('action4', function ($row) {
                         return '';
                     })
+                    ->addColumn('action5', function ($row) {
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/preventivocarburada/' . $row->MPC_Id . '/orden-servicio" data-toggle="tooltip"  data-id="' . $row->MPC_Id . '" data-original-title="Orden de Servicio" class="btn btn-primary btn-sm "><i class="fas fa-clipboard-list"></i></a>';
+                        return $btn;
+                    })
+                    ->addColumn('action6', function ($row) {
+                        if (!$row->tiene_recepcion) {
+                            return '';
+                        }
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/preventivocarburada/' . $row->MPC_Id . '/estado-recepcion-pdf" data-toggle="tooltip"  data-id="' . $row->MPC_Id . '" data-original-title="Estado de Recepción" class="btn btn-secondary btn-sm "><i class="fas fa-motorcycle"></i></a>';
+                        return $btn;
+                    })
                     ->addColumn('celular', function ($row) {
                         $btn = $row->MPC_celular;
                         return $btn;
                     })
-                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'estado', 'celular'])
+                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'action5', 'action6', 'estado', 'celular'])
                     ->make(true);
             }
         }
@@ -414,6 +437,104 @@ class MantenimientoPreventivoCarburadaController extends Controller
         return $pdf->stream('mantenimiento-preventivo-carburada-' . tenant('id') . '.pdf');
     }
 
+    /**
+     * "Orden de Servicio": mismo contenido que pdf(), mas el Inventario
+     * Visual/Inspeccion de la Unidad (Estado de Recepcion) y los datos de
+     * facturacion de la venta asociada si la reserva llego a cobrarse. Es
+     * un documento nuevo aparte; pdf()/descargarpdf() no se tocan.
+     */
+    public function ordenServicio($id)
+    {
+        $datos = DB::table('mantenimiento_preventivo_carburada as mpc')
+            ->join('users as u', 'u.id', '=', 'mpc.PER_Id')
+            ->select('mpc.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MPC_Id', '=', $id)
+            ->first();
+
+        $detalle_reemplazo = DB::table('mpc_detalle_reemplazo')
+            ->where('MPC_Id', '=', $id)
+            ->get();
+
+        $total_detalle = round($detalle_reemplazo->sum('MPC_Precio'), 2);
+
+        $imagenes = DB::table('mpc_imagen')
+            ->where('MPC_Id', '=', $id)
+            ->get();
+
+        $url = URL::to('');
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+        $estadoRecepcion = null;
+        try {
+            $estadoRecepcion = GestionProcesoService::estadoRecepcion('mantenimiento_preventivo_carburada', (int) $id);
+        } catch (\Throwable $e) {
+            // Sin ficha de recepcion guardada: el partial simplemente no imprime esas secciones.
+        }
+
+        $pdf = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/preventivo/carburadas/orden-servicio', [
+            "mttoPreventivo" => $datos,
+            "detalle" => $detalle_reemplazo,
+            "imagenes" => $imagenes,
+            "url" => $url,
+            "total_detalle" => $total_detalle,
+            "empresa" => $empresa,
+            "etiquetaTipo" => 'Preventivo Carburada',
+            "estadoRecepcion" => $estadoRecepcion,
+            "datosVenta" => GestionProcesoService::datosVentaAsociada($datos->RES_Id ?? null),
+        ])->setOptions([
+            'defaultFont' => 'sans-serif',
+            'chroot' => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        return $pdf->stream('orden-servicio-preventivo-carburada-' . tenant('id') . '.pdf');
+    }
+
+    /**
+     * PDF con SOLO el estado de recepcion (Inventario Visual +
+     * Inspeccion de la Unidad) — para imprimir/compartir nada mas lo de
+     * "como llego la moto". Usa una vista compartida por los 5 tipos
+     * (mantenimientos/estado-recepcion-pdf) porque esta parte no depende
+     * de columnas Det especificas de cada tipo.
+     */
+    public function estadoRecepcionPdf($id)
+    {
+        $datos = DB::table('mantenimiento_preventivo_carburada as mpc')
+            ->join('users as u', 'u.id', '=', 'mpc.PER_Id')
+            ->select('mpc.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MPC_Id', '=', $id)
+            ->first();
+
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+        $estadoRecepcion = null;
+        try {
+            $estadoRecepcion = GestionProcesoService::estadoRecepcion('mantenimiento_preventivo_carburada', (int) $id);
+        } catch (\Throwable $e) {
+            // Sin ficha de recepcion guardada: la vista muestra el aviso de "sin datos".
+        }
+
+        $pdf = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/estado-recepcion-pdf', [
+            "empresa" => $empresa,
+            "etiquetaTipo" => 'Preventivo Carburada',
+            "numeroOrden" => 'MPC-' . str_pad($id, 6, '0', STR_PAD_LEFT),
+            "fecha" => $datos ? date('d/m/Y', strtotime($datos->MPC_FechaCreacion)) : '',
+            "hora" => $datos ? date('H:i', strtotime($datos->MPC_FechaCreacion)) : '',
+            "personal" => $datos->personal ?? '',
+            "propietario" => $datos->MPC_Propietario ?? '',
+            "placa" => $datos->MPC_Placa ?? '',
+            "unidad" => $datos->MPC_Unidad ?? '',
+            "km" => $datos->MPC_KMEntrada ?? '',
+            "estadoRecepcion" => $estadoRecepcion,
+        ])->setOptions([
+            'defaultFont' => 'sans-serif',
+            'chroot' => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        return $pdf->stream('estado-recepcion-preventivo-carburada-' . tenant('id') . '.pdf');
+    }
+
     public function descargarpdf($id)
     {
         $datos = DB::table('mantenimiento_preventivo_carburada as mpc')
@@ -500,6 +621,16 @@ class MantenimientoPreventivoCarburadaController extends Controller
             $mtto_preventivo_carburadas->MPC_CorrecionObservacion = $request->get('MPC_CorrecionObservacion');
             $mtto_preventivo_carburadas->MPC_ProximoCambioAceite = $request->get('MPC_ProximoCambioAceite');
             $mtto_preventivo_carburadas->MPC_ProximoServicio = $request->get('MPC_ProximoServicio');
+            $mtto_preventivo_carburadas->MPC_Recomendacion = $request->get('MPC_Recomendacion');
+            $mtto_preventivo_carburadas->MPC_RecomendacionPrioridad = $request->get('MPC_RecomendacionPrioridad') ?: null;
+            $mtto_preventivo_carburadas->MPC_VerifArranque = $request->boolean('MPC_VerifArranque');
+            $mtto_preventivo_carburadas->MPC_VerifLuces = $request->boolean('MPC_VerifLuces');
+            $mtto_preventivo_carburadas->MPC_VerifDireccionales = $request->boolean('MPC_VerifDireccionales');
+            $mtto_preventivo_carburadas->MPC_VerifNivelAceite = $request->boolean('MPC_VerifNivelAceite');
+            $mtto_preventivo_carburadas->MPC_VerifPruebaRuta = $request->boolean('MPC_VerifPruebaRuta');
+            $mtto_preventivo_carburadas->MPC_VerifLavado = $request->boolean('MPC_VerifLavado');
+            $mtto_preventivo_carburadas->MPC_VerifOtros = $request->get('MPC_VerifOtros');
+            $mtto_preventivo_carburadas->MPC_VerifConforme = $request->boolean('MPC_VerifConforme');
             $mtto_preventivo_carburadas->MPC_FechaEdicion = $mytime->toDateTimeString();
             $mtto_preventivo_carburadas->MPC_FechaInicio = $request->get('MPC_FechaInicio') ? Carbon::parse($request->get('MPC_FechaInicio'))->toDateTimeString() : null;
             $mtto_preventivo_carburadas->MPC_FechaTermino = $request->get('MPC_FechaTermino') ? Carbon::parse($request->get('MPC_FechaTermino'))->toDateTimeString() : null;

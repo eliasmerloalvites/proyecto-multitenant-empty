@@ -18,9 +18,6 @@
         }
 
         .form-scroll-container {
-            max-height: calc(100vh - 120px);
-            overflow-y: auto;
-            overflow-x: hidden;
             padding-right: 5px;
         }
 
@@ -365,6 +362,11 @@
                         </div>
                     </div>
                 </div>
+
+                @include('tenant_tallermoto.mantenimientos.partials.estado-recepcion', [
+                    'tabla' => 'mantenimiento_general_carburada',
+                    'id' => $datos->MGC_Id,
+                ])
 
                 <!-- DESCRIPCION -->
                 <div class="row mt-3">
@@ -951,10 +953,76 @@
                 </div>
 
 
-                @include('tenant_tallermoto.mantenimientos.partials.estado-recepcion', [
-                    'tabla' => 'mantenimiento_general_carburada',
-                    'id' => $datos->MGC_Id,
-                ])
+                <div class="row mt-3">
+                    <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="card card-outline card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title-custom">
+                                    <i class="fas fa-clipboard-check mr-1"></i>
+                                    Recomendaciones y Verificación Final
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="form-group col-lg-8 col-md-8 col-sm-12 col-12">
+                                        <label>Recomendación</label>
+                                        <textarea class="form-control" rows="2" name="MGC_Recomendacion"
+                                            onkeyup="this.value=this.value.toUpperCase();">{{ $datos->MGC_Recomendacion }}</textarea>
+                                    </div>
+                                    <div class="form-group col-lg-4 col-md-4 col-sm-12 col-12">
+                                        <label>Prioridad</label>
+                                        <select class="form-control" name="MGC_RecomendacionPrioridad">
+                                            <option value="">Sin prioridad</option>
+                                            @foreach (['ALTA' => 'Alta', 'MEDIA' => 'Media', 'BAJA' => 'Baja'] as $valor => $etiqueta)
+                                                <option value="{{ $valor }}" {{ $datos->MGC_RecomendacionPrioridad === $valor ? 'selected' : '' }}>{{ $etiqueta }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <label class="font-weight-bold">Verificación Final (control de calidad)</label>
+                                <div class="row">
+                                    @foreach ([
+                                        'MGC_VerifArranque' => 'Arranque correcto',
+                                        'MGC_VerifLuces' => 'Luces',
+                                        'MGC_VerifDireccionales' => 'Direccionales',
+                                        'MGC_VerifNivelAceite' => 'Nivel de aceite',
+                                        'MGC_VerifPruebaRuta' => 'Prueba de ruta',
+                                        'MGC_VerifLavado' => 'Lavado',
+                                    ] as $campo => $etiqueta)
+                                        <div class="form-group col-lg-4 col-md-4 col-sm-6 col-6">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input"
+                                                    {{ $datos->$campo ? 'checked' : '' }} name="{{ $campo }}"
+                                                    id="switch{{ $campo }}">
+                                                <label class="custom-control-label" for="switch{{ $campo }}">{{ $etiqueta }}</label>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-lg-8 col-md-8 col-sm-12 col-12">
+                                        <label>Otros</label>
+                                        <input type="text" class="form-control" name="MGC_VerifOtros"
+                                            onKeyUp="this.value=this.value.toUpperCase();"
+                                            value="{{ $datos->MGC_VerifOtros }}" maxlength="150">
+                                    </div>
+                                    <div class="form-group col-lg-4 col-md-4 col-sm-12 col-12">
+                                        <label>&nbsp;</label>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input"
+                                                {{ $datos->MGC_VerifConforme ? 'checked' : '' }} name="MGC_VerifConforme"
+                                                id="switchMGCVerifConforme">
+                                            <label class="custom-control-label" for="switchMGCVerifConforme">Conforme para entrega</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- BOTONES -->
                 <div class="row mt-3 mb-4">
