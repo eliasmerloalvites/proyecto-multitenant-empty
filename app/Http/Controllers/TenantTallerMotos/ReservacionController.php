@@ -35,7 +35,7 @@ class ReservacionController extends Controller
             $idpersonal = Auth::user()->id;
 
             $rolAdmin = false;
-            if ($roles->contains('Admin') || $roles->contains('Gerente')) {
+            if ($roles->contains('Admin') || $roles->contains('Gerente') || $roles->contains('Recepcion')) {
                 $rolAdmin = true;
             }
 

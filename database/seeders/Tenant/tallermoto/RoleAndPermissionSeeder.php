@@ -460,6 +460,8 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.reservaciones.administracion.edit',
             'tenant.reservaciones.administracion.show',
             'tenant.reservaciones.administracion.destroy',
+            'tenant.reservaciones.administracion.aprobar',
+            'tenant.reservaciones.administracion.notificar',
 
             'tenant.motos.index',
 
@@ -634,6 +636,8 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.reservaciones.administracion.edit',
             'tenant.reservaciones.administracion.show',
             'tenant.reservaciones.administracion.destroy',
+            'tenant.reservaciones.administracion.aprobar',
+            'tenant.reservaciones.administracion.notificar',
 
             'tenant.motos.index',
 
