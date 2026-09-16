@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             ProveedorTableSeeder::class,
             MetodoPagoTableSeeder::class,
             ClienteTableSeeder::class,
+            RecepcionCategoriaSeeder::class,
         ]);
     }
 }

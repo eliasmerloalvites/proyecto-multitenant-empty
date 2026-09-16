@@ -380,6 +380,7 @@
                         console.log(result);
                         $('#cliente_id_edit').val(result.data.CLI_Id);
                         $('#idCLI_TipoDocumento').val(result.data.CLI_TipoDocumento);
+                        actualizarUITipoDocumento();
                         $('#idCLI_NumDocumento').val(result.data.CLI_NumDocumento);
                         $('#idCLI_Nombre').val(result.data.CLI_Nombre);
                         $('#idCLI_Direccion').val(result.data.CLI_Direccion);
@@ -511,76 +512,84 @@
             $("#updateBtn").hide();
         }
 
-        function Limitar() {
+        // Ajusta el maxlength del Nº Documento y muestra/oculta la lupa de
+        // busqueda automatica segun el tipo elegido (RENIEC solo cubre DNI,
+        // SUNAT solo cubre RUC — para CE no hay servicio publico equivalente,
+        // asi que la lupa se oculta y el campo queda para llenado manual).
+        // Separado de Limitar() porque al cargar un cliente para editar hay
+        // que actualizar esto SIN borrar el numero de documento ya guardado.
+        function actualizarUITipoDocumento() {
             var cod = document.getElementById("idCLI_TipoDocumento").value;
-            if (cod == 'DNI') {
-                $("#idCLI_NumDocumento").val("");
-                $("#idCLI_NumDocumento").attr('maxlength', '8');
-            } else {
-                $("#idCLI_NumDocumento").val("");
-                $("#idCLI_NumDocumento").attr('maxlength', '11');
-            }
+            var maxlength = cod == 'DNI' ? '8' : (cod == 'CE' ? '9' : '11');
+            $("#idCLI_NumDocumento").attr('maxlength', maxlength);
+            $("#Buscar_Cliente").toggle(cod !== 'CE');
+        }
+
+        function Limitar() {
+            $("#idCLI_NumDocumento").val("");
+            actualizarUITipoDocumento();
         }
 
         function buscarCliente() {
-            if ($('#idCLI_TipoDocumento').val() == 'DNI') {
-                var numdni = $('#idCLI_NumDocumento').val();
-                if (numdni != '') {
-                    ocultar()
-                    var url = '/consultardni/' + numdni + '?';
-                    $.ajax({
-                        type: 'GET',
-                        url: url,
-                        success: function(dat) {
-                            if (dat.success[1] == false) {
-                                Swal
-                                    .fire({
-                                        title: "DNI Inválido",
-                                        icon: 'error',
-                                        confirmButtonColor: "#26BA9A",
-                                        width: '350px',
-                                        confirmButtonText: "Ok"
-                                    })
-                                    .then(resultado => {
-                                        if (resultado.value) {
-                                            $("#idCLI_Nombre").val("");
-                                        } else {}
-                                    });
-                            } else {
-                                $('#idCLI_Nombre').val(dat.success[0].apellido + ' ' + dat.success[0].nombre);
-                            }
+            var tipo = $('#idCLI_TipoDocumento').val();
+            var numdoc = $('#idCLI_NumDocumento').val();
+
+            if (numdoc == '') {
+                alert('Escriba el ' + tipo + '.!');
+                $('#idCLI_NumDocumento').focus();
+                return;
+            }
+
+            if (tipo == 'DNI') {
+                ocultar()
+                var url = '/consultardni/' + numdoc + '?';
+                $.ajax({
+                    type: 'GET',
+                    url: url,
+                    success: function(dat) {
+                        if (dat.success[1] == false) {
+                            Swal
+                                .fire({
+                                    title: "DNI Inválido",
+                                    icon: 'error',
+                                    confirmButtonColor: "#26BA9A",
+                                    width: '350px',
+                                    confirmButtonText: "Ok"
+                                })
+                                .then(resultado => {
+                                    if (resultado.value) {
+                                        $("#idCLI_Nombre").val("");
+                                    } else {}
+                                });
+                        } else {
+                            $('#idCLI_Nombre').val(dat.success[0].apellido + ' ' + dat.success[0].nombre);
                         }
+                    }
 
-                    });
-                } else {
-                    //mostrar()
-                    alert('Escriba el DNI.!');
-                    $('#idCLI_NumDocumento').focus();
-                }
-            } else if ($('#idCLI_TipoDocumento').val() == 'RUC') {
-                var numdni = $('#idCLI_NumDocumento').val();
-                if (numdni != '') {
-                    ocultar()
-                    var url = '/consultarruc/' + numdni + '?';
-                    $.ajax({
-                        type: 'GET',
-                        url: url,
-                        success: function(dat) {
-                            console.log(dat)
-                            if (dat.success[0] == "") {
-                                $('#idCLI_Nombre').val(dat.success[1]);
-                                $('#idCLI_Direccion').val(dat.success[2] + ' ' + dat.success[3]);
-                            } else {
-                                $('#idCLI_Nombre').val(dat.success[0].apellido + ' ' + dat.success[0].nombre);
-                            }
-
+                });
+            } else if (tipo == 'RUC') {
+                ocultar()
+                var url = '/consultarruc/' + numdoc + '?';
+                $.ajax({
+                    type: 'GET',
+                    url: url,
+                    success: function(dat) {
+                        if (dat.success == false) {
+                            Swal
+                                .fire({
+                                    title: dat.message || "RUC Inválido",
+                                    icon: 'error',
+                                    confirmButtonColor: "#26BA9A",
+                                    width: '350px',
+                                    confirmButtonText: "Ok"
+                                });
+                        } else {
+                            $('#idCLI_Nombre').val(dat.data.nombre);
+                            $('#idCLI_Direccion').val(dat.data.direccion + ' ' + dat.data.ubicacion);
                         }
+                    }
 
-                    });
-                } else {
-                    alert('Escriba el RUC.!');
-                    $('#idCLI_NumDocumento').focus();
-                }
+                });
             }
         }
 

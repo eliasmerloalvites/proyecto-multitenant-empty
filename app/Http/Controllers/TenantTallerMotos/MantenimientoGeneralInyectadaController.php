@@ -10,6 +10,7 @@ use App\Models\TenantTallerMotos\MantenimientoGeneralInyectada;
 use App\Models\TenantTallerMotos\MantenimientoPlan;
 use App\Models\TenantTallerMotos\MgiDetalleReemplazo;
 use App\Services\Mantenimiento\RepuestosBahiaSync;
+use App\Services\TenantTallerMotos\GestionProcesoService;
 use App\Models\TenantTallerMotos\MgiImagen;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -41,7 +42,7 @@ class MantenimientoGeneralInyectadaController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_general_inyectada as mgi')
                     ->join('users as p', 'p.id', '=', 'mgi.PER_Id')
-                    ->select('mgi.MGI_Id', 'mgi.MGI_Placa', 'mgi.MGI_Propietario', 'mgi.MGI_celular', 'mgi.notificar', 'mgi.MGI_Unidad', 'mgi.MGI_KMEntrada', 'mgi.MGI_FechaCreacion', 'mgi.MGI_FechaTermino', 'mgi.MGI_Estado', DB::raw('CONCAT(p.name) as personal'));
+                    ->select('mgi.MGI_Id', 'mgi.MGI_Placa', 'mgi.MGI_Propietario', 'mgi.MGI_celular', 'mgi.notificar', 'mgi.MGI_Unidad', 'mgi.MGI_KMEntrada', 'mgi.MGI_FechaCreacion', 'mgi.MGI_FechaTermino', 'mgi.MGI_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_general_inyectada' AND MTO_Id = mgi.MGI_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MGI_FechaCreacion', '>=', $request->fecha_inicio);
@@ -87,6 +88,17 @@ class MantenimientoGeneralInyectadaController extends Controller
                         }
                         return $btn;
                     })
+                    ->addColumn('action5', function ($row) {
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/generalinyectada/' . $row->MGI_Id . '/orden-servicio" data-toggle="tooltip"  data-id="' . $row->MGI_Id . '" data-original-title="Orden de Servicio" class="btn btn-primary btn-sm "><i class="fas fa-clipboard-list"></i></a>';
+                        return $btn;
+                    })
+                    ->addColumn('action6', function ($row) {
+                        if (!$row->tiene_recepcion) {
+                            return '';
+                        }
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/generalinyectada/' . $row->MGI_Id . '/estado-recepcion-pdf" data-toggle="tooltip"  data-id="' . $row->MGI_Id . '" data-original-title="Estado de Recepción" class="btn btn-secondary btn-sm "><i class="fas fa-motorcycle"></i></a>';
+                        return $btn;
+                    })
                     ->addColumn('celular', function ($row) {
                         if ($row->notificar == 1) {
                             $btn = $row->MGI_celular . ' <a target="_blank" href="https://wa.me/51' . $row->MGI_celular . '?text=Hola%20quiero%20informarte" data-toggle="tooltip"  data-id="' . $row->MGI_Id . '" title="Notificar" class="btn btn-success btn-sm"><i class="fab fa-whatsapp"></i></a>';
@@ -95,12 +107,12 @@ class MantenimientoGeneralInyectadaController extends Controller
                         }
                         return $btn;
                     })
-                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'estado', 'celular'])
+                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'action5', 'action6', 'estado', 'celular'])
                     ->make(true);
             } else {
                 $data = DB::table('mantenimiento_general_inyectada as mgi')
                     ->join('users as p', 'p.id', '=', 'mgi.PER_Id')
-                    ->select('mgi.MGI_Id', 'mgi.MGI_Placa', 'mgi.MGI_Propietario', 'mgi.MGI_celular', 'mgi.notificar', 'mgi.MGI_Unidad', 'mgi.MGI_KMEntrada', 'mgi.MGI_FechaCreacion', 'mgi.MGI_FechaTermino', 'mgi.MGI_Estado', DB::raw('CONCAT(p.name) as personal'))
+                    ->select('mgi.MGI_Id', 'mgi.MGI_Placa', 'mgi.MGI_Propietario', 'mgi.MGI_celular', 'mgi.notificar', 'mgi.MGI_Unidad', 'mgi.MGI_KMEntrada', 'mgi.MGI_FechaCreacion', 'mgi.MGI_FechaTermino', 'mgi.MGI_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_general_inyectada' AND MTO_Id = mgi.MGI_Id) as tiene_recepcion"))
                     ->where('mgi.PER_Id', '=', $idpersonal);
 
                 if ($request->filled('fecha_inicio')) {
@@ -147,11 +159,22 @@ class MantenimientoGeneralInyectadaController extends Controller
                     ->addColumn('action4', function ($row) {
                         return '';
                     })
+                    ->addColumn('action5', function ($row) {
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/generalinyectada/' . $row->MGI_Id . '/orden-servicio" data-toggle="tooltip"  data-id="' . $row->MGI_Id . '" data-original-title="Orden de Servicio" class="btn btn-primary btn-sm "><i class="fas fa-clipboard-list"></i></a>';
+                        return $btn;
+                    })
+                    ->addColumn('action6', function ($row) {
+                        if (!$row->tiene_recepcion) {
+                            return '';
+                        }
+                        $btn = '<a  target="_blank" href="/tenant/mantenimientos/generalinyectada/' . $row->MGI_Id . '/estado-recepcion-pdf" data-toggle="tooltip"  data-id="' . $row->MGI_Id . '" data-original-title="Estado de Recepción" class="btn btn-secondary btn-sm "><i class="fas fa-motorcycle"></i></a>';
+                        return $btn;
+                    })
                     ->addColumn('celular', function ($row) {
                         $btn = $row->MGI_celular;
                         return $btn;
                     })
-                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'estado', 'celular'])
+                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'action5', 'action6', 'estado', 'celular'])
                     ->make(true);
             }
         }
@@ -430,6 +453,105 @@ class MantenimientoGeneralInyectadaController extends Controller
 		return $pdf->stream('mantenimiento-general-inyectada-' . tenant('id') . '.pdf');
 	}
 
+    /**
+     * "Orden de Servicio": mismo contenido que pdf(), mas el Inventario
+     * Visual/Inspeccion de la Unidad (Estado de Recepcion) y los datos de
+     * facturacion de la venta asociada si la reserva llego a cobrarse. Es
+     * un documento nuevo aparte; pdf()/descargarpdf() no se tocan.
+     */
+    public function ordenServicio($id)
+    {
+        $datos = DB::table('mantenimiento_general_inyectada as mgi')
+            ->join('users as u', 'u.id', '=', 'mgi.PER_Id')
+            ->select('mgi.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MGI_Id', '=', $id)
+            ->first();
+
+        $detalle_reemplazo = DB::table('mgi_detalle_reemplazo')
+            ->where('MGI_Id', '=', $id)
+            ->get();
+
+        $total_detalle = round($detalle_reemplazo->sum('MGI_Precio'), 2);
+
+        $imagenes = DB::table('mgi_imagen')
+            ->where('MGI_Id', '=', $id)
+            ->get();
+
+        $url = URL::to('');
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+        $estadoRecepcion = null;
+        try {
+            $estadoRecepcion = GestionProcesoService::estadoRecepcion('mantenimiento_general_inyectada', (int) $id);
+        } catch (\Throwable $e) {
+            // Sin ficha de recepcion guardada: el partial simplemente no imprime esas secciones.
+        }
+
+        $pdf = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/general/inyectadas/orden-servicio', [
+            "mttoPreventivo" => $datos,
+            "detalle" => $detalle_reemplazo,
+            "imagenes" => $imagenes,
+            "url" => $url,
+            "total_detalle" => $total_detalle,
+            "empresa" => $empresa,
+            "etiquetaTipo" => 'General Inyectada',
+            "estadoRecepcion" => $estadoRecepcion,
+            "datosVenta" => GestionProcesoService::datosVentaAsociada($datos->RES_Id ?? null),
+        ])->setOptions([
+            'defaultFont' => 'sans-serif',
+            'chroot' => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        return $pdf->stream('orden-servicio-general-inyectada-' . tenant('id') . '.pdf');
+    }
+
+    /**
+     * "Estado de Recepcion": documento aparte, solo con Inventario Visual +
+     * Inspeccion de la Unidad (sin checklist de servicio, sin repuestos,
+     * sin evidencias) — para imprimir/compartir nada mas lo de "como llego
+     * la moto". Usa una vista compartida por los 5 tipos
+     * (mantenimientos/estado-recepcion-pdf) porque esta parte no depende
+     * de columnas Det especificas de cada tipo.
+     */
+    public function estadoRecepcionPdf($id)
+    {
+        $datos = DB::table('mantenimiento_general_inyectada as mgi')
+            ->join('users as u', 'u.id', '=', 'mgi.PER_Id')
+            ->select('mgi.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MGI_Id', '=', $id)
+            ->first();
+
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+        $estadoRecepcion = null;
+        try {
+            $estadoRecepcion = GestionProcesoService::estadoRecepcion('mantenimiento_general_inyectada', (int) $id);
+        } catch (\Throwable $e) {
+            // Sin ficha de recepcion guardada: la vista muestra el aviso de "sin datos".
+        }
+
+        $pdf = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/estado-recepcion-pdf', [
+            "empresa" => $empresa,
+            "etiquetaTipo" => 'General Inyectada',
+            "numeroOrden" => 'MGI-' . str_pad($id, 6, '0', STR_PAD_LEFT),
+            "fecha" => $datos ? date('d/m/Y', strtotime($datos->MGI_FechaCreacion)) : '',
+            "hora" => $datos ? date('H:i', strtotime($datos->MGI_FechaCreacion)) : '',
+            "personal" => $datos->personal ?? '',
+            "propietario" => $datos->MGI_Propietario ?? '',
+            "placa" => $datos->MGI_Placa ?? '',
+            "unidad" => $datos->MGI_Unidad ?? '',
+            "km" => $datos->MGI_KMEntrada ?? '',
+            "estadoRecepcion" => $estadoRecepcion,
+        ])->setOptions([
+            'defaultFont' => 'sans-serif',
+            'chroot' => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        return $pdf->stream('estado-recepcion-general-inyectada-' . tenant('id') . '.pdf');
+    }
+
     public function descargarpdf($id)
 	{
 		$datos = DB::table('mantenimiento_general_inyectada as mgi')
@@ -530,6 +652,16 @@ class MantenimientoGeneralInyectadaController extends Controller
             $mtto_general_inyectadas->MGI_CorrecionObservacion = $request->get('MGI_CorrecionObservacion');
             $mtto_general_inyectadas->MGI_ProximoCambioAceite = $request->get('MGI_ProximoCambioAceite');
             $mtto_general_inyectadas->MGI_ProximoServicio = $request->get('MGI_ProximoServicio');
+            $mtto_general_inyectadas->MGI_Recomendacion = $request->get('MGI_Recomendacion');
+            $mtto_general_inyectadas->MGI_RecomendacionPrioridad = $request->get('MGI_RecomendacionPrioridad') ?: null;
+            $mtto_general_inyectadas->MGI_VerifArranque = $request->boolean('MGI_VerifArranque');
+            $mtto_general_inyectadas->MGI_VerifLuces = $request->boolean('MGI_VerifLuces');
+            $mtto_general_inyectadas->MGI_VerifDireccionales = $request->boolean('MGI_VerifDireccionales');
+            $mtto_general_inyectadas->MGI_VerifNivelAceite = $request->boolean('MGI_VerifNivelAceite');
+            $mtto_general_inyectadas->MGI_VerifPruebaRuta = $request->boolean('MGI_VerifPruebaRuta');
+            $mtto_general_inyectadas->MGI_VerifLavado = $request->boolean('MGI_VerifLavado');
+            $mtto_general_inyectadas->MGI_VerifOtros = $request->get('MGI_VerifOtros');
+            $mtto_general_inyectadas->MGI_VerifConforme = $request->boolean('MGI_VerifConforme');
             $mtto_general_inyectadas->MGI_FechaEdicion = $mytime->toDateTimeString();
             $mtto_general_inyectadas->MGI_FechaInicio = $request->get('MGI_FechaInicio') ? Carbon::parse($request->get('MGI_FechaInicio'))->toDateTimeString() : null;
             $mtto_general_inyectadas->MGI_FechaTermino = $request->get('MGI_FechaTermino') ? Carbon::parse($request->get('MGI_FechaTermino'))->toDateTimeString() : null;

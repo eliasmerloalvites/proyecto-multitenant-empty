@@ -205,7 +205,7 @@
                         searchable: false,
 
                         render: function(data, type, row) {
-                            return @can('tenant.mantenimientos.preventivoinyectada.show') data.action3 +' '+ @endcan ''
+                            return @can('tenant.mantenimientos.preventivoinyectada.show') data.action5 +' '+ data.action6 +' '+ @endcan ''
                             @can('tenant.mantenimientos.preventivoinyectada.edit') +data.action1 +' '+ @endcan ''
                             @can('tenant.mantenimientos.preventivoinyectada.aprobar') +data.action4 +' '+ @endcan ''
                             @can('tenant.mantenimientos.preventivoinyectada.destroy') +data.action2 @endcan;

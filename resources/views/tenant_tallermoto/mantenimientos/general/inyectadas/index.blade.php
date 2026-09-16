@@ -205,7 +205,7 @@
                         searchable: false,
 
                         render: function(data, type, row) {
-                            return @can('tenant.mantenimientos.generalinyectada.show') data.action3 +' '+ @endcan ''
+                            return @can('tenant.mantenimientos.generalinyectada.show') data.action5 +' '+ data.action6 +' '+ @endcan ''
                             @can('tenant.mantenimientos.generalinyectada.edit') +data.action1 +' '+ @endcan ''
                             @can('tenant.mantenimientos.generalinyectada.aprobar') +data.action4 +' '+ @endcan ''
                             @can('tenant.mantenimientos.generalinyectada.destroy') +data.action2 @endcan;

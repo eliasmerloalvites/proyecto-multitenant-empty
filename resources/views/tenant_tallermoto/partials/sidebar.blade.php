@@ -24,6 +24,15 @@
                     </a>
                 </li>
 
+                <li class="nav-item">
+                    <a href="{{ tenant_url('tenant.ayuda.index') }}" class="nav-link {{ request()->routeIs('tenant.ayuda*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-graduation-cap"></i>
+                        <p>
+                            Centro de Ayuda
+                        </p>
+                    </a>
+                </li>
+
                 @hasanyrole('Admin|Gerente')
                 <li class="nav-item">
                     <a href="{{ tenant_url('tenant.facturacion.index') }}" class="nav-link {{ request()->routeIs('tenant.facturacion*') ? 'active' : '' }}">
@@ -664,19 +673,22 @@
                     'tenant.configuracion.sede.index',
                     'tenant.configuracion.turno.index',
                     'tenant.configuracion.bahia.index',
-                    'tenant.configuracion.horario.index'
+                    'tenant.configuracion.horario.index',
+                    'tenant.configuracion.recepcion.index'
                 ])
-                    <li class="nav-item has-treeview 
+                    <li class="nav-item has-treeview
                         {{ request()->routeIs('tenant.configuracion.empresa*') ||
                             request()->routeIs('tenant.configuracion.sede*') ||
                             request()->routeIs('tenant.configuracion.turno*') ||
                             request()->routeIs('tenant.configuracion.bahia*') ||
-                            request()->routeIs('tenant.configuracion.horario*') ? 'menu-open' : '' }}">
+                            request()->routeIs('tenant.configuracion.horario*') ||
+                            request()->routeIs('tenant.configuracion.recepcion*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->routeIs('tenant.configuracion.empresa*') ||
                             request()->routeIs('tenant.configuracion.sede*') ||
                             request()->routeIs('tenant.configuracion.turno*') ||
                             request()->routeIs('tenant.configuracion.bahia*') ||
-                            request()->routeIs('tenant.configuracion.horario*') ? 'active' : '' }}">
+                            request()->routeIs('tenant.configuracion.horario*') ||
+                            request()->routeIs('tenant.configuracion.recepcion*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-cogs"></i>
                             <p>
                                 CONFIGURACIÓN
@@ -726,12 +738,22 @@
                             </li>
                             <!-- HORARIOS -->
                             <li class="nav-item">
-                                <a href="{{ tenant_url('tenant.configuracion.horario.index') }}" 
+                                <a href="{{ tenant_url('tenant.configuracion.horario.index') }}"
                                     class="nav-link  {{ request()->routeIs('tenant.configuracion.horario*') ? 'active' : '' }}">
                                     <i class="fas fa-clock nav-icon"></i>
                                     <p>Horarios</p>
                                 </a>
                             </li>
+                            @can('tenant.configuracion.recepcion.index')
+                            <!-- ESTADO DE RECEPCIÓN -->
+                            <li class="nav-item">
+                                <a href="{{ tenant_url('tenant.configuracion.recepcion.index') }}"
+                                    class="nav-link  {{ request()->routeIs('tenant.configuracion.recepcion*') ? 'active' : '' }}">
+                                    <i class="fas fa-clipboard-check nav-icon"></i>
+                                    <p>Estado de Recepción</p>
+                                </a>
+                            </li>
+                            @endcan
                         </ul>
                     </li>
                 @endcanany

@@ -204,7 +204,7 @@
                         searchable: false,
 
                         render: function(data, type, row) {
-                            return @can('tenant.mantenimientos.generalcarburada.show') data.action3 +' '+ @endcan ''
+                            return @can('tenant.mantenimientos.generalcarburada.show') data.action5 +' '+ data.action6 +' '+ @endcan ''
                             @can('tenant.mantenimientos.generalcarburada.edit') +data.action1 +' '+ @endcan ''
                             @can('tenant.mantenimientos.generalcarburada.aprobar') +data.action4 +' '+ @endcan ''
                             @can('tenant.mantenimientos.generalcarburada.destroy') +data.action2 @endcan;

@@ -9,6 +9,7 @@ use App\Models\Tenant\User;
 use App\Models\TenantTallerMotos\MantenimientoActividadVariada;
 use App\Models\TenantTallerMotos\MavDetalleReemplazo;
 use App\Services\Mantenimiento\RepuestosBahiaSync;
+use App\Services\TenantTallerMotos\GestionProcesoService;
 use App\Models\TenantTallerMotos\MavImagen;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -52,7 +53,7 @@ class MantenimientoActividadVariadaController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_actividad_variadas as mav')
                     ->join('users as p', 'p.id', '=', 'mav.PER_Id')
-                    ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_FechaTermino', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'));
+                    ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_FechaTermino', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_actividad_variadas' AND MTO_Id = mav.MAV_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MAV_FechaCreacion', '>=', $request->fecha_inicio);
@@ -98,6 +99,17 @@ class MantenimientoActividadVariadaController extends Controller
                         }
                         return $btn;
                     })
+                    ->addColumn('action5', function ($row) {
+                        $btn = '<a  target="_blank" href="/tenant/actividades/mantenimientoactividadvariada/' . $row->MAV_Id . '/orden-servicio" data-toggle="tooltip"  data-id="' . $row->MAV_Id . '" data-original-title="Orden de Servicio" class="btn btn-primary btn-sm "><i class="fas fa-clipboard-list"></i></a>';
+                        return $btn;
+                    })
+                    ->addColumn('action6', function ($row) {
+                        if (!$row->tiene_recepcion) {
+                            return '';
+                        }
+                        $btn = '<a  target="_blank" href="/tenant/actividades/mantenimientoactividadvariada/' . $row->MAV_Id . '/estado-recepcion-pdf" data-toggle="tooltip"  data-id="' . $row->MAV_Id . '" data-original-title="Estado de Recepción" class="btn btn-secondary btn-sm "><i class="fas fa-motorcycle"></i></a>';
+                        return $btn;
+                    })
                     ->addColumn('celular', function ($row) {
                         if ($row->notificar == 1) {
                             $btn = $row->MAV_celular . ' <a target="_blank" href="https://wa.me/51' . $row->MAV_celular . '?text=Hola%20quiero%20informarte" data-toggle="tooltip"  data-id="' . $row->MAV_Id . '" title="Notificar" class="btn btn-success btn-sm"><i class="fab fa-whatsapp"></i></a>';
@@ -106,12 +118,12 @@ class MantenimientoActividadVariadaController extends Controller
                         }
                         return $btn;
                     })
-                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'estado', 'celular'])
+                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'action5', 'action6', 'estado', 'celular'])
                     ->make(true);
             } else {
                 $data = DB::table('mantenimiento_actividad_variadas as mav')
                     ->join('users as p', 'p.id', '=', 'mav.PER_Id')
-                    ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_FechaTermino', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'))
+                    ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_FechaTermino', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_actividad_variadas' AND MTO_Id = mav.MAV_Id) as tiene_recepcion"))
                     ->where('mav.PER_Id', '=', $idpersonal);
 
                 if ($request->filled('fecha_inicio')) {
@@ -158,11 +170,22 @@ class MantenimientoActividadVariadaController extends Controller
                     ->addColumn('action4', function ($row) {
                         return '';
                     })
+                    ->addColumn('action5', function ($row) {
+                        $btn = '<a  target="_blank" href="/tenant/actividades/mantenimientoactividadvariada/' . $row->MAV_Id . '/orden-servicio" data-toggle="tooltip"  data-id="' . $row->MAV_Id . '" data-original-title="Orden de Servicio" class="btn btn-primary btn-sm "><i class="fas fa-clipboard-list"></i></a>';
+                        return $btn;
+                    })
+                    ->addColumn('action6', function ($row) {
+                        if (!$row->tiene_recepcion) {
+                            return '';
+                        }
+                        $btn = '<a  target="_blank" href="/tenant/actividades/mantenimientoactividadvariada/' . $row->MAV_Id . '/estado-recepcion-pdf" data-toggle="tooltip"  data-id="' . $row->MAV_Id . '" data-original-title="Estado de Recepción" class="btn btn-secondary btn-sm "><i class="fas fa-motorcycle"></i></a>';
+                        return $btn;
+                    })
                     ->addColumn('celular', function ($row) {
                         $btn = $row->MAV_celular;
                         return $btn;
                     })
-                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'estado', 'celular'])
+                    ->rawColumns(['action1', 'action2', 'action3', 'action4', 'action5', 'action6', 'estado', 'celular'])
                     ->make(true);
             }
         }
@@ -398,6 +421,104 @@ class MantenimientoActividadVariadaController extends Controller
 		return $pdf->stream('mantenimiento-actividad-variada-' . tenant('id') . '.pdf');
 	}
 
+    /**
+     * "Orden de Servicio": mismo contenido que pdf(), mas el Inventario
+     * Visual/Inspeccion de la Unidad (Estado de Recepcion) y los datos de
+     * facturacion de la venta asociada si la reserva llego a cobrarse. Es
+     * un documento nuevo aparte; pdf()/descargarpdf() no se tocan.
+     */
+    public function ordenServicio($id)
+    {
+        $datos = DB::table('mantenimiento_actividad_variadas as mav')
+            ->join('users as u', 'u.id', '=', 'mav.PER_Id')
+            ->select('mav.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MAV_Id', '=', $id)
+            ->first();
+
+        $detalle_reemplazo = DB::table('mav_detalle_reemplazo')
+            ->where('MAV_Id', '=', $id)
+            ->get();
+
+        $total_detalle = round($detalle_reemplazo->sum('MAV_Precio'), 2);
+
+        $imagenes = DB::table('mav_imagen')
+            ->where('MAV_Id', '=', $id)
+            ->get();
+
+        $url = URL::to('');
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+        $estadoRecepcion = null;
+        try {
+            $estadoRecepcion = GestionProcesoService::estadoRecepcion('mantenimiento_actividad_variadas', (int) $id);
+        } catch (\Throwable $e) {
+            // Sin ficha de recepcion guardada: el partial simplemente no imprime esas secciones.
+        }
+
+        $pdf = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/actividades/variadas/orden-servicio', [
+            "mttoPreventivo" => $datos,
+            "detalle" => $detalle_reemplazo,
+            "imagenes" => $imagenes,
+            "url" => $url,
+            "total_detalle" => $total_detalle,
+            "empresa" => $empresa,
+            "etiquetaTipo" => 'Actividad Variada',
+            "estadoRecepcion" => $estadoRecepcion,
+            "datosVenta" => GestionProcesoService::datosVentaAsociada($datos->RES_Id ?? null),
+        ])->setOptions([
+            'defaultFont' => 'sans-serif',
+            'chroot' => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        return $pdf->stream('orden-servicio-actividad-variada-' . tenant('id') . '.pdf');
+    }
+
+    /**
+     * PDF con SOLO el estado de recepcion (Inventario Visual +
+     * Inspeccion de la Unidad) — para imprimir/compartir nada mas lo de
+     * "como llego la moto". Usa una vista compartida por los 5 tipos
+     * (mantenimientos/estado-recepcion-pdf) porque esta parte no depende
+     * de columnas Det especificas de cada tipo.
+     */
+    public function estadoRecepcionPdf($id)
+    {
+        $datos = DB::table('mantenimiento_actividad_variadas as mav')
+            ->join('users as u', 'u.id', '=', 'mav.PER_Id')
+            ->select('mav.*', DB::raw('CONCAT(u.name) as personal'))
+            ->where('MAV_Id', '=', $id)
+            ->first();
+
+        $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
+        $estadoRecepcion = null;
+        try {
+            $estadoRecepcion = GestionProcesoService::estadoRecepcion('mantenimiento_actividad_variadas', (int) $id);
+        } catch (\Throwable $e) {
+            // Sin ficha de recepcion guardada: la vista muestra el aviso de "sin datos".
+        }
+
+        $pdf = Pdf::loadView('/tenant_' . tenant('tipo_negocio') . '/mantenimientos/estado-recepcion-pdf', [
+            "empresa" => $empresa,
+            "etiquetaTipo" => 'Actividad Variada',
+            "numeroOrden" => 'MAV-' . str_pad($id, 6, '0', STR_PAD_LEFT),
+            "fecha" => $datos ? date('d/m/Y', strtotime($datos->MAV_FechaCreacion)) : '',
+            "hora" => $datos ? date('H:i', strtotime($datos->MAV_FechaCreacion)) : '',
+            "personal" => $datos->personal ?? '',
+            "propietario" => $datos->MAV_Propietario ?? '',
+            "placa" => $datos->MAV_Placa ?? '',
+            "unidad" => $datos->MAV_Unidad ?? '',
+            "km" => $datos->MAV_KMEntrada ?? '',
+            "estadoRecepcion" => $estadoRecepcion,
+        ])->setOptions([
+            'defaultFont' => 'sans-serif',
+            'chroot' => public_path('dist/img'),
+            'isRemoteEnabled' => true
+        ]);
+
+        return $pdf->stream('estado-recepcion-actividad-variada-' . tenant('id') . '.pdf');
+    }
+
     public function descargarpdf($id)
     {
         $datos = DB::table('mantenimiento_actividad_variadas as mav')
@@ -466,6 +587,16 @@ class MantenimientoActividadVariadaController extends Controller
             $mtto_act_variadas->MAV_CorrecionObservacion = $request->get('MAV_CorrecionObservacion');
             $mtto_act_variadas->MAV_ProximoCambioAceite = $request->get('MAV_ProximoCambioAceite');
             $mtto_act_variadas->MAV_ProximoServicio = $request->get('MAV_ProximoServicio');
+            $mtto_act_variadas->MAV_Recomendacion = $request->get('MAV_Recomendacion');
+            $mtto_act_variadas->MAV_RecomendacionPrioridad = $request->get('MAV_RecomendacionPrioridad') ?: null;
+            $mtto_act_variadas->MAV_VerifArranque = $request->boolean('MAV_VerifArranque');
+            $mtto_act_variadas->MAV_VerifLuces = $request->boolean('MAV_VerifLuces');
+            $mtto_act_variadas->MAV_VerifDireccionales = $request->boolean('MAV_VerifDireccionales');
+            $mtto_act_variadas->MAV_VerifNivelAceite = $request->boolean('MAV_VerifNivelAceite');
+            $mtto_act_variadas->MAV_VerifPruebaRuta = $request->boolean('MAV_VerifPruebaRuta');
+            $mtto_act_variadas->MAV_VerifLavado = $request->boolean('MAV_VerifLavado');
+            $mtto_act_variadas->MAV_VerifOtros = $request->get('MAV_VerifOtros');
+            $mtto_act_variadas->MAV_VerifConforme = $request->boolean('MAV_VerifConforme');
             $mtto_act_variadas->MAV_FechaEdicion = $mytime->toDateTimeString();
             $mtto_act_variadas->MAV_FechaInicio = $request->get('MAV_FechaInicio') ? Carbon::parse($request->get('MAV_FechaInicio'))->toDateTimeString() : null;
             $mtto_act_variadas->MAV_FechaTermino = $request->get('MAV_FechaTermino') ? Carbon::parse($request->get('MAV_FechaTermino'))->toDateTimeString() : null;

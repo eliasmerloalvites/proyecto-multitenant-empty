@@ -205,7 +205,7 @@
                         searchable: false,
 
                         render: function(data, type, row) {
-                            return @can('tenant.actividades.mantenimientoactividadvariada.show') data.action3 +' '+ @endcan ''
+                            return @can('tenant.actividades.mantenimientoactividadvariada.show') data.action5 +' '+ data.action6 +' '+ @endcan ''
                             @can('tenant.actividades.mantenimientoactividadvariada.edit') +data.action1 +' '+ @endcan ''
                             @can('tenant.actividades.mantenimientoactividadvariada.aprobar') +data.action4 +' '+ @endcan ''
                             @can('tenant.actividades.mantenimientoactividadvariada.destroy') +data.action2 @endcan;
