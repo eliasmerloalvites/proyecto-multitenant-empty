@@ -367,7 +367,7 @@ class CotizacionController extends Controller
                 ->noSandbox()
                 ->setNodeEnv(['HOME' => sys_get_temp_dir()]);
 
-            if ($chromePath = env('PUPPETEER_EXECUTABLE_PATH')) {
+            if ($chromePath = config('services.puppeteer.executable_path')) {
                 $browsershot->setChromePath($chromePath);
             }
 

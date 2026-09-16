@@ -1577,7 +1577,7 @@ class VentaController extends Controller
             // Chromium del sistema apuntando PUPPETEER_EXECUTABLE_PATH en
             // el .env. En local, si no esta seteado, Browsershot usa su
             // deteccion por defecto (asi sigue funcionando igual que antes).
-            if ($chromePath = env('PUPPETEER_EXECUTABLE_PATH')) {
+            if ($chromePath = config('services.puppeteer.executable_path')) {
                 $browsershot->setChromePath($chromePath);
             }
 

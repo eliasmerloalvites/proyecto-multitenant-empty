@@ -43,4 +43,12 @@ return [
         'secret_key' => env('CULQI_SECRET_KEY'),
     ],
 
+    // Chromium del sistema para Browsershot (generacion de PDF/imagen de
+    // tickets y cotizaciones). Vive en config/ en vez de leerse con env()
+    // directo en el controlador porque config:cache deja de leer el .env
+    // en tiempo de ejecucion.
+    'puppeteer' => [
+        'executable_path' => env('PUPPETEER_EXECUTABLE_PATH'),
+    ],
+
 ];
