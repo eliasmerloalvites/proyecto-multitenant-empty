@@ -52,7 +52,7 @@ class MantenimientoActividadVariadaController extends Controller
 
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_actividad_variadas as mav')
-                    ->join('users as p', 'p.id', '=', 'mav.PER_Id')
+                    ->leftJoin('users as p', 'p.id', '=', 'mav.PER_Id')
                     ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_FechaTermino', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_actividad_variadas' AND MTO_Id = mav.MAV_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
@@ -122,7 +122,7 @@ class MantenimientoActividadVariadaController extends Controller
                     ->make(true);
             } else {
                 $data = DB::table('mantenimiento_actividad_variadas as mav')
-                    ->join('users as p', 'p.id', '=', 'mav.PER_Id')
+                    ->leftJoin('users as p', 'p.id', '=', 'mav.PER_Id')
                     ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_FechaTermino', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_actividad_variadas' AND MTO_Id = mav.MAV_Id) as tiene_recepcion"))
                     ->where('mav.PER_Id', '=', $idpersonal);
 

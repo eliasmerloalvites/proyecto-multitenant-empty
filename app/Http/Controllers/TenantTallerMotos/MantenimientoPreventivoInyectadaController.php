@@ -41,7 +41,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
 
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_preventivo_inyectada as mpi')
-                    ->join('users as p', 'p.id', '=', 'mpi.PER_Id')
+                    ->leftJoin('users as p', 'p.id', '=', 'mpi.PER_Id')
                     ->select('mpi.MPI_Id', 'mpi.MPI_Placa', 'mpi.MPI_Propietario', 'mpi.MPI_celular', 'mpi.notificar', 'mpi.MPI_Unidad', 'mpi.MPI_KMEntrada', 'mpi.MPI_FechaCreacion', 'mpi.MPI_FechaTermino', 'mpi.MPI_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_inyectada' AND MTO_Id = mpi.MPI_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
@@ -111,7 +111,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
                     ->make(true);
             } else {
                 $data = DB::table('mantenimiento_preventivo_inyectada as mpi')
-                    ->join('users as p', 'p.id', '=', 'mpi.PER_Id')
+                    ->leftJoin('users as p', 'p.id', '=', 'mpi.PER_Id')
                     ->select('mpi.MPI_Id', 'mpi.MPI_Placa', 'mpi.MPI_Propietario', 'mpi.MPI_celular', 'mpi.notificar', 'mpi.MPI_Unidad', 'mpi.MPI_KMEntrada', 'mpi.MPI_FechaCreacion', 'mpi.MPI_FechaTermino', 'mpi.MPI_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_inyectada' AND MTO_Id = mpi.MPI_Id) as tiene_recepcion"))
                     ->where('mpi.PER_Id', '=', $idpersonal);
 

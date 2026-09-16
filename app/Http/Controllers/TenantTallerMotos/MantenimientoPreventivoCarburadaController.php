@@ -41,7 +41,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
 
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_preventivo_carburada as mpc')
-                    ->join('users as p', 'p.id', '=', 'mpc.PER_Id')
+                    ->leftJoin('users as p', 'p.id', '=', 'mpc.PER_Id')
                     ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_FechaTermino', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_carburada' AND MTO_Id = mpc.MPC_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
@@ -111,7 +111,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
                     ->make(true);
             } else {
                 $data = DB::table('mantenimiento_preventivo_carburada as mpc')
-                    ->join('users as p', 'p.id', '=', 'mpc.PER_Id')
+                    ->leftJoin('users as p', 'p.id', '=', 'mpc.PER_Id')
                     ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_FechaTermino', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_carburada' AND MTO_Id = mpc.MPC_Id) as tiene_recepcion"))
                     ->where('mpc.PER_Id', '=', $idpersonal);
 

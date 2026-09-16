@@ -41,7 +41,7 @@ class MantenimientoGeneralCarburadaController extends Controller
 
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_general_carburada as mgi')
-                    ->join('users as p', 'p.id', '=', 'mgi.PER_Id')
+                    ->leftJoin('users as p', 'p.id', '=', 'mgi.PER_Id')
                     ->select('mgi.MGC_Id', 'mgi.MGC_Placa', 'mgi.MGC_Propietario', 'mgi.MGC_celular', 'mgi.notificar', 'mgi.MGC_Unidad', 'mgi.MGC_KMEntrada', 'mgi.MGC_FechaCreacion', 'mgi.MGC_FechaTermino', 'mgi.MGC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_general_carburada' AND MTO_Id = mgi.MGC_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
@@ -111,7 +111,7 @@ class MantenimientoGeneralCarburadaController extends Controller
                     ->make(true);
             } else {
                 $data = DB::table('mantenimiento_general_carburada as mgi')
-                    ->join('users as p', 'p.id', '=', 'mgi.PER_Id')
+                    ->leftJoin('users as p', 'p.id', '=', 'mgi.PER_Id')
                     ->select('mgi.MGC_Id', 'mgi.MGC_Placa', 'mgi.MGC_Propietario', 'mgi.MGC_celular', 'mgi.notificar', 'mgi.MGC_Unidad', 'mgi.MGC_KMEntrada', 'mgi.MGC_FechaCreacion', 'mgi.MGC_FechaTermino', 'mgi.MGC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_general_carburada' AND MTO_Id = mgi.MGC_Id) as tiene_recepcion"))
                     ->where('mgi.PER_Id', '=', $idpersonal);
 
