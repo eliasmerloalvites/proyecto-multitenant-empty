@@ -24,6 +24,15 @@
                     </a>
                 </li>
 
+                <li class="nav-item">
+                    <a href="{{ tenant_url('tenant.ayuda.index') }}" class="nav-link {{ request()->routeIs('tenant.ayuda*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-graduation-cap"></i>
+                        <p>
+                            Centro de Ayuda
+                        </p>
+                    </a>
+                </li>
+
                 @hasanyrole('Admin|Gerente')
                 <li class="nav-item">
                     <a href="{{ tenant_url('tenant.facturacion.index') }}" class="nav-link {{ request()->routeIs('tenant.facturacion*') ? 'active' : '' }}">

@@ -1589,6 +1589,103 @@
         }
 
         /* =========================================
+            TIPO DE DOCUMENTO (DNI / CE) — solo aplica a
+            Boleta/Nota; Factura siempre es RUC, sin selector.
+            ========================================= */
+
+        .mini-doc-switch {
+
+            background: #F3F4F6;
+
+            border-radius: 10px;
+
+            padding: 3px;
+
+            display: flex;
+
+            gap: 4px;
+
+        }
+
+        .mini-doc-option {
+
+            border: none;
+
+            border-radius: 7px;
+
+            background: transparent;
+
+            font-size: 11px;
+            font-weight: 800;
+
+            color: #6B7280;
+
+            padding: 4px 10px;
+
+            transition: .2s ease;
+
+        }
+
+        .mini-doc-option.active {
+
+            background: #7C3AED;
+
+            color: #fff;
+
+        }
+
+        .mini-client-doc-row {
+
+            display: flex;
+
+            gap: 8px;
+
+        }
+
+        .mini-client-doc-row .mini-client-input {
+
+            flex: 1;
+
+        }
+
+        .mini-doc-search-btn {
+
+            flex: 0 0 52px;
+
+            height: 52px;
+
+            border: 1px solid #E5E7EB;
+
+            border-radius: 16px;
+
+            background: #fff;
+
+            color: #7C3AED;
+
+            font-size: 16px;
+
+            transition: .2s ease;
+
+        }
+
+        .mini-doc-search-btn:hover {
+
+            background: #7C3AED;
+
+            color: #fff;
+
+        }
+
+        .mini-doc-search-btn:disabled {
+
+            opacity: .35;
+
+            cursor: not-allowed;
+            pointer-events: none;
+
+        }
+
+        /* =========================================
             BTN SAVE
             ========================================= */
 
@@ -2124,14 +2221,31 @@
                         <!-- DOCUMENTO -->
                         <div class="mini-client-group">
 
-                            <label class="mini-client-label" id="labelDocumento">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
 
-                                DNI
+                                <label class="mini-client-label mb-0" id="labelDocumento">
 
-                            </label>
+                                    DNI
 
-                            <input type="text" class="mini-client-input" id="nuevoDocumento"
-                                placeholder="Ingrese documento">
+                                </label>
+
+                                <div class="mini-doc-switch" id="docTypeSwitch">
+                                    <button type="button" class="mini-doc-option active" data-tipo="DNI"
+                                        onclick="seleccionarTipoDocumentoNuevoCliente('DNI')">DNI</button>
+                                    <button type="button" class="mini-doc-option" data-tipo="CE"
+                                        onclick="seleccionarTipoDocumentoNuevoCliente('CE')">CE</button>
+                                </div>
+
+                            </div>
+
+                            <div class="mini-client-doc-row">
+                                <input type="text" class="mini-client-input" id="nuevoDocumento" maxlength="8"
+                                    placeholder="Ingrese documento">
+                                <button type="button" class="mini-doc-search-btn" id="btnBuscarNuevoDocumento"
+                                    onclick="buscarNuevoCliente()" title="Buscar en RENIEC/SUNAT">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
 
                         </div>
 
@@ -2310,29 +2424,100 @@
 
         })
 
+        // Tipo de documento elegido en el modal de "Nuevo Cliente" (solo
+        // relevante para Boleta/Nota, donde el cliente puede identificarse
+        // con DNI o con Carné de Extranjería; Factura siempre exige RUC).
+        let tipoDocumentoNuevoCliente = 'DNI';
+
         function openNewClientModal() {
             $('#modalNuevoCliente').modal('show');
             prepareClientForm();
         }
 
         function prepareClientForm() {
+            $('#nuevoDocumento').val('');
             // FACTURA
             if (voucherType == 'FACTURA') {
+                tipoDocumentoNuevoCliente = 'RUC';
+                $('#docTypeSwitch').hide();
                 $('#labelDocumento').html('RUC');
                 $('#labelNombre').html('Razón Social');
-                $('#nuevoDocumento').attr('placeholder','Ingrese RUC');
+                $('#nuevoDocumento').attr('placeholder','Ingrese RUC').attr('maxlength', 11);
                 $('#nuevoNombre').attr('placeholder','Razón Social');
                 $('#direccionGroup').show();
+                $('#btnBuscarNuevoDocumento').prop('disabled', false);
             }
             // BOLETA / NOTA
             else {
+                tipoDocumentoNuevoCliente = 'DNI';
+                $('#docTypeSwitch').show();
+                $('.mini-doc-option').removeClass('active');
+                $('.mini-doc-option[data-tipo="DNI"]').addClass('active');
                 $('#labelDocumento').html('DNI');
                 $('#labelNombre').html('Nombre Cliente');
-                $('#nuevoDocumento').attr('placeholder', 'Ingrese DNI');
+                $('#nuevoDocumento').attr('placeholder', 'Ingrese DNI').attr('maxlength', 8);
                 $('#nuevoNombre').attr('placeholder','Nombre completo');
                 $('#direccionGroup').hide();
+                $('#btnBuscarNuevoDocumento').prop('disabled', false);
+            }
+        }
+
+        function seleccionarTipoDocumentoNuevoCliente(tipo) {
+            tipoDocumentoNuevoCliente = tipo;
+            $('.mini-doc-option').removeClass('active');
+            $('.mini-doc-option[data-tipo="' + tipo + '"]').addClass('active');
+            $('#labelDocumento').html(tipo);
+            $('#nuevoDocumento').val('').attr('placeholder', tipo == 'DNI' ? 'Ingrese DNI' : 'Ingrese CE')
+                .attr('maxlength', tipo == 'DNI' ? 8 : 9);
+            // No existe un servicio publico equivalente a RENIEC/SUNAT para
+            // Carne de Extranjeria: la busqueda automatica se deshabilita y
+            // el cliente se registra a mano.
+            $('#btnBuscarNuevoDocumento').prop('disabled', tipo == 'CE');
+        }
+
+        function buscarNuevoCliente() {
+            const tipo = tipoDocumentoNuevoCliente;
+            const numdoc = $('#nuevoDocumento').val();
+
+            if (tipo == 'CE') {
+                return;
+            }
+            if (numdoc == '') {
+                showToast('warning', 'Escribe el ' + tipo);
+                $('#nuevoDocumento').focus();
+                return;
             }
 
+            const $btn = $('#btnBuscarNuevoDocumento');
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+            const url = (tipo == 'DNI' ? '/consultardni/' : '/consultarruc/') + numdoc + '?';
+            $.ajax({
+                type: 'GET',
+                url: url,
+                success: function (dat) {
+                    if (tipo == 'DNI') {
+                        if (dat.success[1] == false) {
+                            showToast('error', 'DNI inválido');
+                        } else {
+                            $('#nuevoNombre').val(dat.success[0].apellido + ' ' + dat.success[0].nombre);
+                        }
+                    } else {
+                        if (dat.success == false) {
+                            showToast('error', dat.message || 'RUC inválido');
+                        } else {
+                            $('#nuevoNombre').val(dat.data.nombre);
+                            $('#nuevoDireccion').val(dat.data.direccion + ' ' + dat.data.ubicacion);
+                        }
+                    }
+                },
+                error: function () {
+                    showToast('error', 'No se pudo consultar ' + tipo);
+                },
+                complete: function () {
+                    $btn.prop('disabled', false).html('<i class="fas fa-search"></i>');
+                }
+            });
         }
 
         function saveClient(){
@@ -2345,12 +2530,11 @@
                 showToast('warning', 'Complete los datos');
                 return;
             }
-            let tipoDocumento = documento.length > 8 ? 'RUC' : 'DNI';
             $.ajax({
                 url: "{{ route('tenant.ventas.venta.createCliente') }}",
                 method: 'POST',
                 data: {
-                    CLI_TipoDocumento: tipoDocumento,
+                    CLI_TipoDocumento: tipoDocumentoNuevoCliente,
                     CLI_NumDocumento: documento,
                     CLI_Nombre: nombre,
                     CLI_Celular: celular,
