@@ -277,7 +277,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
     public function edit(string $id)
     {
         $datos = DB::table('mantenimiento_preventivo_inyectada as mpi')
-            ->join('users as u', 'u.id', '=', 'mpi.PER_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'mpi.PER_Id')
             ->select('mpi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPI_Id', '=', $id)
             ->first();
@@ -410,7 +410,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
     public function pdf($id)
     {
         $datos = DB::table('mantenimiento_preventivo_inyectada as mpi')
-            ->join('users as u', 'u.id', '=', 'mpi.PER_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'mpi.PER_Id')
             ->select('mpi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPI_Id', '=', $id)
             ->first();
@@ -456,7 +456,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
     public function ordenServicio($id)
     {
         $datos = DB::table('mantenimiento_preventivo_inyectada as mpi')
-            ->join('users as u', 'u.id', '=', 'mpi.PER_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'mpi.PER_Id')
             ->select('mpi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPI_Id', '=', $id)
             ->first();
@@ -510,7 +510,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
     public function estadoRecepcionPdf($id)
     {
         $datos = DB::table('mantenimiento_preventivo_inyectada as mpi')
-            ->join('users as u', 'u.id', '=', 'mpi.PER_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'mpi.PER_Id')
             ->select('mpi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPI_Id', '=', $id)
             ->first();
@@ -548,7 +548,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
     public function descargarpdf($id)
     {
         $datos = DB::table('mantenimiento_preventivo_inyectada as mpi')
-            ->join('users as u', 'u.id', '=', 'mpi.PER_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'mpi.PER_Id')
             ->select('mpi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPI_Id', '=', $id)
             ->first();

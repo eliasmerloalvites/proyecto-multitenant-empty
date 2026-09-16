@@ -267,7 +267,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
     public function edit(string $id)
     {
         $datos = DB::table('mantenimiento_preventivo_carburada as mpc')
-            ->join('users as u', 'u.id', '=', 'mpc.PER_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'mpc.PER_Id')
             ->select('mpc.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPC_Id', '=', $id)
             ->first();
@@ -400,7 +400,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
     public function pdf($id)
     {
         $datos = DB::table('mantenimiento_preventivo_carburada as mpc')
-            ->join('users as u', 'u.id', '=', 'mpc.PER_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'mpc.PER_Id')
             ->select('mpc.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPC_Id', '=', $id)
             ->first();
@@ -446,7 +446,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
     public function ordenServicio($id)
     {
         $datos = DB::table('mantenimiento_preventivo_carburada as mpc')
-            ->join('users as u', 'u.id', '=', 'mpc.PER_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'mpc.PER_Id')
             ->select('mpc.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPC_Id', '=', $id)
             ->first();
@@ -500,7 +500,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
     public function estadoRecepcionPdf($id)
     {
         $datos = DB::table('mantenimiento_preventivo_carburada as mpc')
-            ->join('users as u', 'u.id', '=', 'mpc.PER_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'mpc.PER_Id')
             ->select('mpc.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPC_Id', '=', $id)
             ->first();
@@ -538,7 +538,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
     public function descargarpdf($id)
     {
         $datos = DB::table('mantenimiento_preventivo_carburada as mpc')
-            ->join('users as u', 'u.id', '=', 'mpc.PER_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'mpc.PER_Id')
             ->select('mpc.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPC_Id', '=', $id)
             ->first();

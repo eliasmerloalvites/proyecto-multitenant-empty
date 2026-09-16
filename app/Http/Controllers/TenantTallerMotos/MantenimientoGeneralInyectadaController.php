@@ -286,7 +286,7 @@ class MantenimientoGeneralInyectadaController extends Controller
     public function edit(string $id)
     {
         $datos = DB::table('mantenimiento_general_inyectada as mgi')
-            ->join('users as u', 'u.id', '=', 'mgi.PER_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'mgi.PER_Id')
             ->select('mgi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MGI_Id', '=', $id)
             ->first();
@@ -419,7 +419,7 @@ class MantenimientoGeneralInyectadaController extends Controller
     public function pdf($id)
 	{
 		$datos = DB::table('mantenimiento_general_inyectada as mgi')
-				->join('users as u','u.id','=','mgi.PER_Id')
+				->leftJoin('users as u','u.id','=','mgi.PER_Id')
 				->select('mgi.*',DB::raw('CONCAT(u.name) as personal'))
 				->where('MGI_Id','=',$id)
 				->first();
@@ -462,7 +462,7 @@ class MantenimientoGeneralInyectadaController extends Controller
     public function ordenServicio($id)
     {
         $datos = DB::table('mantenimiento_general_inyectada as mgi')
-            ->join('users as u', 'u.id', '=', 'mgi.PER_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'mgi.PER_Id')
             ->select('mgi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MGI_Id', '=', $id)
             ->first();
@@ -517,7 +517,7 @@ class MantenimientoGeneralInyectadaController extends Controller
     public function estadoRecepcionPdf($id)
     {
         $datos = DB::table('mantenimiento_general_inyectada as mgi')
-            ->join('users as u', 'u.id', '=', 'mgi.PER_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'mgi.PER_Id')
             ->select('mgi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MGI_Id', '=', $id)
             ->first();
@@ -555,7 +555,7 @@ class MantenimientoGeneralInyectadaController extends Controller
     public function descargarpdf($id)
 	{
 		$datos = DB::table('mantenimiento_general_inyectada as mgi')
-				->join('users as u','u.id','=','mgi.PER_Id')
+				->leftJoin('users as u','u.id','=','mgi.PER_Id')
 				->select('mgi.*',DB::raw('CONCAT(u.name) as personal'))
 				->where('MGI_Id','=',$id)
 				->first();
