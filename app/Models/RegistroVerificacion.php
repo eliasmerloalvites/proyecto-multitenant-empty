@@ -17,6 +17,7 @@ class RegistroVerificacion extends Model
         'subdomain',
         'tipo_negocio',
         'plan',
+        'vendedor_id',
         'expira_en',
         'verificado_en',
     ];

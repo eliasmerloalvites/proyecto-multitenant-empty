@@ -42,6 +42,9 @@
                 <form method="POST" action="{{ route('central.registro.store') }}">
                     @csrf
 
+                    {{-- Código de referido de un vendedor comercial, si llegó por su link (?ref=CODIGO). --}}
+                    <input type="hidden" name="ref" value="{{ request('ref') }}">
+
                     {{-- Honeypot anti-bot: invisible para una persona, los bots suelen rellenar todo campo que encuentran. --}}
                     <div style="position:absolute;left:-9999px;top:-9999px;" aria-hidden="true">
                         <label for="website">No llenar este campo</label>

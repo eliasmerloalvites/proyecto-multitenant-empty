@@ -224,6 +224,28 @@
                         </div>
 
 
+                        {{-- ===================================================== --}}
+                        {{-- VENDEDOR ASOCIADO (OPCIONAL) --}}
+                        {{-- ===================================================== --}}
+
+                        <div class="mb-4">
+                            <h6 class="font-weight-bold text-primary mb-3">
+                                <i class="fas fa-user-tag mr-1"></i>
+                                Vendedor Asociado
+                            </h6>
+
+                            <div class="col-md-12 mb-3 p-0">
+                                <label>Vendedor (opcional)</label>
+                                <select class="form-control select2" name="vendedor_id" id="vendedor_id">
+                                    <option value="">Sin vendedor asociado</option>
+                                    @foreach ($vendedores as $vendedor)
+                                        <option value="{{ $vendedor->id }}">{{ $vendedor->user->name ?? 'Vendedor #' . $vendedor->id }}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted">Úsalo cuando acreditas manualmente una venta cerrada offline por un vendedor comercial — le genera comisión igual que si el cliente hubiera entrado por su link de referido.</small>
+                            </div>
+                        </div>
+
                         {{-- BOTONES --}}
 
                         <div class="d-flex align-items-center">

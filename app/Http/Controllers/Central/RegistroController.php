@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\RegistroVerificacionMail;
 use App\Models\Plan;
 use App\Models\RegistroVerificacion;
+use App\Models\Vendedor;
 use App\Services\TenantProvisioningService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -64,6 +65,7 @@ class RegistroController extends Controller
             'subdomain' => ['required', 'alpha_dash', 'min:3', 'max:40'],
             'tipo_negocio' => ['required', 'in:' . implode(',', self::TIPOS_NEGOCIO)],
             'plan' => 'required|in:start,basic,plus',
+            'ref' => 'nullable|string|max:32',
         ]);
 
         $subdomain = Str::lower($validated['subdomain']);
@@ -90,6 +92,14 @@ class RegistroController extends Controller
 
         $token = Str::random(48);
 
+        // Código de referido opcional (?ref=CODIGO en el link). Si no
+        // corresponde a ningún vendedor activo, se ignora en silencio (mismo
+        // criterio que el chequeo de RUC caído más arriba) — no bloquea el
+        // registro de nadie por un link mal copiado o vencido.
+        $vendedorId = Vendedor::where('codigo_referido', $validated['ref'] ?? null)
+            ->where('estado', 'activo')
+            ->value('id');
+
         $verificacion = RegistroVerificacion::create([
             'token' => $token,
             'razon_social' => $validated['razon_social'],
@@ -99,6 +109,7 @@ class RegistroController extends Controller
             'subdomain' => $subdomain,
             'tipo_negocio' => $validated['tipo_negocio'],
             'plan' => $validated['plan'],
+            'vendedor_id' => $vendedorId,
             'expira_en' => now()->addMinutes(self::MINUTOS_VIGENCIA),
         ]);
 
@@ -160,6 +171,7 @@ class RegistroController extends Controller
                 'password' => Str::random(40),
                 'billing_day' => min($trialEndsAt->day, 28),
                 'trial_ends_at' => $trialEndsAt->toDateString(),
+                'vendedor_id' => $verificacion->vendedor_id,
             ]);
         } catch (\Throwable $e) {
             report($e);

@@ -60,6 +60,22 @@ class RoleAndPermissionSeeder extends Seeder
 
             // Auditoría
             ['admin.auditoria.index', 'Auditoría', 'Ver Auditoría', 'Ver el historial de acciones del staff en el panel'],
+
+            // Vendedores (staff/Admin: administra vendedores y sus esquemas de comisión)
+            ['admin.vendedores.index',   'Vendedores', 'Ver Lista Vendedores', 'Listar vendedores comerciales'],
+            ['admin.vendedores.create',  'Vendedores', 'Crear Vendedores',     'Crear vendedores comerciales'],
+            ['admin.vendedores.edit',    'Vendedores', 'Editar Vendedores',    'Editar vendedores comerciales'],
+            ['admin.vendedores.show',    'Vendedores', 'Ver Vendedor',         'Ver detalle de un vendedor'],
+            ['admin.vendedores.destroy', 'Vendedores', 'Eliminar Vendedores',  'Eliminar vendedores comerciales'],
+
+            // Comisiones (staff/Admin: reporte global y liquidación)
+            ['admin.comisiones.index',    'Comisiones', 'Ver Comisiones',      'Ver el reporte de comisiones de todos los vendedores'],
+            ['admin.comisiones.liquidar', 'Comisiones', 'Liquidar Comisiones', 'Marcar un mes de un vendedor como liquidado'],
+
+            // Panel Vendedor (rol Vendedor: solo su propia información)
+            ['vendedor.clientes.index',   'Panel Vendedor', 'Ver Mis Clientes',    'Ver los clientes propios referidos'],
+            ['vendedor.clientes.create',  'Panel Vendedor', 'Registrar Cliente',   'Registrar una empresa nueva como vendedor'],
+            ['vendedor.comisiones.index', 'Panel Vendedor', 'Ver Mis Comisiones',  'Ver el reporte de comisiones propias'],
         ];
 
         foreach ($permissions as [$name, $group, $nombre, $description]) {
@@ -89,6 +105,11 @@ class RoleAndPermissionSeeder extends Seeder
 
         $gerenteRole = Role::firstOrCreate([
             'name'       => 'Gerente',
+            'guard_name' => $guard,
+        ]);
+
+        $vendedorRole = Role::firstOrCreate([
+            'name'       => 'Vendedor',
             'guard_name' => $guard,
         ]);
 
@@ -127,6 +148,15 @@ class RoleAndPermissionSeeder extends Seeder
             'admin.planes.index',
 
             'admin.auditoria.index',
+
+            'admin.vendedores.index',
+            'admin.vendedores.create',
+            'admin.vendedores.edit',
+            'admin.vendedores.show',
+            'admin.vendedores.destroy',
+
+            'admin.comisiones.index',
+            'admin.comisiones.liquidar',
         ]);
 
         $gerenteRole->givePermissionTo([
@@ -134,6 +164,12 @@ class RoleAndPermissionSeeder extends Seeder
             'seguridad.users.create',
             'seguridad.users.edit',
             'seguridad.users.show',
+        ]);
+
+        $vendedorRole->givePermissionTo([
+            'vendedor.clientes.index',
+            'vendedor.clientes.create',
+            'vendedor.comisiones.index',
         ]);
 
         /*

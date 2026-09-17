@@ -76,7 +76,71 @@
                 </ul>
             </li>
         @endcan
-        
+
+        @canany(['admin.vendedores.index', 'admin.comisiones.index'])
+            <li class="nav-item has-treeview {{ request()->routeIs('admin.vendedores*') || request()->routeIs('admin.comisiones*') ? 'menu-open' : '' }}">
+                <a href="#" class="nav-link {{ request()->routeIs('admin.vendedores*') || request()->routeIs('admin.comisiones*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-handshake"></i>
+                    <p>
+                        VENDEDORES
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    @can('admin.vendedores.index')
+                        <li class="nav-item">
+                            <a href="{{ route('admin.vendedores.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.vendedores*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Vendedores</p>
+                            </a>
+                        </li>
+                    @endcan
+                    @can('admin.comisiones.index')
+                        <li class="nav-item">
+                            <a href="{{ route('admin.comisiones.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.comisiones*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Comisiones</p>
+                            </a>
+                        </li>
+                    @endcan
+                </ul>
+            </li>
+        @endcanany
+
+        @canany(['vendedor.clientes.index', 'vendedor.comisiones.index'])
+            <li class="nav-item has-treeview {{ request()->routeIs('vendedor.*') ? 'menu-open' : '' }}">
+                <a href="#" class="nav-link {{ request()->routeIs('vendedor.*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-user-tie"></i>
+                    <p>
+                        MI PANEL
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    @can('vendedor.clientes.index')
+                        <li class="nav-item">
+                            <a href="{{ route('vendedor.clientes.index') }}"
+                                class="nav-link {{ request()->routeIs('vendedor.clientes*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Mis Clientes</p>
+                            </a>
+                        </li>
+                    @endcan
+                    @can('vendedor.comisiones.index')
+                        <li class="nav-item">
+                            <a href="{{ route('vendedor.comisiones.index') }}"
+                                class="nav-link {{ request()->routeIs('vendedor.comisiones*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Mis Comisiones</p>
+                            </a>
+                        </li>
+                    @endcan
+                </ul>
+            </li>
+        @endcanany
+
           @can('seguridad.users.index')
             <li class="nav-item has-treeview {{ request()->routeIs('usuario*') || request()->routeIs('permiso*') || request()->routeIs('rol*') ? 'menu-open' : '' }}"
                 id="idCabSeguridad">
