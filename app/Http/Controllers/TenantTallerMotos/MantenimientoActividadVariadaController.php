@@ -580,7 +580,14 @@ class MantenimientoActividadVariadaController extends Controller
             $mtto_act_variadas->MAV_Propietario = $request->get('MAV_Propietario');
             $mtto_act_variadas->MAV_celular = $request->get('MAV_celular');
             $mtto_act_variadas->MAV_Unidad = $request->get('MAV_Unidad');
-            $mtto_act_variadas->MAV_KMEntrada = $request->get('MAV_KMEntrada');
+            // KM es NOT NULL en BD y puede haber quedado guardado como '' desde
+            // el check-in (antes de que alguien lo complete); si se edita sin
+            // tocar el campo, ConvertEmptyStringsToNull lo vuelve null y la
+            // UPDATE truena contra esa constraint. Se preserva el valor ya
+            // guardado en vez de pisarlo con vacío.
+            if ($request->filled('MAV_KMEntrada')) {
+                $mtto_act_variadas->MAV_KMEntrada = $request->get('MAV_KMEntrada');
+            }
             $mtto_act_variadas->MAV_DetalleIngreso = $request->get('MAV_DetalleIngreso');
             $mtto_act_variadas->MAV_DetalleObservacion = $request->get('MAV_DetalleObservacion');
             $mtto_act_variadas->MAV_DetalleRealizado = $request->get('MAV_DetalleRealizado');

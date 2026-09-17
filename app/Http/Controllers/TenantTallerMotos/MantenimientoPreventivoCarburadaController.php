@@ -596,7 +596,13 @@ class MantenimientoPreventivoCarburadaController extends Controller
             $mtto_preventivo_carburadas->MPC_Propietario = $request->get('MPC_Propietario');
             $mtto_preventivo_carburadas->MPC_celular = $request->get('MPC_celular');
             $mtto_preventivo_carburadas->MPC_Unidad = $request->get('MPC_Unidad');
-            $mtto_preventivo_carburadas->MPC_KMEntrada = $request->get('MPC_KMEntrada');
+            // KM es NOT NULL en BD y puede haber quedado guardado como '' desde
+            // el check-in; si se edita sin tocar el campo, ConvertEmptyStringsToNull
+            // lo vuelve null y la UPDATE truena contra esa constraint. Se
+            // preserva el valor ya guardado en vez de pisarlo con vacío.
+            if ($request->filled('MPC_KMEntrada')) {
+                $mtto_preventivo_carburadas->MPC_KMEntrada = $request->get('MPC_KMEntrada');
+            }
             $mtto_preventivo_carburadas->MPC_DetalleIngreso = $request->get('MPC_DetalleIngreso');
             $mtto_preventivo_carburadas->MPC_DetalleObservacion = $request->get('MPC_DetalleObservacion');
             $mtto_preventivo_carburadas->MPC_Det1 = $request->get('MPC_Det1') ? "SI" : "NO";
