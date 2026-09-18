@@ -608,7 +608,13 @@ class MantenimientoGeneralInyectadaController extends Controller
             $mtto_general_inyectadas->MGI_Propietario = $request->get('MGI_Propietario');
             $mtto_general_inyectadas->MGI_celular = $request->get('MGI_celular');
             $mtto_general_inyectadas->MGI_Unidad = $request->get('MGI_Unidad');
-            $mtto_general_inyectadas->MGI_KMEntrada = $request->get('MGI_KMEntrada');
+            // KM es NOT NULL en BD y puede haber quedado guardado como '' desde
+            // el check-in; si se edita sin tocar el campo, ConvertEmptyStringsToNull
+            // lo vuelve null y la UPDATE truena contra esa constraint. Se
+            // preserva el valor ya guardado en vez de pisarlo con vacío.
+            if ($request->filled('MGI_KMEntrada')) {
+                $mtto_general_inyectadas->MGI_KMEntrada = $request->get('MGI_KMEntrada');
+            }
             $mtto_general_inyectadas->MGI_DetalleIngreso = $request->get('MGI_DetalleIngreso');
             $mtto_general_inyectadas->MGI_DetalleObservacion = $request->get('MGI_DetalleObservacion');
             $mtto_general_inyectadas->MGI_Det1=$request->get('MGI_Det1')?"SI":"NO";

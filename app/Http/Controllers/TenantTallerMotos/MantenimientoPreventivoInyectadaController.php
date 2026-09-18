@@ -606,7 +606,13 @@ class MantenimientoPreventivoInyectadaController extends Controller
             $mtto_preventivo_inyectadas->MPI_Propietario = $request->get('MPI_Propietario');
             $mtto_preventivo_inyectadas->MPI_celular = $request->get('MPI_celular');
             $mtto_preventivo_inyectadas->MPI_Unidad = $request->get('MPI_Unidad');
-            $mtto_preventivo_inyectadas->MPI_KMEntrada = $request->get('MPI_KMEntrada');
+            // KM es NOT NULL en BD y puede haber quedado guardado como '' desde
+            // el check-in; si se edita sin tocar el campo, ConvertEmptyStringsToNull
+            // lo vuelve null y la UPDATE truena contra esa constraint. Se
+            // preserva el valor ya guardado en vez de pisarlo con vacío.
+            if ($request->filled('MPI_KMEntrada')) {
+                $mtto_preventivo_inyectadas->MPI_KMEntrada = $request->get('MPI_KMEntrada');
+            }
             $mtto_preventivo_inyectadas->MPI_DetalleIngreso = $request->get('MPI_DetalleIngreso');
             $mtto_preventivo_inyectadas->MPI_DetalleObservacion = $request->get('MPI_DetalleObservacion');
             $mtto_preventivo_inyectadas->MPI_Det1 = $request->get('MPI_Det1') ? "SI" : "NO";

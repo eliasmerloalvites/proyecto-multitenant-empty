@@ -607,7 +607,13 @@ class MantenimientoGeneralCarburadaController extends Controller
             $mtto_general_carburadas->MGC_Propietario = $request->get('MGC_Propietario');
             $mtto_general_carburadas->MGC_celular = $request->get('MGC_celular');
             $mtto_general_carburadas->MGC_Unidad = $request->get('MGC_Unidad');
-            $mtto_general_carburadas->MGC_KMEntrada = $request->get('MGC_KMEntrada');
+            // KM es NOT NULL en BD y puede haber quedado guardado como '' desde
+            // el check-in; si se edita sin tocar el campo, ConvertEmptyStringsToNull
+            // lo vuelve null y la UPDATE truena contra esa constraint. Se
+            // preserva el valor ya guardado en vez de pisarlo con vacío.
+            if ($request->filled('MGC_KMEntrada')) {
+                $mtto_general_carburadas->MGC_KMEntrada = $request->get('MGC_KMEntrada');
+            }
             $mtto_general_carburadas->MGC_DetalleIngreso = $request->get('MGC_DetalleIngreso');
             $mtto_general_carburadas->MGC_DetalleObservacion = $request->get('MGC_DetalleObservacion');
             $mtto_general_carburadas->MGC_Det1 = $request->get('MGC_Det1') ? "SI" : "NO";

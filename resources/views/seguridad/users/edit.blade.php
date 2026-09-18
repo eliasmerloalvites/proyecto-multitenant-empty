@@ -62,7 +62,7 @@
             </div>
         </div>
        <center> <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Guardar</button>
-        <a href="{{route('usuario.cancelar')}}" class="btn btn-danger" ><i class="fas fa-ban"></i>Regresar</a></center>
+        <a href="{{route('central.usuario.cancelar')}}" class="btn btn-danger" ><i class="fas fa-ban"></i>Regresar</a></center>
     </form>
     
     
