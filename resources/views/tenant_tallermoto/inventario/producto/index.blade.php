@@ -135,10 +135,23 @@
                             </div>
                         </div>
                         <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12" style="text-align: left;">
-                            <label>Añadir Imagen </label>
+                            <label>Añadir Imagen (principal)</label>
                             <div class="custom-file center">
                                 <input type="file" class="custom-file-input" accept="image/*" name="file" id="fileImagen">
                                 <label class="custom-file-label" id="idFileImagen">Añadir Imagen</label>
+                            </div>
+                        </div>
+                        <p></p>
+
+                        {{-- Galería adicional: solo se ve al editar un producto ya guardado
+                             (necesita PRO_Id), igual que las fotos de mantenimiento no
+                             existen todavía en su formulario de creación. --}}
+                        <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12" id="galeriaProductoWrap" style="display:none; text-align:left;">
+                            <label>Galería adicional (hasta 4 fotos más, 5 en total)</label>
+                            <div id="galeriaProductoGrid" class="d-flex flex-wrap" style="gap:8px; margin-bottom:8px;"></div>
+                            <div class="custom-file center">
+                                <input type="file" class="custom-file-input" accept="image/*" id="fileGaleriaProducto">
+                                <label class="custom-file-label" id="idFileGaleriaProducto">Agregar foto a la galería</label>
                             </div>
                         </div>
                         <p></p>
@@ -237,6 +250,8 @@
                                         <img id="ver_Imagen" class="img-fluid rounded-4 border shadow-sm product-image">
 
                                     </div>
+
+                                    <div id="ver_Galeria" class="d-flex flex-wrap justify-content-center mt-2" style="gap:6px;"></div>
 
                                     <div class="mt-3">
 
@@ -622,6 +637,11 @@
                         $('#_method').val('PUT').show();
                         $("#productosave").hide();
                         $("#updateBtn").show();
+
+                        // Galería adicional: solo tiene sentido con el producto ya
+                        // guardado (necesita PRO_Id para subir/borrar fotos).
+                        $('#galeriaProductoWrap').show();
+                        renderGaleriaProducto(result.galeria || []);
                     })
             });
 
@@ -642,7 +662,90 @@
                         $('#ver_PRO_PrecioCompra').text(data.data.PRO_PrecioCompra);
                         $('#ver_PRO_PrecioVenta').text(data.data.PRO_PrecioVenta);
                         $('#ver_Imagen').attr('src', data.imagen);
+
+                        var galeriaHtml = '';
+                        (data.galeria || []).forEach(function(img) {
+                            galeriaHtml += '<img src="' + img.PROI_Thumb + '" class="rounded border" style="width:64px;height:64px;object-fit:cover;">';
+                        });
+                        $('#ver_Galeria').html(galeriaHtml);
                     })
+            });
+
+            // ================= GALERÍA ADICIONAL DE PRODUCTO (hasta 4 fotos, 5 en total) =================
+
+            function renderGaleriaProducto(items) {
+                var html = '';
+                items.forEach(function(img) {
+                    html += '<div class="position-relative" data-item="' + img.PROI_Item + '">' +
+                        '<img src="' + img.PROI_Thumb + '" class="rounded border" style="width:70px;height:70px;object-fit:cover;">' +
+                        '<a href="javascript:void(0)" class="eliminarImagenGaleriaProducto" data-item="' + img.PROI_Item + '" ' +
+                        'style="position:absolute;top:-6px;right:-6px;background:#dc3545;color:#fff;border-radius:50%;width:20px;height:20px;line-height:18px;text-align:center;font-size:11px;">' +
+                        '<i class="fas fa-times"></i></a>' +
+                        '</div>';
+                });
+                $('#galeriaProductoGrid').html(html);
+                $('#idFileGaleriaProducto').text(items.length >= 4 ? 'Máximo alcanzado (4/4)' : 'Agregar foto a la galería');
+                $('#fileGaleriaProducto').prop('disabled', items.length >= 4);
+            }
+
+            $('#fileGaleriaProducto').on('change', function() {
+                var file = this.files[0];
+                var productoId = $('#producto_id_edit').val();
+                if (!file || !productoId) {
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: '{{ tenant_url('tenant.inventario.producto.galeria.store', ['producto' => ':producto']) }}'
+                        .replace(':producto', productoId),
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(result) {
+                        $('#fileGaleriaProducto').val('');
+                        renderGaleriaProducto(result.msg.data || []);
+                        Toast.fire({
+                            type: 'success',
+                            title: result.msg.mensaje
+                        });
+                    },
+                    error: function(xhr) {
+                        $('#fileGaleriaProducto').val('');
+                        var msg = xhr.responseJSON && xhr.responseJSON.msg ? xhr.responseJSON.msg : 'No se pudo subir la foto.';
+                        Toast.fire({
+                            type: 'error',
+                            title: msg
+                        });
+                    }
+                });
+            });
+
+            $('body').on('click', '.eliminarImagenGaleriaProducto', function() {
+                var item = $(this).data('item');
+                var productoId = $('#producto_id_edit').val();
+
+                $.ajax({
+                    type: 'DELETE',
+                    url: '{{ tenant_url('tenant.inventario.producto.galeria.destroy', ['producto' => ':producto', 'item' => ':item']) }}'
+                        .replace(':producto', productoId).replace(':item', item),
+                    success: function(result) {
+                        renderGaleriaProducto(result.data || []);
+                        Toast.fire({
+                            type: 'success',
+                            title: result.message
+                        });
+                    },
+                    error: function() {
+                        Toast.fire({
+                            type: 'error',
+                            title: 'No se pudo eliminar la foto.'
+                        });
+                    }
+                });
             });
 
             $('#updateBtn').click(function(e) {
@@ -700,6 +803,9 @@
                 $("#producto_id_edit").val('');
                 $("#productosave").show(); // Mostrar botón Guardar
                 $("#updateBtn").hide();
+                $('#galeriaProductoWrap').hide();
+                $('#galeriaProductoGrid').empty();
+                $('#fileGaleriaProducto').val('').prop('disabled', false);
             }
 
             $('body').on('click', '.deleteProducto', function() {
