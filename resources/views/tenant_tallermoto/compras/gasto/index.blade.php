@@ -545,9 +545,13 @@
                         type: "POST",
                         dataType: 'json',
                         success: function(data) {
-                            console.log('Success:', data);
-                            document.getElementById("selectedCliente").textContent = data[0].CLI_Nombre;
-                            document.querySelector("#hiddenSelectedIdCliente").value = data[0].CLI_Id;
+                            var nuevaOpcion = new Option(
+                                data.Proveedor.PROV_RazonSocial + ' - ' + data.Proveedor.PROV_NumDocumento,
+                                data.Proveedor.PROV_Id,
+                                true,
+                                true
+                            );
+                            $('#PROV_Id').append(nuevaOpcion).trigger('change');
                             Toast.fire({
                                 type: 'success',
                                 title: data.success
@@ -555,11 +559,10 @@
                             vaciarCamposProveedor();
                             myModal.hide();
                         },
-                        error: function(data) {
-                            console.log('Error:', data);
+                        error: function(xhr) {
                             Toast.fire({
                                 type: 'error',
-                                title: data.responseText
+                                title: xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'No se pudo registrar el proveedor.'
                             })
                         }
                     });
