@@ -253,7 +253,7 @@
 
             $('body').on('click', '.editCompra', function() {
                 var Compra_id = $(this).data('id');
-                window.location.href = "/compra/" + Compra_id + "/edit";
+                window.location.href = '{{ tenant_url('tenant.compras.compra.edit', ['compra' => ':compra']) }}'.replace(':compra', Compra_id);
             });
 
             $('body').on('click', '.eyeCompra', function() {

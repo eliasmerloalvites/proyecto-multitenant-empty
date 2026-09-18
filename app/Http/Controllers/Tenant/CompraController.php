@@ -193,14 +193,6 @@ class CompraController extends Controller
         // "Credito" y "Pago Mixto" son etiquetas de referencia que crea el
         // modulo de ventas, no metodos reales con los que se pague una compra.
         $metodo_pago = MetodoPago::whereNotIn('MEP_Pago', ['Credito', 'Pago Mixto'])->get();
-        $detalleCompra = DetalleCompra::all();
-        $almacen = Almacen::all();
-        $producto =  DB::table('producto as p')
-            ->join('categoria as c', 'c.CAT_Id', '=', 'p.CAT_Id')
-            ->select('p.*', 'c.*')
-            ->get();
-
-        $categoria = Categoria::all();
 
         $data = Compra::with([
             'proveedor',
@@ -208,14 +200,34 @@ class CompraController extends Controller
             'users',
             'detalle_compra.almacen',
             'detalle_compra.producto.categoria'
-        ])->where('compra.COM_Id',$id)->first();
+        ])->where('compra.COM_Id', $id)->firstOrFail();
 
-        return view('gestion.compra.edit', compact('data','proveedor', 'metodo_pago', 'detalleCompra', 'almacen', 'producto', 'categoria'));
+        return view('tenant_' . tenant('tipo_negocio') . '.compras.compra.edit', compact('data', 'proveedor', 'metodo_pago'));
     }
 
+    /**
+     * Solo permite corregir los datos generales de la compra (documento,
+     * proveedor, tipo/metodo de pago). Los productos/cantidades NO se
+     * pueden editar aqui: ya generaron un lote de stock (y ese stock puede
+     * llevar tiempo vendiendose), asi que tocarlos a mano rompe la
+     * trazabilidad. Para corregir stock existe el modulo de Ajustes de
+     * Inventario.
+     */
     public function update(Request $request, string $id)
     {
-        //
+        $compra = Compra::findOrFail($id);
+
+        $validated = $request->validate([
+            'COM_TipoDocumento' => 'required|string|max:50',
+            'COM_NumDocumento' => 'required|string|max:12',
+            'COM_TipoPago' => 'required|string|max:50',
+            'MEP_Id' => 'required|integer|exists:metodo_pago,MEP_Id',
+            'PROV_Id' => 'required|integer|exists:proveedor,PROV_Id',
+        ]);
+
+        $compra->update($validated);
+
+        return response()->json(['success' => 'Compra actualizada exitosamente!']);
     }
 
     /**
