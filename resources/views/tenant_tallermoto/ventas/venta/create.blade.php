@@ -2883,10 +2883,13 @@
             renderCart();
         }
 
-        function updateNombreItem(id, value) {
+        function updateNombreItem(id, value, nombreReal) {
             if (window.REEMITIR_VENTA_ID) return;
             let item = cart.find(x => x.PRO_Id == id);
-            item.nombrePersonalizado = (value || '').trim();
+            let nuevoValor = (value || '').trim();
+            // Si lo dejo igual al nombre real (o lo borra), no hace falta
+            // guardar ninguna personalizacion.
+            item.nombrePersonalizado = (nuevoValor === '' || nuevoValor === nombreReal) ? '' : nuevoValor;
             renderCart();
         }
 
@@ -2938,9 +2941,8 @@
                         ${soloLectura
                             ? `<div class="cart-name">${item.nombrePersonalizado || item.PRO_Nombre}</div>`
                             : `<input type="text" class="cart-name-input" maxlength="191"
-                                placeholder="${item.PRO_Nombre}"
-                                value="${item.nombrePersonalizado || ''}"
-                                onchange="updateNombreItem(${item.PRO_Id}, this.value)">`
+                                value="${item.nombrePersonalizado || item.PRO_Nombre}"
+                                onchange="updateNombreItem(${item.PRO_Id}, this.value, ${JSON.stringify(item.PRO_Nombre)})">`
                         }
                         ${!soloLectura && item.nombrePersonalizado ? `<div class="cart-price-original">Producto real: ${item.PRO_Nombre}</div>` : ''}
                         ${tieneAjuste ? `<div class="cart-price-original">Precio lista: S/ ${precioOriginal.toFixed(2)}</div>` : ''}

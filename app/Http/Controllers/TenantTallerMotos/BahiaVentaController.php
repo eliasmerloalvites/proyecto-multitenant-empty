@@ -134,6 +134,7 @@ class BahiaVentaController extends Controller
             'pro_id' => 'required|integer|exists:producto,PRO_Id',
             'cantidad' => 'required|numeric|min:0.01',
             'precio' => 'required|numeric|min:0',
+            'nombre_personalizado' => 'nullable|string|max:191',
         ]);
 
         BahiaCuentaItem::create([
@@ -142,6 +143,7 @@ class BahiaVentaController extends Controller
             'BCI_Cantidad' => $validated['cantidad'],
             'BCI_PrecioUnitario' => $validated['precio'],
             'USU_Id_Agrega' => Auth::id(),
+            'BCI_NombrePersonalizado' => $validated['nombre_personalizado'] ?? null,
         ]);
 
         return response()->json($this->resumenJson($cuenta->fresh()));
@@ -190,12 +192,22 @@ class BahiaVentaController extends Controller
         $validated = $request->validate([
             'cantidad' => 'required|numeric|min:0.01',
             'precio' => 'required|numeric|min:0',
+            'nombre_personalizado' => 'nullable|string|max:191',
         ]);
 
-        BahiaCuentaItem::where('BCT_Id', $cuenta->BCT_Id)->where('BCI_Id', $itemId)->update([
+        $cambios = [
             'BCI_Cantidad' => $validated['cantidad'],
             'BCI_PrecioUnitario' => $validated['precio'],
-        ]);
+        ];
+
+        // Solo se toca el nombre si el request lo trae explicitamente (ej.
+        // el input de nombre): los botones +/- de cantidad y el input de
+        // precio no lo envian, y no deben borrar un nombre ya guardado.
+        if ($request->has('nombre_personalizado')) {
+            $cambios['BCI_NombrePersonalizado'] = $validated['nombre_personalizado'] ?: null;
+        }
+
+        BahiaCuentaItem::where('BCT_Id', $cuenta->BCT_Id)->where('BCI_Id', $itemId)->update($cambios);
 
         return response()->json($this->resumenJson($cuenta->fresh()));
     }
@@ -284,16 +296,27 @@ class BahiaVentaController extends Controller
 
         $productos = DB::table('producto')
             ->whereIn('PRO_Id', $cuenta->items->pluck('PRO_Id'))
-            ->pluck('PRO_Nombre', 'PRO_Id');
+            ->select('PRO_Id', 'PRO_Nombre', 'PRO_Imagen')
+            ->get()
+            ->keyBy('PRO_Id');
 
         return [
             'cuenta_id' => $cuenta->BCT_Id,
             'estado' => $cuenta->BCT_Estado,
             'total' => $cuenta->total(),
             'items' => $cuenta->items->map(function ($item) use ($productos) {
+                $producto = $productos[$item->PRO_Id] ?? null;
+                $nombreReal = $producto->PRO_Nombre ?? ('Producto #' . $item->PRO_Id);
+
                 return [
                     'id' => $item->BCI_Id,
-                    'nombre' => $productos[$item->PRO_Id] ?? ('Producto #' . $item->PRO_Id),
+                    'pro_id' => $item->PRO_Id,
+                    'nombre' => $item->BCI_NombrePersonalizado ?: $nombreReal,
+                    'nombre_real' => $nombreReal,
+                    'nombre_personalizado' => $item->BCI_NombrePersonalizado,
+                    'imagen' => $producto && $producto->PRO_Imagen
+                        ? '/storage/' . tenant('tipo_negocio') . '/' . tenant('id') . '/archivos/producto/' . $producto->PRO_Imagen
+                        : '/images/imagen_default.png',
                     'cantidad' => $item->BCI_Cantidad,
                     'precio' => $item->BCI_PrecioUnitario,
                     'subtotal' => $item->subtotal(),

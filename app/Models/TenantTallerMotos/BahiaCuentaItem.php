@@ -15,6 +15,7 @@ class BahiaCuentaItem extends Model
         'BCI_Cantidad',
         'BCI_PrecioUnitario',
         'USU_Id_Agrega',
+        'BCI_NombrePersonalizado',
     ];
 
     protected $casts = [

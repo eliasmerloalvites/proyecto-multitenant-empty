@@ -432,14 +432,24 @@ class VentaController extends Controller
                 $cuentaBahiaId = $cuenta->BCT_Id;
 
                 $productos = DB::table('producto')->whereIn('PRO_Id', $cuenta->items->pluck('PRO_Id'))
-                    ->pluck('PRO_Nombre', 'PRO_Id');
+                    ->select('PRO_Id', 'PRO_Nombre', 'PRO_Imagen')
+                    ->get()
+                    ->keyBy('PRO_Id');
 
-                $prefillCarrito = $cuenta->items->map(fn ($item) => [
-                    'PRO_Id' => $item->PRO_Id,
-                    'PRO_Nombre' => $productos[$item->PRO_Id] ?? ('Producto #' . $item->PRO_Id),
-                    'PRO_PrecioBaseVenta' => $item->BCI_PrecioUnitario,
-                    'quantity' => $item->BCI_Cantidad,
-                ])->values();
+                $prefillCarrito = $cuenta->items->map(function ($item) use ($productos) {
+                    $producto = $productos[$item->PRO_Id] ?? null;
+
+                    return [
+                        'PRO_Id' => $item->PRO_Id,
+                        'PRO_Nombre' => $producto->PRO_Nombre ?? ('Producto #' . $item->PRO_Id),
+                        'PRO_Imagen' => $producto->PRO_Imagen ?? null,
+                        'PRO_PrecioBaseVenta' => $item->BCI_PrecioUnitario,
+                        'quantity' => $item->BCI_Cantidad,
+                        // Nombre que ya se le puso en Ventas por Bahia: se
+                        // respeta al cobrar, sin tener que volver a escribirlo.
+                        'nombrePersonalizado' => $item->BCI_NombrePersonalizado ?? '',
+                    ];
+                })->values();
 
                 if ($cuenta->reservacion) {
                     $prefillCliente = [

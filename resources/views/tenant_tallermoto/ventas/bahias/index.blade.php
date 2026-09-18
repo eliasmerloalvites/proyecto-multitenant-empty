@@ -41,6 +41,43 @@
             border-radius: 20px;
             white-space: nowrap;
         }
+
+        #previewImagenBahia {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 15, .88);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        #previewImagenBahia img {
+            max-width: 90%;
+            max-height: 80vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .6);
+            background: #fff;
+        }
+        #previewImagenBahia .preview-nombre {
+            color: #fff;
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            max-width: 80%;
+        }
+        #previewImagenBahia .preview-cerrar {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
         .bahias-board {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -135,11 +172,39 @@
             align-items: flex-start;
             gap: 6px;
         }
+        .item-mini-thumb {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            background: #fff;
+            border: 1px solid #eef1f4;
+            border-radius: 6px;
+            cursor: zoom-in;
+            flex-shrink: 0;
+        }
+        .item-mini-nombre-wrap {
+            flex: 1;
+            min-width: 0;
+        }
         .item-mini-nombre {
             font-size: .81rem;
             font-weight: 600;
             color: #1f2937;
             line-height: 1.2;
+        }
+        .item-mini-nombre-input {
+            width: 100%;
+            font-size: .81rem;
+            font-weight: 600;
+            color: #1f2937;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 2px 5px;
+        }
+        .item-mini-nombre-real {
+            font-size: .68rem;
+            color: #9ca3af;
+            margin-top: 1px;
         }
         .item-mini .item-quitar {
             color: #ef4444;
@@ -296,10 +361,29 @@
                             <div class="items-container mt-2">
                                 @if ($cuenta)
                                     @foreach ($cuenta->items as $item)
+                                        @php
+                                            $nombreReal = $item->producto->PRO_Nombre ?? ('Producto #' . $item->PRO_Id);
+                                            $imagenItem = $item->producto && $item->producto->PRO_Imagen
+                                                ? '/storage/' . tenant('tipo_negocio') . '/' . tenant('id') . '/archivos/producto/' . $item->producto->PRO_Imagen
+                                                : '/images/imagen_default.png';
+                                        @endphp
                                         <div class="item-mini" data-item-id="{{ $item->BCI_Id }}"
                                              data-cantidad="{{ $item->BCI_Cantidad }}" data-precio="{{ $item->BCI_PrecioUnitario }}">
                                             <div class="item-mini-top">
-                                                <span class="item-mini-nombre">{{ $item->producto->PRO_Nombre ?? ('Producto #' . $item->PRO_Id) }}</span>
+                                                <img src="{{ $imagenItem }}" class="item-mini-thumb"
+                                                    onclick="previsualizarImagenBahia({!! json_encode($imagenItem, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}, {!! json_encode($item->BCI_NombrePersonalizado ?: $nombreReal, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!})">
+                                                <div class="item-mini-nombre-wrap">
+                                                    @if ($cuenta->BCT_Estado === 'ABIERTA')
+                                                        <input type="text" class="item-mini-nombre-input" maxlength="191"
+                                                            value="{{ $item->BCI_NombrePersonalizado ?: $nombreReal }}"
+                                                            onchange="actualizarNombreItem({{ $cuenta->BCT_Id }}, {{ $item->BCI_Id }}, this.value, {!! json_encode($nombreReal, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!})">
+                                                    @else
+                                                        <span class="item-mini-nombre">{{ $item->BCI_NombrePersonalizado ?: $nombreReal }}</span>
+                                                    @endif
+                                                    @if ($item->BCI_NombrePersonalizado)
+                                                        <div class="item-mini-nombre-real">Producto real: {{ $nombreReal }}</div>
+                                                    @endif
+                                                </div>
                                                 @if ($cuenta->BCT_Estado === 'ABIERTA')
                                                     <i class="fa fa-times item-quitar" onclick="quitarItem({{ $cuenta->BCT_Id }}, {{ $item->BCI_Id }})"></i>
                                                 @endif
@@ -428,6 +512,15 @@
         </div>
     </div>
 
+    {{-- Previsualización de imagen: overlay propio (no modal de Bootstrap)
+         para poder abrirlo encima del carrito/buscador sin pelear con el
+         stacking del modal "Agregar a la cuenta". --}}
+    <div id="previewImagenBahia">
+        <button type="button" class="preview-cerrar" id="previewImagenBahiaCerrar"><i class="fas fa-times"></i></button>
+        <img id="previewImagenBahiaImg" src="">
+        <div class="preview-nombre" id="previewImagenBahiaNombre"></div>
+    </div>
+
 @endsection
 @section('script')
     <script>
@@ -500,7 +593,8 @@
                             html += `
                                 <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                                     <div class="d-flex align-items-center" style="gap:10px; min-width:0;">
-                                        <img src="${imagenProducto(p)}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;" onerror="this.src='/images/imagen_default.png'">
+                                        <img src="${imagenProducto(p)}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:zoom-in;" onerror="this.src='/images/imagen_default.png'"
+                                            onclick='event.stopPropagation(); previsualizarImagenBahia(${JSON.stringify(imagenProducto(p))}, ${JSON.stringify(p.PRO_Nombre)})'>
                                         <div style="min-width:0;">
                                             <div class="font-weight-bold text-truncate" style="max-width:280px;">${p.PRO_Nombre}</div>
                                             <small class="text-muted">S/ ${p.PRO_PrecioBaseVenta} · Stock ${p.PRO_Cantidad}</small>
@@ -536,7 +630,14 @@
                 html += `
                     <div class="item-mini" data-item-id="${item.id}" data-cantidad="${item.cantidad}" data-precio="${item.precio}">
                         <div class="item-mini-top">
-                            <span class="item-mini-nombre">${item.nombre}</span>
+                            <img src="${item.imagen}" class="item-mini-thumb"
+                                onclick='previsualizarImagenBahia(${JSON.stringify(item.imagen)}, ${JSON.stringify(item.nombre)})'>
+                            <div class="item-mini-nombre-wrap">
+                                <input type="text" class="item-mini-nombre-input" maxlength="191"
+                                    value="${item.nombre}"
+                                    onchange="actualizarNombreItem(${resumen.cuenta_id}, ${item.id}, this.value, ${JSON.stringify(item.nombre_real)})">
+                                ${item.nombre_personalizado ? `<div class="item-mini-nombre-real">Producto real: ${item.nombre_real}</div>` : ''}
+                            </div>
                             <i class="fa fa-times item-quitar" onclick="quitarItem(${resumen.cuenta_id}, ${item.id})"></i>
                         </div>
                         <div class="item-mini-bottom">
@@ -576,6 +677,48 @@
                 Swal.fire({ icon: 'error', title: 'No se pudo actualizar', text: (xhr.responseJSON && xhr.responseJSON.message) || 'Error de conexión.' });
             });
         }
+
+        function actualizarNombreItem(cuentaId, itemId, valor, nombreReal) {
+            let $item = $('.item-mini[data-item-id="' + itemId + '"]');
+            let cantidadActual = parseFloat($item.data('cantidad'));
+            let precioActual = parseFloat($item.data('precio'));
+            let nuevoValor = (valor || '').trim();
+            // Si lo deja igual al nombre real (o lo borra), no se guarda
+            // ninguna personalizacion.
+            let nombrePersonalizado = (nuevoValor === '' || nuevoValor === nombreReal) ? '' : nuevoValor;
+
+            $.ajax({
+                url: '{{ tenant_url("tenant.ventas.bahias.items.update", ["cuenta" => ":cuenta", "item" => ":item"]) }}'
+                    .replace(':cuenta', cuentaId).replace(':item', itemId),
+                method: 'PUT',
+                data: {
+                    cantidad: cantidadActual,
+                    precio: precioActual,
+                    nombre_personalizado: nombrePersonalizado,
+                    _token: '{{ csrf_token() }}'
+                }
+            }).done(function (resumen) {
+                actualizarTarjetaCuenta(resumen);
+            }).fail(function (xhr) {
+                Swal.fire({ icon: 'error', title: 'No se pudo actualizar el nombre', text: (xhr.responseJSON && xhr.responseJSON.message) || 'Error de conexión.' });
+            });
+        }
+
+        function previsualizarImagenBahia(url, nombre) {
+            $('#previewImagenBahiaImg').attr('src', url);
+            $('#previewImagenBahiaNombre').text(nombre || '');
+            $('#previewImagenBahia').css('display', 'flex');
+        }
+
+        $('#previewImagenBahiaCerrar, #previewImagenBahia').on('click', function (e) {
+            if (e.target.id === 'previewImagenBahia' || e.target.id === 'previewImagenBahiaCerrar' || $(e.target).closest('#previewImagenBahiaCerrar').length) {
+                $('#previewImagenBahia').hide();
+            }
+        });
+
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape') $('#previewImagenBahia').hide();
+        });
 
         function cambiarCantidad(cuentaId, itemId, delta) {
             let $item = $('.item-mini[data-item-id="' + itemId + '"]');
