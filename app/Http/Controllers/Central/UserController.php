@@ -188,14 +188,22 @@ class UserController extends Controller
     {
         $data=request()->validate([
             'name'=>'required',
+            'password'=>'nullable|min:8|confirmed',
         ],
         [
             'name.required'=>'Ingrese nombre',
-            
+            'password.min'=>'La contraseña debe tener al menos 8 caracteres',
+            'password.confirmed'=>'Las contraseñas no coinciden',
         ]);
         $usuario =  User::find($id);
         $usuario->name = $request->name;
-        
+
+        // Contraseña opcional: solo se cambia si se llenó el campo, para no
+        // pisarla con un hash vacío cada vez que se edita el nombre/roles.
+        if ($request->filled('password')) {
+            $usuario->password = Hash::make($request->password);
+        }
+
         // Obtengo los roles seleccionados desde la solicitud
         $rolesSeleccionados = $request->input('roles');
 
