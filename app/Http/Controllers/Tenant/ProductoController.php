@@ -447,7 +447,13 @@ class ProductoController extends Controller
             ? ProductoImagen::where('PRO_Id', $producto->PRO_Id)->orderBy('PROI_Item')->get()
             : [];
 
-        return response()->json(['data' => $producto,'imagen'=> $imagen, 'galeria' => $galeria]);
+        // Stock total (suma de todos los lotes, en todas las sedes): lo
+        // muestra el modal "Ver Detalle" de Control de Inventario. Se calcula
+        // aqui (en vez de duplicar el endpoint) para que ambas pantallas
+        // usen la misma fuente de datos del producto.
+        $stockTotal = DB::table('lote')->where('PRO_Id', $producto->PRO_Id)->sum('LOT_CantidadReal');
+
+        return response()->json(['data' => $producto,'imagen'=> $imagen, 'galeria' => $galeria, 'stock_total' => $stockTotal]);
     }
     
     public function controlinventario(Request $request)
