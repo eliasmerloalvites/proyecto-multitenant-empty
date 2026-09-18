@@ -17,6 +17,7 @@ class DetalleVenta extends Model
         'DEV_PrecioUnitario',
         'LOT_Id',
         'DEV_Descuento',
+        'DEV_NombrePersonalizado',
     ];
     
     protected $guarded =[

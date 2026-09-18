@@ -185,6 +185,7 @@
             width: 70px;
             height: 70px;
             object-fit: contain;
+            cursor: zoom-in;
         }
 
         .product-name {
@@ -256,6 +257,62 @@
             width: 40px;
             height: 40px;
             object-fit: contain;
+            cursor: zoom-in;
+        }
+
+        .cart-name-input {
+            width: 100%;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--dark);
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 3px 7px;
+            margin-bottom: 2px;
+        }
+
+        .cart-name-input::placeholder {
+            font-weight: 400;
+            color: var(--gray);
+        }
+
+        #previewImagenVenta {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 15, .88);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        #previewImagenVenta img {
+            max-width: 90%;
+            max-height: 80vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .6);
+            background: #fff;
+        }
+
+        #previewImagenVenta .preview-nombre {
+            color: #fff;
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        #previewImagenVenta .preview-cerrar {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 30px;
+            cursor: pointer;
         }
 
         .cart-info {
@@ -2308,6 +2365,15 @@
 
     </div>
 
+    {{-- Previsualización de imagen: overlay propio (no modal de Bootstrap)
+         para poder abrirlo encima del carrito/buscador sin pelear con el
+         stacking de otros modales de esta pantalla. --}}
+    <div id="previewImagenVenta">
+        <button type="button" class="preview-cerrar" id="previewImagenCerrar"><i class="fas fa-times"></i></button>
+        <img id="previewImagenImg" src="">
+        <div class="preview-nombre" id="previewImagenNombre"></div>
+    </div>
+
 @endsection
 
 @push('scripts')
@@ -2675,7 +2741,7 @@
                 html += `
                 <div class="product-card">
                     <div class="product-image">
-                        <img src="${image}">
+                        <img src="${image}" onclick='event.stopPropagation(); previsualizarImagenVenta(${JSON.stringify(image)}, ${JSON.stringify(product.PRO_Nombre)})'>
                     </div>
 
                     <div class="product-name">${product.PRO_Nombre}</div>
@@ -2783,7 +2849,11 @@
                     ...product,
                     quantity: 1,
                     precioUnitario: parseFloat(product.PRO_PrecioBaseVenta),
-                    descuentoUnitario: 0
+                    descuentoUnitario: 0,
+                    // Nombre editable solo para esta venta (ticket/PDF); el
+                    // producto real (stock, PRO_Id) no cambia. Vacio = se
+                    // imprime el nombre real del producto.
+                    nombrePersonalizado: ''
                 });
             }
 
@@ -2813,6 +2883,29 @@
             renderCart();
         }
 
+        function updateNombreItem(id, value) {
+            if (window.REEMITIR_VENTA_ID) return;
+            let item = cart.find(x => x.PRO_Id == id);
+            item.nombrePersonalizado = (value || '').trim();
+            renderCart();
+        }
+
+        function previsualizarImagenVenta(url, nombre) {
+            $('#previewImagenImg').attr('src', url);
+            $('#previewImagenNombre').text(nombre || '');
+            $('#previewImagenVenta').css('display', 'flex');
+        }
+
+        $('#previewImagenCerrar, #previewImagenVenta').on('click', function (e) {
+            if (e.target.id === 'previewImagenVenta' || e.target.id === 'previewImagenCerrar' || $(e.target).closest('#previewImagenCerrar').length) {
+                $('#previewImagenVenta').hide();
+            }
+        });
+
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape') $('#previewImagenVenta').hide();
+        });
+
         function renderCart() {
             let html = '';
             let total = 0;
@@ -2839,10 +2932,17 @@
                 html += `
                 <div class="cart-item">
                     <div class="cart-image">
-                        <img src="${image}">
+                        <img src="${image}" onclick='previsualizarImagenVenta(${JSON.stringify(image)}, ${JSON.stringify(item.nombrePersonalizado || item.PRO_Nombre)})'>
                     </div>
                     <div class="cart-info">
-                        <div class="cart-name">${item.PRO_Nombre}</div>
+                        ${soloLectura
+                            ? `<div class="cart-name">${item.nombrePersonalizado || item.PRO_Nombre}</div>`
+                            : `<input type="text" class="cart-name-input" maxlength="191"
+                                placeholder="${item.PRO_Nombre}"
+                                value="${item.nombrePersonalizado || ''}"
+                                onchange="updateNombreItem(${item.PRO_Id}, this.value)">`
+                        }
+                        ${!soloLectura && item.nombrePersonalizado ? `<div class="cart-price-original">Producto real: ${item.PRO_Nombre}</div>` : ''}
                         ${tieneAjuste ? `<div class="cart-price-original">Precio lista: S/ ${precioOriginal.toFixed(2)}</div>` : ''}
                         ${soloLectura ? '' : `
                         <div class="cart-edit-row">

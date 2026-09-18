@@ -1125,6 +1125,13 @@ class VentaController extends Controller
                 $precioBase = max(0, $precioBase);
                 $precioFinal = max(0, $precioBase - $descuentoUnitario);
 
+                // Nombre alternativo solo para esta venta (ticket/PDF); el
+                // producto real (PRO_Id, de donde se descuenta stock) no
+                // cambia. Si el vendedor no escribio nada, queda null y se
+                // imprime el nombre real del producto (ver ticket()/pdf()).
+                $nombrePersonalizado = isset($item['nombrePersonalizado']) ? trim((string) $item['nombrePersonalizado']) : '';
+                $nombrePersonalizado = $nombrePersonalizado !== '' ? $nombrePersonalizado : null;
+
                 for ($i = 0; $i < count($rdst); $i = $i + 2) {
                     $detalle = new DetalleVenta();
                     $detalle->VEN_Id = $venta->VEN_Id;
@@ -1134,6 +1141,7 @@ class VentaController extends Controller
                     $detalle->DEV_PrecioUnitario = $precioFinal;
                     $detalle->LOT_Id = $rdst[$i];
                     $detalle->DEV_Descuento = $descuentoUnitario * $rdst[$i + 1];
+                    $detalle->DEV_NombrePersonalizado = $nombrePersonalizado;
                     $detalle->save();
                     $it = $it + 1;
                 }
@@ -1340,9 +1348,9 @@ class VentaController extends Controller
         $detallese = DB::table('detalle_venta as d')
             ->join('producto as p', 'p.PRO_Id', '=', 'd.PRO_Id')
             ->join('categoria as c', 'c.CAT_Id', '=', 'p.CAT_Id')
-            ->select('p.PRO_Nombre as articulo', 'c.CAT_Nombre as categoria', DB::raw('SUM(d.DEV_Cantidad ) as cantidad'), DB::raw('(d.DEV_PrecioUnitario ) as precio_venta'), DB::raw('(d.DEV_Descuento ) as descuento'), DB::raw('CAST(SUM(d.DEV_Cantidad*(d.DEV_PrecioUnitario)) as decimal(10,2)) as subtotal'))
+            ->select(DB::raw("COALESCE(NULLIF(d.DEV_NombrePersonalizado, ''), p.PRO_Nombre) as articulo"), 'c.CAT_Nombre as categoria', DB::raw('SUM(d.DEV_Cantidad ) as cantidad'), DB::raw('(d.DEV_PrecioUnitario ) as precio_venta'), DB::raw('(d.DEV_Descuento ) as descuento'), DB::raw('CAST(SUM(d.DEV_Cantidad*(d.DEV_PrecioUnitario)) as decimal(10,2)) as subtotal'))
             ->where('d.VEN_Id', '=', $idventa)
-            ->groupBy('p.PRO_Nombre', 'c.CAT_Nombre', 'd.DEV_PrecioUnitario', 'd.DEV_Descuento')
+            ->groupBy('d.DEV_NombrePersonalizado', 'p.PRO_Nombre', 'c.CAT_Nombre', 'd.DEV_PrecioUnitario', 'd.DEV_Descuento')
             ->get();
 
         $calificarventa = DB::table('venta as v')
@@ -1417,9 +1425,9 @@ class VentaController extends Controller
         $detallese = DB::table('detalle_venta as d')
             ->join('producto as p', 'p.PRO_Id', '=', 'd.PRO_Id')
             ->join('categoria as c', 'c.CAT_Id', '=', 'p.CAT_Id')
-            ->select('p.PRO_Nombre as articulo', 'c.CAT_Nombre as categoria', DB::raw('SUM(d.DEV_Cantidad ) as cantidad'), DB::raw('(d.DEV_PrecioUnitario ) as precio_venta'), DB::raw('(d.DEV_Descuento ) as descuento'), DB::raw('CAST(SUM(d.DEV_Cantidad*(d.DEV_PrecioUnitario)) as decimal(10,2)) as subtotal'))
+            ->select(DB::raw("COALESCE(NULLIF(d.DEV_NombrePersonalizado, ''), p.PRO_Nombre) as articulo"), 'c.CAT_Nombre as categoria', DB::raw('SUM(d.DEV_Cantidad ) as cantidad'), DB::raw('(d.DEV_PrecioUnitario ) as precio_venta'), DB::raw('(d.DEV_Descuento ) as descuento'), DB::raw('CAST(SUM(d.DEV_Cantidad*(d.DEV_PrecioUnitario)) as decimal(10,2)) as subtotal'))
             ->where('d.VEN_Id', '=', $idventa)
-            ->groupBy('p.PRO_Nombre', 'c.CAT_Nombre', 'd.DEV_PrecioUnitario', 'd.DEV_Descuento')
+            ->groupBy('d.DEV_NombrePersonalizado', 'p.PRO_Nombre', 'c.CAT_Nombre', 'd.DEV_PrecioUnitario', 'd.DEV_Descuento')
             ->get();
 
         $calificarventa = DB::table('venta as v')
@@ -1496,9 +1504,9 @@ class VentaController extends Controller
         $detallese = DB::table('detalle_venta as d')
             ->join('producto as p', 'p.PRO_Id', '=', 'd.PRO_Id')
             ->join('categoria as c', 'c.CAT_Id', '=', 'p.CAT_Id')
-            ->select('p.PRO_Nombre as articulo', 'c.CAT_Nombre as categoria', DB::raw('SUM(d.DEV_Cantidad ) as cantidad'), DB::raw('(d.DEV_PrecioUnitario ) as precio_venta'), DB::raw('(d.DEV_Descuento ) as descuento'), DB::raw('CAST(SUM(d.DEV_Cantidad*(d.DEV_PrecioUnitario)) as decimal(10,2)) as subtotal'))
+            ->select(DB::raw("COALESCE(NULLIF(d.DEV_NombrePersonalizado, ''), p.PRO_Nombre) as articulo"), 'c.CAT_Nombre as categoria', DB::raw('SUM(d.DEV_Cantidad ) as cantidad'), DB::raw('(d.DEV_PrecioUnitario ) as precio_venta'), DB::raw('(d.DEV_Descuento ) as descuento'), DB::raw('CAST(SUM(d.DEV_Cantidad*(d.DEV_PrecioUnitario)) as decimal(10,2)) as subtotal'))
             ->where('d.VEN_Id', '=', $idventa)
-            ->groupBy('p.PRO_Nombre', 'c.CAT_Nombre', 'd.DEV_PrecioUnitario', 'd.DEV_Descuento')
+            ->groupBy('d.DEV_NombrePersonalizado', 'p.PRO_Nombre', 'c.CAT_Nombre', 'd.DEV_PrecioUnitario', 'd.DEV_Descuento')
             ->get();
 
         $calificarventa = DB::table('venta as v')
@@ -1693,9 +1701,9 @@ class VentaController extends Controller
         $detalle = DB::table('detalle_venta as d')
             ->join('producto as p', 'p.PRO_Id', '=', 'd.PRO_Id')
             ->join('categoria as c', 'c.CAT_Id', '=', 'p.CAT_Id')
-            ->select('p.PRO_Id', 'p.PRO_Nombre', 'c.CAT_Nombre as categoria', DB::raw('SUM(d.DEV_Cantidad ) as cantidad'), DB::raw('(d.DEV_PrecioUnitario ) as precio_venta'), DB::raw('(d.DEV_Descuento ) as descuento'), DB::raw('CAST(SUM(d.DEV_Cantidad*(d.DEV_PrecioUnitario)) as decimal(10,2)) as subtotal'))
+            ->select('p.PRO_Id', DB::raw("COALESCE(NULLIF(d.DEV_NombrePersonalizado, ''), p.PRO_Nombre) as PRO_Nombre"), 'c.CAT_Nombre as categoria', DB::raw('SUM(d.DEV_Cantidad ) as cantidad'), DB::raw('(d.DEV_PrecioUnitario ) as precio_venta'), DB::raw('(d.DEV_Descuento ) as descuento'), DB::raw('CAST(SUM(d.DEV_Cantidad*(d.DEV_PrecioUnitario)) as decimal(10,2)) as subtotal'))
             ->where('d.VEN_Id', '=', $id)
-            ->groupBy('p.PRO_Id', 'p.PRO_Nombre', 'c.CAT_Nombre', 'd.DEV_PrecioUnitario', 'd.DEV_Descuento')
+            ->groupBy('p.PRO_Id', 'd.DEV_NombrePersonalizado', 'p.PRO_Nombre', 'c.CAT_Nombre', 'd.DEV_PrecioUnitario', 'd.DEV_Descuento')
             ->get();
 
         // Desglose de pagos: en una venta simple es una sola fila (el mismo
