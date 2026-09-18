@@ -801,7 +801,13 @@
             });
 
 
+            $('body').on('click', '#detallesVenta tr', function() {
+                $('#detallesVenta tr').removeClass('selected');
+                $(this).addClass('selected');
+            });
+
             $('body').on('click', '.eyeVenta', function() {
+                ListPedido = [];
                 var Venta_id_ver = $(this).data('id');
                 $('#modalVerDetalle').modal('show');
                 $.get('{{ tenant_url('tenant.ventas.venta.show', ['venta' => ':venta']) }}'
@@ -890,13 +896,6 @@
                             $("#detallesVenta").append(fila);
                             $POS = i;
                         }
-
-                        $("#detallesVenta").on("click", "tr", function() {
-                            // Remueve la clase 'selected' de todas las filas
-                            $("#detallesVenta tr").removeClass("selected");
-                            // Añade la clase 'selected' a la fila clickeada
-                            $(this).addClass("selected");
-                        });
 
                         total1 = 0;
                         for (var i = 0; i < ListPedido.length; i++) {

@@ -170,6 +170,10 @@ class SunatService
         $detalle = DB::table('detalle_venta as dv')
             ->join('producto as p', 'p.PRO_Id', '=', 'dv.PRO_Id')
             ->where('dv.VEN_Id', $ventaId)
+            // El nombre que se declara ante SUNAT respeta el nombre que el
+            // vendedor personalizo para esta venta (ver DEV_NombrePersonalizado
+            // en VentaController::store()), sin tocar producto.PRO_Nombre.
+            ->select('dv.*', 'p.*', DB::raw("COALESCE(NULLIF(dv.DEV_NombrePersonalizado, ''), p.PRO_Nombre) as PRO_Nombre"))
             ->get();
 
         if ($detalle->isEmpty()) {
