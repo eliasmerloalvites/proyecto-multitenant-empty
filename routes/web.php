@@ -25,7 +25,7 @@ Route::middleware([
   Route::get('/login', [UserController::class, 'showlogin'])->name('central.login');
   Route::post('/login', [UserController::class, 'login'])->name('central.login.post');
   Route::get('/cancelarusuario', function () {
-    return redirect()->route('central-usuarios.index')->with('datos', 'Acción Cancelada...!');
+    return redirect()->route('usuario.index')->with('datos', 'Acción Cancelada...!');
   })->name('central.usuario.cancelar');
   Route::post('/logout', [UserController::class, 'logout'])->name('central.logout');
 
