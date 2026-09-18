@@ -428,6 +428,11 @@
     <script>
         var ListPedido = [];
         var table;
+        // Token de la petición "Ver Detalle" más reciente: si el usuario
+        // abre otra venta (o la misma) antes de que responda la anterior,
+        // esa respuesta vieja llega igual pero se descarta aqui en vez de
+        // mezclarse con ListPedido de la petición nueva.
+        var verDetalleToken = 0;
         $(document).ready(function() {
             const Toast = Swal.mixin({
                 toast: true,
@@ -813,14 +818,21 @@
             });
 
             $('body').on('click', '.eyeVenta', function() {
-                ListPedido = [];
+                var miToken = ++verDetalleToken;
                 var Venta_id_ver = $(this).data('id');
                 $('#modalVerDetalle').modal('show');
                 $.get('{{ tenant_url('tenant.ventas.venta.show', ['venta' => ':venta']) }}'
                     .replace(':venta',
                         Venta_id_ver),
                     function(data) {
-                        console.log(data)
+                        // Si mientras esta peticion viajaba se abrio otra
+                        // venta (o se volvio a abrir la misma), esta
+                        // respuesta ya quedo obsoleta: no pintar nada con
+                        // ella para no mezclar productos de dos ventas.
+                        if (miToken !== verDetalleToken) {
+                            return;
+                        }
+                        ListPedido = [];
                         $('#ver_VEN_Id').text(data.venta.codigoVenta);
                         $('#ver_VEN_FechaEmision').text(data.venta.fechaVenta + " " + data.venta
                             .fechaVentaT);
