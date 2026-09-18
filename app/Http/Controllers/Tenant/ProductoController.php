@@ -36,6 +36,16 @@ class ProductoController extends Controller
         return tenant('tipo_negocio') === 'tallermoto';
     }
 
+    /**
+     * PRO_MostrarCatalogo (visibilidad en el catalogo publico de la web)
+     * tambien es exclusivo de tallermoto — mismo criterio que los otros
+     * dos flags de arriba.
+     */
+    private function tenantTieneCatalogoWeb(): bool
+    {
+        return tenant('tipo_negocio') === 'tallermoto';
+    }
+
     private function formatBytes($bytes, $precision = 2)
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -123,6 +133,9 @@ class ProductoController extends Controller
                 if ($this->tenantTieneCodigosProducto()) {
                     $producto->PRO_CodigoInterno = $request->PRO_CodigoInterno ?: null;
                     $producto->PRO_CodigoFabricacion = $request->PRO_CodigoFabricacion ?: null;
+                }
+                if ($this->tenantTieneCatalogoWeb()) {
+                    $producto->PRO_MostrarCatalogo = $request->boolean('PRO_MostrarCatalogo');
                 }
                 $producto->PRO_Status = $request->PRO_Status ?? 1;
                 $producto->CAT_Id = $request->CAT_Id;
@@ -903,6 +916,9 @@ class ProductoController extends Controller
             if ($this->tenantTieneCodigosProducto()) {
                 $producto->PRO_CodigoInterno = $request->PRO_CodigoInterno ?: null;
                 $producto->PRO_CodigoFabricacion = $request->PRO_CodigoFabricacion ?: null;
+            }
+            if ($this->tenantTieneCatalogoWeb()) {
+                $producto->PRO_MostrarCatalogo = $request->boolean('PRO_MostrarCatalogo');
             }
             $producto->PRO_Status = $request->PRO_Status ?? 1;
             $producto->CAT_Id = $request->CAT_Id;

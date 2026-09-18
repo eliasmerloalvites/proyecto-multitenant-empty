@@ -21,7 +21,8 @@ class Producto extends Model
         'PRO_CodigoInterno',
         'PRO_CodigoFabricacion',
         'CAT_Id',
-        'PRO_Status'
+        'PRO_Status',
+        'PRO_MostrarCatalogo'
     ];
     protected $guarded=[];
 

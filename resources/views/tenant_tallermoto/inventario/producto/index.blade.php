@@ -53,6 +53,94 @@
             border-radius: 10px;
             font-size: 12px;
         }
+
+        .product-image-container{
+            position: relative;
+            cursor: zoom-in;
+        }
+
+        .product-image-container:hover .product-image{
+            filter: brightness(0.85);
+        }
+
+        .product-image-container .zoom-hint{
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,.6);
+            color: #fff;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity .15s ease;
+            pointer-events: none;
+        }
+
+        .product-image-container:hover .zoom-hint{
+            opacity: 1;
+        }
+
+        .galeria-thumb{
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            cursor: zoom-in;
+            transition: transform .15s ease, border-color .15s ease;
+        }
+
+        .galeria-thumb:hover{
+            transform: scale(1.08);
+            border-color: #6366F1 !important;
+        }
+
+        #lightboxImagenProducto{
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10,10,15,.92);
+            z-index: 2000;
+            text-align: center;
+        }
+
+        #lightboxImg{
+            max-width: 90%;
+            max-height: 84vh;
+            margin-top: 5vh;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.6);
+        }
+
+        #lightboxImagenProducto .lightbox-btn{
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,.12);
+            border: none;
+            color: #fff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background .15s ease;
+        }
+
+        #lightboxImagenProducto .lightbox-btn:hover{
+            background: rgba(255,255,255,.25);
+        }
+
+        #lightboxCerrar{
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 30px;
+            cursor: pointer;
+        }
     </style>
     @can('tenant.inventario.producto.create')
         <div class="col-12 col-md-4">
@@ -132,6 +220,15 @@
                                 <input type="number" id="PRO_StockMinimo" name="PRO_StockMinimo" min="0" step="1"
                                     class="form-control input_user " placeholder="Stock Mínimo" value="0">
                                 <small class="form-text text-muted">Se avisará cuando el stock llegue a este nivel o menos.</small>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="PRO_MostrarCatalogo" name="PRO_MostrarCatalogo" value="1" checked>
+                                    <label class="custom-control-label" for="PRO_MostrarCatalogo">Mostrar en el catálogo web</label>
+                                </div>
+                                <small class="form-text text-muted">Si lo desactivas, el producto sigue disponible para vender pero no aparece en el catálogo público de la página web.</small>
                             </div>
                         </div>
                         <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12" style="text-align: left;">
@@ -245,18 +342,22 @@
                                 <!-- IMAGEN -->
                                 <div class="col-lg-4 text-center">
 
-                                    <div class="product-image-container">
+                                    <div class="product-image-container" id="ver_ImagenPrincipalWrap">
 
                                         <img id="ver_Imagen" class="img-fluid rounded-4 border shadow-sm product-image">
+                                        <span class="zoom-hint"><i class="fas fa-search-plus mr-1"></i>Click para ampliar</span>
 
                                     </div>
 
                                     <div id="ver_Galeria" class="d-flex flex-wrap justify-content-center mt-2" style="gap:6px;"></div>
 
-                                    <div class="mt-3">
+                                    <div class="mt-3 d-flex flex-wrap justify-content-center" style="gap:6px;">
 
-                                        <span class="badge bg-success px-3 py-2">
+                                        <span class="badge bg-success px-3 py-2" id="ver_BadgeEstado">
                                             Producto Activo
+                                        </span>
+
+                                        <span class="badge px-3 py-2" id="ver_BadgeCatalogo">
                                         </span>
 
                                     </div>
@@ -412,6 +513,16 @@
 
             </div>
         </div>
+    </div>
+
+    {{-- Zoom de imagen: overlay propio (no modal de Bootstrap) para poder
+         abrirlo encima de "Ver Detalle" sin pelear con el stacking de modales. --}}
+    <div id="lightboxImagenProducto">
+        <button type="button" id="lightboxCerrar"><i class="fas fa-times"></i></button>
+        <button type="button" id="lightboxPrev" class="lightbox-btn" style="left:20px;"><i class="fas fa-chevron-left"></i></button>
+        <button type="button" id="lightboxNext" class="lightbox-btn" style="right:20px;"><i class="fas fa-chevron-right"></i></button>
+        <img id="lightboxImg" src="">
+        <div id="lightboxContador" class="text-white mt-2" style="font-size:13px;"></div>
     </div>
 
     <!-- IMPORTAR PRODUCTOS -->
@@ -629,6 +740,7 @@
                         $('#PRO_CodigoInterno').val(result.data.PRO_CodigoInterno);
                         $('#PRO_CodigoFabricacion').val(result.data.PRO_CodigoFabricacion);
                         $('#PRO_StockMinimo').val(result.data.PRO_StockMinimo);
+                        $('#PRO_MostrarCatalogo').prop('checked', !!Number(result.data.PRO_MostrarCatalogo));
                         $('#CAT_Id').val(result.data.CAT_Id);
                         $('#CAT_Id').change();
 
@@ -663,12 +775,81 @@
                         $('#ver_PRO_PrecioVenta').text(data.data.PRO_PrecioVenta);
                         $('#ver_Imagen').attr('src', data.imagen);
 
+                        var activo = Number(data.data.PRO_Status) === 1;
+                        $('#ver_BadgeEstado')
+                            .attr('class', 'badge px-3 py-2 ' + (activo ? 'bg-success' : 'bg-secondary'))
+                            .text(activo ? 'Producto Activo' : 'Producto Inactivo');
+
+                        var enCatalogo = data.data.PRO_MostrarCatalogo === undefined || Number(data.data.PRO_MostrarCatalogo) === 1;
+                        $('#ver_BadgeCatalogo')
+                            .attr('class', 'badge px-3 py-2 ' + (enCatalogo ? 'bg-info' : 'bg-light text-muted border'))
+                            .html('<i class="fas ' + (enCatalogo ? 'fa-eye' : 'fa-eye-slash') + ' mr-1"></i>' + (enCatalogo ? 'En catálogo web' : 'Oculto del catálogo'));
+
+                        // Imágenes disponibles para el zoom: principal + galería (usando el
+                        // original de cada una, no la miniatura, para ver el detalle real).
+                        lightboxImagenes = [data.imagen];
                         var galeriaHtml = '';
-                        (data.galeria || []).forEach(function(img) {
-                            galeriaHtml += '<img src="' + img.PROI_Thumb + '" class="rounded border" style="width:64px;height:64px;object-fit:cover;">';
+                        (data.galeria || []).forEach(function(img, idx) {
+                            lightboxImagenes.push(img.PROI_url);
+                            galeriaHtml += '<img src="' + img.PROI_Thumb + '" class="rounded border galeria-thumb" data-lightbox-index="' + (idx + 1) + '">';
                         });
                         $('#ver_Galeria').html(galeriaHtml);
                     })
+            });
+
+            // ================= ZOOM DE IMAGEN (lightbox) =================
+
+            var lightboxImagenes = [];
+            var lightboxIndex = 0;
+
+            function renderLightbox() {
+                $('#lightboxImg').attr('src', lightboxImagenes[lightboxIndex]);
+                $('#lightboxContador').text((lightboxIndex + 1) + ' / ' + lightboxImagenes.length);
+                $('#lightboxPrev, #lightboxNext').toggle(lightboxImagenes.length > 1);
+            }
+
+            function abrirLightbox(index) {
+                if (!lightboxImagenes.length) {
+                    return;
+                }
+                lightboxIndex = index;
+                renderLightbox();
+                $('#lightboxImagenProducto').fadeIn(150);
+            }
+
+            $('body').on('click', '#ver_ImagenPrincipalWrap', function() {
+                abrirLightbox(0);
+            });
+
+            $('body').on('click', '.galeria-thumb', function() {
+                abrirLightbox($(this).data('lightbox-index'));
+            });
+
+            $('#lightboxCerrar, #lightboxImagenProducto').on('click', function(e) {
+                if (e.target.id === 'lightboxImagenProducto' || e.target.id === 'lightboxCerrar' || $(e.target).closest('#lightboxCerrar').length) {
+                    $('#lightboxImagenProducto').fadeOut(150);
+                }
+            });
+
+            $('#lightboxPrev').on('click', function(e) {
+                e.stopPropagation();
+                lightboxIndex = (lightboxIndex - 1 + lightboxImagenes.length) % lightboxImagenes.length;
+                renderLightbox();
+            });
+
+            $('#lightboxNext').on('click', function(e) {
+                e.stopPropagation();
+                lightboxIndex = (lightboxIndex + 1) % lightboxImagenes.length;
+                renderLightbox();
+            });
+
+            $(document).on('keydown', function(e) {
+                if (!$('#lightboxImagenProducto').is(':visible')) {
+                    return;
+                }
+                if (e.key === 'Escape') $('#lightboxImagenProducto').fadeOut(150);
+                if (e.key === 'ArrowLeft') $('#lightboxPrev').click();
+                if (e.key === 'ArrowRight') $('#lightboxNext').click();
             });
 
             // ================= GALERÍA ADICIONAL DE PRODUCTO (hasta 4 fotos, 5 en total) =================
@@ -806,6 +987,7 @@
                 $('#galeriaProductoWrap').hide();
                 $('#galeriaProductoGrid').empty();
                 $('#fileGaleriaProducto').val('').prop('disabled', false);
+                $('#PRO_MostrarCatalogo').prop('checked', true);
             }
 
             $('body').on('click', '.deleteProducto', function() {
