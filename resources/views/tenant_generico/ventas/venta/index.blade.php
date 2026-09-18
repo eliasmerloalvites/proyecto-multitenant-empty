@@ -348,8 +348,11 @@
 
 
 
+    {{-- jQuery YA lo carga el layout. Volver a cargarlo aqui pisaba esa
+         instancia con una version distinta justo antes de que este script
+         se ejecutara, causando que "Ver Detalle" duplicara filas de forma
+         inconsistente. --}}
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 
 @endsection

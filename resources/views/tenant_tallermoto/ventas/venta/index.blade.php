@@ -412,8 +412,14 @@
 
 
 
+    {{-- jQuery YA lo carga el layout (adminlte/plugins/jquery/jquery.min.js).
+         Volver a cargarlo aqui pisaba esa instancia con una version distinta
+         ("latest" del CDN) justo antes de que este script se ejecutara,
+         dejando los plugins que el layout ya inicializo (DataTables,
+         tooltips, etc.) enganchados a la instancia vieja mientras esta
+         pagina usa la nueva: exactamente el tipo de bug que causaba que
+         "Ver Detalle" duplicara filas de forma inconsistente. --}}
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 
 @endsection
