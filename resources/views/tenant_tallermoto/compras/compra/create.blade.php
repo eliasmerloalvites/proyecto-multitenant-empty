@@ -548,6 +548,50 @@
                 myModal.show()
             }
 
+            $('#SaveProveedor').click(function(e) {
+                e.preventDefault();
+                const form = document.getElementById('proveedor_form');
+                if (form.checkValidity()) {
+                    $.ajax({
+                        data: $('#proveedor_form').serialize(),
+                        url: "{{ tenant_url('tenant.compras.proveedor.store') }}",
+                        type: "POST",
+                        dataType: 'json',
+                        success: function(data) {
+                            var nuevaOpcion = new Option(
+                                data.Proveedor.PROV_TipoDocumento + ' - ' + data.Proveedor.PROV_NumDocumento + ' - ' + data.Proveedor.PROV_RazonSocial,
+                                data.Proveedor.PROV_Id,
+                                true,
+                                true
+                            );
+                            $('#PROV_Id').append(nuevaOpcion).trigger('change');
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                icon: 'success',
+                                title: data.success
+                            })
+                            vaciarCamposProveedor();
+                            myModal.hide();
+                        },
+                        error: function(xhr) {
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                icon: 'error',
+                                title: xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'No se pudo registrar el proveedor.'
+                            })
+                        }
+                    });
+                } else {
+                    form.reportValidity();
+                }
+            });
+
             function mostrarformulario() {
                 // Muestra el formulario debajo de la fila de proveedor
                 var formulario = document.getElementById('formProveedorRow');
@@ -609,51 +653,28 @@
                 $("#productoVenta").change();
             }
 
-            function limitar() {
-                var cod = document.getElementById("ProvTDoc").value;
-
+            function Limitar() {
+                var cod = document.getElementById("idPROV_TipoDocumento").value;
                 if (cod == 'DNI') {
-                    $("#ProvNDoc").val("");
-                    $("#ProvNDoc").attr('maxlength', '8');
-                } else if (cod == 'RUC') { // Cambié 'else' por 'else if'
-                    $("#ProvNDoc").val("");
-                    $("#ProvNDoc").attr('maxlength', '11');
+                    $("#idPROV_NumDocumento").val("");
+                    $("#idPROV_NumDocumento").attr('maxlength', '8');
+                } else {
+                    $("#idPROV_NumDocumento").val("");
+                    $("#idPROV_NumDocumento").attr('maxlength', '11');
                 }
             }
 
-
-            function BuscarCliente() {
-                if ($('#ProvTDoc').val() == 'DNI') {
-                    var cod = document.getElementById("ProvTDoc").value;
-                    $numero = $("#ProvNDoc").val();
-                    if ($numero.length < 8) {
-                        Swal
-                            .fire({
-                                title: "Falta Números en el DNI",
-                                icon: 'error',
-                                confirmButtonColor: "#26BA9A",
-                                confirmButtonText: "Ok"
-                            })
-                            .then(resultado => {
-                                if (resultado.value) {
-                                    $("#ProvNDoc").val("");
-                                } else {}
-                            });
-                    } else {
-                        $('#Buscar_Cliente').addClass('hide');
-
-                        var numdni = $('#ProvNDoc').val();
-                        var url = 'https://www.buqkly.com/api/consultadni/' + numdni + '?';
+            function buscarProveedor() {
+                if ($('#idPROV_TipoDocumento').val() == 'DNI') {
+                    var numdni = $('#idPROV_NumDocumento').val();
+                    if (numdni != '') {
+                        ocultarBuscarProveedor()
+                        var url = '/consultardni/' + numdni + '?';
                         $.ajax({
                             type: 'GET',
                             url: url,
-                            //data: { "_token": "{{ csrf_token() }}"},
-                            // headers: {  'Access-Control-Allow-Origin': 'https://www.buqkly.com' },
                             success: function(dat) {
-
                                 if (dat.success[1] == false) {
-                                    $('#Buscar_Cliente').removeClass('hide');
-
                                     Swal
                                         .fire({
                                             title: "DNI Inválido",
@@ -664,70 +685,74 @@
                                         })
                                         .then(resultado => {
                                             if (resultado.value) {
-                                                $("#ProvNDoc").val("");
+                                                $("#idPROV_RazonSocial").val("");
                                             } else {}
                                         });
                                 } else {
-                                    $('#ProvRSocial').val(dat.success[0]);
-                                    $('#Buscar_Cliente').removeClass('hide');
+                                    $('#idPROV_RazonSocial').val(dat.success[0].apellido + ' ' + dat.success[0].nombre);
                                 }
+                            },
+                            complete: function() {
+                                mostrarBuscarProveedor();
                             }
                         });
-                    }
-                } else {
-                    var cod = document.getElementById("ProvTDoc").value;
-                    $numero = $("#ProvNDoc").val();
-                    if ($numero.length < 11) {
-                        Swal
-                            .fire({
-                                title: "Falta Números en el RUC",
-                                icon: 'error',
-                                confirmButtonColor: "#26BA9A",
-                                confirmButtonText: "Ok"
-                            })
-                            .then(resultado => {
-                                if (resultado.value) {
-                                    $("#ProvNDoc").val("");
-                                } else {
-
-                                }
-                            });
                     } else {
-                        $('#Buscar_Cliente').addClass('hide');
-                        var numdni = $('#ProvNDoc').val();
-                        var url = 'https://www.buqkly.com/api/consultaruc/' + numdni + '?';
+                        alert('Escriba el DNI.!');
+                        $('#idPROV_NumDocumento').focus();
+                    }
+                } else if ($('#idPROV_TipoDocumento').val() == 'RUC') {
+                    var numdni = $('#idPROV_NumDocumento').val();
+                    if (numdni != '') {
+                        ocultarBuscarProveedor()
+                        var url = '/consultarruc/' + numdni + '?';
                         $.ajax({
                             type: 'GET',
                             url: url,
-                            //data: { "_token": "{{ csrf_token() }}"},
-                            // headers: {  'Access-Control-Allow-Origin': 'https://www.buqkly.com' },
                             success: function(dat) {
-                                //console.log(dat);
-                                if (dat.success[1] == null) {
-                                    $('#Buscar_Cliente').removeClass('hide');
+                                if (dat.success == false) {
                                     Swal
                                         .fire({
-                                            title: "Ruc Inválido",
+                                            title: dat.message || "RUC Inválido",
                                             icon: 'error',
                                             confirmButtonColor: "#26BA9A",
                                             width: '350px',
-                                            heigth: '100px',
                                             confirmButtonText: "Ok"
-                                        })
-                                        .then(resultado => {
-                                            if (resultado.value) {
-                                                $("#ProvNDoc").val("");
-                                            } else {}
                                         });
                                 } else {
-                                    $('#ProvRSocial').val(dat.success[1]);
-                                    $('#ProvDir').val(dat.success[2]);
-                                    $('#Buscar_Cliente').removeClass('hide');
+                                    $('#idPROV_RazonSocial').val(dat.data.nombre);
+                                    $('#idPROV_Direccion').val(dat.data.direccion + ' ' + dat.data.ubicacion);
                                 }
+                            },
+                            complete: function() {
+                                mostrarBuscarProveedor();
                             }
                         });
+                    } else {
+                        alert('Escriba el RUC.!');
+                        $('#idPROV_NumDocumento').focus();
                     }
                 }
+            }
+
+            function ocultarBuscarProveedor() {
+                document.getElementById('Buscar_Proveedor').style.display = 'none';
+                document.getElementById('cargando').style.display = 'block';
+            }
+
+            function mostrarBuscarProveedor() {
+                document.getElementById('Buscar_Proveedor').style.display = 'block';
+                document.getElementById('cargando').style.display = 'none';
+            }
+
+            function vaciarCamposProveedor() {
+                $('#proveedor_form').trigger("reset");
+                $('#idPROV_TipoDocumento').val('DNI');
+                $('#idPROV_NumDocumento').val('').attr('maxlength', '8');
+                $('#idPROV_RazonSocial').val('');
+                $('#idPROV_Direccion').val('');
+                $('#idPROV_Descripcion').val('');
+                $('#idPROV_Celular').val('');
+                $('#idPROV_Correo').val('');
             }
 
             function GenerarCompra() {

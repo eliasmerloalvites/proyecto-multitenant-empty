@@ -23,12 +23,11 @@ class ReportesController extends Controller
         $mytime = Carbon::now('America/Lima');
         $fecha = $mytime->toDateString();
         $idusu = Auth::user()->id;
-        $roles = Auth::user()->getRoleNames();
-
-        $rolAdmin = false;
-        if ($roles->contains('Admin') || $roles->contains('Gerente')) {
-            $rolAdmin = true;
-        }
+        // El enlace "Lista General" del menú no está restringido a un permiso
+        // puntual (a diferencia de sus hermanos en el sidebar, que sí usan
+        // @can): cualquier rol autenticado que llega a esta pantalla debe
+        // poder ver los datos, no solo Admin/Gerente.
+        $rolAdmin = true;
 
         if ($request->ajax()) {
 
