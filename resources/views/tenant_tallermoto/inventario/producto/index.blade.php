@@ -26,20 +26,42 @@
             letter-spacing: .5px;
         }
 
-        /* ===== Modal "Ver Detalle" — rediseño ===== */
+        /* ===== Modal "Ver Detalle" — rediseño =====
+           Usa las mismas variables de tema que el resto del panel
+           (--bg-card/--bg-main/--text-main/--text-muted/--primary,
+           definidas en csskael/kael-dark.css y kael-light.css según
+           $empresa->tipo_tema) en vez de colores fijos, para que el
+           contraste siempre sea correcto sin importar el tema activo. */
+
+        #modalVerDetalle .modal-content{
+            background: var(--bg-card);
+        }
 
         #modalVerDetalle .modal-header{
-            background: linear-gradient(135deg, #1E293B, #334155);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
         }
 
         #modalVerDetalle .modal-body{
-            background: #F8FAFC;
+            background: var(--bg-main);
+        }
+
+        #modalVerDetalle .modal-footer{
+            background: var(--bg-card) !important;
+            border-top: 1px solid rgba(148,163,184,.15);
+        }
+
+        .pd-title{
+            color: var(--text-main);
+        }
+
+        .pd-subtitle, .pd-desc{
+            color: var(--text-muted);
         }
 
         .product-image-container{
             position: relative;
-            background: #fff;
-            border: 1px solid #E2E8F0;
+            background: var(--bg-card);
+            border: 1px solid rgba(148,163,184,.25);
             border-radius: 20px;
             padding: 14px;
             cursor: zoom-in;
@@ -47,7 +69,7 @@
         }
 
         .product-image-container:hover{
-            box-shadow: 0 10px 28px rgba(15,23,42,.10);
+            box-shadow: 0 10px 28px rgba(0,0,0,.18);
         }
 
         .product-image{
@@ -55,7 +77,7 @@
             aspect-ratio: 1 / 1;
             object-fit: cover;
             border-radius: 14px;
-            background: #F1F5F9;
+            background: rgba(148,163,184,.12);
             transition: filter .15s ease;
         }
 
@@ -68,7 +90,7 @@
             bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(15,23,42,.75);
+            background: rgba(15,23,42,.8);
             color: #fff;
             font-size: 11px;
             font-weight: 600;
@@ -89,12 +111,13 @@
             object-fit: cover;
             border-radius: 10px;
             cursor: zoom-in;
+            border: 1px solid rgba(148,163,184,.3) !important;
             transition: transform .15s ease, border-color .15s ease;
         }
 
         .galeria-thumb:hover{
             transform: scale(1.08);
-            border-color: #6366F1 !important;
+            border-color: var(--primary) !important;
         }
 
         .pd-badge{
@@ -107,8 +130,8 @@
 
         .pd-eyebrow{
             display: inline-block;
-            background: #EEF2FF;
-            color: #4338CA;
+            background: rgba(59,130,246,.15);
+            color: var(--primary);
             font-size: 11px;
             font-weight: 700;
             letter-spacing: .6px;
@@ -118,28 +141,28 @@
         }
 
         .pd-chip{
-            background: #fff;
-            border: 1px solid #E2E8F0;
+            background: var(--bg-main);
+            border: 1px solid rgba(148,163,184,.25);
             border-radius: 10px;
             padding: 7px 14px;
             font-size: 12.5px;
-            color: #64748B;
+            color: var(--text-muted);
         }
 
         .pd-chip strong{
-            color: #0F172A;
+            color: var(--text-main);
             font-weight: 700;
         }
 
         .pd-price-panel{
-            background: #fff;
-            border: 1px solid #E2E8F0;
+            background: var(--bg-main);
+            border: 1px solid rgba(148,163,184,.25);
             border-radius: 18px;
             padding: 20px 10px;
         }
 
         .pd-price-panel .pd-label{
-            color: #94A3B8;
+            color: var(--text-muted);
             text-transform: uppercase;
             font-size: 10.5px;
             font-weight: 700;
@@ -155,7 +178,7 @@
 
         .pd-price-panel .pd-divider{
             width: 1px;
-            background: #E2E8F0;
+            background: rgba(148,163,184,.25);
         }
 
         #lightboxImagenProducto{
@@ -170,9 +193,41 @@
         #lightboxImg{
             max-width: 90%;
             max-height: 84vh;
-            margin-top: 5vh;
             border-radius: 10px;
             box-shadow: 0 20px 60px rgba(0,0,0,.6);
+            cursor: zoom-in;
+            transition: transform .12s ease-out;
+            will-change: transform;
+            touch-action: none;
+            user-select: none;
+        }
+
+        #lightboxZoomControls{
+            position: absolute;
+            bottom: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background: rgba(255,255,255,.08);
+            padding: 6px;
+            border-radius: 30px;
+        }
+
+        #lightboxZoomControls .lightbox-btn{
+            position: static;
+            transform: none;
+            width: 38px;
+            height: 38px;
+            font-size: 15px;
+        }
+
+        #lightboxZoomPct{
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            align-self: center;
+            min-width: 42px;
         }
 
         #lightboxImagenProducto .lightbox-btn{
@@ -375,15 +430,15 @@
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
 
                 <!-- HEADER -->
-                <div class="modal-header bg-dark text-gray-600 border-0">
+                <div class="modal-header border-0">
 
                     <div>
-                        <h5 class="modal-title mb-0">
+                        <h5 class="modal-title mb-0 text-white">
                             <i class="fas fa-box-open me-2"></i>
                             Detalles del Producto
                         </h5>
 
-                        <small class="opacity-75">
+                        <small class="text-white" style="opacity:.8;">
                             Información completa del producto
                         </small>
                     </div>
@@ -428,14 +483,14 @@
 
                             <span class="pd-eyebrow" id="ver_CAT_Nombre"></span>
 
-                            <h3 class="fw-bold text-dark mt-2 mb-1" id="ver_PRO_Nombre"></h3>
+                            <h3 class="fw-bold pd-title mt-2 mb-1" id="ver_PRO_Nombre"></h3>
 
-                            <div class="text-muted mb-3" style="font-size:13px;">
+                            <div class="pd-subtitle mb-3" style="font-size:13px;">
                                 ID #<span id="ver_PRO_Id"></span>
                                 <span id="ver_PRO_Marca_Wrap">· <span id="ver_PRO_Marca"></span></span>
                             </div>
 
-                            <p class="text-secondary mb-3" id="ver_PRO_Descripcion" style="font-size:14.5px;"></p>
+                            <p class="pd-desc mb-3" id="ver_PRO_Descripcion" style="font-size:14.5px;"></p>
 
                             <div class="d-flex flex-wrap mb-4" style="gap:8px;" id="ver_CodigosWrap">
                                 <span class="pd-chip"><i class="fas fa-barcode mr-1"></i>Interno: <strong id="ver_PRO_CodigoInterno"></strong></span>
@@ -475,7 +530,7 @@
                 </div>
 
                 <!-- FOOTER -->
-                <div class="modal-footer bg-white border-0">
+                <div class="modal-footer border-0">
 
                     <button type="button" class="btn btn-light border px-4" data-dismiss="modal">
 
@@ -496,8 +551,16 @@
         <button type="button" id="lightboxCerrar"><i class="fas fa-times"></i></button>
         <button type="button" id="lightboxPrev" class="lightbox-btn" style="left:20px;"><i class="fas fa-chevron-left"></i></button>
         <button type="button" id="lightboxNext" class="lightbox-btn" style="right:20px;"><i class="fas fa-chevron-right"></i></button>
-        <img id="lightboxImg" src="">
+        <div style="overflow:hidden; max-height:84vh; margin-top:5vh;">
+            <img id="lightboxImg" src="">
+        </div>
         <div id="lightboxContador" class="text-white mt-2" style="font-size:13px;"></div>
+        <div id="lightboxZoomControls">
+            <button type="button" id="lightboxZoomOut" class="lightbox-btn" title="Alejar"><i class="fas fa-search-minus"></i></button>
+            <span id="lightboxZoomPct">100%</span>
+            <button type="button" id="lightboxZoomIn" class="lightbox-btn" title="Acercar"><i class="fas fa-search-plus"></i></button>
+            <button type="button" id="lightboxZoomReset" class="lightbox-btn" title="Restablecer"><i class="fas fa-compress"></i></button>
+        </div>
     </div>
 
     <!-- IMPORTAR PRODUCTOS -->
@@ -782,11 +845,44 @@
 
             var lightboxImagenes = [];
             var lightboxIndex = 0;
+            var lightboxZoom = 1;
+            var lightboxPanX = 0;
+            var lightboxPanY = 0;
+            var lightboxDragging = false;
+            var lightboxDragStart = { x: 0, y: 0 };
+            var ZOOM_MIN = 1;
+            var ZOOM_MAX = 4;
+            var ZOOM_STEP = 0.5;
+
+            function aplicarZoomLightbox() {
+                $('#lightboxImg').css('transform', 'translate(' + lightboxPanX + 'px,' + lightboxPanY + 'px) scale(' + lightboxZoom + ')');
+                $('#lightboxImg').css('cursor', lightboxZoom > 1 ? 'grab' : 'zoom-in');
+                $('#lightboxZoomPct').text(Math.round(lightboxZoom * 100) + '%');
+                $('#lightboxZoomOut').prop('disabled', lightboxZoom <= ZOOM_MIN);
+                $('#lightboxZoomIn').prop('disabled', lightboxZoom >= ZOOM_MAX);
+            }
+
+            function resetZoomLightbox() {
+                lightboxZoom = 1;
+                lightboxPanX = 0;
+                lightboxPanY = 0;
+                aplicarZoomLightbox();
+            }
+
+            function cambiarZoomLightbox(delta) {
+                lightboxZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, lightboxZoom + delta));
+                if (lightboxZoom === ZOOM_MIN) {
+                    lightboxPanX = 0;
+                    lightboxPanY = 0;
+                }
+                aplicarZoomLightbox();
+            }
 
             function renderLightbox() {
                 $('#lightboxImg').attr('src', lightboxImagenes[lightboxIndex]);
                 $('#lightboxContador').text((lightboxIndex + 1) + ' / ' + lightboxImagenes.length);
                 $('#lightboxPrev, #lightboxNext').toggle(lightboxImagenes.length > 1);
+                resetZoomLightbox();
             }
 
             function abrirLightbox(index) {
@@ -831,6 +927,69 @@
                 if (e.key === 'Escape') $('#lightboxImagenProducto').fadeOut(150);
                 if (e.key === 'ArrowLeft') $('#lightboxPrev').click();
                 if (e.key === 'ArrowRight') $('#lightboxNext').click();
+                if (e.key === '+' || e.key === '=') cambiarZoomLightbox(ZOOM_STEP);
+                if (e.key === '-' || e.key === '_') cambiarZoomLightbox(-ZOOM_STEP);
+            });
+
+            // Botones +/- y restablecer.
+            $('#lightboxZoomIn').on('click', function(e) {
+                e.stopPropagation();
+                cambiarZoomLightbox(ZOOM_STEP);
+            });
+
+            $('#lightboxZoomOut').on('click', function(e) {
+                e.stopPropagation();
+                cambiarZoomLightbox(-ZOOM_STEP);
+            });
+
+            $('#lightboxZoomReset').on('click', function(e) {
+                e.stopPropagation();
+                resetZoomLightbox();
+            });
+
+            // Rueda del mouse sobre la imagen: acercar/alejar.
+            $('#lightboxImg').on('wheel', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                cambiarZoomLightbox(e.originalEvent.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP);
+            });
+
+            // Doble click: alterna entre 100% y 200%.
+            $('#lightboxImg').on('dblclick', function(e) {
+                e.stopPropagation();
+                if (lightboxZoom > 1) {
+                    resetZoomLightbox();
+                } else {
+                    lightboxZoom = 2;
+                    aplicarZoomLightbox();
+                }
+            });
+
+            // Arrastrar para desplazar la imagen cuando está ampliada.
+            $('#lightboxImg').on('mousedown', function(e) {
+                if (lightboxZoom <= 1) {
+                    return;
+                }
+                e.preventDefault();
+                lightboxDragging = true;
+                lightboxDragStart = { x: e.clientX - lightboxPanX, y: e.clientY - lightboxPanY };
+                $(this).css('cursor', 'grabbing');
+            });
+
+            $(document).on('mousemove', function(e) {
+                if (!lightboxDragging) {
+                    return;
+                }
+                lightboxPanX = e.clientX - lightboxDragStart.x;
+                lightboxPanY = e.clientY - lightboxDragStart.y;
+                $('#lightboxImg').css('transform', 'translate(' + lightboxPanX + 'px,' + lightboxPanY + 'px) scale(' + lightboxZoom + ')');
+            });
+
+            $(document).on('mouseup', function() {
+                if (lightboxDragging) {
+                    lightboxDragging = false;
+                    $('#lightboxImg').css('cursor', lightboxZoom > 1 ? 'grab' : 'zoom-in');
+                }
             });
 
             // ================= GALERÍA ADICIONAL DE PRODUCTO (hasta 4 fotos, 5 en total) =================
