@@ -326,7 +326,7 @@
                                                 </tr>
                                             </thead>
 
-                                            <tbody>
+                                            <tbody id="detallesVentaBody">
                                             </tbody>
 
                                         </table>
@@ -934,7 +934,7 @@
                             ListPedido.push(fila1);
                         });
 
-                        $("#detallesVenta tbody").remove();
+                        $("#detallesVentaBody").empty();
                         for (var i = 0; i < ListPedido.length; i++) {
                             var fila = '<tr  id="fila' + i + '" onclick="posicionamiento(' + i +
                                 ');"><td style="text-align: left; padding:0px 7px" >' +
@@ -969,7 +969,7 @@
                                     4
                                 ] + '</label>' +
                                 '</td></tr>';
-                            $("#detallesVenta").append(fila);
+                            $("#detallesVentaBody").append(fila);
                             $POS = i;
                         }
 
