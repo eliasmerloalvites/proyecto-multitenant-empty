@@ -3,35 +3,93 @@
 @section('contenido')
 
     <style>
+        /* ===== Modal "Ver Detalle" de Venta — mismas variables de tema que
+           Productos/Control de Inventario (--bg-card/--bg-main/--text-main/
+           --text-muted/--primary/--accent, definidas en csskael/kael-dark.css
+           y kael-light.css) en vez de colores fijos, para que el contraste
+           sea correcto sin importar el tema activo. */
+
+        #modalVerDetalle .modal-content {
+            background: var(--bg-card);
+            overflow: hidden;
+        }
+
+        #modalVerDetalle .modal-header {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+        }
+
+        #modalVerDetalle .modal-title,
+        #modalVerDetalle .modal-title i {
+            color: #fff;
+        }
+
+        #modalVerDetalle .modal-body {
+            background: var(--bg-main);
+        }
+
+        #modalVerDetalle .modal-footer {
+            background: var(--bg-card);
+            border-top: 1px solid rgba(148,163,184,.15) !important;
+        }
+
+        #modalVerDetalle .dv-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(148,163,184,.2);
+        }
+
+        #modalVerDetalle .dv-title {
+            color: var(--primary);
+        }
+
         .detalle-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 12px 0;
-            border-bottom: 1px solid #f1f1f1;
+            border-bottom: 1px solid rgba(148,163,184,.18);
             gap: 15px;
         }
 
         .detalle-item span {
-            color: #6c757d;
+            color: var(--text-muted);
             font-weight: 500;
         }
 
         .detalle-item strong {
-            color: #1f2937;
+            color: var(--text-main);
             text-align: right;
+        }
+
+        #detallesVenta {
+            color: var(--text-main);
+        }
+
+        #detallesVenta thead th {
+            background: var(--bg-main) !important;
+            color: var(--text-muted);
+            border-color: rgba(148,163,184,.2);
         }
 
         #detallesVenta tbody tr {
             transition: 0.2s;
+            border-color: rgba(148,163,184,.15);
         }
 
         #detallesVenta tbody tr:hover {
-            background: #f8f9fa;
+            background: rgba(148,163,184,.1);
         }
 
-        .modal-content {
-            overflow: hidden;
+        #detallesVenta tbody tr.selected {
+            background: rgba(59,130,246,.12);
+        }
+
+        #modalVerDetalle .dv-total-panel {
+            background: var(--bg-main);
+            border: 1px solid rgba(148,163,184,.2);
+        }
+
+        #modalVerDetalle .dv-total-panel .fw-bold {
+            color: var(--text-main);
         }
 
         .whatsapp-circle{
@@ -159,11 +217,11 @@
                 <!-- HEADER -->
                 <div class="modal-header border-0 pb-0">
                     <h4 class="modal-title fw-bold">
-                        <i class="fa fa-shopping-cart me-2 text-primary"></i>
+                        <i class="fa fa-shopping-cart me-2"></i>
                         Detalle de la Venta
                     </h4>
 
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity:.9;">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -176,10 +234,10 @@
                         <!-- INFORMACION -->
                         <div class="col-lg-4">
 
-                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card dv-card border-0 shadow-sm rounded-4 h-100">
                                 <div class="card-body">
 
-                                    <h5 class="fw-bold mb-4 text-primary">
+                                    <h5 class="fw-bold mb-4 dv-title">
                                         Información General
                                     </h5>
 
@@ -238,12 +296,12 @@
                         <!-- DETALLE -->
                         <div class="col-lg-8">
 
-                            <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card dv-card border-0 shadow-sm rounded-4">
 
                                 <div class="card-body">
 
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5 class="fw-bold text-primary mb-0">
+                                        <h5 class="fw-bold dv-title mb-0">
                                             Productos
                                         </h5>
 
@@ -256,7 +314,7 @@
 
                                         <table id="detallesVenta" class="table align-middle">
 
-                                            <thead class="table-light sticky-top">
+                                            <thead class="sticky-top">
                                                 <tr>
                                                     <th style="width:75%">
                                                         Detalle
@@ -277,7 +335,7 @@
                                     <!-- TOTAL -->
                                     <div class="mt-4">
 
-                                        <div class="bg-light rounded-4 p-3">
+                                        <div class="dv-total-panel rounded-4 p-3">
 
                                             <div class="d-flex justify-content-between align-items-center">
 
