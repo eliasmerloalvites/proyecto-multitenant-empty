@@ -28,7 +28,21 @@
                                 <div class="col-12">
                                     <label class="control-label">Email:</label>
                                     <input type="email" name="email" class="form-control input_user "  placeholder="email" value="{{$usuario->email}}" readonly required>
-                                    
+
+                                </div>
+                                <div class="col-12 mt-3">
+                                    <label class="control-label">Nueva Contraseña:</label>
+                                    <input type="password" name="password" class="form-control input_user @error('password') is-invalid @enderror" placeholder="Dejar vacío para no cambiarla" autocomplete="new-password">
+                                    <small class="form-text text-muted">Mínimo 8 caracteres. Déjala vacía si no quieres cambiarla.</small>
+                                    @error('password')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{$message}}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
+                                <div class="col-12 mt-2">
+                                    <label class="control-label">Confirmar Contraseña:</label>
+                                    <input type="password" name="password_confirmation" class="form-control input_user" placeholder="Repite la contraseña nueva" autocomplete="new-password">
                                 </div>
                             </div>
                     </div>
