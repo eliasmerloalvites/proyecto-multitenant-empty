@@ -231,10 +231,60 @@ class CompraController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Elimina una compra completa (cabecera + detalle + los lotes que
+     * genero), solo si NINGUNO de esos lotes fue tocado todavia (ej. por
+     * una venta, un traslado o un ajuste): LOT_CantidadReal debe seguir
+     * siendo igual a LOT_CantidadIngreso. Si ya se uso aunque sea una
+     * unidad de un solo lote, se bloquea toda la compra completa para no
+     * dejar ventas/movimientos huerfanos apuntando a un lote borrado.
      */
     public function destroy(string $id)
     {
-        //
+        $compra = Compra::with('detalle_compra')->find($id);
+
+        if (!$compra) {
+            return response()->json(['error' => 'La compra indicada no existe.'], 404);
+        }
+
+        $lotes = Lote::where('LOT_TipoIngreso', 'COMPRA')
+            ->where('LOT_IdIngreso', $compra->COM_Id)
+            ->get();
+
+        $loteUsado = $lotes->first(function ($lote) {
+            return abs((float) $lote->LOT_CantidadReal - (float) $lote->LOT_CantidadIngreso) > 0.001;
+        });
+
+        if ($loteUsado) {
+            $producto = Producto::find($loteUsado->PRO_Id);
+
+            return response()->json([
+                'error' => 'No se puede eliminar: el producto "' . ($producto->PRO_Nombre ?? ('#' . $loteUsado->PRO_Id))
+                    . '" que ingreso con esta compra ya tiene stock usado (vendido, trasladado o ajustado). '
+                    . 'Si necesitas corregir esta compra, usa Ajustes de Inventario para el stock, o registra otra compra '
+                    . 'con los datos correctos.',
+            ], 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            Lote::where('LOT_TipoIngreso', 'COMPRA')
+                ->where('LOT_IdIngreso', $compra->COM_Id)
+                ->delete();
+
+            DetalleCompra::where('COM_Id', $compra->COM_Id)->delete();
+
+            Movimiento::where('tipo', 'Entrada')->where('idcv', $compra->COM_Id)->delete();
+
+            $compra->delete();
+
+            DB::commit();
+
+            return response()->json(['success' => 'Compra eliminada exitosamente.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json(['error' => 'Error al eliminar la compra: ' . $e->getMessage()], 500);
+        }
     }
 }

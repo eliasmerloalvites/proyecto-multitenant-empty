@@ -256,6 +256,36 @@
                 window.location.href = '{{ tenant_url('tenant.compras.compra.edit', ['compra' => ':compra']) }}'.replace(':compra', Compra_id);
             });
 
+            $('body').on('click', '.deleteCompra', function() {
+                var Compra_id = $(this).data('id');
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: '¿Eliminar esta compra?',
+                    text: 'Se eliminará la compra y el stock que ingresó por ella. Esta acción no se puede deshacer.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#dc3545'
+                }).then(function(result) {
+                    if (!result.isConfirmed) return;
+
+                    $.ajax({
+                        type: 'DELETE',
+                        url: '{{ tenant_url('tenant.compras.compra.destroy', ['compra' => ':compra']) }}'.replace(':compra', Compra_id),
+                        data: { _token: '{{ csrf_token() }}' },
+                        success: function(data) {
+                            table.draw();
+                            Toast.fire({ type: 'success', title: String(data.success) });
+                        },
+                        error: function(xhr) {
+                            var msg = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : 'No se pudo eliminar la compra.';
+                            Swal.fire({ icon: 'error', title: 'No se puede eliminar', text: msg });
+                        }
+                    });
+                });
+            });
+
             $('body').on('click', '.eyeCompra', function() {
                 ListPedido = []
                 var Compra_id_ver = $(this).data('id');
