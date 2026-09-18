@@ -302,6 +302,7 @@ class HomeController extends Controller
                 $queryProductos = DB::table('producto as pd')
                     ->join('categoria as ct', 'pd.CAT_Id', '=', 'ct.CAT_Id')
                     ->join('lote as lt', 'pd.PRO_Id', '=', 'lt.PRO_Id')
+                    ->where('pd.PRO_MostrarCatalogo', 1)
                     ->select(
                         'pd.PRO_Id',
                         'pd.PRO_Nombre',
@@ -766,6 +767,7 @@ class HomeController extends Controller
             $queryProductos = DB::table('producto as pd')
                 ->join('categoria as ct', 'pd.CAT_Id', '=', 'ct.CAT_Id')
                 ->join('lote as lt', 'pd.PRO_Id', '=', 'lt.PRO_Id')
+                ->where('pd.PRO_MostrarCatalogo', 1)
                 ->select(
                     'pd.PRO_Id',
                     'pd.PRO_Nombre',

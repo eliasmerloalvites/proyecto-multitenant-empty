@@ -20,38 +20,244 @@
             padding: 24px;
         }
 
-        .product-image-container{
-            background: white;
-            border-radius: 18px;
-            padding: 15px;
-            border: 1px solid #e9ecef;
-        }
-
-        .product-image{
-            width: 100%;
-            max-width: 240px;
-            height: 240px;
-            object-fit: cover;
-            background: #f8f9fa;
-        }
-
-        .price-card{
-            transition: .2s ease;
-        }
-
-        .price-card:hover{
-            transform: translateY(-2px);
-        }
-
         small.text-muted{
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: .5px;
         }
 
-        .badge{
+        /* ===== Modal "Ver Detalle" — rediseño =====
+           Usa las mismas variables de tema que el resto del panel
+           (--bg-card/--bg-main/--text-main/--text-muted/--primary,
+           definidas en csskael/kael-dark.css y kael-light.css según
+           $empresa->tipo_tema) en vez de colores fijos, para que el
+           contraste siempre sea correcto sin importar el tema activo. */
+
+        #modalVerDetalle .modal-content{
+            background: var(--bg-card);
+        }
+
+        #modalVerDetalle .modal-header{
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+        }
+
+        #modalVerDetalle .modal-body{
+            background: var(--bg-main);
+        }
+
+        #modalVerDetalle .modal-footer{
+            background: var(--bg-card) !important;
+            border-top: 1px solid rgba(148,163,184,.15);
+        }
+
+        .pd-title{
+            color: var(--text-main);
+        }
+
+        .pd-subtitle, .pd-desc{
+            color: var(--text-muted);
+        }
+
+        .product-image-container{
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid rgba(148,163,184,.25);
+            border-radius: 20px;
+            padding: 14px;
+            cursor: zoom-in;
+            transition: box-shadow .2s ease;
+        }
+
+        .product-image-container:hover{
+            box-shadow: 0 10px 28px rgba(0,0,0,.18);
+        }
+
+        .product-image{
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 14px;
+            background: rgba(148,163,184,.12);
+            transition: filter .15s ease;
+        }
+
+        .product-image-container:hover .product-image{
+            filter: brightness(0.9);
+        }
+
+        .product-image-container .zoom-hint{
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15,23,42,.8);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity .15s ease;
+            pointer-events: none;
+        }
+
+        .product-image-container:hover .zoom-hint{
+            opacity: 1;
+        }
+
+        .galeria-thumb{
+            width: 52px;
+            height: 52px;
+            object-fit: cover;
             border-radius: 10px;
+            cursor: zoom-in;
+            border: 1px solid rgba(148,163,184,.3) !important;
+            transition: transform .15s ease, border-color .15s ease;
+        }
+
+        .galeria-thumb:hover{
+            transform: scale(1.08);
+            border-color: var(--primary) !important;
+        }
+
+        .pd-badge{
+            border-radius: 20px;
+            padding: 6px 16px;
             font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .2px;
+        }
+
+        .pd-eyebrow{
+            display: inline-block;
+            background: rgba(59,130,246,.15);
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .6px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .pd-chip{
+            background: var(--bg-main);
+            border: 1px solid rgba(148,163,184,.25);
+            border-radius: 10px;
+            padding: 7px 14px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+        }
+
+        .pd-chip strong{
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .pd-price-panel{
+            background: var(--bg-main);
+            border: 1px solid rgba(148,163,184,.25);
+            border-radius: 18px;
+            padding: 20px 10px;
+        }
+
+        .pd-price-panel .pd-label{
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: .6px;
+            display: block;
+        }
+
+        .pd-price-panel .pd-value{
+            font-size: 24px;
+            font-weight: 800;
+            margin-top: 4px;
+        }
+
+        .pd-price-panel .pd-divider{
+            width: 1px;
+            background: rgba(148,163,184,.25);
+        }
+
+        #lightboxImagenProducto{
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10,10,15,.92);
+            z-index: 2000;
+            text-align: center;
+        }
+
+        #lightboxImg{
+            max-width: 90%;
+            max-height: 84vh;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.6);
+            cursor: zoom-in;
+            transition: transform .12s ease-out;
+            will-change: transform;
+            touch-action: none;
+            user-select: none;
+        }
+
+        #lightboxZoomControls{
+            position: absolute;
+            bottom: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background: rgba(255,255,255,.08);
+            padding: 6px;
+            border-radius: 30px;
+        }
+
+        #lightboxZoomControls .lightbox-btn{
+            position: static;
+            transform: none;
+            width: 38px;
+            height: 38px;
+            font-size: 15px;
+        }
+
+        #lightboxZoomPct{
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            align-self: center;
+            min-width: 42px;
+        }
+
+        #lightboxImagenProducto .lightbox-btn{
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,.12);
+            border: none;
+            color: #fff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background .15s ease;
+        }
+
+        #lightboxImagenProducto .lightbox-btn:hover{
+            background: rgba(255,255,255,.25);
+        }
+
+        #lightboxCerrar{
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 30px;
+            cursor: pointer;
         }
     </style>
     @can('tenant.inventario.producto.create')
@@ -134,11 +340,33 @@
                                 <small class="form-text text-muted">Se avisará cuando el stock llegue a este nivel o menos.</small>
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <div class="col-12">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="PRO_MostrarCatalogo" name="PRO_MostrarCatalogo" value="1" checked>
+                                    <label class="custom-control-label" for="PRO_MostrarCatalogo">Mostrar en el catálogo web</label>
+                                </div>
+                                <small class="form-text text-muted">Si lo desactivas, el producto sigue disponible para vender pero no aparece en el catálogo público de la página web.</small>
+                            </div>
+                        </div>
                         <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12" style="text-align: left;">
-                            <label>Añadir Imagen </label>
+                            <label>Añadir Imagen (principal)</label>
                             <div class="custom-file center">
                                 <input type="file" class="custom-file-input" accept="image/*" name="file" id="fileImagen">
                                 <label class="custom-file-label" id="idFileImagen">Añadir Imagen</label>
+                            </div>
+                        </div>
+                        <p></p>
+
+                        {{-- Galería adicional: solo se ve al editar un producto ya guardado
+                             (necesita PRO_Id), igual que las fotos de mantenimiento no
+                             existen todavía en su formulario de creación. --}}
+                        <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12" id="galeriaProductoWrap" style="display:none; text-align:left;">
+                            <label>Galería adicional (hasta 4 fotos más, 5 en total)</label>
+                            <div id="galeriaProductoGrid" class="d-flex flex-wrap" style="gap:8px; margin-bottom:8px;"></div>
+                            <div class="custom-file center">
+                                <input type="file" class="custom-file-input" accept="image/*" id="fileGaleriaProducto">
+                                <label class="custom-file-label" id="idFileGaleriaProducto">Agregar foto a la galería</label>
                             </div>
                         </div>
                         <p></p>
@@ -202,15 +430,15 @@
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
 
                 <!-- HEADER -->
-                <div class="modal-header bg-dark text-gray-600 border-0">
+                <div class="modal-header border-0">
 
                     <div>
-                        <h5 class="modal-title mb-0">
+                        <h5 class="modal-title mb-0 text-white">
                             <i class="fas fa-box-open me-2"></i>
                             Detalles del Producto
                         </h5>
 
-                        <small class="opacity-75">
+                        <small class="text-white" style="opacity:.8;">
                             Información completa del producto
                         </small>
                     </div>
@@ -221,160 +449,78 @@
                 </div>
 
                 <!-- BODY -->
-                <div class="modal-body bg-light">
+                <div class="modal-body p-4">
 
-                    <div class="card border-0 shadow-sm rounded-4">
+                    <div class="row g-4">
 
-                        <div class="card-body">
+                        <!-- IMAGEN -->
+                        <div class="col-lg-4">
 
-                            <div class="row g-4">
+                            <div class="product-image-container" id="ver_ImagenPrincipalWrap">
 
-                                <!-- IMAGEN -->
-                                <div class="col-lg-4 text-center">
+                                <img id="ver_Imagen" class="product-image">
+                                <span class="zoom-hint"><i class="fas fa-search-plus mr-1"></i>Click para ampliar</span>
 
-                                    <div class="product-image-container">
+                            </div>
 
-                                        <img id="ver_Imagen" class="img-fluid rounded-4 border shadow-sm product-image">
+                            <div id="ver_Galeria" class="d-flex flex-wrap justify-content-center mt-2" style="gap:6px;"></div>
 
+                            <div class="mt-3 d-flex flex-wrap justify-content-center" style="gap:6px;">
+
+                                <span class="badge pd-badge bg-success" id="ver_BadgeEstado">
+                                    Producto Activo
+                                </span>
+
+                                <span class="badge pd-badge" id="ver_BadgeCatalogo">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <!-- INFORMACION -->
+                        <div class="col-lg-8">
+
+                            <span class="pd-eyebrow" id="ver_CAT_Nombre"></span>
+
+                            <h3 class="fw-bold pd-title mt-2 mb-1" id="ver_PRO_Nombre"></h3>
+
+                            <div class="pd-subtitle mb-3" style="font-size:13px;">
+                                ID #<span id="ver_PRO_Id"></span>
+                                <span id="ver_PRO_Marca_Wrap">· <span id="ver_PRO_Marca"></span></span>
+                            </div>
+
+                            <p class="pd-desc mb-3" id="ver_PRO_Descripcion" style="font-size:14.5px;"></p>
+
+                            <div class="d-flex flex-wrap mb-4" style="gap:8px;" id="ver_CodigosWrap">
+                                <span class="pd-chip"><i class="fas fa-barcode mr-1"></i>Interno: <strong id="ver_PRO_CodigoInterno"></strong></span>
+                                <span class="pd-chip"><i class="fas fa-industry mr-1"></i>Fabricación: <strong id="ver_PRO_CodigoFabricacion"></strong></span>
+                            </div>
+
+                            <!-- PRECIOS -->
+                            <div class="pd-price-panel">
+                                <div class="row no-gutters text-center align-items-center">
+
+                                    <div class="col-4">
+                                        <span class="pd-label">Compra</span>
+                                        <div class="pd-value text-danger">S/ <span id="ver_PRO_PrecioCompra"></span></div>
                                     </div>
 
-                                    <div class="mt-3">
+                                    <div class="col-auto pd-divider" style="height:36px;"></div>
 
-                                        <span class="badge bg-success px-3 py-2">
-                                            Producto Activo
-                                        </span>
-
+                                    <div class="col-4">
+                                        <span class="pd-label">Venta</span>
+                                        <div class="pd-value text-success">S/ <span id="ver_PRO_PrecioVenta"></span></div>
                                     </div>
 
-                                </div>
+                                    <div class="col-auto pd-divider" style="height:36px;"></div>
 
-                                <!-- INFORMACION -->
-                                <div class="col-lg-8">
-
-                                    <!-- ID -->
-                                    <div class="mb-4">
-
-                                        <small class="text-muted d-block">
-                                            ID PRODUCTO
-                                        </small>
-
-                                        <h4 class="fw-bold text-primary mb-0" id="ver_PRO_Id">
-                                        </h4>
-
-                                    </div>
-
-                                    <!-- CATEGORIA -->
-                                    <div class="mb-3">
-
-                                        <small class="text-muted d-block">
-                                            Categoría
-                                        </small>
-
-                                        <div class="fw-semibold fs-6" id="ver_CAT_Nombre">
-                                        </div>
-
-                                    </div>
-
-                                    <!-- NOMBRE -->
-                                    <div class="mb-3">
-
-                                        <small class="text-muted d-block">
-                                            Nombre Producto
-                                        </small>
-
-                                        <div class="fw-bold fs-4 text-dark" id="ver_PRO_Nombre">
-                                        </div>
-
-                                    </div>
-
-                                    <!-- DESCRIPCION -->
-                                    <div class="mb-4">
-
-                                        <small class="text-muted d-block">
-                                            Descripción
-                                        </small>
-
-                                        <div class="text-secondary" id="ver_PRO_Descripcion">
-                                        </div>
-
-                                    </div>
-
-                                    <!-- MARCA -->
-                                    <div class="mb-4">
-
-                                        <small class="text-muted d-block">
-                                            Marca
-                                        </small>
-
-                                        <div class="fw-semibold" id="ver_PRO_Marca">
-                                        </div>
-
-                                    </div>
-
-                                    <!-- CODIGOS -->
-                                    <div class="row mb-4">
-
-                                        <div class="col-md-6">
-                                            <small class="text-muted d-block">
-                                                Código Interno
-                                            </small>
-                                            <div class="fw-semibold" id="ver_PRO_CodigoInterno">
-                                            </div>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <small class="text-muted d-block">
-                                                Código de Fabricación
-                                            </small>
-                                            <div class="fw-semibold" id="ver_PRO_CodigoFabricacion">
-                                            </div>
-                                        </div>
-
-                                    </div>
-
-                                    <!-- PRECIOS -->
-                                    <div class="row">
-
-                                        <!-- PRECIO COMPRA -->
-                                        <div class="col-md-6">
-
-                                            <div class="price-card bg-white border rounded-4 p-3 shadow-sm">
-
-                                                <small class="text-muted d-block">
-                                                    Precio Compra
-                                                </small>
-
-                                                <h4 class="mb-0 text-danger fw-bold">
-                                                    S/
-                                                    <span id="ver_PRO_PrecioCompra"></span>
-                                                </h4>
-
-                                            </div>
-
-                                        </div>
-
-                                        <!-- PRECIO VENTA -->
-                                        <div class="col-md-6">
-
-                                            <div class="price-card bg-white border rounded-4 p-3 shadow-sm">
-
-                                                <small class="text-muted d-block">
-                                                    Precio Venta
-                                                </small>
-
-                                                <h4 class="mb-0 text-success fw-bold">
-                                                    S/
-                                                    <span id="ver_PRO_PrecioVenta"></span>
-                                                </h4>
-
-                                            </div>
-
-                                        </div>
-
+                                    <div class="col-3">
+                                        <span class="pd-label">Margen</span>
+                                        <div class="pd-value text-primary"><span id="ver_Margen"></span>%</div>
                                     </div>
 
                                 </div>
-
                             </div>
 
                         </div>
@@ -384,7 +530,7 @@
                 </div>
 
                 <!-- FOOTER -->
-                <div class="modal-footer bg-white border-0">
+                <div class="modal-footer border-0">
 
                     <button type="button" class="btn btn-light border px-4" data-dismiss="modal">
 
@@ -396,6 +542,24 @@
                 </div>
 
             </div>
+        </div>
+    </div>
+
+    {{-- Zoom de imagen: overlay propio (no modal de Bootstrap) para poder
+         abrirlo encima de "Ver Detalle" sin pelear con el stacking de modales. --}}
+    <div id="lightboxImagenProducto">
+        <button type="button" id="lightboxCerrar"><i class="fas fa-times"></i></button>
+        <button type="button" id="lightboxPrev" class="lightbox-btn" style="left:20px;"><i class="fas fa-chevron-left"></i></button>
+        <button type="button" id="lightboxNext" class="lightbox-btn" style="right:20px;"><i class="fas fa-chevron-right"></i></button>
+        <div style="overflow:hidden; max-height:84vh; margin-top:5vh;">
+            <img id="lightboxImg" src="">
+        </div>
+        <div id="lightboxContador" class="text-white mt-2" style="font-size:13px;"></div>
+        <div id="lightboxZoomControls">
+            <button type="button" id="lightboxZoomOut" class="lightbox-btn" title="Alejar"><i class="fas fa-search-minus"></i></button>
+            <span id="lightboxZoomPct">100%</span>
+            <button type="button" id="lightboxZoomIn" class="lightbox-btn" title="Acercar"><i class="fas fa-search-plus"></i></button>
+            <button type="button" id="lightboxZoomReset" class="lightbox-btn" title="Restablecer"><i class="fas fa-compress"></i></button>
         </div>
     </div>
 
@@ -614,6 +778,7 @@
                         $('#PRO_CodigoInterno').val(result.data.PRO_CodigoInterno);
                         $('#PRO_CodigoFabricacion').val(result.data.PRO_CodigoFabricacion);
                         $('#PRO_StockMinimo').val(result.data.PRO_StockMinimo);
+                        $('#PRO_MostrarCatalogo').prop('checked', !!Number(result.data.PRO_MostrarCatalogo));
                         $('#CAT_Id').val(result.data.CAT_Id);
                         $('#CAT_Id').change();
 
@@ -622,6 +787,11 @@
                         $('#_method').val('PUT').show();
                         $("#productosave").hide();
                         $("#updateBtn").show();
+
+                        // Galería adicional: solo tiene sentido con el producto ya
+                        // guardado (necesita PRO_Id para subir/borrar fotos).
+                        $('#galeriaProductoWrap').show();
+                        renderGaleriaProducto(result.galeria || []);
                     })
             });
 
@@ -639,10 +809,264 @@
                         $('#ver_PRO_Marca').text(data.data.PRO_Marca);
                         $('#ver_PRO_CodigoInterno').text(data.data.PRO_CodigoInterno || '-');
                         $('#ver_PRO_CodigoFabricacion').text(data.data.PRO_CodigoFabricacion || '-');
-                        $('#ver_PRO_PrecioCompra').text(data.data.PRO_PrecioCompra);
-                        $('#ver_PRO_PrecioVenta').text(data.data.PRO_PrecioVenta);
+                        $('#ver_PRO_PrecioCompra').text(Number(data.data.PRO_PrecioCompra).toFixed(2));
+                        $('#ver_PRO_PrecioVenta').text(Number(data.data.PRO_PrecioVenta).toFixed(2));
                         $('#ver_Imagen').attr('src', data.imagen);
+                        $('#ver_PRO_Marca_Wrap').toggle(!!data.data.PRO_Marca);
+
+                        var compra = Number(data.data.PRO_PrecioCompra) || 0;
+                        var venta = Number(data.data.PRO_PrecioVenta) || 0;
+                        var margen = compra > 0 ? (((venta - compra) / compra) * 100) : 0;
+                        $('#ver_Margen').text(margen.toFixed(0));
+
+                        var activo = Number(data.data.PRO_Status) === 1;
+                        $('#ver_BadgeEstado')
+                            .attr('class', 'badge pd-badge ' + (activo ? 'bg-success' : 'bg-secondary'))
+                            .text(activo ? 'Producto Activo' : 'Producto Inactivo');
+
+                        var enCatalogo = data.data.PRO_MostrarCatalogo === undefined || Number(data.data.PRO_MostrarCatalogo) === 1;
+                        $('#ver_BadgeCatalogo')
+                            .attr('class', 'badge pd-badge ' + (enCatalogo ? 'bg-info' : 'bg-light text-muted border'))
+                            .html('<i class="fas ' + (enCatalogo ? 'fa-eye' : 'fa-eye-slash') + ' mr-1"></i>' + (enCatalogo ? 'En catálogo web' : 'Oculto del catálogo'));
+
+                        // Imágenes disponibles para el zoom: principal + galería (usando el
+                        // original de cada una, no la miniatura, para ver el detalle real).
+                        lightboxImagenes = [data.imagen];
+                        var galeriaHtml = '';
+                        (data.galeria || []).forEach(function(img, idx) {
+                            lightboxImagenes.push(img.PROI_url);
+                            galeriaHtml += '<img src="' + img.PROI_Thumb + '" class="rounded border galeria-thumb" data-lightbox-index="' + (idx + 1) + '">';
+                        });
+                        $('#ver_Galeria').html(galeriaHtml);
                     })
+            });
+
+            // ================= ZOOM DE IMAGEN (lightbox) =================
+
+            var lightboxImagenes = [];
+            var lightboxIndex = 0;
+            var lightboxZoom = 1;
+            var lightboxPanX = 0;
+            var lightboxPanY = 0;
+            var lightboxDragging = false;
+            var lightboxDragStart = { x: 0, y: 0 };
+            var ZOOM_MIN = 1;
+            var ZOOM_MAX = 4;
+            var ZOOM_STEP = 0.5;
+
+            function aplicarZoomLightbox() {
+                $('#lightboxImg').css('transform', 'translate(' + lightboxPanX + 'px,' + lightboxPanY + 'px) scale(' + lightboxZoom + ')');
+                $('#lightboxImg').css('cursor', lightboxZoom > 1 ? 'grab' : 'zoom-in');
+                $('#lightboxZoomPct').text(Math.round(lightboxZoom * 100) + '%');
+                $('#lightboxZoomOut').prop('disabled', lightboxZoom <= ZOOM_MIN);
+                $('#lightboxZoomIn').prop('disabled', lightboxZoom >= ZOOM_MAX);
+            }
+
+            function resetZoomLightbox() {
+                lightboxZoom = 1;
+                lightboxPanX = 0;
+                lightboxPanY = 0;
+                aplicarZoomLightbox();
+            }
+
+            function cambiarZoomLightbox(delta) {
+                lightboxZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, lightboxZoom + delta));
+                if (lightboxZoom === ZOOM_MIN) {
+                    lightboxPanX = 0;
+                    lightboxPanY = 0;
+                }
+                aplicarZoomLightbox();
+            }
+
+            function renderLightbox() {
+                $('#lightboxImg').attr('src', lightboxImagenes[lightboxIndex]);
+                $('#lightboxContador').text((lightboxIndex + 1) + ' / ' + lightboxImagenes.length);
+                $('#lightboxPrev, #lightboxNext').toggle(lightboxImagenes.length > 1);
+                resetZoomLightbox();
+            }
+
+            function abrirLightbox(index) {
+                if (!lightboxImagenes.length) {
+                    return;
+                }
+                lightboxIndex = index;
+                renderLightbox();
+                $('#lightboxImagenProducto').fadeIn(150);
+            }
+
+            $('body').on('click', '#ver_ImagenPrincipalWrap', function() {
+                abrirLightbox(0);
+            });
+
+            $('body').on('click', '.galeria-thumb', function() {
+                abrirLightbox($(this).data('lightbox-index'));
+            });
+
+            $('#lightboxCerrar, #lightboxImagenProducto').on('click', function(e) {
+                if (e.target.id === 'lightboxImagenProducto' || e.target.id === 'lightboxCerrar' || $(e.target).closest('#lightboxCerrar').length) {
+                    $('#lightboxImagenProducto').fadeOut(150);
+                }
+            });
+
+            $('#lightboxPrev').on('click', function(e) {
+                e.stopPropagation();
+                lightboxIndex = (lightboxIndex - 1 + lightboxImagenes.length) % lightboxImagenes.length;
+                renderLightbox();
+            });
+
+            $('#lightboxNext').on('click', function(e) {
+                e.stopPropagation();
+                lightboxIndex = (lightboxIndex + 1) % lightboxImagenes.length;
+                renderLightbox();
+            });
+
+            $(document).on('keydown', function(e) {
+                if (!$('#lightboxImagenProducto').is(':visible')) {
+                    return;
+                }
+                if (e.key === 'Escape') $('#lightboxImagenProducto').fadeOut(150);
+                if (e.key === 'ArrowLeft') $('#lightboxPrev').click();
+                if (e.key === 'ArrowRight') $('#lightboxNext').click();
+                if (e.key === '+' || e.key === '=') cambiarZoomLightbox(ZOOM_STEP);
+                if (e.key === '-' || e.key === '_') cambiarZoomLightbox(-ZOOM_STEP);
+            });
+
+            // Botones +/- y restablecer.
+            $('#lightboxZoomIn').on('click', function(e) {
+                e.stopPropagation();
+                cambiarZoomLightbox(ZOOM_STEP);
+            });
+
+            $('#lightboxZoomOut').on('click', function(e) {
+                e.stopPropagation();
+                cambiarZoomLightbox(-ZOOM_STEP);
+            });
+
+            $('#lightboxZoomReset').on('click', function(e) {
+                e.stopPropagation();
+                resetZoomLightbox();
+            });
+
+            // Rueda del mouse sobre la imagen: acercar/alejar.
+            $('#lightboxImg').on('wheel', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                cambiarZoomLightbox(e.originalEvent.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP);
+            });
+
+            // Doble click: alterna entre 100% y 200%.
+            $('#lightboxImg').on('dblclick', function(e) {
+                e.stopPropagation();
+                if (lightboxZoom > 1) {
+                    resetZoomLightbox();
+                } else {
+                    lightboxZoom = 2;
+                    aplicarZoomLightbox();
+                }
+            });
+
+            // Arrastrar para desplazar la imagen cuando está ampliada.
+            $('#lightboxImg').on('mousedown', function(e) {
+                if (lightboxZoom <= 1) {
+                    return;
+                }
+                e.preventDefault();
+                lightboxDragging = true;
+                lightboxDragStart = { x: e.clientX - lightboxPanX, y: e.clientY - lightboxPanY };
+                $(this).css('cursor', 'grabbing');
+            });
+
+            $(document).on('mousemove', function(e) {
+                if (!lightboxDragging) {
+                    return;
+                }
+                lightboxPanX = e.clientX - lightboxDragStart.x;
+                lightboxPanY = e.clientY - lightboxDragStart.y;
+                $('#lightboxImg').css('transform', 'translate(' + lightboxPanX + 'px,' + lightboxPanY + 'px) scale(' + lightboxZoom + ')');
+            });
+
+            $(document).on('mouseup', function() {
+                if (lightboxDragging) {
+                    lightboxDragging = false;
+                    $('#lightboxImg').css('cursor', lightboxZoom > 1 ? 'grab' : 'zoom-in');
+                }
+            });
+
+            // ================= GALERÍA ADICIONAL DE PRODUCTO (hasta 4 fotos, 5 en total) =================
+
+            function renderGaleriaProducto(items) {
+                var html = '';
+                items.forEach(function(img) {
+                    html += '<div class="position-relative" data-item="' + img.PROI_Item + '">' +
+                        '<img src="' + img.PROI_Thumb + '" class="rounded border" style="width:70px;height:70px;object-fit:cover;">' +
+                        '<a href="javascript:void(0)" class="eliminarImagenGaleriaProducto" data-item="' + img.PROI_Item + '" ' +
+                        'style="position:absolute;top:-6px;right:-6px;background:#dc3545;color:#fff;border-radius:50%;width:20px;height:20px;line-height:18px;text-align:center;font-size:11px;">' +
+                        '<i class="fas fa-times"></i></a>' +
+                        '</div>';
+                });
+                $('#galeriaProductoGrid').html(html);
+                $('#idFileGaleriaProducto').text(items.length >= 4 ? 'Máximo alcanzado (4/4)' : 'Agregar foto a la galería');
+                $('#fileGaleriaProducto').prop('disabled', items.length >= 4);
+            }
+
+            $('#fileGaleriaProducto').on('change', function() {
+                var file = this.files[0];
+                var productoId = $('#producto_id_edit').val();
+                if (!file || !productoId) {
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: '{{ tenant_url('tenant.inventario.producto.galeria.store', ['producto' => ':producto']) }}'
+                        .replace(':producto', productoId),
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(result) {
+                        $('#fileGaleriaProducto').val('');
+                        renderGaleriaProducto(result.msg.data || []);
+                        Toast.fire({
+                            type: 'success',
+                            title: result.msg.mensaje
+                        });
+                    },
+                    error: function(xhr) {
+                        $('#fileGaleriaProducto').val('');
+                        var msg = xhr.responseJSON && xhr.responseJSON.msg ? xhr.responseJSON.msg : 'No se pudo subir la foto.';
+                        Toast.fire({
+                            type: 'error',
+                            title: msg
+                        });
+                    }
+                });
+            });
+
+            $('body').on('click', '.eliminarImagenGaleriaProducto', function() {
+                var item = $(this).data('item');
+                var productoId = $('#producto_id_edit').val();
+
+                $.ajax({
+                    type: 'DELETE',
+                    url: '{{ tenant_url('tenant.inventario.producto.galeria.destroy', ['producto' => ':producto', 'item' => ':item']) }}'
+                        .replace(':producto', productoId).replace(':item', item),
+                    success: function(result) {
+                        renderGaleriaProducto(result.data || []);
+                        Toast.fire({
+                            type: 'success',
+                            title: result.message
+                        });
+                    },
+                    error: function() {
+                        Toast.fire({
+                            type: 'error',
+                            title: 'No se pudo eliminar la foto.'
+                        });
+                    }
+                });
             });
 
             $('#updateBtn').click(function(e) {
@@ -700,6 +1124,10 @@
                 $("#producto_id_edit").val('');
                 $("#productosave").show(); // Mostrar botón Guardar
                 $("#updateBtn").hide();
+                $('#galeriaProductoWrap').hide();
+                $('#galeriaProductoGrid').empty();
+                $('#fileGaleriaProducto').val('').prop('disabled', false);
+                $('#PRO_MostrarCatalogo').prop('checked', true);
             }
 
             $('body').on('click', '.deleteProducto', function() {

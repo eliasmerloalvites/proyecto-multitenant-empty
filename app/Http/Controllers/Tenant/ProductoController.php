@@ -4,10 +4,14 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant\Producto;
+use App\Models\TenantTallerMotos\ProductoImagen;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Laravel\Facades\Image;
 
 class ProductoController extends Controller
 {
@@ -20,6 +24,39 @@ class ProductoController extends Controller
     private function tenantTieneCodigosProducto(): bool
     {
         return tenant('tipo_negocio') === 'tallermoto';
+    }
+
+    /**
+     * La galeria adicional (tabla producto_imagen) solo existe en tallermoto
+     * — mismo criterio que tenantTieneCodigosProducto(), para no tocar
+     * generico desde este controlador compartido.
+     */
+    private function tenantTieneGaleriaProducto(): bool
+    {
+        return tenant('tipo_negocio') === 'tallermoto';
+    }
+
+    /**
+     * PRO_MostrarCatalogo (visibilidad en el catalogo publico de la web)
+     * tambien es exclusivo de tallermoto — mismo criterio que los otros
+     * dos flags de arriba.
+     */
+    private function tenantTieneCatalogoWeb(): bool
+    {
+        return tenant('tipo_negocio') === 'tallermoto';
+    }
+
+    private function formatBytes($bytes, $precision = 2)
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+
+        $bytes /= (1 << (10 * $pow));
+
+        return round($bytes, $precision) . ' ' . $units[$pow];
     }
 
     /**
@@ -96,6 +133,9 @@ class ProductoController extends Controller
                 if ($this->tenantTieneCodigosProducto()) {
                     $producto->PRO_CodigoInterno = $request->PRO_CodigoInterno ?: null;
                     $producto->PRO_CodigoFabricacion = $request->PRO_CodigoFabricacion ?: null;
+                }
+                if ($this->tenantTieneCatalogoWeb()) {
+                    $producto->PRO_MostrarCatalogo = $request->boolean('PRO_MostrarCatalogo');
                 }
                 $producto->PRO_Status = $request->PRO_Status ?? 1;
                 $producto->CAT_Id = $request->CAT_Id;
@@ -402,7 +442,12 @@ class ProductoController extends Controller
             $ubicacionNegocio = tenant('tipo_negocio') ;
             $imagen = '/storage/' .$ubicacionNegocio .'/' .$id .'/archivos/producto/'.$producto->PRO_Imagen.'?' . uniqid();
         }
-        return response()->json(['data' => $producto,'imagen'=> $imagen]);
+
+        $galeria = $this->tenantTieneGaleriaProducto()
+            ? ProductoImagen::where('PRO_Id', $producto->PRO_Id)->orderBy('PROI_Item')->get()
+            : [];
+
+        return response()->json(['data' => $producto,'imagen'=> $imagen, 'galeria' => $galeria]);
     }
     
     public function controlinventario(Request $request)
@@ -739,7 +784,118 @@ class ProductoController extends Controller
     public function edit(string $id)
     {
         $producto = Producto::find($id);
-        return response()->json(['data' => $producto]);
+
+        $galeria = $this->tenantTieneGaleriaProducto()
+            ? ProductoImagen::where('PRO_Id', $id)->orderBy('PROI_Item')->get()
+            : [];
+
+        return response()->json(['data' => $producto, 'galeria' => $galeria]);
+    }
+
+    /**
+     * Sube una foto adicional a la galeria del producto (hasta 4 — sumada a
+     * PRO_Imagen, la principal, da 5 en total). Mismo tratamiento que las
+     * fotos de mantenimiento (Intervention Image -> webp original+thumb),
+     * sin paso de recorte. Solo tallermoto.
+     */
+    public function subirImagenGaleria(Request $request, string $id)
+    {
+        abort_unless($this->tenantTieneGaleriaProducto(), 404);
+
+        $request->validate(['file' => 'required|image|max:5120']);
+
+        $totalImagenes = ProductoImagen::where('PRO_Id', $id)->count();
+        if ($totalImagenes >= 4) {
+            return response()->json([
+                'status' => 0,
+                'msg' => 'Este producto ya tiene el máximo de 5 fotos (1 principal + 4 de galería).',
+            ], 422);
+        }
+
+        $file = $request->file('file');
+
+        $limiteStorage = (float) tenant('storage_limit_mb');
+        if ($limiteStorage > 0 && tenant_storage_usado_mb() + ($file->getSize() / 1024 / 1024) > $limiteStorage) {
+            return response()->json([
+                'status' => 0,
+                'msg' => 'Tu plan alcanzó el límite de almacenamiento (' . $limiteStorage . ' MB).',
+            ], 422);
+        }
+
+        $ultimoItem = ProductoImagen::where('PRO_Id', $id)->max('PROI_Item');
+        $item = $ultimoItem ? $ultimoItem + 1 : 1;
+
+        $tenantId = tenant('id') ?? 'central';
+        $tipoNegocio = tenant('tipo_negocio') ?? 'central';
+        $nombreArchivo = Str::uuid() . '.webp';
+        $basePath = $tipoNegocio . '/' . $tenantId . '/producto/' . $id;
+        $pathOriginal = $basePath . '/original/';
+        $pathThumb = $basePath . '/thumb/';
+
+        $imageOriginal = Image::read($file);
+        $imageOriginal->scaleDown(width: 1200);
+        Storage::disk('public')->put($pathOriginal . $nombreArchivo, (string) $imageOriginal->toWebp(70));
+
+        $pesoFinal = Storage::disk('public')->size($pathOriginal . $nombreArchivo);
+        $tamañoFormateado = $this->formatBytes($pesoFinal);
+
+        $imageThumb = Image::read($file);
+        $imageThumb->scaleDown(width: 300);
+        Storage::disk('public')->put($pathThumb . $nombreArchivo, (string) $imageThumb->toWebp(60));
+
+        $productoImagen = new ProductoImagen();
+        $productoImagen->PRO_Id = $id;
+        $productoImagen->PROI_Item = $item;
+        $productoImagen->PROI_url = Storage::url($pathOriginal . $nombreArchivo);
+        $productoImagen->PROI_Thumb = Storage::url($pathThumb . $nombreArchivo);
+        $productoImagen->PROI_Nombre = $nombreArchivo;
+        $productoImagen->PROI_Peso = $tamañoFormateado;
+        $productoImagen->save();
+
+        $datos = ProductoImagen::where('PRO_Id', $id)->orderBy('PROI_Item')->get();
+
+        return response()->json([
+            'status' => 1,
+            'msg' => [
+                'data' => $datos,
+                'mensaje' => 'Foto agregada correctamente.',
+            ],
+        ]);
+    }
+
+    /**
+     * Borra una foto de la galeria adicional del producto (nunca la
+     * principal, PRO_Imagen — esa se sigue reemplazando desde update()).
+     */
+    public function eliminarImagenGaleria(string $id, string $item)
+    {
+        abort_unless($this->tenantTieneGaleriaProducto(), 404);
+
+        try {
+            $imagenDelete = ProductoImagen::where('PRO_Id', $id)->where('PROI_Item', $item)->first();
+
+            if (!$imagenDelete) {
+                return response()->json(['status' => 0, 'msg' => ['mensaje' => 'Imagen no encontrada.']]);
+            }
+
+            $rutaOriginal = str_replace('/storage/', '', $imagenDelete->PROI_url);
+            if (Storage::disk('public')->exists($rutaOriginal)) {
+                Storage::disk('public')->delete($rutaOriginal);
+            }
+
+            $rutaThumb = str_replace('/storage/', '', $imagenDelete->PROI_Thumb);
+            if (Storage::disk('public')->exists($rutaThumb)) {
+                Storage::disk('public')->delete($rutaThumb);
+            }
+
+            ProductoImagen::where('PRO_Id', $id)->where('PROI_Item', $item)->delete();
+
+            $datos = ProductoImagen::where('PRO_Id', $id)->orderBy('PROI_Item')->get();
+
+            return response()->json(['success' => true, 'message' => 'Eliminado correctamente', 'data' => $datos]);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     /**
@@ -760,6 +916,9 @@ class ProductoController extends Controller
             if ($this->tenantTieneCodigosProducto()) {
                 $producto->PRO_CodigoInterno = $request->PRO_CodigoInterno ?: null;
                 $producto->PRO_CodigoFabricacion = $request->PRO_CodigoFabricacion ?: null;
+            }
+            if ($this->tenantTieneCatalogoWeb()) {
+                $producto->PRO_MostrarCatalogo = $request->boolean('PRO_MostrarCatalogo');
             }
             $producto->PRO_Status = $request->PRO_Status ?? 1;
             $producto->CAT_Id = $request->CAT_Id;

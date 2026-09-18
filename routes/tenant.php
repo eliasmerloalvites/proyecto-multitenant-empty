@@ -544,6 +544,9 @@ Route::middleware([
             Route::get('/tenant/inventario/producto/importar/plantilla', [ProductoController::class, 'plantillaImportacion'])->name('tenant.inventario.producto.importar.plantilla');
             Route::post('/tenant/inventario/producto/importar', [ProductoController::class, 'importar'])->name('tenant.inventario.producto.importar');
             Route::put('/tenant/inventario/producto/{producto}/activar', [ProductoController::class, 'activar'])->name('tenant.inventario.producto.activar');
+
+            Route::post('/tenant/inventario/producto/{producto}/galeria', [ProductoController::class, 'subirImagenGaleria'])->name('tenant.inventario.producto.galeria.store');
+            Route::delete('/tenant/inventario/producto/galeria/{producto}/{item}', [ProductoController::class, 'eliminarImagenGaleria'])->name('tenant.inventario.producto.galeria.destroy');
         });
 
         Route::middleware(['tenant.module:inventario'])->group(function () {
