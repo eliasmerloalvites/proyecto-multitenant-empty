@@ -20,47 +20,47 @@
             padding: 24px;
         }
 
-        .product-image-container{
-            background: white;
-            border-radius: 18px;
-            padding: 15px;
-            border: 1px solid #e9ecef;
-        }
-
-        .product-image{
-            width: 100%;
-            max-width: 240px;
-            height: 240px;
-            object-fit: cover;
-            background: #f8f9fa;
-        }
-
-        .price-card{
-            transition: .2s ease;
-        }
-
-        .price-card:hover{
-            transform: translateY(-2px);
-        }
-
         small.text-muted{
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: .5px;
         }
 
-        .badge{
-            border-radius: 10px;
-            font-size: 12px;
+        /* ===== Modal "Ver Detalle" — rediseño ===== */
+
+        #modalVerDetalle .modal-header{
+            background: linear-gradient(135deg, #1E293B, #334155);
+        }
+
+        #modalVerDetalle .modal-body{
+            background: #F8FAFC;
         }
 
         .product-image-container{
             position: relative;
+            background: #fff;
+            border: 1px solid #E2E8F0;
+            border-radius: 20px;
+            padding: 14px;
             cursor: zoom-in;
+            transition: box-shadow .2s ease;
+        }
+
+        .product-image-container:hover{
+            box-shadow: 0 10px 28px rgba(15,23,42,.10);
+        }
+
+        .product-image{
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 14px;
+            background: #F1F5F9;
+            transition: filter .15s ease;
         }
 
         .product-image-container:hover .product-image{
-            filter: brightness(0.85);
+            filter: brightness(0.9);
         }
 
         .product-image-container .zoom-hint{
@@ -68,10 +68,11 @@
             bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,.6);
+            background: rgba(15,23,42,.75);
             color: #fff;
             font-size: 11px;
-            padding: 4px 10px;
+            font-weight: 600;
+            padding: 5px 12px;
             border-radius: 20px;
             opacity: 0;
             transition: opacity .15s ease;
@@ -83,9 +84,10 @@
         }
 
         .galeria-thumb{
-            width: 56px;
-            height: 56px;
+            width: 52px;
+            height: 52px;
             object-fit: cover;
+            border-radius: 10px;
             cursor: zoom-in;
             transition: transform .15s ease, border-color .15s ease;
         }
@@ -93,6 +95,67 @@
         .galeria-thumb:hover{
             transform: scale(1.08);
             border-color: #6366F1 !important;
+        }
+
+        .pd-badge{
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .2px;
+        }
+
+        .pd-eyebrow{
+            display: inline-block;
+            background: #EEF2FF;
+            color: #4338CA;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .6px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .pd-chip{
+            background: #fff;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 7px 14px;
+            font-size: 12.5px;
+            color: #64748B;
+        }
+
+        .pd-chip strong{
+            color: #0F172A;
+            font-weight: 700;
+        }
+
+        .pd-price-panel{
+            background: #fff;
+            border: 1px solid #E2E8F0;
+            border-radius: 18px;
+            padding: 20px 10px;
+        }
+
+        .pd-price-panel .pd-label{
+            color: #94A3B8;
+            text-transform: uppercase;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: .6px;
+            display: block;
+        }
+
+        .pd-price-panel .pd-value{
+            font-size: 24px;
+            font-weight: 800;
+            margin-top: 4px;
+        }
+
+        .pd-price-panel .pd-divider{
+            width: 1px;
+            background: #E2E8F0;
         }
 
         #lightboxImagenProducto{
@@ -331,166 +394,78 @@
                 </div>
 
                 <!-- BODY -->
-                <div class="modal-body bg-light">
+                <div class="modal-body p-4">
 
-                    <div class="card border-0 shadow-sm rounded-4">
+                    <div class="row g-4">
 
-                        <div class="card-body">
+                        <!-- IMAGEN -->
+                        <div class="col-lg-4">
 
-                            <div class="row g-4">
+                            <div class="product-image-container" id="ver_ImagenPrincipalWrap">
 
-                                <!-- IMAGEN -->
-                                <div class="col-lg-4 text-center">
+                                <img id="ver_Imagen" class="product-image">
+                                <span class="zoom-hint"><i class="fas fa-search-plus mr-1"></i>Click para ampliar</span>
 
-                                    <div class="product-image-container" id="ver_ImagenPrincipalWrap">
+                            </div>
 
-                                        <img id="ver_Imagen" class="img-fluid rounded-4 border shadow-sm product-image">
-                                        <span class="zoom-hint"><i class="fas fa-search-plus mr-1"></i>Click para ampliar</span>
+                            <div id="ver_Galeria" class="d-flex flex-wrap justify-content-center mt-2" style="gap:6px;"></div>
 
+                            <div class="mt-3 d-flex flex-wrap justify-content-center" style="gap:6px;">
+
+                                <span class="badge pd-badge bg-success" id="ver_BadgeEstado">
+                                    Producto Activo
+                                </span>
+
+                                <span class="badge pd-badge" id="ver_BadgeCatalogo">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <!-- INFORMACION -->
+                        <div class="col-lg-8">
+
+                            <span class="pd-eyebrow" id="ver_CAT_Nombre"></span>
+
+                            <h3 class="fw-bold text-dark mt-2 mb-1" id="ver_PRO_Nombre"></h3>
+
+                            <div class="text-muted mb-3" style="font-size:13px;">
+                                ID #<span id="ver_PRO_Id"></span>
+                                <span id="ver_PRO_Marca_Wrap">· <span id="ver_PRO_Marca"></span></span>
+                            </div>
+
+                            <p class="text-secondary mb-3" id="ver_PRO_Descripcion" style="font-size:14.5px;"></p>
+
+                            <div class="d-flex flex-wrap mb-4" style="gap:8px;" id="ver_CodigosWrap">
+                                <span class="pd-chip"><i class="fas fa-barcode mr-1"></i>Interno: <strong id="ver_PRO_CodigoInterno"></strong></span>
+                                <span class="pd-chip"><i class="fas fa-industry mr-1"></i>Fabricación: <strong id="ver_PRO_CodigoFabricacion"></strong></span>
+                            </div>
+
+                            <!-- PRECIOS -->
+                            <div class="pd-price-panel">
+                                <div class="row no-gutters text-center align-items-center">
+
+                                    <div class="col-4">
+                                        <span class="pd-label">Compra</span>
+                                        <div class="pd-value text-danger">S/ <span id="ver_PRO_PrecioCompra"></span></div>
                                     </div>
 
-                                    <div id="ver_Galeria" class="d-flex flex-wrap justify-content-center mt-2" style="gap:6px;"></div>
+                                    <div class="col-auto pd-divider" style="height:36px;"></div>
 
-                                    <div class="mt-3 d-flex flex-wrap justify-content-center" style="gap:6px;">
-
-                                        <span class="badge bg-success px-3 py-2" id="ver_BadgeEstado">
-                                            Producto Activo
-                                        </span>
-
-                                        <span class="badge px-3 py-2" id="ver_BadgeCatalogo">
-                                        </span>
-
+                                    <div class="col-4">
+                                        <span class="pd-label">Venta</span>
+                                        <div class="pd-value text-success">S/ <span id="ver_PRO_PrecioVenta"></span></div>
                                     </div>
 
-                                </div>
+                                    <div class="col-auto pd-divider" style="height:36px;"></div>
 
-                                <!-- INFORMACION -->
-                                <div class="col-lg-8">
-
-                                    <!-- ID -->
-                                    <div class="mb-4">
-
-                                        <small class="text-muted d-block">
-                                            ID PRODUCTO
-                                        </small>
-
-                                        <h4 class="fw-bold text-primary mb-0" id="ver_PRO_Id">
-                                        </h4>
-
-                                    </div>
-
-                                    <!-- CATEGORIA -->
-                                    <div class="mb-3">
-
-                                        <small class="text-muted d-block">
-                                            Categoría
-                                        </small>
-
-                                        <div class="fw-semibold fs-6" id="ver_CAT_Nombre">
-                                        </div>
-
-                                    </div>
-
-                                    <!-- NOMBRE -->
-                                    <div class="mb-3">
-
-                                        <small class="text-muted d-block">
-                                            Nombre Producto
-                                        </small>
-
-                                        <div class="fw-bold fs-4 text-dark" id="ver_PRO_Nombre">
-                                        </div>
-
-                                    </div>
-
-                                    <!-- DESCRIPCION -->
-                                    <div class="mb-4">
-
-                                        <small class="text-muted d-block">
-                                            Descripción
-                                        </small>
-
-                                        <div class="text-secondary" id="ver_PRO_Descripcion">
-                                        </div>
-
-                                    </div>
-
-                                    <!-- MARCA -->
-                                    <div class="mb-4">
-
-                                        <small class="text-muted d-block">
-                                            Marca
-                                        </small>
-
-                                        <div class="fw-semibold" id="ver_PRO_Marca">
-                                        </div>
-
-                                    </div>
-
-                                    <!-- CODIGOS -->
-                                    <div class="row mb-4">
-
-                                        <div class="col-md-6">
-                                            <small class="text-muted d-block">
-                                                Código Interno
-                                            </small>
-                                            <div class="fw-semibold" id="ver_PRO_CodigoInterno">
-                                            </div>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <small class="text-muted d-block">
-                                                Código de Fabricación
-                                            </small>
-                                            <div class="fw-semibold" id="ver_PRO_CodigoFabricacion">
-                                            </div>
-                                        </div>
-
-                                    </div>
-
-                                    <!-- PRECIOS -->
-                                    <div class="row">
-
-                                        <!-- PRECIO COMPRA -->
-                                        <div class="col-md-6">
-
-                                            <div class="price-card bg-white border rounded-4 p-3 shadow-sm">
-
-                                                <small class="text-muted d-block">
-                                                    Precio Compra
-                                                </small>
-
-                                                <h4 class="mb-0 text-danger fw-bold">
-                                                    S/
-                                                    <span id="ver_PRO_PrecioCompra"></span>
-                                                </h4>
-
-                                            </div>
-
-                                        </div>
-
-                                        <!-- PRECIO VENTA -->
-                                        <div class="col-md-6">
-
-                                            <div class="price-card bg-white border rounded-4 p-3 shadow-sm">
-
-                                                <small class="text-muted d-block">
-                                                    Precio Venta
-                                                </small>
-
-                                                <h4 class="mb-0 text-success fw-bold">
-                                                    S/
-                                                    <span id="ver_PRO_PrecioVenta"></span>
-                                                </h4>
-
-                                            </div>
-
-                                        </div>
-
+                                    <div class="col-3">
+                                        <span class="pd-label">Margen</span>
+                                        <div class="pd-value text-primary"><span id="ver_Margen"></span>%</div>
                                     </div>
 
                                 </div>
-
                             </div>
 
                         </div>
@@ -771,18 +746,24 @@
                         $('#ver_PRO_Marca').text(data.data.PRO_Marca);
                         $('#ver_PRO_CodigoInterno').text(data.data.PRO_CodigoInterno || '-');
                         $('#ver_PRO_CodigoFabricacion').text(data.data.PRO_CodigoFabricacion || '-');
-                        $('#ver_PRO_PrecioCompra').text(data.data.PRO_PrecioCompra);
-                        $('#ver_PRO_PrecioVenta').text(data.data.PRO_PrecioVenta);
+                        $('#ver_PRO_PrecioCompra').text(Number(data.data.PRO_PrecioCompra).toFixed(2));
+                        $('#ver_PRO_PrecioVenta').text(Number(data.data.PRO_PrecioVenta).toFixed(2));
                         $('#ver_Imagen').attr('src', data.imagen);
+                        $('#ver_PRO_Marca_Wrap').toggle(!!data.data.PRO_Marca);
+
+                        var compra = Number(data.data.PRO_PrecioCompra) || 0;
+                        var venta = Number(data.data.PRO_PrecioVenta) || 0;
+                        var margen = compra > 0 ? (((venta - compra) / compra) * 100) : 0;
+                        $('#ver_Margen').text(margen.toFixed(0));
 
                         var activo = Number(data.data.PRO_Status) === 1;
                         $('#ver_BadgeEstado')
-                            .attr('class', 'badge px-3 py-2 ' + (activo ? 'bg-success' : 'bg-secondary'))
+                            .attr('class', 'badge pd-badge ' + (activo ? 'bg-success' : 'bg-secondary'))
                             .text(activo ? 'Producto Activo' : 'Producto Inactivo');
 
                         var enCatalogo = data.data.PRO_MostrarCatalogo === undefined || Number(data.data.PRO_MostrarCatalogo) === 1;
                         $('#ver_BadgeCatalogo')
-                            .attr('class', 'badge px-3 py-2 ' + (enCatalogo ? 'bg-info' : 'bg-light text-muted border'))
+                            .attr('class', 'badge pd-badge ' + (enCatalogo ? 'bg-info' : 'bg-light text-muted border'))
                             .html('<i class="fas ' + (enCatalogo ? 'fa-eye' : 'fa-eye-slash') + ' mr-1"></i>' + (enCatalogo ? 'En catálogo web' : 'Oculto del catálogo'));
 
                         // Imágenes disponibles para el zoom: principal + galería (usando el
