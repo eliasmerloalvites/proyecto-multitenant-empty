@@ -1,12 +1,17 @@
 <?php
 
 use App\Http\Controllers\Central\ClientController;
+use App\Http\Controllers\Central\ComisionReporteController;
 use App\Http\Controllers\Central\CulqiWebhookController;
+use App\Http\Controllers\Central\EsquemaComisionController;
 use App\Http\Controllers\Central\HomeController;
 use App\Http\Controllers\Central\PagoController;
 use App\Http\Controllers\Central\PlanController;
 use App\Http\Controllers\Central\RegistroController;
 use App\Http\Controllers\Central\AuditLogController;
+use App\Http\Controllers\Central\VendedorController;
+use App\Http\Controllers\Central\Vendedor\ClienteController as VendedorClienteController;
+use App\Http\Controllers\Central\Vendedor\ComisionController as VendedorComisionController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
@@ -87,6 +92,37 @@ Route::middleware([
     Route::put('admin/planes/{plan}', [PlanController::class, 'update'])->name('admin.planes.update');
 
     Route::get('admin/auditoria', [AuditLogController::class, 'index'])->name('admin.auditoria.index');
+
+    // --- Vendedores comerciales y comisiones ---
+    // A diferencia del resto del panel central (protegido solo por
+    // auth:central + @can visual en el sidebar), acá sí se agrega
+    // middleware can: en cada ruta: son datos financieros de otros
+    // vendedores, no basta con ocultar el enlace del menú.
+    Route::get('admin/vendedores', [VendedorController::class, 'index'])
+      ->middleware('can:admin.vendedores.index')->name('admin.vendedores.index');
+    Route::post('admin/vendedores', [VendedorController::class, 'store'])
+      ->middleware('can:admin.vendedores.create')->name('admin.vendedores.store');
+    Route::get('admin/vendedores/{vendedor}/edit', [VendedorController::class, 'edit'])
+      ->middleware('can:admin.vendedores.edit')->name('admin.vendedores.edit');
+    Route::put('admin/vendedores/{vendedor}', [VendedorController::class, 'update'])
+      ->middleware('can:admin.vendedores.edit')->name('admin.vendedores.update');
+    Route::delete('admin/vendedores/{vendedor}', [VendedorController::class, 'destroy'])
+      ->middleware('can:admin.vendedores.destroy')->name('admin.vendedores.destroy');
+    Route::post('admin/vendedores/{vendedor}/esquema', [EsquemaComisionController::class, 'store'])
+      ->middleware('can:admin.vendedores.edit')->name('admin.vendedores.esquema.store');
+
+    Route::get('admin/comisiones', [ComisionReporteController::class, 'index'])
+      ->middleware('can:admin.comisiones.index')->name('admin.comisiones.index');
+    Route::post('admin/comisiones/liquidar', [ComisionReporteController::class, 'liquidar'])
+      ->middleware('can:admin.comisiones.liquidar')->name('admin.comisiones.liquidar');
+
+    // --- Panel del vendedor (siempre acotado a "el vendedor logueado") ---
+    Route::get('mi-panel/clientes', [VendedorClienteController::class, 'index'])
+      ->middleware('can:vendedor.clientes.index')->name('vendedor.clientes.index');
+    Route::post('mi-panel/clientes', [VendedorClienteController::class, 'store'])
+      ->middleware('can:vendedor.clientes.create')->name('vendedor.clientes.store');
+    Route::get('mi-panel/comisiones', [VendedorComisionController::class, 'index'])
+      ->middleware('can:vendedor.comisiones.index')->name('vendedor.comisiones.index');
   });
 });
 Route::get('/__who', fn () => dd('CENTRAL', tenant()));

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Central;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Models\ClienteVendedor;
+use App\Models\Comision;
 use App\Models\Pago;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -108,6 +110,8 @@ class PagoController extends Controller
             'registrado_por' => Auth::guard('central')->id(),
         ]);
 
+        $this->generarComisionSiCorresponde($client, $pago);
+
         \App\Models\AuditLog::registrar(
             'pago.registrado',
             'Registró un pago de S/ ' . number_format($validated['monto'], 2) . ' de "' . $client->razon_social . '" (periodo ' . $periodo . ')',
@@ -117,6 +121,32 @@ class PagoController extends Controller
         return response()->json([
             'success' => 'Pago registrado correctamente.',
             'pago' => $pago,
+        ]);
+    }
+
+    /**
+     * Si este cliente fue referido por un vendedor (cliente_vendedor) y el
+     * período del pago cae dentro de su ventana de comisión congelada,
+     * registra la fila en el ledger `comisiones`. Un pago = a lo sumo una
+     * comisión (pago_id es unique), así que nunca se duplica ni aunque este
+     * método se llame más de una vez para el mismo pago.
+     */
+    private function generarComisionSiCorresponde(Client $client, Pago $pago): void
+    {
+        $clienteVendedor = ClienteVendedor::where('client_id', $client->id)->first();
+
+        if (! $clienteVendedor || ! $clienteVendedor->periodoDentroDeVentana($pago->periodo)) {
+            return;
+        }
+
+        Comision::create([
+            'pago_id' => $pago->id,
+            'client_id' => $client->id,
+            'vendedor_id' => $clienteVendedor->vendedor_id,
+            'periodo' => $pago->periodo,
+            'monto_pago' => $pago->monto,
+            'porcentaje_aplicado' => $clienteVendedor->porcentaje_congelado,
+            'monto_comision' => round($pago->monto * $clienteVendedor->porcentaje_congelado / 100, 2),
         ]);
     }
 

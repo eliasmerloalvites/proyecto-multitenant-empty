@@ -61,4 +61,9 @@ class User extends Authenticatable
         return $this->belongsTo(Personal::class, 'PER_Id', 'PER_Id');
     }
 
+    public function vendedor()
+    {
+        return $this->hasOne(\App\Models\Vendedor::class, 'user_id');
+    }
+
 }

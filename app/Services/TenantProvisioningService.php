@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Mail\BienvenidaTenantMail;
 use App\Models\Client;
+use App\Models\ClienteVendedor;
 use App\Models\Plan;
 use App\Models\Tenant;
+use App\Models\Vendedor;
 use App\Models\Tenant\Almacen;
 use App\Models\Tenant\Caja;
 use App\Models\Tenant\EmpresaFacturacion;
@@ -30,7 +32,10 @@ class TenantProvisioningService
     /**
      * @param  array  $data  Debe traer: tipo_negocio, plan, subdomain,
      *                       razon_social, ruc, email, password, billing_day.
-     *                       Opcional: custom_domain (si no se manda subdomain).
+     *                       Opcional: custom_domain (si no se manda subdomain),
+     *                       vendedor_id (engancha el cliente al vendedor que
+     *                       lo trajo, congelando su esquema de comisión
+     *                       vigente — ver ClienteVendedor).
      *
      * @throws \RuntimeException  Si el dominio ya existe.
      */
@@ -73,7 +78,7 @@ class TenantProvisioningService
 
             $domain = $tenant->domains()->create(['domain' => $fullDomain]);
 
-            Client::create([
+            $client = Client::create([
                 'tenant_id' => $tenant->id,
                 'razon_social' => $data['razon_social'],
                 'ruc' => $data['ruc'] ?? null,
@@ -86,6 +91,26 @@ class TenantProvisioningService
                 'domain_id' => $domain->id,
                 'status' => 'activo',
             ]);
+
+            // Engancha el cliente a quien lo refirió, congelando el % y los
+            // meses vigentes del vendedor en este instante (ver ClienteVendedor).
+            // Va dentro del mismo try: si algo falla después, el rollback de
+            // más abajo también deshace este enganche.
+            if (! empty($data['vendedor_id'])) {
+                $vendedor = Vendedor::find($data['vendedor_id']);
+                $esquema = $vendedor?->esquemaVigente();
+
+                if ($esquema) {
+                    ClienteVendedor::create([
+                        'client_id' => $client->id,
+                        'vendedor_id' => $vendedor->id,
+                        'esquema_comision_id' => $esquema->id,
+                        'porcentaje_congelado' => $esquema->porcentaje,
+                        'meses_congelado' => $esquema->meses_duracion,
+                        'referido_en' => now(),
+                    ]);
+                }
+            }
 
             $tenantId = $tenant->id;
 

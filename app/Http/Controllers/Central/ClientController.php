@@ -11,6 +11,7 @@ use App\Models\Client;
 use App\Models\Tenant;
 use App\Models\Tenant\User;
 use App\Models\Tenant\EmpresaFacturacion;
+use App\Models\Vendedor;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -131,7 +132,9 @@ class ClientController extends Controller
                 ->rawColumns(['action1', 'action2', 'action3', 'action4', 'plan', 'estado'])
                 ->make(true);
         }
-        return view('central.admin.clients.index');
+        return view('central.admin.clients.index', [
+            'vendedores' => Vendedor::with('user:id,name')->where('estado', 'activo')->get(),
+        ]);
     }
 
 
@@ -149,6 +152,10 @@ class ClientController extends Controller
             'domain_type' => 'required|in:subdomain,custom_domain',
             'subdomain' => ['nullable', 'alpha_dash'],
             'custom_domain' => ['nullable', 'string'],
+            // Para acreditar manualmente una venta cerrada offline por un
+            // vendedor comercial (engancha la comisión igual que el link
+            // público ?ref=, ver TenantProvisioningService::provision()).
+            'vendedor_id' => ['nullable', 'exists:vendedores,id'],
         ]);
 
         if ($validated['domain_type'] === 'custom_domain') {

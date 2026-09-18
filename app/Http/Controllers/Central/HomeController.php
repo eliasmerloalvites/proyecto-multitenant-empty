@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Central;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Models\ClienteVendedor;
+use App\Models\Comision;
 use App\Models\Tenant;
 use App\Models\Tenant\EmpresaFacturacion;
 use Illuminate\Http\Request;
@@ -16,6 +18,15 @@ class HomeController extends Controller
 {
     public function index()
     {
+        $usuario = Auth::guard('central')->user();
+
+        // El vendedor tiene su propio panel: no debe ver KPIs de toda la
+        // plataforma (tenants, MRR global, clientes de otros vendedores),
+        // solo lo suyo.
+        if ($usuario->hasRole('Vendedor')) {
+            return $this->dashboardVendedor($usuario);
+        }
+
         $hoy = Carbon::now('America/Lima');
 
         // ================= KPIs =================
@@ -115,6 +126,68 @@ class HomeController extends Controller
             'tenantsIndex'
         ));
     }
+    /**
+     * Dashboard acotado del vendedor: solo sus propios clientes y sus
+     * propias comisiones, nunca datos de la plataforma completa ni de
+     * otros vendedores.
+     */
+    private function dashboardVendedor($usuario)
+    {
+        $vendedor = $usuario->vendedor;
+
+        abort_if(! $vendedor, 403, 'Tu cuenta no tiene un perfil de vendedor asociado.');
+
+        $hoy = Carbon::now('America/Lima');
+
+        $totalClientes = ClienteVendedor::where('vendedor_id', $vendedor->id)->count();
+
+        $clientesActivos = DB::table('cliente_vendedor as cv')
+            ->join('clients as c', 'c.id', '=', 'cv.client_id')
+            ->where('cv.vendedor_id', $vendedor->id)
+            ->where('c.status', 'activo')
+            ->count();
+
+        $periodoActual = $hoy->format('Y-m');
+        $comisionMesActual = (float) Comision::where('vendedor_id', $vendedor->id)->where('periodo', $periodoActual)->sum('monto_comision');
+        $comisionAcumulada = (float) Comision::where('vendedor_id', $vendedor->id)->sum('monto_comision');
+
+        // Comisión ganada por mes (últimos 6 meses), mismo patrón visual que
+        // el gráfico de "Nuevos Tenants" del dashboard admin.
+        $mesesEs = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        $labelsMeses = [];
+        $serieComision = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $mesRef = $hoy->copy()->subMonthsNoOverflow($i);
+            $labelsMeses[] = $mesesEs[$mesRef->month - 1];
+            $serieComision[] = (float) Comision::where('vendedor_id', $vendedor->id)
+                ->where('periodo', $mesRef->format('Y-m'))
+                ->sum('monto_comision');
+        }
+
+        $misUltimosClientes = DB::table('cliente_vendedor as cv')
+            ->join('clients as c', 'c.id', '=', 'cv.client_id')
+            ->where('cv.vendedor_id', $vendedor->id)
+            ->orderByDesc('cv.referido_en')
+            ->limit(6)
+            ->select('c.razon_social', 'c.status', 'cv.referido_en', 'cv.porcentaje_congelado')
+            ->get();
+
+        // Últimos periodos con comisión generada, con su estado de liquidación.
+        $comisionesRecientes = Comision::reporteQuery($vendedor->id)->limit(6)->get();
+
+        return view('central.menu.home-vendedor', compact(
+            'vendedor',
+            'totalClientes',
+            'clientesActivos',
+            'comisionMesActual',
+            'comisionAcumulada',
+            'labelsMeses',
+            'serieComision',
+            'misUltimosClientes',
+            'comisionesRecientes'
+        ));
+    }
+
     public function inicio()
     {
         $tenantid = null;
