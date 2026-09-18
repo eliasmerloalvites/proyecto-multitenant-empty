@@ -62,10 +62,16 @@ class ProcesoTallerController extends Controller
         return $resultado;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $idAlmacen = $this->idAlmacenActivo();
         $hoy = Carbon::now('America/Lima')->toDateString();
+
+        $fecha = $request->query('fecha');
+        $fechaSeleccionada = ($fecha && preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha))
+            ? Carbon::createFromFormat('Y-m-d', $fecha, 'America/Lima')
+            : Carbon::createFromFormat('Y-m-d', $hoy, 'America/Lima');
+
         $vistaCompleta = $this->tieneVistaCompleta();
         $miId = Auth::id();
 
@@ -80,7 +86,7 @@ class ProcesoTallerController extends Controller
             ->where('r.ALM_Id', $idAlmacen)
             ->where('r.RES_Estado', 'ACT')
             ->where('r.RES_State', '!=', 'RECHAZADO')
-            ->whereDate('r.RES_FechaProgramada', $hoy)
+            ->whereDate('r.RES_FechaProgramada', $fechaSeleccionada->toDateString())
             ->select('r.*', 't.TUR_Descripcion', 't.TUR_Nombre')
             ->orderBy('t.TUR_Id')
             ->get();
@@ -116,7 +122,12 @@ class ProcesoTallerController extends Controller
 
         return view('tenant_tallermoto.procesos.index', [
             'tablero' => $tablero,
-            'fechaHoy' => Carbon::now('America/Lima')->translatedFormat('l d \d\e F'),
+            'fechaHoy' => $fechaSeleccionada->translatedFormat('l d \d\e F'),
+            'fechaSeleccionada' => $fechaSeleccionada->toDateString(),
+            'esHoy' => $fechaSeleccionada->toDateString() === $hoy,
+            'fechaAnterior' => $fechaSeleccionada->copy()->subDay()->toDateString(),
+            'fechaSiguiente' => $fechaSeleccionada->copy()->addDay()->toDateString(),
+            'fechaHoyIso' => $hoy,
             'vistaCompleta' => $vistaCompleta,
             'tipos' => GestionProcesoService::TIPOS,
             'mecanicos' => User::role('Mecanico')->select('id', 'name')->orderBy('name')->get(),

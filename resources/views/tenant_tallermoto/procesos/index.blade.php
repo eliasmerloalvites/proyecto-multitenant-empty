@@ -36,6 +36,28 @@
         .modo-completa { background: #ede9fe; color: #6d28d9; }
         .modo-mecanico { background: #dbeafe; color: #1d4ed8; }
 
+        .proceso-fecha-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .proceso-fecha-nav .btn { padding: 6px 11px; }
+        .proceso-fecha-nav input[type="date"] {
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            padding: 5px 8px;
+            font-size: .85rem;
+        }
+        .badge-dia-pasado {
+            background: #fef3c7;
+            color: #92400e;
+            font-size: .72rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
         .proceso-board {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -191,8 +213,24 @@
                     @else
                         <span class="modo-badge modo-mecanico"><i class="fa fa-wrench"></i> Mis trabajos de hoy</span>
                     @endif
+                    @unless ($esHoy)
+                        <span class="badge-dia-pasado"><i class="fa fa-clock-rotate-left"></i> Viendo un día anterior</span>
+                    @endunless
                 </h4>
                 <div class="fecha-hoy">{{ $fechaHoy }}</div>
+            </div>
+
+            <div class="proceso-fecha-nav">
+                <a class="btn btn-outline-secondary btn-sm" href="{{ tenant_url('tenant.procesos.index', ['fecha' => $fechaAnterior]) }}" title="Día anterior">
+                    <i class="fa fa-chevron-left"></i>
+                </a>
+                <input type="date" id="procesoSelectorFecha" value="{{ $fechaSeleccionada }}">
+                @unless ($esHoy)
+                    <a class="btn btn-primary btn-sm" href="{{ tenant_url('tenant.procesos.index') }}">Hoy</a>
+                @endunless
+                <a class="btn btn-outline-secondary btn-sm" href="{{ tenant_url('tenant.procesos.index', ['fecha' => $fechaSiguiente]) }}" title="Día siguiente">
+                    <i class="fa fa-chevron-right"></i>
+                </a>
             </div>
         </div>
 
@@ -317,7 +355,7 @@
                     @empty
                         <div class="sin-reserva-proc">
                             <i class="fa fa-calendar-check mb-1"></i><br>
-                            {{ $vistaCompleta ? 'Sin reservas para hoy' : 'No tienes trabajos asignados aquí' }}
+                            {{ $vistaCompleta ? ('Sin reservas para ' . ($esHoy ? 'hoy' : 'este día')) : 'No tienes trabajos asignados aquí' }}
                         </div>
                     @endforelse
                 </div>
@@ -326,7 +364,7 @@
                     @if ($vistaCompleta)
                         No hay bahías activas configuradas en esta sede.
                     @else
-                        No tienes trabajos asignados para hoy todavía.
+                        No tienes trabajos asignados para {{ $esHoy ? 'hoy' : 'este día' }} todavía.
                     @endif
                 </div>
             @endforelse
@@ -389,6 +427,13 @@
             showConfirmButton: false,
             timer: 2200,
             timerProgressBar: true
+        });
+
+        $('#procesoSelectorFecha').on('change', function () {
+            let fecha = $(this).val();
+            if (fecha) {
+                window.location.href = '{{ tenant_url("tenant.procesos.index") }}?fecha=' + fecha;
+            }
         });
 
         function cargarProductos(resId) {
