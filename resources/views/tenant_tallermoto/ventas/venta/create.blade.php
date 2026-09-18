@@ -2883,13 +2883,30 @@
             renderCart();
         }
 
+        // Si lo dejo igual al nombre real (o lo borra), no hace falta
+        // guardar ninguna personalizacion.
+        function calcularNombrePersonalizado(value, nombreReal) {
+            let nuevoValor = (value || '').trim();
+            return (nuevoValor === '' || nuevoValor === nombreReal) ? '' : nuevoValor;
+        }
+
+        // Guarda el nombre en el carrito en cada tecla (no solo al perder
+        // el foco): si el usuario escribe y le da "Cobrar" directo sin
+        // hacer click en otro lado antes, el cambio de todas formas ya
+        // quedo guardado (onchange solo dispara al perder foco, y eso
+        // nunca llega a pasar en ese flujo).
+        function updateNombreItemSilencioso(id, value, nombreReal) {
+            if (window.REEMITIR_VENTA_ID) return;
+            let item = cart.find(x => x.PRO_Id == id);
+            if (item) {
+                item.nombrePersonalizado = calcularNombrePersonalizado(value, nombreReal);
+            }
+        }
+
         function updateNombreItem(id, value, nombreReal) {
             if (window.REEMITIR_VENTA_ID) return;
             let item = cart.find(x => x.PRO_Id == id);
-            let nuevoValor = (value || '').trim();
-            // Si lo dejo igual al nombre real (o lo borra), no hace falta
-            // guardar ninguna personalizacion.
-            item.nombrePersonalizado = (nuevoValor === '' || nuevoValor === nombreReal) ? '' : nuevoValor;
+            item.nombrePersonalizado = calcularNombrePersonalizado(value, nombreReal);
             renderCart();
         }
 
@@ -2942,7 +2959,8 @@
                             ? `<div class="cart-name">${item.nombrePersonalizado || item.PRO_Nombre}</div>`
                             : `<input type="text" class="cart-name-input" maxlength="191"
                                 value="${item.nombrePersonalizado || item.PRO_Nombre}"
-                                onchange="updateNombreItem(${item.PRO_Id}, this.value, ${JSON.stringify(item.PRO_Nombre)})">`
+                                oninput='updateNombreItemSilencioso(${item.PRO_Id}, this.value, ${JSON.stringify(item.PRO_Nombre)})'
+                                onchange='updateNombreItem(${item.PRO_Id}, this.value, ${JSON.stringify(item.PRO_Nombre)})'>`
                         }
                         ${!soloLectura && item.nombrePersonalizado ? `<div class="cart-price-original">Producto real: ${item.PRO_Nombre}</div>` : ''}
                         ${tieneAjuste ? `<div class="cart-price-original">Precio lista: S/ ${precioOriginal.toFixed(2)}</div>` : ''}

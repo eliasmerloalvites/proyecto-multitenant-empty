@@ -439,6 +439,7 @@
                                             Cerrar sin cobrar
                                         </button>
                                         <a class="btn btn-success btn-sm flex-fill"
+                                            onmousedown="document.activeElement && document.activeElement.blur()"
                                             href="{{ tenant_url('tenant.ventas.bahias.cobrar', ['cuenta' => $cuenta->BCT_Id]) }}">
                                             <i class="fa fa-cash-register"></i> Cobrar
                                         </a>
@@ -635,7 +636,7 @@
                             <div class="item-mini-nombre-wrap">
                                 <input type="text" class="item-mini-nombre-input" maxlength="191"
                                     value="${item.nombre}"
-                                    onchange="actualizarNombreItem(${resumen.cuenta_id}, ${item.id}, this.value, ${JSON.stringify(item.nombre_real)})">
+                                    onchange='actualizarNombreItem(${resumen.cuenta_id}, ${item.id}, this.value, ${JSON.stringify(item.nombre_real)})'>
                                 ${item.nombre_personalizado ? `<div class="item-mini-nombre-real">Producto real: ${item.nombre_real}</div>` : ''}
                             </div>
                             <i class="fa fa-times item-quitar" onclick="quitarItem(${resumen.cuenta_id}, ${item.id})"></i>
