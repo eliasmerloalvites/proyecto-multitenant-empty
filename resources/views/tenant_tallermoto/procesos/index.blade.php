@@ -442,7 +442,7 @@
                 method: 'POST',
                 data: { _token: '{{ csrf_token() }}' }
             }).done(function () {
-                window.location.href = '{{ tenant_url("tenant.ventas.bahias.index") }}';
+                window.location.href = '{{ tenant_url("tenant.ventas.bahias.index") }}?fecha={{ $fechaSeleccionada }}';
             }).fail(function (xhr) {
                 Swal.fire({ icon: 'error', title: 'No se pudo abrir la cuenta', text: (xhr.responseJSON && xhr.responseJSON.message) || 'Error de conexión.' });
             });

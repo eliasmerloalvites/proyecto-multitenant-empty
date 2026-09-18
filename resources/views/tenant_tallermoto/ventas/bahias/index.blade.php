@@ -20,6 +20,27 @@
             font-size: .9rem;
             text-transform: capitalize;
         }
+        .bahias-fecha-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .bahias-fecha-nav .btn { padding: 6px 11px; }
+        .bahias-fecha-nav input[type="date"] {
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            padding: 5px 8px;
+            font-size: .85rem;
+        }
+        .badge-dia-pasado {
+            background: #fef3c7;
+            color: #92400e;
+            font-size: .72rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
         .bahias-board {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -212,12 +233,30 @@
     <div class="col-12">
         <div class="bahias-header">
             <div>
-                <h4><i class="fa fa-oil-can mr-2 text-primary"></i>Ventas por Bahía</h4>
+                <h4>
+                    <i class="fa fa-oil-can mr-2 text-primary"></i>Ventas por Bahía
+                    @unless ($esHoy)
+                        <span class="badge-dia-pasado"><i class="fa fa-clock-rotate-left"></i> Viendo un día anterior</span>
+                    @endunless
+                </h4>
                 <div class="fecha-hoy">{{ $fechaHoy }}</div>
             </div>
-            <a href="{{ tenant_url('tenant.ventas.venta.index') }}" class="btn btn-light btn-sm">
-                <i class="fa fa-arrow-left"></i> Volver a Ventas
-            </a>
+
+            <div class="bahias-fecha-nav">
+                <a class="btn btn-outline-secondary btn-sm" href="{{ tenant_url('tenant.ventas.bahias.index', ['fecha' => $fechaAnterior]) }}" title="Día anterior">
+                    <i class="fa fa-chevron-left"></i>
+                </a>
+                <input type="date" id="bahiasSelectorFecha" value="{{ $fechaSeleccionada }}">
+                @unless ($esHoy)
+                    <a class="btn btn-primary btn-sm" href="{{ tenant_url('tenant.ventas.bahias.index') }}">Hoy</a>
+                @endunless
+                <a class="btn btn-outline-secondary btn-sm" href="{{ tenant_url('tenant.ventas.bahias.index', ['fecha' => $fechaSiguiente]) }}" title="Día siguiente">
+                    <i class="fa fa-chevron-right"></i>
+                </a>
+                <a href="{{ tenant_url('tenant.ventas.venta.index') }}" class="btn btn-light btn-sm">
+                    <i class="fa fa-arrow-left"></i> Volver a Ventas
+                </a>
+            </div>
         </div>
 
         <div class="bahias-board">
@@ -329,7 +368,7 @@
                     @empty
                         <div class="sin-reserva">
                             <i class="fa fa-calendar-times mb-1"></i><br>
-                            Sin reservas para hoy
+                            Sin reservas para {{ $esHoy ? 'hoy' : 'este día' }}
                         </div>
                     @endforelse
                 </div>
@@ -401,6 +440,13 @@
             showConfirmButton: false,
             timer: 1600,
             timerProgressBar: true
+        });
+
+        $('#bahiasSelectorFecha').on('change', function () {
+            let fecha = $(this).val();
+            if (fecha) {
+                window.location.href = '{{ tenant_url("tenant.ventas.bahias.index") }}?fecha=' + fecha;
+            }
         });
 
         function abrirCuenta(resId) {
