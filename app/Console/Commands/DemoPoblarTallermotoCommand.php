@@ -766,6 +766,13 @@ class DemoPoblarTallermotoCommand extends Command
         }
 
         $venta->update(['VEN_Pagado' => $total, 'VEN_Vuelto' => 0]);
+
+        // Sin esto la venta no aparece en "Lista de Ventas" (el listado
+        // hace INNER JOIN con documento_venta): se emite como Nota de
+        // Venta simple, igual que una venta normal sin comprobante
+        // electronico.
+        \App\Http\Controllers\Tenant\VentaController::CrearDocumentoDetalleVentaLibre($venta->VEN_Id, $this->almId);
+
         $this->resumen['ventas']++;
 
         return $mepId === $this->efectivoId ? $total : 0.0;
