@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Tenant\VentaController;
 use App\Models\Tenant\Almacen;
 use App\Models\Tenant\Generico\Cotizacion;
-use App\Models\Tenant\DetalleCotizacion;
+use App\Models\Tenant\Generico\DetalleCotizacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;

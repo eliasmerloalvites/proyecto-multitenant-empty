@@ -4,7 +4,7 @@ namespace App\Services\Facturacion;
 
 use App\Models\Tenant\Almacen;
 use App\Models\Tenant\EmpresaFacturacion;
-use App\Models\Tenant\GuiaRemision;
+use App\Models\TenantTallerMotos\GuiaRemision;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;

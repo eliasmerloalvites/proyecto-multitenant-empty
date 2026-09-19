@@ -29,8 +29,15 @@ class Venta extends Model
 
     ];
 
+    /**
+     * Solo tiene sentido para ventas de tallermoto (generico no usa esta
+     * relacion desde su propio codigo, pero 'venta.COT_Id' existe en ambos
+     * verticales y la tabla 'cotizacion' se llama igual en los dos, asi que
+     * esto sigue resolviendo sin romper nada si algo la invoca desde un
+     * tenant generico).
+     */
     public function cotizacion()
     {
-        return $this->belongsTo(Cotizacion::class, 'COT_Id', 'COT_Id');
+        return $this->belongsTo(\App\Models\TenantTallerMotos\Cotizacion::class, 'COT_Id', 'COT_Id');
     }
 }

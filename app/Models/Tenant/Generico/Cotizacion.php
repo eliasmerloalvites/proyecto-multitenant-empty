@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Cotizacion propia del vertical 'generico' (tabla/columnas distintas de
- * App\Models\Tenant\Cotizacion, que es la compartida/tallermoto): estado
+ * App\Models\TenantTallerMotos\Cotizacion, exclusiva de tallermoto): estado
  * numerico, COT_Total propio, relacion a DetalleCotizacion y a Almacen.
  * Ver migraciones database/migrations/tenant/generico/2026_09_10_020000_*.
  */
@@ -49,7 +49,7 @@ class Cotizacion extends Model
 
     public function detalles()
     {
-        return $this->hasMany(\App\Models\Tenant\DetalleCotizacion::class, 'COT_Id', 'COT_Id');
+        return $this->hasMany(\App\Models\Tenant\Generico\DetalleCotizacion::class, 'COT_Id', 'COT_Id');
     }
 
     /**

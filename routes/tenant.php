@@ -16,22 +16,22 @@ use App\Http\Controllers\Tenant\HomeController;
 use App\Http\Controllers\Tenant\MetodoPagoController;
 use App\Http\Controllers\Tenant\CajaController;
 use App\Http\Controllers\Tenant\CajaSesionController;
-use App\Http\Controllers\Tenant\CuentaPorCobrarController;
+use App\Http\Controllers\TenantTallerMotos\CuentaPorCobrarController;
 use App\Http\Controllers\Tenant\ProductoController;
 use App\Http\Controllers\Tenant\ProveedorController;
 use App\Http\Controllers\Tenant\SedeController;
 use App\Http\Controllers\Tenant\EmpresaFacturacionController;
 use App\Http\Controllers\Tenant\ComprobanteSunatController;
-use App\Http\Controllers\Tenant\TrasladoController;
+use App\Http\Controllers\TenantTallerMotos\TrasladoController;
 use App\Http\Controllers\Tenant\AjusteController;
 use App\Http\Controllers\Tenant\NotaCreditoController;
-use App\Http\Controllers\Tenant\GuiaRemisionController;
+use App\Http\Controllers\TenantTallerMotos\GuiaRemisionController;
 use App\Http\Controllers\Tenant\AnulacionController;
 use App\Http\Controllers\Tenant\TestFacturacionController;
 use App\Http\Controllers\Tenant\TipoGastoController;
 use App\Http\Controllers\Tenant\UserController;
 use App\Http\Controllers\Tenant\VentaController;
-use App\Http\Controllers\Tenant\CotizacionController;
+use App\Http\Controllers\TenantTallerMotos\CotizacionController;
 use App\Http\Controllers\TenantTallerMotos\BahiaController;
 use App\Http\Controllers\TenantTallerMotos\AsistenteConfiguracionController;
 use App\Http\Controllers\TenantTallerMotos\MotoController;
@@ -393,7 +393,7 @@ Route::middleware([
             //
             // Prefijo/nombres propios ("-generico" / ".generico"): tallermoto
             // ya tiene su propia Cotizacion (RES_Id, tabla/columnas distintas,
-            // ver App\Models\Tenant\Cotizacion vs Tenant\Generico\Cotizacion)
+            // ver App\Models\TenantTallerMotos\Cotizacion vs Tenant\Generico\Cotizacion)
             // con rutas registradas bajo el mismo /tenant/ventas/cotizacion;
             // sin este prefijo, esta seccion pisaria silenciosamente esas
             // rutas (primera coincidencia de URI gana) y dejaria sin usar el

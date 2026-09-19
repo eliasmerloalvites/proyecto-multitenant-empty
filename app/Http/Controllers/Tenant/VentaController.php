@@ -553,7 +553,7 @@ class VentaController extends Controller
         $cotizacionId = null;
 
         if ($request->filled('cotizacion') && $prefillCarrito === [] && !$cuentaBahiaId && !$reemitirInfo) {
-            $cotizacion = \App\Models\Tenant\Cotizacion::with(['items.producto', 'cliente'])
+            $cotizacion = \App\Models\TenantTallerMotos\Cotizacion::with(['items.producto', 'cliente'])
                 ->find($request->input('cotizacion'));
 
             if ($cotizacion && $cotizacion->estaPendiente() && !$cotizacion->estaVencida()) {
@@ -1275,13 +1275,13 @@ class VentaController extends Controller
             // Si esta venta viene de aprobar una Cotizacion, se marca como
             // APROBADA y queda enlazada a la venta recien creada.
             if ($request->filled('cotizacion_id')) {
-                $cotizacion = \App\Models\Tenant\Cotizacion::where('COT_Id', $request->input('cotizacion_id'))
-                    ->where('COT_Estado', \App\Models\Tenant\Cotizacion::ESTADO_PENDIENTE)
+                $cotizacion = \App\Models\TenantTallerMotos\Cotizacion::where('COT_Id', $request->input('cotizacion_id'))
+                    ->where('COT_Estado', \App\Models\TenantTallerMotos\Cotizacion::ESTADO_PENDIENTE)
                     ->first();
 
                 if ($cotizacion) {
                     $cotizacion->update([
-                        'COT_Estado' => \App\Models\Tenant\Cotizacion::ESTADO_APROBADA,
+                        'COT_Estado' => \App\Models\TenantTallerMotos\Cotizacion::ESTADO_APROBADA,
                         'VEN_Id' => $venta->VEN_Id,
                     ]);
 

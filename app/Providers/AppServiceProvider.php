@@ -21,7 +21,28 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // ProductoController y VentaController tienen ahora una clase propia
+        // por vertical (App\Http\Controllers\Tenant\Generico\* y
+        // App\Http\Controllers\TenantTallerMotos\*), pero routes/tenant.php
+        // sigue registrando una sola ruta por accion apuntando a la clase
+        // base App\Http\Controllers\Tenant\*Controller (no se puede elegir
+        // la clase por vertical al registrar rutas: ese archivo se carga una
+        // sola vez, sin contexto de tenant, y ademas queda cacheado en
+        // produccion). Este binding intercepta la resolucion del
+        // controlador en el momento de atender el request (ahi si hay
+        // tenant() disponible) y la redirige a la subclase que corresponda,
+        // sin tocar rutas ni vistas de ningun vertical.
+        $this->app->bind(\App\Http\Controllers\Tenant\ProductoController::class, function ($app) {
+            return tenant('tipo_negocio') === 'tallermoto'
+                ? $app->make(\App\Http\Controllers\TenantTallerMotos\ProductoController::class)
+                : $app->make(\App\Http\Controllers\Tenant\Generico\ProductoController::class);
+        });
+
+        $this->app->bind(\App\Http\Controllers\Tenant\VentaController::class, function ($app) {
+            return tenant('tipo_negocio') === 'tallermoto'
+                ? $app->make(\App\Http\Controllers\TenantTallerMotos\VentaController::class)
+                : $app->make(\App\Http\Controllers\Tenant\Generico\VentaController::class);
+        });
     }
 
     /**
