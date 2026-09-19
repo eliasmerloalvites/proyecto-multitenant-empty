@@ -19,6 +19,8 @@ class Lote extends Model
         'LOT_CantidadIngreso',
         'LOT_PrecioCompra',
         'LOT_PrecioVenta',
+        'LOT_Motivo',
+        'USU_Id',
     ];
     
     protected $guarded =[

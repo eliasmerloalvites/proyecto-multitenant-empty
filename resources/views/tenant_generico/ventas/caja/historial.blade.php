@@ -88,7 +88,7 @@
                 $('#detalleSesionBody').html('<p class="text-muted">Cargando...</p>');
                 $('#modalDetalleSesion').modal('show');
 
-                $.get('{{ tenant_url('tenant.ventas.caja.historial.detalle', ['id' => ':id']) }}'.replace(':id', id), function(data) {
+                $.get('{{ tenant_url('tenant.ventas.caja.historial.detalle.generico', ['id' => ':id']) }}'.replace(':id', id), function(data) {
                     var html = '';
 
                     html += '<div class="row mb-3">';

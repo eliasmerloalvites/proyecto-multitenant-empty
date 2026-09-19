@@ -573,9 +573,14 @@
                 $confirm = confirm("¿Estás seguro de que quieres eliminarlo?");
                 if ($confirm == true) {
                     $.ajax({
+                        // Antes iba directo a tenant.inventario.producto.destroy
+                        // (compartido con tallermoto), que borra sin validar
+                        // nada y arrastra en cascada compras/ventas/lotes de
+                        // ese producto. Este endpoint es exclusivo de generico
+                        // y primero revisa que el producto no tenga movimientos.
                         type: "DELETE",
 
-                        url: '{{ tenant_url('tenant.inventario.producto.destroy', ['producto' => ':producto']) }}'
+                        url: '{{ tenant_url('tenant.inventario.producto.eliminarSeguro', ['producto' => ':producto']) }}'
                             .replace(
                                 ':producto', Producto_id_delete),
                         data: {
@@ -591,11 +596,12 @@
                             });
 
                         },
-                        error: function(data) {
-                            console.log('Error:', data);
+                        error: function(xhr) {
+                            console.log('Error:', xhr);
+                            var data = xhr.responseJSON || {};
                             Toast.fire({
                                 type: 'error',
-                                title: 'Producto fallo al Eliminarlo.',
+                                title: data.error || 'Producto fallo al Eliminarlo.',
                                 icon: 'info'
                             })
                         }

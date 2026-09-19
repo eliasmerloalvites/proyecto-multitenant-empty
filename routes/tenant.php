@@ -44,6 +44,19 @@ use App\Http\Controllers\TenantTallerMotos\ReportesFinancierosController;
 use App\Http\Controllers\TenantTallerMotos\NotificacionReservaController;
 use App\Http\Controllers\TenantTallerMotos\ReservacionController;
 use App\Http\Controllers\TenantTallerMotos\TurnoController;
+use App\Http\Controllers\Tenant\Generico\VentaPagoController;
+use App\Http\Controllers\Tenant\Generico\CajaSesionReporteController as GenericoCajaSesionReporteController;
+use App\Http\Controllers\Tenant\Generico\CuentaCobrarController;
+use App\Http\Controllers\Tenant\Generico\CuentaCobrarAbonoController;
+use App\Http\Controllers\Tenant\Generico\ReporteController;
+use App\Http\Controllers\Tenant\Generico\CuentaPagarController;
+use App\Http\Controllers\Tenant\Generico\CuentaPagarAbonoController;
+use App\Http\Controllers\Tenant\Generico\CompraAnulacionController;
+use App\Http\Controllers\Tenant\Generico\InventarioAjusteController;
+use App\Http\Controllers\Tenant\Generico\ProductoEliminacionController;
+use App\Http\Controllers\Tenant\Generico\ProductoBuscadorController;
+use App\Http\Controllers\Tenant\Generico\CotizacionController;
+use App\Http\Controllers\Tenant\Generico\VentaComprobanteController;
 use App\Services\Facturacion\GreenterService;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
@@ -135,6 +148,13 @@ Route::middleware([
         Route::post('/tenant/caja-sesion/cerrar', [CajaSesionController::class, 'cerrar'])->name('tenant.caja-sesion.cerrar');
         Route::get('/tenant/ventas/caja/historial', [CajaSesionController::class, 'historial'])->name('tenant.ventas.caja.historial');
         Route::get('/tenant/ventas/caja/historial/{id}', [CajaSesionController::class, 'detalle'])->name('tenant.ventas.caja.historial.detalle');
+
+        // Exclusivas de 'generico': mismo calculo pero consciente de pagos
+        // divididos (venta_pago). No afectan ni modifican las rutas de
+        // arriba, que tallermoto (y el resto de generico que no las usa)
+        // siguen usando tal cual.
+        Route::post('/tenant/caja-sesion/cerrar-generico', [GenericoCajaSesionReporteController::class, 'cerrar'])->name('tenant.caja-sesion.cerrar.generico');
+        Route::get('/tenant/ventas/caja/historial/{id}/generico', [GenericoCajaSesionReporteController::class, 'detalle'])->name('tenant.ventas.caja.historial.detalle.generico');
         
         //REPORTES
         Route::get('/tenant/reportes/listageneral',[ReportesController::class, 'listageneral'])->name('tenant.reportes.listageneral');
@@ -303,6 +323,24 @@ Route::middleware([
             Route::post('/tenant/ventas/venta/createCliente',[VentaController::class, 'createCliente'])->name('tenant.ventas.venta.createCliente');
             Route::post('/tenant/ventas/venta/producto-rapido',[VentaController::class, 'crearProductoRapido'])->name('tenant.ventas.venta.productoRapido');
 
+            // Cotizaciones: exclusivo de generico. Reutiliza los endpoints de
+            // arriba (productos/searchClientes/createCliente) para el mismo
+            // catalogo y clientes de Ventas, pero nunca toca 'lote' (no
+            // descuenta stock).
+            Route::get('/tenant/ventas/cotizacion', [CotizacionController::class, 'index'])->name('tenant.ventas.cotizacion.index');
+            Route::get('/tenant/ventas/cotizacion/crear', [CotizacionController::class, 'create'])->name('tenant.ventas.cotizacion.create');
+            Route::post('/tenant/ventas/cotizacion', [CotizacionController::class, 'store'])->name('tenant.ventas.cotizacion.store');
+            Route::get('/tenant/ventas/cotizacion/{cotizacion}', [CotizacionController::class, 'show'])->name('tenant.ventas.cotizacion.show');
+            Route::get('/tenant/ventas/cotizacion/{cotizacion}/editar', [CotizacionController::class, 'edit'])->name('tenant.ventas.cotizacion.edit');
+            Route::put('/tenant/ventas/cotizacion/{cotizacion}', [CotizacionController::class, 'update'])->name('tenant.ventas.cotizacion.update');
+            Route::get('/tenant/ventas/cotizacion/{cotizacion}/pdf', [CotizacionController::class, 'pdf'])->name('tenant.ventas.cotizacion.pdf');
+            Route::post('/tenant/ventas/cotizacion/{cotizacion}/anular', [CotizacionController::class, 'anular'])->name('tenant.ventas.cotizacion.anular');
+            // "Convertir a Venta": la venta se registra con el
+            // tenant.ventas.venta.store de siempre (sin tocar); esto solo
+            // marca la cotizacion como convertida despues de que esa venta
+            // ya se registro (ver CotizacionController::marcarConvertida()).
+            Route::post('/tenant/ventas/cotizacion/{cotizacion}/marcar-convertida', [CotizacionController::class, 'marcarConvertida'])->name('tenant.ventas.cotizacion.marcarConvertida');
+
             // Ventas por Bahia: tablero de bahias del dia con cuenta acumulable
             // por reserva (requiere el modulo de mantenimientos, de donde salen
             // las tablas bahia/reservacion).
@@ -329,6 +367,56 @@ Route::middleware([
                 'venta' => 'venta'
             ]);
 
+            // Exclusiva de 'generico': guarda el detalle de pago dividido
+            // (varios metodos en una misma venta). No reemplaza ni modifica
+            // el store() de arriba, que sigue guardando la venta igual que
+            // siempre para ambos verticales.
+            Route::post('/tenant/ventas/venta/pagos', [VentaPagoController::class, 'store'])->name('tenant.ventas.venta.pagos.store');
+
+            // Exclusivas de 'generico': cuentas por cobrar (venta al
+            // credito). No reemplazan ni modifican el store() de arriba,
+            // que sigue guardando la venta igual que siempre para ambos
+            // verticales; esto solo agrega el registro de credito y su
+            // plan de cuotas (opcional) despues de que la venta ya se
+            // guardo con VEN_TipoPago = 2.
+            Route::post('/tenant/ventas/venta/cuenta-por-cobrar', [CuentaCobrarController::class, 'store'])->name('tenant.ventas.venta.cuentacobrar.store');
+            Route::get('/tenant/ventas/cuentas-por-cobrar', [CuentaCobrarController::class, 'index'])->name('tenant.ventas.cuentascobrar.index');
+            // Debe ir antes que la ruta con {cuentaCobrar} de abajo, para
+            // que "reporte-pdf" no sea interpretado como un id de cuenta.
+            Route::get('/tenant/ventas/cuentas-por-cobrar/reporte-pdf', [CuentaCobrarController::class, 'reportePdf'])->name('tenant.ventas.cuentascobrar.reporte.pdf');
+            Route::get('/tenant/ventas/cuentas-por-cobrar/{cuentaCobrar}', [CuentaCobrarController::class, 'show'])->name('tenant.ventas.cuentascobrar.show');
+            Route::post('/tenant/ventas/cuentas-por-cobrar/{cuentaCobrar}/abonos', [CuentaCobrarAbonoController::class, 'store'])->name('tenant.ventas.cuentascobrar.abonos.store');
+            // Atajo desde el listado general de Ventas (compartido con
+            // tallermoto, no se toca) hacia el detalle de la cuenta por
+            // cobrar de una venta especifica, buscando por VEN_Id.
+            Route::get('/tenant/ventas/venta/{ventaId}/ver-cuenta-cobrar', [CuentaCobrarController::class, 'showByVenta'])->name('tenant.ventas.venta.vercuentacobrar');
+            // Usado por el listado general de Ventas para saber, sin
+            // adivinar por el metodo de pago mostrado, que ventas tienen
+            // realmente una cuenta por cobrar (ver CuentaCobrarController::idsConCuenta).
+            Route::get('/tenant/ventas/cuentas-por-cobrar-ids', [CuentaCobrarController::class, 'idsConCuenta'])->name('tenant.ventas.cuentascobrar.ids');
+
+            // Exclusivas de 'generico': reportes graficos/estadisticos de
+            // ventas (utilidad, productos mas vendidos, clientes que mas
+            // compran). Nombres con sufijo ".generico" para no chocar con
+            // 'tenant.reportes.*' ya usado por TallerMotos en este mismo
+            // grupo de rutas compartido.
+            Route::get('/tenant/reportes/generico', [ReporteController::class, 'index'])->name('tenant.reportes.generico.index');
+            Route::get('/tenant/reportes/generico/datos', [ReporteController::class, 'datos'])->name('tenant.reportes.generico.datos');
+            Route::get('/tenant/reportes/generico/utilidad', [ReporteController::class, 'utilidad'])->name('tenant.reportes.generico.utilidad');
+            Route::get('/tenant/reportes/generico/ranking', [ReporteController::class, 'ranking'])->name('tenant.reportes.generico.ranking');
+            Route::get('/tenant/reportes/generico/categorias', [ReporteController::class, 'categorias'])->name('tenant.reportes.generico.categorias');
+            Route::get('/tenant/reportes/generico/detalle', [ReporteController::class, 'detalle'])->name('tenant.reportes.generico.detalle');
+            Route::get('/tenant/reportes/generico/detalle/datos', [ReporteController::class, 'datosDetalle'])->name('tenant.reportes.generico.detalle.datos');
+            // "Movimientos de Producto": todo el flujo de stock (creacion,
+            // compra, anulacion de compra, venta, ajuste) de un producto
+            // puntual o de todos.
+            Route::get('/tenant/reportes/generico/movimientos', [ReporteController::class, 'movimientos'])->name('tenant.reportes.generico.movimientos');
+            Route::get('/tenant/reportes/generico/movimientos/datos', [ReporteController::class, 'datosMovimientos'])->name('tenant.reportes.generico.movimientos.datos');
+            Route::get('/tenant/reportes/generico/movimientos/productos', [ReporteController::class, 'buscarProductosMovimientos'])->name('tenant.reportes.generico.movimientos.productos');
+            // Exportacion "a Excel" (CSV, ver ReporteController::exportar) de
+            // cualquiera de los reportes anteriores; $tipo decide cual.
+            Route::get('/tenant/reportes/generico/exportar/{tipo}', [ReporteController::class, 'exportar'])->name('tenant.reportes.generico.exportar');
+
             Route::resource('/tenant/ventas/cliente', ClienteController::class)->names([
                 'index' => 'tenant.ventas.cliente.index',
                 'create' => 'tenant.ventas.cliente.create',
@@ -347,6 +435,16 @@ Route::middleware([
             Route::get('/tenant/ventas/venta/{id}/ticket-imagen',[VentaController::class, 'ticketImagen'])->name('tenant.ventas.venta.ticket-imagen');
 
             Route::get('/tenant/ventas/venta/{id}/ticket-whatsapp',[VentaController::class, 'ticketWhatsapp'])->name('tenant.ventas.venta.ticket-whatsapp');
+
+            /*
+             * Version corregida (solo generico) de ticket/pdf/whatsapp de una
+             * venta: el metodo compartido de arriba consulta una tabla
+             * inexistente ('cuentas_por_cobrar') y revienta con toda venta al
+             * credito. Ver VentaComprobanteController para el detalle.
+             */
+            Route::get('/tenant/ventas/venta/{id}/ticket-seguro', [VentaComprobanteController::class, 'ticket'])->name('tenant.ventas.venta.ticket.seguro');
+            Route::get('/tenant/ventas/venta/{id}/pdf-seguro', [VentaComprobanteController::class, 'pdf'])->name('tenant.ventas.venta.pdf.seguro');
+            Route::get('/tenant/ventas/venta/{id}/ticket-whatsapp-seguro', [VentaComprobanteController::class, 'ticketWhatsapp'])->name('tenant.ventas.venta.ticket-whatsapp.seguro');
 
             /* Acciones de SUNAT sobre un comprobante ya emitido */
             Route::get('/tenant/ventas/venta/{id}/sunat/xml', [ComprobanteSunatController::class, 'xml'])->name('tenant.ventas.venta.sunat.xml');
@@ -447,6 +545,32 @@ Route::middleware([
             ])->parameters([
                 'tipogasto' => 'tipogasto'
             ]);
+
+            // Exclusivas de 'generico': cuentas por pagar (compra al
+            // credito a un proveedor). No reemplazan ni modifican el
+            // store() de arriba, que sigue guardando la compra igual que
+            // siempre para ambos verticales; esto solo agrega el registro
+            // de deuda y su plan de cuotas (opcional) despues de que la
+            // compra ya se guardo con COM_TipoPago = 'Credito'.
+            Route::post('/tenant/compras/compra/cuenta-por-pagar', [CuentaPagarController::class, 'store'])->name('tenant.compras.compra.cuentapagar.store');
+            Route::get('/tenant/compras/cuentas-por-pagar', [CuentaPagarController::class, 'index'])->name('tenant.compras.cuentaspagar.index');
+            // Debe ir antes que la ruta con {cuentaPagar} de abajo, para
+            // que "reporte-pdf" no sea interpretado como un id de cuenta.
+            Route::get('/tenant/compras/cuentas-por-pagar/reporte-pdf', [CuentaPagarController::class, 'reportePdf'])->name('tenant.compras.cuentaspagar.reporte.pdf');
+            Route::get('/tenant/compras/cuentas-por-pagar/{cuentaPagar}', [CuentaPagarController::class, 'show'])->name('tenant.compras.cuentaspagar.show');
+            Route::post('/tenant/compras/cuentas-por-pagar/{cuentaPagar}/abonos', [CuentaPagarAbonoController::class, 'store'])->name('tenant.compras.cuentaspagar.abonos.store');
+            // Atajo desde el listado general de Compras (compartido con
+            // tallermoto, no se toca) hacia el detalle de la cuenta por
+            // pagar de una compra especifica, buscando por COM_Id.
+            Route::get('/tenant/compras/compra/{compraId}/ver-cuenta-pagar', [CuentaPagarController::class, 'showByCompra'])->name('tenant.compras.compra.vercuentapagar');
+
+            // Exclusiva de 'generico': anulacion de una compra (el boton
+            // "Eliminar" del listado, compartido con tallermoto, no tiene
+            // ninguna logica real detras -CompraController::destroy() esta
+            // vacio- asi que en generico se enlaza a esto en su lugar. Ver
+            // CompraAnulacionController para el porque de anular en vez de
+            // borrar de verdad.
+            Route::post('/tenant/compras/compra/{compra}/anular', [CompraAnulacionController::class, 'store'])->name('tenant.compras.compra.anular');
         });
 
         Route::middleware(['tenant.module:productos'])->group(function () {
@@ -461,12 +585,16 @@ Route::middleware([
             ])->parameters([
                 'producto' => 'producto'
             ]);
+            Route::delete('/tenant/inventario/producto/{producto}/eliminar-seguro', [ProductoEliminacionController::class, 'destroy'])->name('tenant.inventario.producto.eliminarSeguro');
         });
 
         Route::middleware(['tenant.module:inventario'])->group(function () {
             Route::get('/tenant/inventario/controlinventario', [ProductoController::class,'controlinventario'] )->name('tenant.inventario.controlinventario.index');
             Route::get('/tenant/inventario/controlinventario/{producto}', [ProductoController::class,'lotes'] )->name('tenant.inventario.controlinventario.lotes');
             Route::get('/tenant/inventario/controlinventario/kardex/{producto}', [ProductoController::class,'kardex'] )->name('tenant.inventario.controlinventario.kardex');
+            Route::post('/tenant/inventario/controlinventario/ajuste', [InventarioAjusteController::class,'store'] )->name('tenant.inventario.controlinventario.ajuste.store');
+            Route::get('/tenant/inventario/controlinventario/{producto}/ajustes', [InventarioAjusteController::class,'historial'] )->name('tenant.inventario.controlinventario.ajustes');
+            Route::get('/tenant/inventario/producto-buscador/compra', [ProductoBuscadorController::class,'compra'] )->name('tenant.inventario.productobuscador.compra');
 
             Route::resource('/tenant/inventario/categoria', CategoriaController::class)->names([
                 'index' => 'tenant.inventario.categoria.index',

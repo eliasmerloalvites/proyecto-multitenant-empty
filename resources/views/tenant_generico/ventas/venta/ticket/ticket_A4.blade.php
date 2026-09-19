@@ -503,6 +503,20 @@
 
             @php
                 $logoPath = !empty($datosalmacen->logo_pdf) ? $datosalmacen->logo_pdf : '/images/logo.png';
+
+                // Si esta venta es al credito (modulo Cuentas por Cobrar,
+                // exclusivo de generico), se muestra el adelanto/saldo y,
+                // si se definieron, las cuotas planificadas.
+                $cuentaCobrar = \Illuminate\Support\Facades\DB::table('cuenta_cobrar')
+                    ->where('VEN_Id', $ventae->codigoVenta)
+                    ->first();
+
+                $cuotasCredito = $cuentaCobrar
+                    ? \Illuminate\Support\Facades\DB::table('cuenta_cobrar_cuota')
+                        ->where('CXC_Id', $cuentaCobrar->CXC_Id)
+                        ->orderBy('CCC_Numero')
+                        ->get()
+                    : collect();
             @endphp
 
             @if($generaimagen)
@@ -945,6 +959,74 @@
         </div>
 
     </div>
+
+    <!-- DETALLE DE CREDITO (solo si es venta al credito) -->
+    @if ($cuentaCobrar)
+        <div class="section">
+
+            <div class="section-title">
+                DETALLE DE CRÉDITO
+            </div>
+
+            <div class="section-body">
+
+                <div class="client-grid">
+
+                    <div>
+
+                        <div class="client-item">
+                            <strong>Total:</strong>
+                            <span>S/ {{ number_format($cuentaCobrar->CXC_MontoTotal, 2) }}</span>
+                        </div>
+
+                        <div class="client-item">
+                            <strong>Adelanto:</strong>
+                            <span>S/ {{ number_format($cuentaCobrar->CXC_MontoAdelanto, 2) }}</span>
+                        </div>
+
+                    </div>
+
+                    <div>
+
+                        <div class="client-item">
+                            <strong>Saldo Pendiente:</strong>
+                            <span>S/ {{ number_format($cuentaCobrar->CXC_MontoPendiente, 2) }}</span>
+                        </div>
+
+                        <div class="client-item">
+                            <strong>Estado:</strong>
+                            <span>{{ $cuentaCobrar->CXC_Estado == 2 ? 'PAGADO' : 'PENDIENTE' }}</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                @if ($cuentaCobrar->CXC_TieneCuotas && $cuotasCredito->count())
+                    <table style="margin-top:10px;">
+                        <thead>
+                            <tr>
+                                <th width="15%">N°</th>
+                                <th width="45%">VENCIMIENTO</th>
+                                <th width="40%">MONTO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($cuotasCredito as $cuota)
+                                <tr>
+                                    <td class="text-center">{{ $cuota->CCC_Numero }}</td>
+                                    <td class="text-center">{{ \Illuminate\Support\Carbon::parse($cuota->CCC_FechaVencimiento)->format('d/m/Y') }}</td>
+                                    <td class="text-right">S/ {{ number_format($cuota->CCC_MontoProgramado, 2) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+
+            </div>
+
+        </div>
+    @endif
 
     <!-- FOOTER -->
     <div class="footer-grid">

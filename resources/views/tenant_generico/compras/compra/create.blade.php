@@ -2,6 +2,68 @@
 @section('titulo', 'Registro Compra')
 @section('contenido')
 
+<style>
+    /* Esta pagina queda dentro de un ".row" (partials/container.blade.php,
+       compartido por todo generico) que a su vez esta dentro de un
+       ".container-fluid" que en algunos temas/pantallas trae un
+       max-width heredado, dejando esta pantalla angosta con espacio
+       vacio a la derecha en monitores grandes. Se fuerza aqui, sin tocar
+       el layout compartido, a que en ESTA pagina el contenedor use
+       siempre el 100% del ancho disponible. */
+    .content-wrapper .container-fluid,
+    .content-wrapper .container-fluid > .row {
+        max-width: none !important;
+        width: 100% !important;
+    }
+
+    /* Exclusivo de 'generico': bloque de adelanto/cuotas que aparece
+       cuando la compra es al credito, mismo espiritu visual que el
+       bloque equivalente del checkout de Ventas (Tipo de Venta ->
+       Adelanto -> Definir cuotas), adaptado a este formulario. */
+    #cxpCreditoBlock {
+        margin-top: 12px;
+        padding: 14px;
+        border: 1px solid #EDE9FE;
+        background: #F9F7FF;
+        border-radius: 14px;
+    }
+
+    #cxpCreditoBlock .cxp-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 4px;
+    }
+
+    #cxpCreditoBlock .cxp-help-text {
+        font-size: 11px;
+        color: #6B7280;
+        margin: 4px 0 10px 0;
+    }
+
+    #cxpCreditoBlock .form-check {
+        margin-bottom: 8px;
+    }
+
+    #cxpCuotasPreview {
+        margin-top: 6px;
+        max-height: 140px;
+        overflow-y: auto;
+    }
+
+    .cxp-cuota-preview-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 10px;
+        border: 1px solid #EDE9FE;
+        border-radius: 8px;
+        margin-bottom: 4px;
+        font-size: 12px;
+        background: #fff;
+    }
+</style>
+
 <form class="row" method="POST" id="compra_form" action="{{ tenant_url('tenant.compras.compra.store') }}">
     @csrf
     <div class="col-12 col-md-4">
@@ -63,11 +125,50 @@
                         <select class="form-control" id="idMEP_Id" name="MEP_Id" required="">
                             <option value="">Seleccione metodo</option>
                             @foreach ($metodo_pago as $mep)
-                                <option value="{{ $mep->MEP_Id }}">{{ $mep->MEP_Pago }}</option>
+                                <option value="{{ $mep->MEP_Id }}" data-pago="{{ $mep->MEP_Pago }}">{{ $mep->MEP_Pago }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
+
+                <!-- Exclusivo de 'generico': solo aparece cuando Tipo pago
+                     = Credito. No reemplaza el guardado normal de la
+                     compra: solo captura, ANTES de generar la compra, el
+                     adelanto (opcional) y el plan de cuotas (opcional)
+                     para crear la cuenta por pagar justo despues de que
+                     la compra se guarde con exito. -->
+                <div class="col-12" id="cxpCreditoBlock" style="display:none;">
+                    <label class="cxp-label">Adelanto al proveedor (S/)</label>
+                    <input type="number" step="0.01" min="0" id="cxpAdelanto" class="form-control" value="0.00" oninput="onAdelantoChangeCompra()">
+                    <div class="cxp-help-text">
+                        Deja en 0.00 si no se entrega ningún adelanto (toda la compra queda como cuenta por pagar).
+                        No puede superar el total de la compra.
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="cxpChkDefinirCuotas" onchange="onDefinirCuotasChangeCompra()">
+                        <label class="form-check-label" for="cxpChkDefinirCuotas">Definir cuotas de pago</label>
+                    </div>
+
+                    <div id="cxpCuotasConfig" style="display:none;">
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="cxp-label">Número de cuotas</label>
+                                <input type="number" step="1" min="1" max="60" id="cxpNumCuotas" class="form-control" value="1" oninput="actualizarPreviewCuotasCompra()">
+                            </div>
+                            <div class="col-6">
+                                <label class="cxp-label">Cada cuántos días</label>
+                                <input type="number" step="1" min="1" max="365" id="cxpFrecuenciaDias" class="form-control" value="30" oninput="actualizarPreviewCuotasCompra()">
+                            </div>
+                        </div>
+                        <div class="cxp-help-text">
+                            El saldo (total menos adelanto) se reparte en partes iguales entre las
+                            cuotas; la última absorbe el redondeo. Así quedarían con estos valores:
+                        </div>
+                        <div id="cxpCuotasPreview"></div>
+                    </div>
+                </div>
+
                 <div class="row col-12 mt-3">
                     <div class="col-lg-11 col-md-11 col-sm-11 col-xs-11 " >
                         <div class="input-group">
@@ -105,16 +206,10 @@
                     <!-- Columna Producto -->
                     <div class="col-md-8 d-flex align-items-center">
                         <div class="col-md-12 pl-0 pr-0">
-                            <select class=" select2 form-control form-control-sm"
-                                id="productoVenta">
+                            <select class="form-control form-control-sm" id="productoVenta"
+                                style="width: 100%">
                                 <option value="" disabled selected>Seleccione Producto
                                 </option>
-                                @foreach ($producto as $itemProducto)
-                                    <option
-                                        value="{{ $itemProducto->PRO_Id }}_{{ $itemProducto->PRO_PrecioCompra }}_{{ $itemProducto->PRO_PrecioVenta }}">
-                                        {{ $itemProducto->CAT_Nombre }} -
-                                        {{ $itemProducto->PRO_Nombre }}</option>
-                                @endforeach
                             </select>
                         </div>
                     </div>
@@ -403,10 +498,45 @@
                 $('.select2bs4').select2({
                     theme: 'bootstrap4'
                 })
+
+                // Antes este select traia TODOS los productos precargados
+                // (un option por producto, con un bucle Blade en la vista):
+                // con varios miles de productos eso vuelve la pagina lentisima.
+                // Ahora busca en el servidor a medida que se escribe y solo
+                // trae 20 resultados por pagina.
+                $('#productoVenta').select2({
+                    placeholder: 'Escriba para buscar un producto...',
+                    allowClear: true,
+                    width: '100%',
+                    minimumInputLength: 0,
+                    ajax: {
+                        url: "{{ tenant_url('tenant.inventario.productobuscador.compra') }}",
+                        dataType: 'json',
+                        delay: 300,
+                        data: function(params) {
+                            return {
+                                search: params.term || '',
+                                page: params.page || 1
+                            };
+                        },
+                        processResults: function(data) {
+                            return data;
+                        },
+                        cache: true
+                    }
+                });
                 myModal = new bootstrap.Modal(document.getElementById('myModal'), {
                     keyboard: false
                 })
                 $("#COM_TipoDocumento").change(mostrarDoc);
+                $("#idCOM_TipoPago").change(actualizarUICreditoCompra);
+                // "Vaciar Compra" es type="reset": deja que el navegador
+                // restaure los valores por defecto de los campos y recien
+                // despues sincroniza el bloque de credito con el select ya
+                // reseteado (por eso el setTimeout).
+                $('#btncancelar').on('click', function() {
+                    setTimeout(actualizarUICreditoCompra, 0);
+                });
                 $("#productoVenta").change(mostrarValores);
                 $('#cantidadCompra').keyup(function(e) {
                     if (e.keyCode == 13) {
@@ -723,6 +853,129 @@
                 }
             }
 
+            // Devuelve el <option> del select de Metodo de pago cuyo texto
+            // es exactamente "Crédito" (el metodo sintetico que ya existe
+            // desde Cuentas por Cobrar para representar "todavia no hay
+            // ningun pago real"), o null si no existe.
+            function optionMetodoCredito() {
+                return $('#idMEP_Id option').filter(function() {
+                    return $(this).data('pago') === 'Crédito';
+                }).first();
+            }
+
+            // Exclusivo de 'generico': muestra/oculta el bloque de
+            // adelanto y cuotas segun el Tipo de pago elegido, igual en
+            // espiritu al bloque "Tipo de Venta" -> "Adelanto" -> "Definir
+            // cuotas" que ya existe en el checkout de Ventas. Ademas, como
+            // "Metodo de pago" es un campo obligatorio de la compra (ya
+            // existia asi antes de este modulo) que ademas se reusa como
+            // metodo del adelanto, al pasar a Credito se preselecciona
+            // automaticamente el metodo "Crédito" (si el usuario no habia
+            // elegido ya otro) para dejar en claro que, mientras el
+            // adelanto sea 0, no hace falta un metodo de pago real.
+            function actualizarUICreditoCompra() {
+                if ($('#idCOM_TipoPago').val() === 'Credito') {
+                    $('#cxpCreditoBlock').slideDown(100);
+
+                    if (!$('#idMEP_Id').val()) {
+                        var opcionCredito = optionMetodoCredito();
+                        if (opcionCredito && opcionCredito.length) {
+                            $('#idMEP_Id').val(opcionCredito.val()).trigger('change');
+                        }
+                    }
+                } else {
+                    $('#cxpCreditoBlock').slideUp(100);
+                    $('#cxpChkDefinirCuotas').prop('checked', false);
+                    $('#cxpCuotasConfig').hide();
+                    $('#cxpAdelanto').val('0.00');
+                    $('#cxpCuotasPreview').html('');
+                }
+            }
+
+            // El adelanto de una compra al credito nunca puede superar el
+            // total de la compra. Ademas, "Crédito" no es un metodo de
+            // pago real (no representa dinero entregado), asi que si se
+            // deja un adelanto mayor a 0 hay que pedir que se elija el
+            // metodo real con el que se pagó ese adelanto.
+            function onAdelantoChangeCompra() {
+                var total = parseFloat($('#total').val()) || 0;
+                var adelanto = parseFloat($('#cxpAdelanto').val()) || 0;
+
+                if (adelanto > total) {
+                    adelanto = total;
+                    $('#cxpAdelanto').val(adelanto.toFixed(2));
+                }
+
+                var opcionSeleccionada = $('#idMEP_Id option:selected');
+                if (adelanto > 0 && opcionSeleccionada.data('pago') === 'Crédito') {
+                    $('#idMEP_Id').val('').trigger('change');
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Elige el método real del adelanto',
+                        text: 'Como estás dejando un adelanto, indica con qué método se pagó (Efectivo, Yape, etc.), no "Crédito".',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 4000
+                    });
+                }
+
+                actualizarPreviewCuotasCompra();
+            }
+
+            function onDefinirCuotasChangeCompra() {
+                if ($('#cxpChkDefinirCuotas').is(':checked')) {
+                    $('#cxpCuotasConfig').slideDown(100);
+                    actualizarPreviewCuotasCompra();
+                } else {
+                    $('#cxpCuotasConfig').slideUp(100);
+                    $('#cxpCuotasPreview').html('');
+                }
+            }
+
+            // Vista previa de como quedarian las cuotas (numero, fecha de
+            // vencimiento y monto), calculada igual que en el servidor
+            // (CuentaPagarController::store): saldo repartido en partes
+            // iguales, la ultima cuota absorbe el redondeo.
+            function actualizarPreviewCuotasCompra() {
+                if (!$('#cxpChkDefinirCuotas').is(':checked')) {
+                    $('#cxpCuotasPreview').html('');
+                    return;
+                }
+
+                var total = parseFloat($('#total').val()) || 0;
+                var adelanto = parseFloat($('#cxpAdelanto').val()) || 0;
+                var saldo = Math.max(0, Math.round((total - adelanto) * 100) / 100);
+                var numCuotas = parseInt($('#cxpNumCuotas').val()) || 0;
+                var frecuenciaDias = parseInt($('#cxpFrecuenciaDias').val()) || 0;
+
+                if (numCuotas < 1 || frecuenciaDias < 1) {
+                    $('#cxpCuotasPreview').html('');
+                    return;
+                }
+
+                var montoBase = Math.round((saldo / numCuotas) * 100) / 100;
+                var acumulado = 0;
+                var html = '';
+                var hoy = new Date();
+
+                for (var i = 1; i <= numCuotas; i++) {
+                    var esUltima = i === numCuotas;
+                    var monto = esUltima ? Math.round((saldo - acumulado) * 100) / 100 : montoBase;
+                    acumulado = Math.round((acumulado + monto) * 100) / 100;
+
+                    var fecha = new Date(hoy);
+                    fecha.setDate(fecha.getDate() + (i * frecuenciaDias));
+
+                    html += '<div class="cxp-cuota-preview-row">' +
+                        '<span>Cuota ' + i + ' &middot; ' + fecha.toLocaleDateString('es-PE') + '</span>' +
+                        '<strong>S/ ' + monto.toFixed(2) + '</strong>' +
+                        '</div>';
+                }
+
+                $('#cxpCuotasPreview').html(html);
+            }
+
             function GenerarCompra() {
                 var formulario = document.getElementById("compra_form");
                 $numDocumento = $('#COM_NumDocumento').val();
@@ -753,6 +1006,42 @@
                     return; // Detiene la ejecución si no hay productos en la compra
                 }
 
+                // Exclusivo de 'generico': si la compra es al credito, el
+                // adelanto y las cuotas (ambos opcionales) ya se
+                // capturaron en el propio formulario (bloque #cxpCreditoBlock)
+                // y se validan ANTES de enviar la compra, para no guardarla
+                // y luego pedir estos datos en un paso aparte.
+                var datosCredito = null;
+
+                if ($tipoPago === 'Credito') {
+                    var total = parseFloat($('#total').val()) || 0;
+                    var adelanto = parseFloat($('#cxpAdelanto').val()) || 0;
+                    var tieneCuotas = $('#cxpChkDefinirCuotas').is(':checked');
+                    var numCuotas = $('#cxpNumCuotas').val();
+                    var frecuenciaDias = $('#cxpFrecuenciaDias').val();
+
+                    if (adelanto < 0 || adelanto > total + 0.01) {
+                        Swal.fire({ icon: 'warning', title: 'Adelanto inválido', text: 'El adelanto debe estar entre 0 y el total de la compra.' });
+                        return;
+                    }
+
+                    // "Crédito" no es un metodo de pago real: solo sirve
+                    // para marcar que, mientras el adelanto sea 0, no hay
+                    // ningun pago real todavia. Si hay adelanto, se exige
+                    // el metodo real con el que se pagó.
+                    if (adelanto > 0 && $('#idMEP_Id option:selected').data('pago') === 'Crédito') {
+                        Swal.fire({ icon: 'warning', title: 'Elige el método real del adelanto', text: 'Como estás dejando un adelanto, selecciona con qué método se pagó (no "Crédito").' });
+                        return;
+                    }
+
+                    if (tieneCuotas && (!numCuotas || !frecuenciaDias)) {
+                        Swal.fire({ icon: 'warning', title: 'Faltan datos de cuotas', text: 'Indica el número de cuotas y cada cuántos días vence cada una.' });
+                        return;
+                    }
+
+                    datosCredito = { adelanto, tieneCuotas, numCuotas, frecuenciaDias };
+                }
+
                 $.ajax({
                     data: $('#compra_form').serialize(),
                     url: "{{ tenant_url('tenant.compras.compra.store') }}",
@@ -760,6 +1049,17 @@
                     dataType: 'json',
                     success: function(data) {
                         console.log('Success:', data);
+
+                        // Exclusivo de 'generico': si la compra se registro
+                        // al credito, se crea la cuenta por pagar con los
+                        // datos ya capturados arriba. La compra ya quedo
+                        // guardada en cualquier caso; si este paso falla,
+                        // no se pierde ni se revierte lo ya registrado.
+                        if (datosCredito && data.compra_id) {
+                            guardarCuentaPorPagar(data.compra_id, datosCredito);
+                            return;
+                        }
+
                         Swal.fire({
                             icon: "success",
                             title: "Compra Generada",
@@ -782,6 +1082,44 @@
                             title: 'Error',
                             text: data.responseJSON.message || 'Ocurrió un error al generar la compra.'
                         });
+                    }
+                });
+            }
+
+            // Exclusivo de 'generico': crea la cuenta por pagar de una
+            // compra que ya se guardo al credito, con el adelanto (pagado
+            // con el mismo metodo ya seleccionado en el formulario, para
+            // no agregar un segundo selector de metodo que confunda) y el
+            // plan de cuotas ya capturados en el propio formulario.
+            function guardarCuentaPorPagar(compraId, datosCredito) {
+                $.ajax({
+                    url: "{{ tenant_url('tenant.compras.compra.cuentapagar.store') }}",
+                    type: "POST",
+                    dataType: 'json',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        compra_id: compraId,
+                        adelanto: datosCredito.adelanto,
+                        metodo_pago_id: $('#idMEP_Id').val(),
+                        tiene_cuotas: datosCredito.tieneCuotas ? 1 : 0,
+                        num_cuotas: datosCredito.tieneCuotas ? datosCredito.numCuotas : null,
+                        frecuencia_dias: datosCredito.tieneCuotas ? datosCredito.frecuenciaDias : null
+                    },
+                    success: function() {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Compra y cuenta por pagar registradas',
+                            confirmButtonText: 'Aceptar',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false
+                        }).then(() => location.reload());
+                    },
+                    error: function(xhr) {
+                        var data = xhr.responseJSON || {};
+                        var motivo = data.error
+                            || (data.errors && Object.values(data.errors)[0] && Object.values(data.errors)[0][0])
+                            || 'No se pudo registrar la cuenta por pagar, pero la compra ya quedó registrada.';
+                        Swal.fire({ icon: 'error', title: 'Error', text: motivo, allowOutsideClick: false, allowEscapeKey: false }).then(() => location.reload());
                     }
                 });
             }
