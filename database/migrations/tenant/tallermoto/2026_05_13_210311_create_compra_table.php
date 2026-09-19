@@ -16,7 +16,7 @@ return new class extends Migration
             $table->increments('COM_Id');
             /* CAMPOS */
             $table->string('COM_TipoDocumento', 50);
-            $table->string('COM_NumDocumento', 12);
+            $table->string('COM_NumDocumento', 15);
             $table->string('COM_TipoPago', 50);
             /* FOREIGN KEYS */
             $table->unsignedInteger('MEP_Id');
