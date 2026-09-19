@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Tenant;
+namespace App\Http\Controllers\TenantTallerMotos;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant\Producto;
-use App\Models\Tenant\Traslado;
-use App\Models\Tenant\TrasladoDetalle;
+use App\Models\TenantTallerMotos\Traslado;
+use App\Models\TenantTallerMotos\TrasladoDetalle;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
