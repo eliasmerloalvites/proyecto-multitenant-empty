@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models\Tenant;
+namespace App\Models\Tenant\Generico;
 
+use App\Models\Tenant\Producto;
 use Illuminate\Database\Eloquent\Model;
 
 class DetalleCotizacion extends Model

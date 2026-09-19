@@ -1,17 +1,20 @@
 <?php
 
-namespace App\Models\Tenant;
+namespace App\Models\TenantTallerMotos;
 
+use App\Models\Tenant\Cliente;
+use App\Models\Tenant\Venta;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * Cotizacion: presupuesto para un cliente que aun no descuenta stock ni
- * genera comprobante. Vive en App\Models\Tenant (no TenantTallerMotos)
- * porque el flujo de cotizaciones es comun a ambos verticales de negocio;
- * solo el vertical tallermoto usa RES_Id (columna ausente en el tenant
- * generico, donde una cotizacion siempre es standalone).
+ * genera comprobante. Solo existe en la tabla `cotizacion` de tallermoto
+ * (con RES_Id, columna ausente en generico) — la migracion
+ * tenant/tallermoto/2026_09_09_100000_create_cotizacion_table.php no tiene
+ * equivalente en tenant/generico, asi que este modelo es exclusivo de este
+ * vertical.
  *
- * NOTA: el vertical 'generico' tiene su PROPIA tabla/columnas de cotizacion
+ * El vertical 'generico' tiene su PROPIA tabla/columnas de cotizacion
  * (COT_Total, COT_Observaciones, estado numerico), con su propio modelo en
  * App\Models\Tenant\Generico\Cotizacion. No son intercambiables: cada
  * tenant usa la migracion de su propio vertical (tenant/tallermoto o

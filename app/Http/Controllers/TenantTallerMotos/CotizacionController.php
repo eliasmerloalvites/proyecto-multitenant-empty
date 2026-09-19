@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Tenant;
+namespace App\Http\Controllers\TenantTallerMotos;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant\Cliente;
-use App\Models\Tenant\Cotizacion;
-use App\Models\Tenant\CotizacionItem;
+use App\Models\TenantTallerMotos\Cotizacion;
+use App\Models\TenantTallerMotos\CotizacionItem;
 use App\Models\Tenant\EmpresaFacturacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

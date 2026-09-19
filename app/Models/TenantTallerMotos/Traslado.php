@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models\Tenant;
+namespace App\Models\TenantTallerMotos;
 
+use App\Models\Tenant\Almacen;
 use Illuminate\Database\Eloquent\Model;
 
 class Traslado extends Model

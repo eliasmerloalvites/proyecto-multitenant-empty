@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Tenant;
+namespace App\Http\Controllers\TenantTallerMotos;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\EnviarGuiaRemisionSunatJob;
 use App\Models\Tenant\Almacen;
 use App\Models\Tenant\DocumentoVenta;
 use App\Models\Tenant\EmpresaFacturacion;
-use App\Models\Tenant\GuiaRemision;
+use App\Models\TenantTallerMotos\GuiaRemision;
 use App\Services\Facturacion\GuiaRemisionService;
 use App\Services\Facturacion\GuiaRemisionSunatService;
 use Illuminate\Http\Request;
