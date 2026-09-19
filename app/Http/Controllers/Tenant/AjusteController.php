@@ -21,6 +21,16 @@ class AjusteController extends Controller
     const MOTIVOS = ['MERMA', 'ROTURA', 'VENCIMIENTO', 'CONTEO_FISICO', 'OTRO'];
 
     /**
+     * Guarda de servidor para store(): la base no rechaza nada;
+     * TenantTallerMotos\AjusteController la sobreescribe para rechazar
+     * Servicios (nunca deben terminar con un lote/stock).
+     */
+    protected function validarProductosAjustables(array $proIds): void
+    {
+        //
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
@@ -131,6 +141,12 @@ class AjusteController extends Controller
             if (count($proIds) !== count($tipos) || count($proIds) !== count($cantidades)) {
                 throw new Exception('La lista de productos, tipos y cantidades no coincide.');
             }
+
+            // El selector del formulario ya excluye lo que no se pueda
+            // ajustar (ver productos()), pero eso es solo del lado del
+            // cliente: esto vuelve a validarlo aqui por si el PRO_Id llega
+            // igual por otra via.
+            $this->validarProductosAjustables($proIds);
 
             $ajuste = new Ajuste();
             $ajuste->ALM_Id = $request->ALM_Id;

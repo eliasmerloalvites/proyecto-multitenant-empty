@@ -1116,11 +1116,17 @@ class VentaController extends Controller
 
             $permitirSinStock = (bool) (Almacen::find($idAlmacen)->ALM_PermitirVentaSinStock ?? false);
 
+            // Hook para verticales con productos que nunca tienen lotes (ej.
+            // Servicio en tallermoto, ver TenantTallerMotos\VentaController):
+            // por defecto no excluye a nadie del control de stock normal.
+            $idsSinControlDeStock = $this->productosSinControlDeStock($productosReemision ?? $request->productos);
+
             $cont = 0;
             $it = 0;
             foreach ($productosReemision ?? $request->productos as $item) {
 
-                $rdst = self::ReducirStock($item['PRO_Id'], $item['quantity'], $idAlmacen, $permitirSinStock);
+                $permitirSinStockItem = $permitirSinStock || in_array($item['PRO_Id'], $idsSinControlDeStock);
+                $rdst = self::ReducirStock($item['PRO_Id'], $item['quantity'], $idAlmacen, $permitirSinStockItem);
 
                 // El precio y el descuento por unidad son editables desde el
                 // carrito (POS). DEV_PrecioUnitario guarda el precio final YA
@@ -1825,6 +1831,18 @@ class VentaController extends Controller
      *   (o de uno nuevo en 0 si el producto nunca tuvo lote en esta sede),
      *   dejandolo en negativo para que quede visible el sobregiro.
      */
+    /**
+     * IDs de producto del carrito que nunca tienen lotes y por lo tanto
+     * deben venderse "sin stock" siempre (independiente de
+     * ALM_PermitirVentaSinStock). La base no tiene ningun producto asi;
+     * TenantTallerMotos\VentaController lo sobreescribe para los productos
+     * marcados como Servicio.
+     */
+    protected function productosSinControlDeStock(array $items): array
+    {
+        return [];
+    }
+
     public static function ReducirStock($pro, $can, $alm, $permitirSinStock = false)
     {
         $lotes = DB::table('lote')

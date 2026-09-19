@@ -20,6 +20,30 @@ use Illuminate\Support\Facades\DB;
 class CompraController extends Controller
 {
     /**
+     * Catalogo ofrecido en "Nueva compra" para elegir que reabastecer. La
+     * base no excluye nada; TenantTallerMotos\CompraController excluye los
+     * productos marcados como Servicio (no tienen stock que comprar).
+     */
+    protected function productosParaCompra()
+    {
+        return DB::table('producto as p')
+            ->join('categoria as c', 'c.CAT_Id', '=', 'p.CAT_Id')
+            ->select('p.*', 'c.*')
+            ->get();
+    }
+
+    /**
+     * Guarda de servidor para store(): la base no rechaza nada (no todos
+     * los verticales tienen productos "no comprables");
+     * TenantTallerMotos\CompraController la sobreescribe para rechazar
+     * Servicios, que nunca deben terminar generando un lote de stock.
+     */
+    protected function validarProductosComprables(array $proIds): void
+    {
+        //
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
@@ -79,10 +103,7 @@ class CompraController extends Controller
         $metodo_pago = MetodoPago::whereNotIn('MEP_Pago', ['Credito', 'Pago Mixto'])->get();
         $detalleCompra = DetalleCompra::all();
         $almacen = Almacen::all();
-        $producto =  DB::table('producto as p')
-            ->join('categoria as c', 'c.CAT_Id', '=', 'p.CAT_Id')
-            ->select('p.*', 'c.*')
-            ->get();
+        $producto = $this->productosParaCompra();
 
         $categoria = Categoria::all();
         $almacenCajaActiva = tenant_caja_activa_almacen_id();
@@ -121,6 +142,12 @@ class CompraController extends Controller
             $DEC_PrecioUnitario = $request->get('DEC_PrecioUnitario');
             $PrecioUnitarioV = $request->get('DEC_PrecioUnitarioV');
             $idalmacen = $request->get('idalmacen');
+
+            // El combo de "Nueva compra" ya excluye lo que no se pueda
+            // comprar (ver productosParaCompra()), pero eso es solo del
+            // lado del cliente: esto vuelve a validarlo aqui por si el
+            // PRO_Id llega igual por otra via (ej. peticion manual).
+            $this->validarProductosComprables($PRO_Id ?? []);
 
             $cont = 0;
 

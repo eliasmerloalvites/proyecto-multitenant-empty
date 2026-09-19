@@ -46,6 +46,17 @@ class ProductoController extends Controller
         return tenant('tipo_negocio') === 'tallermoto';
     }
 
+    /**
+     * Usado por importar() para no agregarle stock a un producto existente
+     * que en realidad es un Servicio. La base no tiene el concepto de
+     * Servicio (columna exclusiva de tallermoto); ver override en
+     * TenantTallerMotos\ProductoController.
+     */
+    protected function esProductoServicio($productoExistente): bool
+    {
+        return false;
+    }
+
     private function formatBytes($bytes, $precision = 2)
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -363,6 +374,12 @@ class ProductoController extends Controller
                 $stockInicial = (float) $stockInicial;
 
                 $productoExistente = DB::table('producto')->whereRaw('LOWER(PRO_Nombre) = ?', [mb_strtolower($nombre)])->first();
+
+                if ($productoExistente && $this->esProductoServicio($productoExistente) && $stockInicial > 0) {
+                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": es un Servicio, no se le puede agregar stock."];
+                    $errores++;
+                    continue;
+                }
 
                 if ($productoExistente) {
                     $proId = $productoExistente->PRO_Id;
