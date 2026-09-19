@@ -14,6 +14,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Tabla vacia = tenant nuevo recien provisionandose: MetodoPagoTableSeeder
+        // (que corre despues de las migraciones) ya va a insertar "Mixto" con
+        // MEP_Id=6 explicito. Insertarlo aqui tambien le robaria el
+        // auto_increment (MEP_Id=1) y el seeder chocaria al insertar su propio
+        // MEP_Id=1 ("Efectivo") por duplicado de llave primaria.
+        if (DB::table('metodo_pago')->count() === 0) {
+            return;
+        }
+
         $existe = DB::table('metodo_pago')->where('MEP_Pago', 'Mixto')->exists();
 
         if (! $existe) {
