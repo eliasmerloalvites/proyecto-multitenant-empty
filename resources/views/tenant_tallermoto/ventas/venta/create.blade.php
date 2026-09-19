@@ -284,35 +284,272 @@
             z-index: 3000;
             align-items: center;
             justify-content: center;
+            padding: 24px;
+        }
+
+        #previewImagenVenta .preview-panel {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .6);
+            width: 100%;
+            max-width: 980px;
+            max-height: 90vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        #previewImagenVenta .preview-col-imagen {
+            flex: 0 0 52%;
+            background: #eef0f3;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        #previewImagenVenta .preview-image-wrap {
+            flex: 1;
+            min-height: 320px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #fff;
+            position: relative;
+            cursor: zoom-in;
+            touch-action: none;
+        }
+
+        #previewImagenVenta .preview-image-wrap.zoomed {
+            cursor: grab;
+        }
+
+        #previewImagenVenta .preview-image-wrap.arrastrando {
+            cursor: grabbing;
+        }
+
+        #previewImagenVenta .preview-image-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transform: scale(1) translate(0, 0);
+            transform-origin: center center;
+            user-select: none;
+            -webkit-user-drag: none;
+            will-change: transform;
+        }
+
+        #previewImagenVenta .preview-zoom-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, .55);
+            color: #fff;
+            font-size: 11px;
+            padding: 4px 9px;
+            border-radius: 20px;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #previewImagenVenta .preview-zoom-controles {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, .55);
+            border-radius: 20px;
+            padding: 4px 6px;
+        }
+
+        #previewImagenVenta .preview-zoom-controles button {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, .15);
+            color: #fff;
+            font-size: 12px;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        #previewImagenVenta .preview-zoom-controles button:hover {
+            background: rgba(255, 255, 255, .3);
+        }
+
+        #previewImagenVenta .preview-zoom-porcentaje {
+            color: #fff;
+            font-size: 11px;
+            min-width: 34px;
+            text-align: center;
+        }
+
+        #previewImagenVenta .preview-thumbs {
+            display: none;
+            gap: 8px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        #previewImagenVenta .preview-thumbs img {
+            width: 54px;
+            height: 54px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            opacity: .55;
+            border: 2px solid transparent;
+            transition: opacity .15s ease, border-color .15s ease;
+        }
+
+        #previewImagenVenta .preview-thumbs img:hover {
+            opacity: .85;
+        }
+
+        #previewImagenVenta .preview-thumbs img.activo {
+            opacity: 1;
+            border-color: var(--primary, #6366f1);
+        }
+
+        #previewImagenVenta .preview-col-info {
+            flex: 1;
+            padding: 28px 26px;
+            overflow-y: auto;
+            display: flex;
             flex-direction: column;
         }
 
-        #previewImagenVenta img {
-            max-width: 90%;
-            max-height: 80vh;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .6);
-            background: #fff;
+        #previewImagenVenta .preview-nombre {
+            color: var(--dark, #1f2937);
+            font-size: 20px;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 4px;
         }
 
-        #previewImagenVenta .preview-nombre {
-            color: #fff;
-            margin-top: 12px;
+        #previewImagenVenta .preview-badge-tipo {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            width: fit-content;
+        }
+
+        #previewImagenVenta .preview-badge-tipo.tipo-servicio {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        #previewImagenVenta .preview-badge-tipo.tipo-stock-ok {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        #previewImagenVenta .preview-badge-tipo.tipo-stock-bajo {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        #previewImagenVenta .preview-badge-tipo.tipo-sin-stock {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        #previewImagenVenta .preview-precio {
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--primary, #6366f1);
+            margin-bottom: 18px;
+        }
+
+        #previewImagenVenta .preview-seccion-titulo {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #9ca3af;
+            margin-bottom: 4px;
+            margin-top: 16px;
+        }
+
+        #previewImagenVenta .preview-descripcion {
+            font-size: 13.5px;
+            color: #4b5563;
+            line-height: 1.5;
+        }
+
+        #previewImagenVenta .preview-datos-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        #previewImagenVenta .preview-dato {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        #previewImagenVenta .preview-dato .dato-label {
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            color: #9ca3af;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        #previewImagenVenta .preview-dato .dato-valor {
             font-size: 14px;
-            font-weight: 600;
-            text-align: center;
-            max-width: 80%;
+            font-weight: 700;
+            color: var(--dark, #1f2937);
+        }
+
+        #previewImagenVenta .preview-btn-agregar {
+            margin-top: auto;
+            padding-top: 20px;
         }
 
         #previewImagenVenta .preview-cerrar {
             position: absolute;
-            top: 20px;
-            right: 24px;
-            background: none;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, .35);
             border: none;
             color: #fff;
-            font-size: 30px;
+            font-size: 20px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        @media (max-width: 767px) {
+            #previewImagenVenta .preview-panel {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            #previewImagenVenta .preview-col-imagen {
+                flex: 0 0 auto;
+            }
+
+            #previewImagenVenta .preview-image-wrap {
+                min-height: 220px;
+            }
         }
 
         .cart-info {
@@ -2370,8 +2607,47 @@
          stacking de otros modales de esta pantalla. --}}
     <div id="previewImagenVenta">
         <button type="button" class="preview-cerrar" id="previewImagenCerrar"><i class="fas fa-times"></i></button>
-        <img id="previewImagenImg" src="">
-        <div class="preview-nombre" id="previewImagenNombre"></div>
+        <div class="preview-panel" onclick="event.stopPropagation();">
+            <div class="preview-col-imagen">
+                <div class="preview-image-wrap" id="previewImagenWrap">
+                    <img id="previewImagenImg" src="">
+                    <span class="preview-zoom-hint"><i class="fas fa-mouse"></i> Rueda del mouse para zoom</span>
+                    <div class="preview-zoom-controles" onclick="event.stopPropagation();">
+                        <button type="button" id="previewZoomMenos"><i class="fas fa-minus"></i></button>
+                        <span class="preview-zoom-porcentaje" id="previewZoomPorcentaje">100%</span>
+                        <button type="button" id="previewZoomMas"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+                <div class="preview-thumbs" id="previewImagenThumbs"></div>
+            </div>
+            <div class="preview-col-info">
+                <div class="preview-nombre" id="previewImagenNombre"></div>
+                <span class="preview-badge-tipo" id="previewImagenBadge"></span>
+                <div class="preview-precio" id="previewImagenPrecio"></div>
+
+                <div class="preview-datos-grid">
+                    <div class="preview-dato">
+                        <span class="dato-label">Marca</span>
+                        <span class="dato-valor" id="previewImagenMarca">-</span>
+                    </div>
+                    <div class="preview-dato">
+                        <span class="dato-label">Categoría</span>
+                        <span class="dato-valor" id="previewImagenCategoria">-</span>
+                    </div>
+                    <div class="preview-dato" id="previewImagenCodInternoWrap" style="display:none;">
+                        <span class="dato-label">Cód. interno</span>
+                        <span class="dato-valor" id="previewImagenCodInterno">-</span>
+                    </div>
+                    <div class="preview-dato" id="previewImagenCodFabricacionWrap" style="display:none;">
+                        <span class="dato-label">Cód. fabricación</span>
+                        <span class="dato-valor" id="previewImagenCodFabricacion">-</span>
+                    </div>
+                </div>
+
+                <div class="preview-seccion-titulo">Descripción</div>
+                <div class="preview-descripcion" id="previewImagenDescripcion">-</div>
+            </div>
+        </div>
     </div>
 
 @endsection
@@ -2738,10 +3014,14 @@
                     product.PRO_CodigoInterno ? `Cód. interno: ${product.PRO_CodigoInterno}` : null,
                     product.PRO_CodigoFabricacion ? `Cód. fabricación: ${product.PRO_CodigoFabricacion}` : null,
                 ].filter(Boolean).join(' · ');
+                // Principal + hasta 4 de galeria (ver ProductoImagen): asi
+                // la previsualizacion del POS muestra las mismas fotos que
+                // ya se pueden cargar desde Inventario > Producto.
+                let imagenes = (product.galeria && product.galeria.length) ? [image, ...product.galeria] : image;
                 html += `
                 <div class="product-card">
                     <div class="product-image">
-                        <img src="${image}" onclick='event.stopPropagation(); previsualizarImagenVenta(${JSON.stringify(image)}, ${JSON.stringify(product.PRO_Nombre)})'>
+                        <img src="${image}" onclick='event.stopPropagation(); previsualizarImagenVenta(${JSON.stringify(imagenes)}, ${JSON.stringify(product)})'>
                     </div>
 
                     <div class="product-name">${product.PRO_Nombre}</div>
@@ -2750,8 +3030,8 @@
                     <div class="product-footer">
                         <div>
                             <div class="product-price">S/ ${product.PRO_PrecioBaseVenta}</div>
-                            <div class="product-stock" style="${product.PRO_Cantidad <= 0 ? 'color:#dc3545;font-weight:bold' : ''}">
-                                ${product.PRO_Cantidad <= 0 ? 'SIN STOCK' : 'Stock ' + product.PRO_Cantidad}
+                            <div class="product-stock" style="${product.PRO_TipoProducto === 'SERVICIO' ? 'color:#17a2b8;font-weight:bold' : (product.PRO_Cantidad <= 0 ? 'color:#dc3545;font-weight:bold' : '')}">
+                                ${product.PRO_TipoProducto === 'SERVICIO' ? 'Servicio' : (product.PRO_Cantidad <= 0 ? 'SIN STOCK' : 'Stock ' + product.PRO_Cantidad)}
                             </div>
                         </div>
                         <button class="btn btn-sm btn-primary rounded-circle"
@@ -2910,11 +3190,173 @@
             renderCart();
         }
 
-        function previsualizarImagenVenta(url, nombre) {
-            $('#previewImagenImg').attr('src', url);
-            $('#previewImagenNombre').text(nombre || '');
+        // 'imagenes' es un array con la principal + hasta 4 de galeria (ver
+        // ProductoImagen). 'producto' trae el resto de la ficha (nombre,
+        // descripcion, marca, categoria, stock, precio de venta -- nunca el
+        // precio de compra, ese no se manda desde getProductos()).
+        // 'nombreMostrado' permite que el carrito use el nombre
+        // personalizado de esta venta en vez del nombre real del producto.
+        function previsualizarImagenVenta(imagenes, producto, nombreMostrado) {
+            producto = producto || {};
+            let lista = Array.isArray(imagenes) ? imagenes.filter(Boolean) : [imagenes].filter(Boolean);
+            if (lista.length === 0) {
+                lista = ['/images/imagen_default.png'];
+            }
+
+            $('#previewImagenImg').attr('src', lista[0]);
+            previewResetZoom();
+            $('#previewImagenNombre').text(nombreMostrado || producto.PRO_Nombre || '');
+            $('#previewImagenDescripcion').text(producto.PRO_Descripcion || 'Sin descripción.');
+            $('#previewImagenMarca').text(producto.PRO_Marca || '-');
+            $('#previewImagenCategoria').text(producto.CAT_Nombre || '-');
+
+            if (producto.PRO_CodigoInterno) {
+                $('#previewImagenCodInterno').text(producto.PRO_CodigoInterno);
+                $('#previewImagenCodInternoWrap').show();
+            } else {
+                $('#previewImagenCodInternoWrap').hide();
+            }
+
+            if (producto.PRO_CodigoFabricacion) {
+                $('#previewImagenCodFabricacion').text(producto.PRO_CodigoFabricacion);
+                $('#previewImagenCodFabricacionWrap').show();
+            } else {
+                $('#previewImagenCodFabricacionWrap').hide();
+            }
+
+            let precio = parseFloat(producto.PRO_PrecioBaseVenta ?? producto.precioUnitario ?? 0);
+            $('#previewImagenPrecio').text('S/ ' + (isNaN(precio) ? '0.00' : precio.toFixed(2)));
+
+            let $badge = $('#previewImagenBadge');
+            if (producto.PRO_TipoProducto === 'SERVICIO') {
+                $badge.attr('class', 'preview-badge-tipo tipo-servicio').text('Servicio').show();
+            } else if (producto.PRO_Cantidad !== undefined) {
+                let cantidad = parseFloat(producto.PRO_Cantidad) || 0;
+                if (cantidad <= 0) {
+                    $badge.attr('class', 'preview-badge-tipo tipo-sin-stock').text('Sin stock').show();
+                } else {
+                    $badge.attr('class', 'preview-badge-tipo tipo-stock-ok').text('Stock: ' + cantidad).show();
+                }
+            } else {
+                $badge.hide();
+            }
+
+            let $thumbs = $('#previewImagenThumbs');
+            if (lista.length > 1) {
+                let html = lista.map((url, i) =>
+                    `<img src="${url}" class="${i === 0 ? 'activo' : ''}" onclick="event.stopPropagation(); previewCambiarImagen('${url}', this);">`
+                ).join('');
+                $thumbs.html(html).show();
+            } else {
+                $thumbs.hide().empty();
+            }
+
             $('#previewImagenVenta').css('display', 'flex');
         }
+
+        function previewCambiarImagen(url, thumbEl) {
+            $('#previewImagenImg').attr('src', url);
+            previewResetZoom();
+            $(thumbEl).addClass('activo').siblings().removeClass('activo');
+        }
+
+        // ZOOM PROGRESIVO: rueda del mouse acerca/aleja de a poco (en vez
+        // del acercamiento fijo/tosco de antes), centrado en el punto donde
+        // apunta el cursor. Con zoom activo se puede arrastrar la imagen
+        // para recorrerla (como cualquier visor de fotos). Tambien hay
+        // botones +/- para quien no tiene rueda (touch/trackpad).
+        const PREVIEW_ZOOM_MIN = 1;
+        const PREVIEW_ZOOM_MAX = 4;
+        const PREVIEW_ZOOM_PASO_RUEDA = 0.15;
+        const PREVIEW_ZOOM_PASO_BOTON = 0.4;
+
+        let previewZoom = 1;
+        let previewPanX = 0;
+        let previewPanY = 0;
+        let previewArrastrando = false;
+        let previewArrastreInicio = { x: 0, y: 0 };
+        let previewPanInicio = { x: 0, y: 0 };
+
+        function previewAplicarTransform() {
+            $('#previewImagenImg').css('transform', `translate(${previewPanX}px, ${previewPanY}px) scale(${previewZoom})`);
+            $('#previewZoomPorcentaje').text(Math.round(previewZoom * 100) + '%');
+            $('#previewImagenWrap').toggleClass('zoomed', previewZoom > 1);
+        }
+
+        function previewResetZoom() {
+            previewZoom = 1;
+            previewPanX = 0;
+            previewPanY = 0;
+            previewAplicarTransform();
+        }
+
+        // Cambia el zoom manteniendo fijo, en pantalla, el punto (cx, cy)
+        // -- relativo al centro del contenedor -- que se esta apuntando.
+        // Sin 'cx'/'cy' (botones +/-) el zoom se centra en el medio.
+        function previewSetZoom(nuevoZoom, cx = 0, cy = 0) {
+            nuevoZoom = Math.min(PREVIEW_ZOOM_MAX, Math.max(PREVIEW_ZOOM_MIN, nuevoZoom));
+            if (nuevoZoom === previewZoom) return;
+
+            let ratio = nuevoZoom / previewZoom;
+            previewPanX = cx - (cx - previewPanX) * ratio;
+            previewPanY = cy - (cy - previewPanY) * ratio;
+            previewZoom = nuevoZoom;
+
+            if (previewZoom === PREVIEW_ZOOM_MIN) {
+                previewPanX = 0;
+                previewPanY = 0;
+            }
+
+            previewAplicarTransform();
+        }
+
+        $('#previewImagenWrap').on('wheel', function (e) {
+            e.preventDefault();
+            let rect = this.getBoundingClientRect();
+            let cx = e.originalEvent.clientX - rect.left - rect.width / 2;
+            let cy = e.originalEvent.clientY - rect.top - rect.height / 2;
+            let paso = e.originalEvent.deltaY < 0 ? PREVIEW_ZOOM_PASO_RUEDA : -PREVIEW_ZOOM_PASO_RUEDA;
+            previewSetZoom(previewZoom + paso, cx, cy);
+        });
+
+        $('#previewZoomMas').on('click', function () {
+            previewSetZoom(previewZoom + PREVIEW_ZOOM_PASO_BOTON);
+        });
+
+        $('#previewZoomMenos').on('click', function () {
+            previewSetZoom(previewZoom - PREVIEW_ZOOM_PASO_BOTON);
+        });
+
+        // ARRASTRAR (solo tiene sentido con zoom > 1): pointer events cubre
+        // mouse y touch con el mismo codigo.
+        $('#previewImagenWrap').on('pointerdown', function (e) {
+            if (previewZoom <= 1) return;
+            previewArrastrando = true;
+            $(this).addClass('arrastrando');
+            previewArrastreInicio = { x: e.clientX, y: e.clientY };
+            previewPanInicio = { x: previewPanX, y: previewPanY };
+            this.setPointerCapture(e.pointerId);
+        });
+
+        $('#previewImagenWrap').on('pointermove', function (e) {
+            if (!previewArrastrando) return;
+            previewPanX = previewPanInicio.x + (e.clientX - previewArrastreInicio.x);
+            previewPanY = previewPanInicio.y + (e.clientY - previewArrastreInicio.y);
+            previewAplicarTransform();
+        });
+
+        $('#previewImagenWrap').on('pointerup pointerleave pointercancel', function () {
+            previewArrastrando = false;
+            $(this).removeClass('arrastrando');
+        });
+
+        // Doble click: forma rapida de acercar/alejar sin usar la rueda.
+        $('#previewImagenWrap').on('dblclick', function (e) {
+            let rect = this.getBoundingClientRect();
+            let cx = e.clientX - rect.left - rect.width / 2;
+            let cy = e.clientY - rect.top - rect.height / 2;
+            previewSetZoom(previewZoom > 1 ? 1 : 2.2, cx, cy);
+        });
 
         $('#previewImagenCerrar, #previewImagenVenta').on('click', function (e) {
             if (e.target.id === 'previewImagenVenta' || e.target.id === 'previewImagenCerrar' || $(e.target).closest('#previewImagenCerrar').length) {
@@ -2948,11 +3390,12 @@
                 // original: se muestra solo lectura (sin inputs de
                 // precio/descuento, sin +/- ni boton de quitar).
                 let soloLectura = !!window.REEMITIR_VENTA_ID;
+                let imagenesItem = (item.galeria && item.galeria.length) ? [image, ...item.galeria] : image;
 
                 html += `
                 <div class="cart-item">
                     <div class="cart-image">
-                        <img src="${image}" onclick='previsualizarImagenVenta(${JSON.stringify(image)}, ${JSON.stringify(item.nombrePersonalizado || item.PRO_Nombre)})'>
+                        <img src="${image}" onclick='previsualizarImagenVenta(${JSON.stringify(imagenesItem)}, ${JSON.stringify(item)}, ${JSON.stringify(item.nombrePersonalizado || item.PRO_Nombre)})'>
                     </div>
                     <div class="cart-info">
                         ${soloLectura
@@ -3426,6 +3869,12 @@
             // VENTA AL CREDITO
             $('#ventaCreditoToggle').prop('checked', false);
             toggleVentaCredito();
+            // CATALOGO: refresca el stock mostrado (la venta recien
+            // registrada ya descontio lotes; sin esto, un producto que se
+            // quedo sin stock seguia apareciendo disponible hasta recargar
+            // la pagina a mano).
+            currentPage = 1;
+            loadProducts(currentPage);
         }
 
 
