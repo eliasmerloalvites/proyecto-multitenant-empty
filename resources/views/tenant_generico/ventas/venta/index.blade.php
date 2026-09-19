@@ -366,6 +366,23 @@
         // esa respuesta vieja llega igual pero se descarta aqui en vez de
         // mezclarse con ListPedido de la petición nueva.
         var verDetalleToken = 0;
+
+        // Exclusivo de generico: ids de venta que SI tienen una cuenta
+        // por cobrar real. Se carga una sola vez, de forma sincrona, para
+        // que ya este disponible antes de que se pinte la primera pagina
+        // de la tabla de ventas (el metodo de pago mostrado, "Mixto", no
+        // alcanza para saberlo: tambien se usa en ventas al contado con
+        // pago dividido que nunca generan cuenta por cobrar).
+        var cuentaCobrarVentaIds = new Set();
+        $.ajax({
+            url: "{{ tenant_url('tenant.ventas.cuentascobrar.ids') }}",
+            method: 'GET',
+            async: false,
+            success: function(ids) {
+                cuentaCobrarVentaIds = new Set(ids);
+            }
+        });
+
         $(document).ready(function() {
             const Toast = Swal.mixin({
                 toast: true,
@@ -464,7 +481,22 @@
                     {
                         data: 'MEP_Pago',
                         name: 'MEP_Pago',
-                        className: 'text-start'
+                        className: 'text-start',
+                        // Exclusivo de generico: si esta venta SI tiene una
+                        // cuenta por cobrar real (segun cuentaCobrarVentaIds,
+                        // cargado aparte), se agrega un link a su detalle.
+                        // No basta con mirar el metodo de pago mostrado
+                        // ("Mixto" tambien es un pago dividido al contado
+                        // que nunca genera cuenta por cobrar), y no requiere
+                        // que el listado (compartido con tallermoto) envie
+                        // ningun dato nuevo: solo usa el VEN_Id de la fila.
+                        'render': function(data, type, row) {
+                            if (cuentaCobrarVentaIds.has(row.VEN_Id)) {
+                                let url = "{{ tenant_url('tenant.ventas.venta.vercuentacobrar', ['ventaId' => ':id']) }}".replace(':id', row.VEN_Id);
+                                return data + ' <a href="' + url + '" title="Ver cuenta por cobrar" style="margin-left:4px;"><i class="fas fa-file-invoice-dollar"></i></a>';
+                            }
+                            return data;
+                        }
                     },
                     {
                         data: 'importe',
@@ -813,6 +845,26 @@
                     })
             });
 
+            // Los botones "TICKET"/"PDF" (clase printVenta) los arma el
+            // controlador compartido de Ventas apuntando a
+            // /tenant/ventas/venta/{id}/ticket|pdf, que revienta con toda
+            // venta al credito (consulta una tabla que no existe). Como ese
+            // HTML no se genera aqui (no hay un enlace propio que editar),
+            // se intercepta el click y se redirige a la version corregida,
+            // exclusiva de generico, sin tocar el controlador compartido.
+            $('body').on('click', 'a.printVenta', function (e) {
+                var href = $(this).attr('href') || '';
+                var match = href.match(/\/tenant\/ventas\/venta\/(\d+)\/(ticket|pdf)(?:$|[?#])/);
+
+                if (!match) {
+                    return;
+                }
+
+                e.preventDefault();
+                var url = '/tenant/ventas/venta/' + match[1] + '/' + match[2] + '-seguro';
+                window.open(url, '_blank');
+            });
+
             $('body').on('click', '.envioWhatsapp', function (e) {
                 e.preventDefault();
                 let Venta_id_ver = $(this).data('id');
@@ -821,7 +873,10 @@
                 $('#numeroWhatsapp').val('');
 
                 // Se precarga el celular del cliente si lo tiene registrado.
-                $.get('/tenant/ventas/venta/' + Venta_id_ver + '/ticket-whatsapp')
+                // Usa la ruta "-seguro" (exclusiva de generico): la original
+                // revienta con toda venta al credito porque consulta una
+                // tabla que no existe ('cuentas_por_cobrar').
+                $.get('/tenant/ventas/venta/' + Venta_id_ver + '/ticket-whatsapp-seguro')
                     .done(function (r) {
                         if (r.celular) {
                             $('#numeroWhatsapp').val(String(r.celular).replace(/\D/g, '').slice(-9));
@@ -845,8 +900,9 @@
                 $btn.html('Preparando ticket...');
 
                 // La imagen se genera aqui, no al vender: solo se crea la de
-                // los tickets que realmente se envian.
-                $.get('/tenant/ventas/venta/' + ventaId + '/ticket-whatsapp')
+                // los tickets que realmente se envian. Usa la ruta "-seguro"
+                // por el mismo motivo que arriba.
+                $.get('/tenant/ventas/venta/' + ventaId + '/ticket-whatsapp-seguro')
                     .done(function (r) {
                         if (!r.success) {
                             Swal.fire({ icon: 'error', title: 'No se pudo preparar', text: r.descripcion || '' });
@@ -931,7 +987,22 @@
                     {
                         data: 'MEP_Pago',
                         name: 'MEP_Pago',
-                        className: 'text-start'
+                        className: 'text-start',
+                        // Exclusivo de generico: si esta venta SI tiene una
+                        // cuenta por cobrar real (segun cuentaCobrarVentaIds,
+                        // cargado aparte), se agrega un link a su detalle.
+                        // No basta con mirar el metodo de pago mostrado
+                        // ("Mixto" tambien es un pago dividido al contado
+                        // que nunca genera cuenta por cobrar), y no requiere
+                        // que el listado (compartido con tallermoto) envie
+                        // ningun dato nuevo: solo usa el VEN_Id de la fila.
+                        'render': function(data, type, row) {
+                            if (cuentaCobrarVentaIds.has(row.VEN_Id)) {
+                                let url = "{{ tenant_url('tenant.ventas.venta.vercuentacobrar', ['ventaId' => ':id']) }}".replace(':id', row.VEN_Id);
+                                return data + ' <a href="' + url + '" title="Ver cuenta por cobrar" style="margin-left:4px;"><i class="fas fa-file-invoice-dollar"></i></a>';
+                            }
+                            return data;
+                        }
                     },
                     {
                         data: 'importe',

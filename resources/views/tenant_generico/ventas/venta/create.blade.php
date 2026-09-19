@@ -24,6 +24,21 @@
             padding: 10px;
         }
 
+        .cotizacion-origen-aviso {
+            background: #F9F7FF;
+            border: 1px solid #DCD1FF;
+            color: #4C1D95;
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 13px;
+        }
+
         /* =========================
                             LAYOUT
                             ========================= */
@@ -547,7 +562,18 @@
 
         }
 
-        .checkout-label {
+        /* Antes esta regla era ".checkout-label { color:#ffffff }" sin
+           calificar: como tiene la misma especificidad que la definicion
+           de la linea 434 (usada dentro de ".checkout-card", el cartel
+           morado del total, que SI necesita texto blanco), ganaba en
+           todos lados por venir despues en el archivo — dejando cada
+           etiqueta del modal de checkout (Cliente, Metodos de Pago,
+           Adelanto, Numero de cuotas, etc.) en blanco sobre el fondo
+           blanco del modal, es decir invisible. Se acota a ".checkout-body"
+           para que solo afecte las etiquetas del modal, sin tocar el
+           cartel morado.
+        */
+        .checkout-body .checkout-label {
 
             display: block;
 
@@ -603,6 +629,106 @@
             box-shadow:
                 0 0 0 4px rgba(124, 58, 237, .08);
 
+        }
+
+        /* =========================================
+                            PAGO DIVIDIDO (multi-metodo)
+                            ========================================= */
+
+        .payment-method-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .payment-method-select {
+            flex: 1.3;
+            height: 48px;
+            border: 1px solid #E5E7EB;
+            border-radius: 14px;
+            padding: 0 12px;
+            font-size: 14px;
+            background: #fff;
+            outline: none;
+            transition: .2s ease;
+        }
+
+        .payment-method-amount {
+            flex: 1;
+            height: 48px;
+            border: 1px solid #E5E7EB;
+            border-radius: 14px;
+            padding: 0 12px;
+            font-size: 14px;
+            background: #fff;
+            outline: none;
+            text-align: right;
+            transition: .2s ease;
+        }
+
+        .payment-method-select:focus,
+        .payment-method-amount:focus {
+            border-color: #7C3AED;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, .08);
+        }
+
+        .btn-remove-payment {
+            width: 40px;
+            height: 48px;
+            border: none;
+            border-radius: 12px;
+            background: #FEE2E2;
+            color: #DC2626;
+            font-size: 14px;
+            flex-shrink: 0;
+            transition: .2s ease;
+        }
+
+        .btn-remove-payment:hover { background: #FCA5A5; }
+
+        .btn-add-payment {
+            width: 100%;
+            height: 44px;
+            border: 1.5px dashed #C4B5FD;
+            border-radius: 14px;
+            background: #F5F3FF;
+            color: #7C3AED;
+            font-size: 13px;
+            font-weight: 700;
+            transition: .2s ease;
+        }
+
+        .btn-add-payment:hover { background: #EDE9FE; }
+
+        .payment-balance-box {
+            background: #F9FAFB;
+            border: 1.5px solid #E5E7EB;
+            border-radius: 18px;
+            padding: 14px 18px;
+            transition: .2s ease;
+        }
+
+        .payment-balance-box.is-ok { border-color: #86EFAC; background: #F0FDF4; }
+        .payment-balance-box.is-error { border-color: #FCA5A5; background: #FEF2F2; }
+
+        .payment-balance-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #6B7280;
+            margin-bottom: 4px;
+        }
+
+        .payment-balance-row span:last-child {
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .payment-balance-diff {
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: 800;
+            text-align: right;
         }
 
         /* =========================================
@@ -857,6 +983,73 @@
 
             height: 70px;
 
+        }
+
+        /* =========================================
+                    VENTA AL CREDITO (solo generico)
+                    ========================================= */
+
+        .checkout-help-text {
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 6px;
+            margin-bottom: 10px;
+        }
+
+        .checkout-checkbox-row {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .checkout-checkbox-row label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #374151;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .checkout-checkbox-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        #cuotasConfig .row {
+            margin: 0 -6px;
+        }
+
+        #cuotasConfig .col-6 {
+            padding: 0 6px;
+        }
+
+        #cuotasPreview {
+            margin-top: 4px;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+
+        .cuota-preview-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border: 1px solid #EEF2F7;
+            border-radius: 10px;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        .cuota-preview-row .cuota-preview-numero {
+            font-weight: 700;
+            color: #6C3BFF;
+        }
+
+        .cuota-preview-row .cuota-preview-monto {
+            font-weight: 700;
         }
 
         /* =========================================
@@ -1527,6 +1720,19 @@
     </style>
 
     <div class="container-fluid pos-wrapper">
+
+        <!-- AVISO: venta cargada desde una Cotizacion (exclusivo de generico) -->
+        <input type="hidden" id="cotizacionOrigenId">
+        <div id="avisoCotizacionOrigen" class="cotizacion-origen-aviso" style="display:none;">
+            <div>
+                <i class="fas fa-file-signature mr-1"></i>
+                <span id="cotizacionOrigenTexto"></span>
+            </div>
+            <button type="button" class="btn btn-sm btn-light border" onclick="limpiarCotizacionOrigen()">
+                <i class="fas fa-times mr-1"></i> Quitar referencia
+            </button>
+        </div>
+
         <div class="row g-2">
             <!-- LEFT -->
             <div class="col-lg-4">
@@ -1667,6 +1873,56 @@
                                     </div>
                                 @endunless
                             </div>
+
+                            <!-- TIPO DE VENTA (Contado / Crédito) -->
+                            <div class="checkout-block">
+                                <label class="checkout-label">Tipo de Venta</label>
+                                <div class="voucher-switch">
+                                    <button type="button" class="voucher-option tipoventa-option active" onclick="changeTipoVenta(this,'CONTADO')">
+                                        Contado
+                                    </button>
+                                    <button type="button" class="voucher-option tipoventa-option" onclick="changeTipoVenta(this,'CREDITO')">
+                                        Crédito
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- DETALLE DE CREDITO (solo si Tipo de Venta = Crédito) -->
+                            <div class="checkout-block" id="creditoBlock" style="display:none;">
+                                <label class="checkout-label">Adelanto (S/)</label>
+                                <input type="number" step="0.01" min="0" id="inputAdelanto" class="checkout-input checkout-money"
+                                    value="0.00" oninput="onAdelantoChange()">
+                                <div class="checkout-help-text">
+                                    Deja en 0.00 para pasar toda la venta a crédito. Si el cliente
+                                    deja un adelanto, indícalo aquí (no puede superar el total).
+                                </div>
+
+                                <div class="checkout-checkbox-row">
+                                    <label>
+                                        <input type="checkbox" id="chkDefinirCuotas" onchange="onDefinirCuotasChange()">
+                                        Definir cuotas de pago
+                                    </label>
+                                </div>
+
+                                <div id="cuotasConfig" style="display:none;">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <label class="checkout-label">Número de cuotas</label>
+                                            <input type="number" step="1" min="1" max="60" id="inputNumCuotas" class="checkout-input" value="1" oninput="actualizarPreviewCuotas()">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="checkout-label">Cada cuántos días vence cada cuota</label>
+                                            <input type="number" step="1" min="1" max="365" id="inputFrecuenciaDias" class="checkout-input" value="30" oninput="actualizarPreviewCuotas()">
+                                        </div>
+                                    </div>
+                                    <div class="checkout-help-text">
+                                        El saldo (total menos adelanto) se reparte en partes iguales entre
+                                        las cuotas; la última absorbe el redondeo. Así quedarían con estos valores:
+                                    </div>
+                                    <div id="cuotasPreview"></div>
+                                </div>
+                            </div>
+
                             <div class="checkout-block">
                                 <input type="hidden" id="cliente_id">
                                 <label class="checkout-label">Cliente</label>
@@ -1696,21 +1952,20 @@
 
 
 
-                            <!-- METODO -->
-                            <div class="checkout-block">
+                            <!-- METODOS DE PAGO (uno o varios a la vez) -->
+                            <div class="checkout-block" id="paymentMethodsBlock">
 
-                                <label class="checkout-label">
+                                <label class="checkout-label" id="paymentMethodsLabel">
 
-                                    Método Pago
+                                    Métodos de Pago
 
                                 </label>
 
-                                <select id="paymentMethod" class="checkout-input" onchange="changePaymentMethod()">
-                                    @foreach ($metodo_pago as $mt)
-                                        <option value="{{ $mt->MEP_Id }}">{{ $mt->MEP_Pago }}</option>
-                                    @endforeach
+                                <div id="paymentRows"></div>
 
-                                </select>
+                                <button type="button" class="btn-add-payment" onclick="agregarLineaPago()">
+                                    <i class="fas fa-plus-circle mr-1"></i> Agregar otro método de pago
+                                </button>
 
                             </div>
 
@@ -1748,26 +2003,33 @@
 
                                 </div>
 
-                                <!-- PAGO -->
-                                <div class="checkout-block">
+                                <!-- BALANCE DE PAGO -->
+                                <div class="checkout-block" id="paymentBalanceBoxContainer">
 
-                                    <label class="checkout-label">
+                                    <div class="payment-balance-box" id="paymentBalanceBox">
 
-                                        Pago Recibido
+                                        <div class="payment-balance-row">
+                                            <span>Asignado</span>
+                                            <span id="paymentAssignedValue">S/ 0.00</span>
+                                        </div>
 
-                                    </label>
+                                        <div class="payment-balance-row">
+                                            <span id="paymentTotalLabel">Total a pagar</span>
+                                            <span id="paymentTotalValue">S/ 0.00</span>
+                                        </div>
 
-                                    <input type="number" id="inputPago" class="checkout-input checkout-money"
-                                        placeholder="0.00" autofocus oninput="calculateChange()">
+                                        <div class="payment-balance-diff" id="paymentBalanceDiff">Falta S/ 0.00</div>
+
+                                    </div>
 
                                 </div>
 
-                                <!-- VUELTO -->
-                                <div class="checkout-block" id="changeContainer">
+                                <!-- VUELTO (solo aparece si hay una línea en Efectivo con exceso) -->
+                                <div class="checkout-block" id="changeContainer" style="display:none;">
 
                                     <label class="checkout-label">
 
-                                        Vuelto
+                                        Vuelto (Efectivo)
 
                                     </label>
 
@@ -1974,6 +2236,25 @@
         // devuelve SUNAT no tiene validez tributaria.
         const FACTURACION_EN_PRUEBAS = @json($facturacionEnPruebas ?? true);
 
+        // Pago dividido: metodos disponibles para cada linea + los ids
+        // especiales que necesita la logica (Efectivo da vuelto, Mixto se
+        // guarda en la venta cuando se usan 2+ metodos a la vez).
+        // "Mixto" es una etiqueta interna (se guarda en venta.MEP_Id cuando
+        // la venta usa 2+ métodos reales): no tiene sentido que el cajero la
+        // elija como si fuera un método de cobro, así que no aparece en las
+        // opciones de cada línea de pago.
+        const METODOS_PAGO = @json($metodo_pago->reject(fn($m) => $m->MEP_Pago === 'Mixto')->map(fn($m) => ['id' => $m->MEP_Id, 'nombre' => $m->MEP_Pago])->values());
+        const MIXTO_MEP_ID = @json(optional($metodo_pago->firstWhere('MEP_Pago', 'Mixto'))->MEP_Id);
+        const EFECTIVO_MEP_ID = @json(optional($metodo_pago->firstWhere('MEP_Pago', 'Efectivo'))->MEP_Id);
+        // Venta al credito (exclusivo de generico): se usa como
+        // venta.MEP_Id cuando la venta es al credito y no hay ningun
+        // adelanto (0 metodos reales usados).
+        const CREDITO_MEP_ID = @json(optional($metodo_pago->firstWhere('MEP_Pago', 'Crédito'))->MEP_Id);
+        let paymentLines = [];
+        // 'CONTADO' o 'CREDITO'. Controla si finalizarVenta() sigue el
+        // flujo de siempre o el de venta a credito (cuenta por cobrar).
+        let tipoVenta = 'CONTADO';
+
         const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -1992,6 +2273,36 @@
                 title
             });
         };
+
+        // Extrae un mensaje legible de una respuesta AJAX fallida: primero
+        // busca el formato propio de este proyecto ({error: "..."}), y si
+        // no esta, cae al formato por defecto de Laravel cuando falla una
+        // validacion ({message: "...", errors: {campo: ["..."]}}), para no
+        // esconder el motivo real detras de un mensaje generico.
+        function extraerMensajeError(xhr, mensajePorDefecto) {
+            let data = xhr.responseJSON;
+
+            if (!data) {
+                return mensajePorDefecto;
+            }
+
+            if (data.error) {
+                return data.error;
+            }
+
+            if (data.errors) {
+                let primerCampo = Object.keys(data.errors)[0];
+                if (primerCampo && data.errors[primerCampo] && data.errors[primerCampo][0]) {
+                    return data.errors[primerCampo][0];
+                }
+            }
+
+            if (data.message) {
+                return data.message;
+            }
+
+            return mensajePorDefecto;
+        }
 
         $(document).ready(function() {
 
@@ -2350,35 +2661,245 @@
                     $('#clientSubtitle').html('Seleccione cliente con RUC');
                 }
             }
+
+            // CREDITO (exclusivo de generico): siempre requiere cliente,
+            // sin importar el tipo de comprobante.
+            if (tipoVenta == 'CREDITO' && voucherType != 'FACTURA') {
+                if (!clientId) {
+                    $('#clientName').html('CLIENTE OBLIGATORIO');
+                    $('#clientSubtitle').html('Venta al crédito: requiere cliente');
+                }
+            }
         }
 
 
-        function calculateChange() {
+        // ==================================================
+        // PAGO DIVIDIDO: una venta puede pagarse con 1 o varios
+        // métodos a la vez, siempre que la suma cuadre con el total.
+        // ==================================================
+
+        function renderPaymentRows() {
+            let html = '';
+
+            paymentLines.forEach((line, idx) => {
+                let opciones = METODOS_PAGO.map(m =>
+                    `<option value="${m.id}" ${String(m.id) === String(line.metodo) ? 'selected' : ''}>${m.nombre}</option>`
+                ).join('');
+
+                html += `
+                <div class="payment-method-row">
+                    <select class="payment-method-select" onchange="actualizarLineaPago(${idx}, 'metodo', this.value)">
+                        ${opciones}
+                    </select>
+                    <input type="number" step="0.01" min="0" class="payment-method-amount" placeholder="0.00"
+                        value="${line.monto}" oninput="actualizarLineaPago(${idx}, 'monto', this.value)">
+                    ${paymentLines.length > 1 ? `<button type="button" class="btn-remove-payment" onclick="quitarLineaPago(${idx})"><i class="fas fa-times"></i></button>` : ''}
+                </div>`;
+            });
+
+            $('#paymentRows').html(html);
+            recalcularBalancePago();
+        }
+
+        function agregarLineaPago() {
+            // Por defecto sugiere un método que todavía no se haya usado en
+            // esta venta, para que la mayoría de las veces no haga falta ni
+            // tocar el select.
+            let usados = paymentLines.map(l => String(l.metodo));
+            let siguiente = METODOS_PAGO.find(m => !usados.includes(String(m.id))) || METODOS_PAGO[0];
+
+            paymentLines.push({
+                metodo: siguiente ? siguiente.id : EFECTIVO_MEP_ID,
+                monto: '0.00'
+            });
+
+            renderPaymentRows();
+        }
+
+        function quitarLineaPago(idx) {
+            if (paymentLines.length <= 1) return;
+            paymentLines.splice(idx, 1);
+            renderPaymentRows();
+        }
+
+        function actualizarLineaPago(idx, campo, valor) {
+            paymentLines[idx][campo] = valor;
+            recalcularBalancePago();
+        }
+
+        // Compara lo asignado en las líneas de pago contra el total del
+        // carrito. Habilita "FINALIZAR VENTA" solo cuando cuadra exacto, o
+        // cuando sobra dinero y hay una línea en Efectivo (eso se vuelve
+        // vuelto). Devuelve los números ya calculados para que
+        // finalizarVenta() no tenga que recalcular nada por su cuenta.
+        function recalcularBalancePago() {
+            // Venta al credito (exclusivo de generico): las lineas de pago
+            // representan solo el adelanto, no el total de la venta.
+            let total = tipoVenta === 'CREDITO'
+                ? (parseFloat($('#inputAdelanto').val()) || 0)
+                : (parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0);
+            let asignado = paymentLines.reduce((acc, l) => acc + (parseFloat(l.monto) || 0), 0);
+            let diferencia = Math.round((asignado - total) * 100) / 100;
+
+            $('#paymentAssignedValue').text('S/ ' + asignado.toFixed(2));
+            $('#paymentTotalValue').text('S/ ' + total.toFixed(2));
+            $('#paymentTotalLabel').text(tipoVenta === 'CREDITO' ? 'Adelanto a cubrir' : 'Total a pagar');
+
+            let hayEfectivo = paymentLines.some(l =>
+                String(l.metodo) === String(EFECTIVO_MEP_ID) && (parseFloat(l.monto) || 0) > 0
+            );
+
+            let box = $('#paymentBalanceBox');
+            let diffEl = $('#paymentBalanceDiff');
+            let puedeFinalizar = false;
+
+            if (Math.abs(diferencia) <= 0.01) {
+                diffEl.text('Cuadra exacto ✓').css('color', '#22C55E');
+                box.removeClass('is-error').addClass('is-ok');
+                $('#changeContainer').slideUp(100);
+                puedeFinalizar = true;
+                diferencia = 0;
+            } else if (diferencia < 0) {
+                diffEl.text('Falta S/ ' + Math.abs(diferencia).toFixed(2)).css('color', '#EF4444');
+                box.removeClass('is-ok').addClass('is-error');
+                $('#changeContainer').slideUp(100);
+                puedeFinalizar = false;
+            } else if (hayEfectivo && tipoVenta !== 'CREDITO') {
+                diffEl.text('Vuelto: S/ ' + diferencia.toFixed(2)).css('color', '#22C55E');
+                box.removeClass('is-error').addClass('is-ok');
+                $('#inputVuelto').val(diferencia.toFixed(2));
+                $('#changeContainer').slideDown(100);
+                puedeFinalizar = true;
+            } else if (tipoVenta === 'CREDITO') {
+                // Un adelanto no da vuelto: si sobra, es un error a corregir.
+                diffEl.text('Sobran S/ ' + diferencia.toFixed(2) + ' respecto al adelanto indicado')
+                    .css('color', '#EF4444');
+                box.removeClass('is-ok').addClass('is-error');
+                $('#changeContainer').slideUp(100);
+                puedeFinalizar = false;
+            } else {
+                diffEl.text('Sobran S/ ' + diferencia.toFixed(2) + ' — agrega una línea en Efectivo para dar vuelto')
+                    .css('color', '#EF4444');
+                box.removeClass('is-ok').addClass('is-error');
+                $('#changeContainer').slideUp(100);
+                puedeFinalizar = false;
+            }
+
+            $('.btn-finish-sale').prop('disabled', !puedeFinalizar);
+
+            return { total, asignado, diferencia, puedeFinalizar };
+        }
+
+        // ==================================================
+        // VENTA AL CREDITO (exclusivo de generico): adelanto opcional +
+        // cuotas opcionales. No reemplaza el flujo de contado de arriba.
+        // ==================================================
+
+        function changeTipoVenta(button, tipo) {
+            tipoVenta = tipo;
+            $('.tipoventa-option').removeClass('active');
+            $(button).addClass('active');
+            actualizarUICredito();
+        }
+
+        function actualizarUICredito() {
+            if (tipoVenta === 'CREDITO') {
+                $('#creditoBlock').slideDown(100);
+            } else {
+                $('#creditoBlock').slideUp(100);
+                $('#chkDefinirCuotas').prop('checked', false);
+                $('#cuotasConfig').hide();
+                $('#inputAdelanto').val('0.00');
+            }
+
+            updateClientSection();
+            onAdelantoChange();
+        }
+
+        function onDefinirCuotasChange() {
+            if ($('#chkDefinirCuotas').is(':checked')) {
+                $('#cuotasConfig').slideDown(100);
+                actualizarPreviewCuotas();
+            } else {
+                $('#cuotasConfig').slideUp(100);
+            }
+        }
+
+        // El adelanto de una venta al credito nunca puede superar el
+        // total del carrito; si el adelanto es 0, no hace falta indicar
+        // ningun metodo de pago (se va todo a la cuenta por cobrar).
+        function onAdelantoChange() {
+            if (tipoVenta !== 'CREDITO') {
+                return;
+            }
+
             let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
-            let payment = parseFloat($('#inputPago').val()) || 0;
-            let change = payment - total;
+            let adelanto = parseFloat($('#inputAdelanto').val()) || 0;
 
-            $('#inputVuelto').val(change.toFixed(2));
-            if (change < 0) {
-                $('#inputVuelto').css({
-                    color: '#EF4444',
-                    fontWeight: '800'
-                });
-            } else {
-                $('#inputVuelto').css({
-                    color: '#22C55E',
-                    fontWeight: '800'
-                });
+            if (adelanto > total) {
+                adelanto = total;
+                $('#inputAdelanto').val(adelanto.toFixed(2));
             }
+
+            if (adelanto <= 0) {
+                $('#paymentMethodsBlock').hide();
+                $('#paymentBalanceBoxContainer').hide();
+                $('#changeContainer').hide();
+                $('.btn-finish-sale').prop('disabled', false);
+            } else {
+                $('#paymentMethodsBlock').show();
+                $('#paymentBalanceBoxContainer').show();
+                recalcularBalancePago();
+            }
+
+            actualizarPreviewCuotas();
         }
 
-        function changePaymentMethod() {
-            let method = $('#paymentMethod').val();
-            if (method == 'EFECTIVO') {
-                $('#changeContainer').slideDown(150);
-            } else {
-                $('#changeContainer').slideUp(150);
+        // Vista previa de como quedarian las cuotas (numero, fecha de
+        // vencimiento y monto) ANTES de finalizar la venta, calculada con
+        // la misma logica que usa el servidor al guardar (reparto en
+        // partes iguales, la ultima cuota absorbe el redondeo). Es solo
+        // informativa: el servidor vuelve a calcular todo por su cuenta.
+        function actualizarPreviewCuotas() {
+            if (tipoVenta !== 'CREDITO' || !$('#chkDefinirCuotas').is(':checked')) {
+                $('#cuotasPreview').html('');
+                return;
             }
+
+            let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
+            let adelanto = parseFloat($('#inputAdelanto').val()) || 0;
+            let saldo = Math.max(0, Math.round((total - adelanto) * 100) / 100);
+            let numCuotas = parseInt($('#inputNumCuotas').val()) || 0;
+            let frecuenciaDias = parseInt($('#inputFrecuenciaDias').val()) || 0;
+
+            if (numCuotas < 1 || frecuenciaDias < 1) {
+                $('#cuotasPreview').html('');
+                return;
+            }
+
+            let montoBase = Math.round((saldo / numCuotas) * 100) / 100;
+            let acumulado = 0;
+            let hoy = new Date();
+            let html = '';
+
+            for (let i = 1; i <= numCuotas; i++) {
+                let esUltima = i === numCuotas;
+                let monto = esUltima ? Math.round((saldo - acumulado) * 100) / 100 : montoBase;
+                acumulado = Math.round((acumulado + monto) * 100) / 100;
+
+                let vencimiento = new Date(hoy);
+                vencimiento.setDate(vencimiento.getDate() + i * frecuenciaDias);
+                let fechaTexto = vencimiento.toLocaleDateString('es-PE');
+
+                html += `
+                <div class="cuota-preview-row">
+                    <span class="cuota-preview-numero">Cuota ${i}</span>
+                    <span>${fechaTexto}</span>
+                    <span class="cuota-preview-monto">S/ ${monto.toFixed(2)}</span>
+                </div>`;
+            }
+
+            $('#cuotasPreview').html(html);
         }
 
         function openCheckout() {
@@ -2386,6 +2907,24 @@
                 showToast('warning', 'No hay productos en el carrito');
                 return;
             }
+
+            // Arranca en Contado con una sola línea en Efectivo por el
+            // total completo: una venta simple sigue siendo de un solo
+            // clic, igual que antes.
+            let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
+            paymentLines = [{ metodo: EFECTIVO_MEP_ID, monto: total.toFixed(2) }];
+            renderPaymentRows();
+
+            // Reset del bloque de Crédito por si quedó abierto de una
+            // venta anterior.
+            tipoVenta = 'CONTADO';
+            $('.tipoventa-option').removeClass('active').first().addClass('active');
+            $('#creditoBlock').hide();
+            $('#chkDefinirCuotas').prop('checked', false);
+            $('#cuotasConfig').hide();
+            $('#inputAdelanto').val('0.00');
+            $('#cuotasPreview').html('');
+
             $('#modalCheckout').modal('show');
         }
 
@@ -2394,9 +2933,42 @@
                 showToast('warning', 'No hay productos en el carrito');
                 return;
             }
+
+            // Venta al credito (exclusivo de generico) sigue un flujo
+            // aparte: cliente obligatorio, adelanto opcional, cuotas
+            // opcionales, y crea una cuenta por cobrar al final.
+            if (tipoVenta === 'CREDITO') {
+                finalizarVentaCredito();
+                return;
+            }
+
             // FACTURA requiere cliente
             if(voucherType == 'FACTURA' && !$('#cliente_id').val()){
                 showToast('warning', 'Debe seleccionar cliente');
+                return;
+            }
+
+            // Los métodos de pago deben sumar exactamente el total (o
+            // sobrar solo si hay una línea en Efectivo, que absorbe el
+            // vuelto). recalcularBalancePago() ya deja los botones/colores
+            // correctos; aquí solo se vuelve a comprobar antes de enviar.
+            let balance = recalcularBalancePago();
+            if (!balance.puedeFinalizar) {
+                showToast('warning', 'Los métodos de pago no cuadran con el total a pagar');
+                return;
+            }
+
+            // Si se usan 2+ métodos hace falta el metodo_pago "Mixto" (lo
+            // crea una migración); sin él no hay a qué MEP_Id asociar la
+            // venta y el guardado fallaría con un error de base de datos
+            // poco claro para el cajero.
+            if (paymentLines.length > 1 && !MIXTO_MEP_ID) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Falta configuración',
+                    text: 'No se encontró el método de pago "Mixto". Pide al administrador que corra las migraciones pendientes antes de dividir un pago en varios métodos.',
+                    confirmButtonText: 'Entendido'
+                });
                 return;
             }
 
@@ -2405,9 +2977,9 @@
             let data = {
                 cliente_id: $('#cliente_id').val(),
                 comprobante: voucherType,
-                metodo_pago: $('#paymentMethod').val(),
-                pago_recibido: $('#inputPago').val(),
-                vuelto: $('#inputVuelto').val(),
+                metodo_pago: paymentLines.length === 1 ? paymentLines[0].metodo : MIXTO_MEP_ID,
+                pago_recibido: balance.asignado.toFixed(2),
+                vuelto: balance.diferencia.toFixed(2),
                 observacion: $('#observacion').val(),
                 productos: cart,
                 _token: $('meta[name="csrf-token"]').attr('content')
@@ -2423,6 +2995,16 @@
                 method: "POST",
                 data: data,
                 success: function(response){
+                    // Guarda el detalle de cuánto se pagó con cada método
+                    // (no bloquea el éxito de la venta si esto llegara a
+                    // fallar: la venta ya quedó registrada).
+                    guardarDetallePago(response.venta_id, balance.diferencia);
+
+                    // Si esta venta partio de "Convertir a Venta" de una
+                    // cotizacion, la marca como convertida (no bloquea el
+                    // exito de la venta si esto llegara a fallar).
+                    marcarCotizacionConvertida(response.venta_id);
+
                     // SUCCESS
                     // En el ambiente de pruebas de SUNAT el comprobante no
                     // tiene validez tributaria, asi que no se ofrece el enlace
@@ -2436,8 +3018,11 @@
                               'Ambiente de pruebas: el comprobante se envio a SUNAT en modo BETA ' +
                               'y no tiene validez tributaria, por eso no se puede imprimir.</span>';
                     } else {
+                        // Usa la ruta "-seguro" (exclusiva de generico): la
+                        // original revienta con toda venta al credito porque
+                        // consulta una tabla que no existe ('cuentas_por_cobrar').
                         pie = '<a title="TICKET" target="_blank" href="/tenant/ventas/venta/' + response.venta_id +
-                              '/ticket" class="btn btn-danger btn-sm" style="margin-left: 5px;">' +
+                              '/ticket-seguro" class="btn btn-danger btn-sm" style="margin-left: 5px;">' +
                               '<i class="fa fa fa-print"></i> ¿Desea imprimir documento?</a>';
                     }
 
@@ -2488,6 +3073,203 @@
             });
         }
 
+        // Guarda cuánto se pagó con cada método (tabla venta_pago). La
+        // línea en Efectivo, si la hay, guarda su monto ya neto de vuelto
+        // (lo que realmente entra a la venta), no el efectivo bruto
+        // entregado — así la suma guardada siempre da exacto el total.
+        function guardarDetallePago(ventaId, vuelto) {
+            let vueltoPendiente = vuelto > 0 ? vuelto : 0;
+
+            let pagos = paymentLines.map(l => {
+                let monto = parseFloat(l.monto) || 0;
+                if (vueltoPendiente > 0 && String(l.metodo) === String(EFECTIVO_MEP_ID)) {
+                    monto = monto - vueltoPendiente;
+                    vueltoPendiente = 0;
+                }
+                return { metodo_pago_id: l.metodo, monto: monto.toFixed(2) };
+            }).filter(p => parseFloat(p.monto) > 0);
+
+            $.ajax({
+                url: "{{ route('tenant.ventas.venta.pagos.store') }}",
+                method: "POST",
+                data: {
+                    venta_id: ventaId,
+                    pagos: pagos,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                error: function(xhr) {
+                    console.warn('No se pudo guardar el detalle de pago dividido de la venta ' + ventaId, xhr);
+                    showToast('warning', 'La venta se registró, pero no se pudo guardar el detalle por método de pago.');
+                }
+            });
+        }
+
+        // Flujo de "Finalizar Venta" cuando Tipo de Venta = Crédito
+        // (exclusivo de generico). Llama al mismo tenant.ventas.venta.store
+        // de siempre (sin tocarlo) con VEN_TipoPago=2, y si tiene éxito
+        // registra la cuenta por cobrar (y el detalle del adelanto, si
+        // hubo) en las rutas nuevas de este módulo.
+        function finalizarVentaCredito(){
+            if (!$('#cliente_id').val()) {
+                showToast('warning', 'Una venta al crédito requiere seleccionar un cliente');
+                return;
+            }
+
+            let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
+            let adelanto = parseFloat($('#inputAdelanto').val()) || 0;
+
+            if (adelanto < 0 || adelanto > total + 0.01) {
+                showToast('warning', 'El adelanto debe estar entre 0 y el total de la venta');
+                return;
+            }
+
+            let tieneCuotas = $('#chkDefinirCuotas').is(':checked');
+            let numCuotas = parseInt($('#inputNumCuotas').val()) || 0;
+            let frecuenciaDias = parseInt($('#inputFrecuenciaDias').val()) || 0;
+
+            if (tieneCuotas && (numCuotas < 1 || numCuotas > 60)) {
+                showToast('warning', 'El número de cuotas debe estar entre 1 y 60');
+                return;
+            }
+
+            if (tieneCuotas && (frecuenciaDias < 1 || frecuenciaDias > 365)) {
+                showToast('warning', 'La frecuencia de cuotas debe estar entre 1 y 365 días');
+                return;
+            }
+
+            let balance = { asignado: 0, diferencia: 0, puedeFinalizar: true };
+
+            if (adelanto > 0) {
+                balance = recalcularBalancePago();
+                if (!balance.puedeFinalizar) {
+                    showToast('warning', 'Los métodos de pago del adelanto no cuadran con el adelanto indicado');
+                    return;
+                }
+
+                if (paymentLines.length > 1 && !MIXTO_MEP_ID) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Falta configuración',
+                        text: 'No se encontró el método de pago "Mixto". Pide al administrador que corra las migraciones pendientes antes de dividir un adelanto en varios métodos.',
+                        confirmButtonText: 'Entendido'
+                    });
+                    return;
+                }
+            } else if (!CREDITO_MEP_ID) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Falta configuración',
+                    text: 'No se encontró el método de pago "Crédito". Pide al administrador que corra las migraciones pendientes antes de vender al crédito sin adelanto.',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+
+            let metodoPago = adelanto <= 0
+                ? CREDITO_MEP_ID
+                : (paymentLines.length === 1 ? paymentLines[0].metodo : MIXTO_MEP_ID);
+
+            let data = {
+                cliente_id: $('#cliente_id').val(),
+                comprobante: voucherType,
+                VEN_TipoPago: 2,
+                metodo_pago: metodoPago,
+                pago_recibido: adelanto.toFixed(2),
+                vuelto: '0.00',
+                observacion: $('#observacion').val(),
+                productos: cart,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            };
+
+            $('.btn-finish-sale').prop('disabled', true).html(`Procesando venta...`);
+
+            $.ajax({
+                url: "{{ route('tenant.ventas.venta.store') }}",
+                method: "POST",
+                data: data,
+                success: function(response){
+                    // Ninguno de los pasos siguientes invalida la venta si
+                    // llegara a fallar: la venta ya quedó registrada.
+                    if (adelanto > 0) {
+                        guardarDetallePago(response.venta_id, 0);
+                    }
+
+                    guardarCuentaCobrar(response.venta_id, adelanto, tieneCuotas, numCuotas, frecuenciaDias);
+
+                    // Si esta venta partio de "Convertir a Venta" de una
+                    // cotizacion, la marca como convertida.
+                    marcarCotizacionConvertida(response.venta_id);
+
+                    // Esta venta SIEMPRE es al credito (VEN_TipoPago=2), asi
+                    // que usa la ruta "-seguro": la original revienta aqui
+                    // seguro porque consulta una tabla que no existe
+                    // ('cuentas_por_cobrar').
+                    var pie = '<a title="TICKET" target="_blank" href="/tenant/ventas/venta/' + response.venta_id +
+                              '/ticket-seguro" class="btn btn-danger btn-sm" style="margin-left: 5px;">' +
+                              '<i class="fa fa fa-print"></i> ¿Desea imprimir documento?</a>';
+
+                    Swal.fire({
+                            icon: "success",
+                            title: "Venta al Crédito Generada",
+                            text: adelanto > 0
+                                ? ('Se registró el adelanto de S/ ' + adelanto.toFixed(2) + '. El resto queda como cuenta por cobrar.')
+                                : 'La venta completa quedó registrada como cuenta por cobrar.',
+                            confirmButtonText: "Aceptar",
+                            footer: pie,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false
+                        }).then((result) => {
+                            resetPOS();
+                            $('#modalCheckout').modal('hide');
+                        });
+                },
+                error: function(xhr){
+                    var motivo = (xhr.responseJSON && xhr.responseJSON.error)
+                        ? xhr.responseJSON.error
+                        : 'Error al registrar venta';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'No se registro la venta',
+                        text: motivo,
+                        confirmButtonText: 'Entendido'
+                    });
+                },
+                complete: function(){
+                    $('.btn-finish-sale').prop('disabled', false).html(`FINALIZAR VENTA`);
+                }
+            });
+        }
+
+        // Crea la cuenta por cobrar (y su plan de cuotas, si se definió)
+        // justo despues de que la venta al credito ya se guardo.
+        function guardarCuentaCobrar(ventaId, adelanto, tieneCuotas, numCuotas, frecuenciaDias) {
+            let adelantoPagos = [];
+
+            if (adelanto > 0) {
+                adelantoPagos = paymentLines
+                    .map(l => ({ metodo_pago_id: l.metodo, monto: (parseFloat(l.monto) || 0).toFixed(2) }))
+                    .filter(p => parseFloat(p.monto) > 0);
+            }
+
+            $.ajax({
+                url: "{{ route('tenant.ventas.venta.cuentacobrar.store') }}",
+                method: "POST",
+                data: {
+                    venta_id: ventaId,
+                    adelanto_pagos: adelantoPagos,
+                    tiene_cuotas: tieneCuotas ? 1 : 0,
+                    num_cuotas: tieneCuotas ? numCuotas : null,
+                    frecuencia_dias: tieneCuotas ? frecuenciaDias : null,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                error: function(xhr) {
+                    console.warn('No se pudo registrar la cuenta por cobrar de la venta ' + ventaId, xhr);
+                    var motivo = extraerMensajeError(xhr, 'No se pudo crear la cuenta por cobrar.');
+                    showToast('warning', 'La venta se registró, pero: ' + motivo);
+                }
+            });
+        }
+
         function resetPOS(){
             // CART
             cart = [];
@@ -2495,11 +3277,132 @@
             // CLIENTE
             $('#cliente_id').val('');
             updateClientSection();
-            // INPUTS
-            $('#inputPago').val('');
-            $('#inputVuelto').val('0.00');
+            // PAGO
+            paymentLines = [{ metodo: EFECTIVO_MEP_ID, monto: '0.00' }];
+            renderPaymentRows();
+            // CREDITO (exclusivo de generico)
+            tipoVenta = 'CONTADO';
+            $('.tipoventa-option').removeClass('active').first().addClass('active');
+            $('#creditoBlock').hide();
+            $('#chkDefinirCuotas').prop('checked', false);
+            $('#cuotasConfig').hide();
+            $('#inputAdelanto').val('0.00');
+            $('#cuotasPreview').html('');
+            // COTIZACION DE ORIGEN (exclusivo de generico): una venta nueva
+            // ya no esta ligada a la cotizacion que se pudo haber cargado
+            // antes, aunque la pagina siga abierta.
+            limpiarCotizacionOrigen();
         }
 
+        // =====================================================
+        // "CONVERTIR A VENTA" DE UNA COTIZACION (exclusivo de generico)
+        // =====================================================
+        //
+        // Si se entra a esta pagina con ?desde_cotizacion=ID (boton
+        // "Convertir a Venta" del modulo de Cotizaciones), se precarga el
+        // carrito con los mismos productos/cantidades/precios de esa
+        // cotizacion -- pero el cajero sigue pudiendo agregar, quitar o
+        // modificar productos con total libertad antes de cobrar, como en
+        // cualquier venta normal. Si la venta se completa, se avisa al
+        // modulo de Cotizaciones para que la marque como convertida
+        // (COT_Estado = Aprobada) y quede enlazada a esa venta.
+        //
+        // OJO con el descuento: VentaController::store() (compartido, no se
+        // toca) guarda SIEMPRE DEV_Descuento = 0 -- no existe forma de
+        // cargar un descuento por linea a traves de ese endpoint. Para que
+        // el total de cada linea siga cuadrando exacto con lo que decia la
+        // cotizacion, el descuento se "esconde" adentro del precio unitario
+        // que se manda (precio efectivo = subtotal de la linea / cantidad),
+        // en vez de perderse silenciosamente.
+        function cargarDesdeCotizacion(cotizacionId) {
+            $.get('{{ tenant_url('tenant.ventas.cotizacion.show.generico', ['cotizacion' => ':id']) }}'.replace(':id', cotizacionId))
+                .done(function(data) {
+                    var cot = data.cotizacion;
+
+                    if (parseInt(cot.COT_Estado) !== 1) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Cotización no disponible',
+                            text: 'Esta cotización ya no está Pendiente (fue aprobada, rechazada o anulada), así que no se puede cargar en una venta nueva.'
+                        });
+                        return;
+                    }
+
+                    if (!data.detalles || data.detalles.length === 0) {
+                        Swal.fire({ icon: 'warning', title: 'La cotización no tiene productos' });
+                        return;
+                    }
+
+                    cart = data.detalles.map(function(d) {
+                        var cantidad = parseFloat(d.DCOT_Cantidad);
+                        var subtotalLinea = (cantidad * parseFloat(d.DCOT_PrecioUnitario)) - parseFloat(d.DCOT_Descuento || 0);
+                        var precioEfectivo = cantidad > 0 ? (subtotalLinea / cantidad) : 0;
+
+                        return {
+                            PRO_Id: d.PRO_Id,
+                            PRO_Nombre: d.PRO_Nombre,
+                            PRO_Imagen: null,
+                            PRO_PrecioBaseVenta: precioEfectivo.toFixed(2),
+                            quantity: cantidad
+                        };
+                    });
+
+                    renderCart();
+
+                    if (cot.CLI_Id) {
+                        selectClient(cot.CLI_Nombre || 'Cliente', cot.CLI_NumDocumento || '', cot.CLI_Id);
+                    }
+
+                    $('#cotizacionOrigenId').val(cot.COT_Id);
+                    $('#cotizacionOrigenTexto').text(
+                        'Cargada desde la Cotización #' + String(cot.COT_Id).padStart(6, '0') +
+                        '. Puedes seguir agregando, quitando o modificando productos antes de cobrar.'
+                    );
+                    $('#avisoCotizacionOrigen').show();
+
+                    showToast('success', 'Cotización cargada en el carrito');
+                })
+                .fail(function() {
+                    Swal.fire({ icon: 'error', title: 'No se pudo cargar la cotización' });
+                });
+        }
+
+        function limpiarCotizacionOrigen() {
+            $('#cotizacionOrigenId').val('');
+            $('#avisoCotizacionOrigen').hide();
+        }
+
+        // Se llama despues de una venta exitosa. No bloquea el flujo de la
+        // venta si esto falla (la venta ya quedo registrada de por si) --
+        // mismo criterio que guardarDetallePago()/guardarCuentaCobrar().
+        function marcarCotizacionConvertida(ventaId) {
+            var cotizacionId = $('#cotizacionOrigenId').val();
+
+            if (!cotizacionId) {
+                return;
+            }
+
+            $.ajax({
+                url: '{{ tenant_url('tenant.ventas.cotizacion.marcarConvertida.generico', ['cotizacion' => ':id']) }}'.replace(':id', cotizacionId),
+                method: 'POST',
+                data: {
+                    venta_id: ventaId,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                error: function(xhr) {
+                    console.warn('No se pudo marcar la cotización ' + cotizacionId + ' como convertida', xhr);
+                    showToast('warning', 'La venta se registró, pero no se pudo actualizar el estado de la cotización de origen.');
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            var cotizacionOrigen = new URLSearchParams(window.location.search).get('desde_cotizacion');
+
+            if (cotizacionOrigen) {
+                cargarDesdeCotizacion(cotizacionOrigen);
+            }
+        });
 
     </script>
 @endpush

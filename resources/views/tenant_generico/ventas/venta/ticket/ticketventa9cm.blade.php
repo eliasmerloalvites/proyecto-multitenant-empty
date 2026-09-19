@@ -165,6 +165,40 @@ body{
 
     <div class="ticket">
 
+        @php
+            // Con que metodo(s) se pago esta venta. Si tiene detalle dividido
+            // guardado (venta_pago), se muestra el desglose exacto; si no
+            // (venta de un solo metodo, o de antes de esta funcionalidad), se
+            // muestra el unico metodo que quedo en venta.MEP_Id.
+            $pagosVenta = \Illuminate\Support\Facades\DB::table('venta_pago as vp')
+                ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'vp.MEP_Id')
+                ->where('vp.VEN_Id', $ventae->codigoVenta)
+                ->select('mp.MEP_Pago as metodo', 'vp.VPG_Monto as monto')
+                ->orderBy('vp.VPG_Id')
+                ->get();
+
+            $metodoUnico = $pagosVenta->isEmpty()
+                ? \Illuminate\Support\Facades\DB::table('venta as v')
+                    ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
+                    ->where('v.VEN_Id', $ventae->codigoVenta)
+                    ->value('mp.MEP_Pago')
+                : null;
+
+            // Si esta venta es al credito (modulo Cuentas por Cobrar,
+            // exclusivo de generico), se muestra el adelanto/saldo y, si
+            // se definieron, las cuotas planificadas.
+            $cuentaCobrar = \Illuminate\Support\Facades\DB::table('cuenta_cobrar')
+                ->where('VEN_Id', $ventae->codigoVenta)
+                ->first();
+
+            $cuotasCredito = $cuentaCobrar
+                ? \Illuminate\Support\Facades\DB::table('cuenta_cobrar_cuota')
+                    ->where('CXC_Id', $cuentaCobrar->CXC_Id)
+                    ->orderBy('CCC_Numero')
+                    ->get()
+                : collect();
+        @endphp
+
         <!-- LOGO -->
         <div class="logo-container">
             @php
@@ -255,6 +289,72 @@ body{
             </div>
 
         </div>
+
+        <!-- METODO(S) DE PAGO -->
+        <div class="cliente">
+
+            @if($pagosVenta->count() > 1)
+
+                <div class="row-ticket">
+                    <span><strong>MÉTODOS DE PAGO</strong></span>
+                    <span></span>
+                </div>
+
+                @foreach($pagosVenta as $pv)
+                    <div class="row-ticket">
+                        <span>&nbsp;&nbsp;{{ strtoupper($pv->metodo) }}</span>
+                        <span>S/ {{ number_format($pv->monto, 2) }}</span>
+                    </div>
+                @endforeach
+
+            @else
+
+                <div class="row-ticket">
+                    <span>MÉTODO DE PAGO</span>
+                    <span>{{ strtoupper($pagosVenta->first()->metodo ?? $metodoUnico ?? '-') }}</span>
+                </div>
+
+            @endif
+
+        </div>
+
+        <!-- DETALLE DE CREDITO (solo si es venta al credito) -->
+        @if ($cuentaCobrar)
+            <div class="linea"></div>
+
+            <div class="cliente">
+
+                <div class="row-ticket">
+                    <span><strong>DETALLE DE CRÉDITO</strong></span>
+                    <span></span>
+                </div>
+
+                <div class="row-ticket">
+                    <span>Adelanto</span>
+                    <span>S/ {{ number_format($cuentaCobrar->CXC_MontoAdelanto, 2) }}</span>
+                </div>
+
+                <div class="row-ticket">
+                    <span>Saldo Pendiente</span>
+                    <span>S/ {{ number_format($cuentaCobrar->CXC_MontoPendiente, 2) }}</span>
+                </div>
+
+                @if ($cuentaCobrar->CXC_TieneCuotas && $cuotasCredito->count())
+                    @foreach ($cuotasCredito as $cuota)
+                        <div class="row-ticket">
+                            <span>&nbsp;&nbsp;Cuota {{ $cuota->CCC_Numero }} ({{ \Illuminate\Support\Carbon::parse($cuota->CCC_FechaVencimiento)->format('d/m/Y') }})</span>
+                            <span>S/ {{ number_format($cuota->CCC_MontoProgramado, 2) }}</span>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="row-ticket">
+                        <span>&nbsp;&nbsp;Sin cuotas fijas</span>
+                        <span>Pago libre</span>
+                    </div>
+                @endif
+
+            </div>
+        @endif
 
         <div class="linea"></div>
 

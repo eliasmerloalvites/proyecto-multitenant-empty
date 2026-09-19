@@ -232,6 +232,26 @@
                     {
                         data: 'COM_TipoPago',
                         name: 'COM_TipoPago',
+                        // Exclusivo de 'generico': si la compra es al
+                        // credito, agrega el link a su cuenta por pagar.
+                        // COM_TipoPago es una eleccion explicita del
+                        // usuario al registrar la compra (no un metodo de
+                        // pago mostrado que pueda significar mas de una
+                        // cosa), asi que no hace falta ningun endpoint de
+                        // "ids con cuenta" para decidir cuando mostrarlo.
+                        'render': function(data, type, row) {
+                            // La cuenta por pagar solo existe mientras la
+                            // compra siga activa: si se anulo (COM_Status
+                            // = 0), CompraAnulacionController ya la borro
+                            // (o nunca la dejo anular si tenia abonos), asi
+                            // que el link solo se muestra en compras
+                            // activas para no llevar a un 404.
+                            if (data === 'Credito' && Number(row.COM_Status) === 1) {
+                                var url = "{{ tenant_url('tenant.compras.compra.vercuentapagar', ['compraId' => ':id']) }}".replace(':id', row.COM_Id);
+                                return data + ' &nbsp; <a href="' + url + '" class="badge badge-primary" title="Ver cuenta por pagar"><i class="fas fa-file-invoice-dollar"></i> Ver cuenta</a>';
+                            }
+                            return data;
+                        }
                     },
                     {
                         data: 'MEP_Pago',
@@ -240,6 +260,13 @@
                     {
                         data: 'COM_Status',
                         name: 'COM_Status',
+                        // Exclusivo de 'generico': antes mostraba el 1/0
+                        // crudo de la columna; ahora un badge legible.
+                        'render': function(data) {
+                            return Number(data) === 1
+                                ? '<span class="badge badge-success">Activo</span>'
+                                : '<span class="badge badge-secondary">Anulada</span>';
+                        }
                     },
                     {
                         data: null,
@@ -333,6 +360,47 @@
                         $("#total").html("S/. " + total1);
 
                     })
+            });
+
+            // Exclusivo de 'generico': el boton "Eliminar" (icono de
+            // basurero, generado por el CompraController compartido) no
+            // borra nada de verdad -no tiene logica en destroy()-: aqui se
+            // ata a anular la compra (revertir el stock que ingreso, si
+            // nada de el se vendio todavia, y marcarla como Anulada sin
+            // borrar su historial). Ver CompraAnulacionController para el
+            // detalle de las validaciones.
+            $('body').on('click', '.deleteCompra', function() {
+                var compraId = $(this).data('id');
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: '¿Anular esta compra?',
+                    html: 'Se revertirá el stock que ingresó por la compra #' + compraId +
+                        ' (solo si nada de ese stock se vendió todavía) y quedará marcada como <strong>Anulada</strong>. No se borra su historial.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, anular',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#dc3545'
+                }).then((result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
+
+                    $.ajax({
+                        url: "{{ tenant_url('tenant.compras.compra.anular', ['compra' => ':id']) }}".replace(':id', compraId),
+                        type: 'POST',
+                        dataType: 'json',
+                        success: function(data) {
+                            Swal.fire({ icon: 'success', title: 'Compra anulada', text: data.success });
+                            table.ajax.reload(null, false);
+                        },
+                        error: function(xhr) {
+                            var data = xhr.responseJSON || {};
+                            var motivo = data.error || 'No se pudo anular la compra.';
+                            Swal.fire({ icon: 'error', title: 'No se puede anular', text: motivo });
+                        }
+                    });
+                });
             });
 
         })

@@ -2,6 +2,14 @@
 
 @section('titulo', 'Productos')
 
+@php
+    // Sedes activas, para elegir en que almacen se hace el ajuste manual de
+    // stock (Ingreso/Salida). Se consulta aqui directo (no en el
+    // controlador compartido ProductoController::controlinventario) para
+    // no modificar ese metodo, que tambien usa tallermoto.
+    $almacenesAjuste = \App\Models\Tenant\Almacen::activos()->orderBy('ALM_NombreAlmacen')->get();
+@endphp
+
 @section('contenido')
 <style>
         .modal-content{
@@ -501,6 +509,55 @@
 
     </div>
 
+    <!-- MODAL AJUSTE DE STOCK (INGRESO / SALIDA MANUAL) -->
+    <div class="modal fade" id="modalAjusteStock" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold" id="ajusteStockTitulo">Ajustar Stock</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="formAjusteStock">
+                    <div class="modal-body">
+                        <input type="hidden" id="ajusteTipo" name="tipo">
+                        <input type="hidden" id="ajustePRO_Id" name="PRO_Id">
+
+                        <div class="form-group">
+                            <label>Producto</label>
+                            <input type="text" class="form-control" id="ajusteProductoNombre" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Sede / Almacén <span class="text-danger">*</span></label>
+                            <select class="form-control" id="ajusteALM_Id" name="ALM_Id" required>
+                                <option value="">Seleccione...</option>
+                                @foreach ($almacenesAjuste as $almacenOpcion)
+                                    <option value="{{ $almacenOpcion->ALM_Id }}">{{ $almacenOpcion->ALM_NombreAlmacen }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label id="ajusteCantidadLabel">Cantidad <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" min="0.01" class="form-control" id="ajusteCantidad" name="cantidad" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Motivo <small class="text-muted">(opcional)</small></label>
+                            <textarea class="form-control" id="ajusteMotivo" name="motivo" rows="2" maxlength="255" placeholder="Ej. conteo físico, merma, préstamo, corrección..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn" id="ajusteBtnGuardar">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 @endsection
 @section('script')
     <script>
@@ -573,10 +630,10 @@
                         data: null,
                         name: '',
                         'render': function(data, type, row) {
-                            return @can('tenant.inventario.producto.show')
+                            var html = @can('tenant.inventario.producto.show')
                                     data.action3 + ' ' +
                                 @endcan
-                            '' 
+                            ''
                             @can('tenant.inventario.producto.edit')
                                 + data.lotes + ' ' +
                             @endcan
@@ -584,6 +641,17 @@
                             @can('tenant.inventario.producto.destroy')
                                 +data.kardex
                             @endcan ;
+
+                            @can('tenant.inventario.producto.edit')
+                                html += ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' + row.PRO_Id +
+                                    '" data-nombre="' + row.PRO_Nombre +
+                                    '" data-original-title="Ingreso de stock" class="btn btn-success btn-sm ingresoStock"><i class="fas fa-plus"></i></a>';
+                                html += ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="' + row.PRO_Id +
+                                    '" data-nombre="' + row.PRO_Nombre +
+                                    '" data-original-title="Salida de stock" class="btn btn-danger btn-sm salidaStock"><i class="fas fa-minus"></i></a>';
+                            @endcan
+
+                            return html;
                         }
                     }
                 ],
@@ -706,6 +774,72 @@
                 $("#updateBtn").hide();
             }
 
+            $('body').on('click', '.ingresoStock', function() {
+                abrirModalAjuste($(this).data('id'), $(this).data('nombre'), 'ingreso');
+            });
+
+            $('body').on('click', '.salidaStock', function() {
+                abrirModalAjuste($(this).data('id'), $(this).data('nombre'), 'salida');
+            });
+
+            function abrirModalAjuste(productoId, productoNombre, tipo) {
+                $('#formAjusteStock').trigger('reset');
+                $('#ajustePRO_Id').val(productoId);
+                $('#ajusteTipo').val(tipo);
+                $('#ajusteProductoNombre').val(productoNombre);
+
+                if (tipo === 'ingreso') {
+                    $('#ajusteStockTitulo').text('Ingreso de Stock');
+                    $('#ajusteCantidadLabel').html('Cantidad a ingresar <span class="text-danger">*</span>');
+                    $('#ajusteBtnGuardar').removeClass('btn-danger').addClass('btn-success').text('Registrar Ingreso');
+                } else {
+                    $('#ajusteStockTitulo').text('Salida de Stock');
+                    $('#ajusteCantidadLabel').html('Cantidad a retirar <span class="text-danger">*</span>');
+                    $('#ajusteBtnGuardar').removeClass('btn-success').addClass('btn-danger').text('Registrar Salida');
+                }
+
+                $('#modalAjusteStock').modal('show');
+            }
+
+            $('#formAjusteStock').on('submit', function(e) {
+                e.preventDefault();
+
+                var $btn = $('#ajusteBtnGuardar');
+                $btn.prop('disabled', true);
+
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ tenant_url('tenant.inventario.controlinventario.ajuste.store') }}",
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        PRO_Id: $('#ajustePRO_Id').val(),
+                        ALM_Id: $('#ajusteALM_Id').val(),
+                        tipo: $('#ajusteTipo').val(),
+                        cantidad: $('#ajusteCantidad').val(),
+                        motivo: $('#ajusteMotivo').val()
+                    },
+                    success: function(data) {
+                        $('#modalAjusteStock').modal('hide');
+                        table.draw(false);
+                        Toast.fire({
+                            icon: 'success',
+                            title: data.success
+                        });
+                    },
+                    error: function(xhr) {
+                        var data = xhr.responseJSON || {};
+                        var motivo = data.error || (data.errors ? Object.values(data.errors)[0][0] : 'No se pudo registrar el ajuste de stock.');
+                        Toast.fire({
+                            icon: 'error',
+                            title: motivo
+                        });
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false);
+                    }
+                });
+            });
+
             $('body').on('click', '.deleteProducto', function() {
 
                 var Producto_id_delete = $(this).data("id");
@@ -750,64 +884,117 @@
 
         function cargarKardex(producto, fecha_inicio = '', fecha_fin = '', tipo = '') {
 
-            $.get(
-                '{{ tenant_url('tenant.inventario.controlinventario.kardex', ['producto' => ':producto']) }}'
-                .replace(':producto', producto),
+            // El Kardex compartido (ProductoController::kardex(), usado
+            // tambien por tallermoto) solo conoce compras/ventas. Los
+            // ajustes manuales de stock (Ingreso/Salida) son exclusivos de
+            // generico, asi que se piden aparte y se combinan aqui mismo,
+            // sin tocar ese controlador. Por eso siempre se piden ambos SIN
+            // filtro de tipo (para recalcular bien el stock acumulado) y el
+            // filtro elegido se aplica despues, solo para decidir que filas
+            // se muestran.
+            var urlKardex = '{{ tenant_url('tenant.inventario.controlinventario.kardex', ['producto' => ':producto']) }}'
+                .replace(':producto', producto);
+            var urlAjustes = '{{ tenant_url('tenant.inventario.controlinventario.ajustes', ['producto' => ':producto']) }}'
+                .replace(':producto', producto);
 
-                {
-                    fecha_inicio: fecha_inicio,
-                    fecha_fin: fecha_fin,
-                    tipo: tipo
-                },
+            $.when(
+                $.get(urlKardex, { fecha_inicio: fecha_inicio, fecha_fin: fecha_fin, tipo: '' }),
+                $.get(urlAjustes, { fecha_inicio: fecha_inicio, fecha_fin: fecha_fin })
+            ).done(function(respKardex, respAjustes) {
 
-                function (data) {
+                var dataKardex = respKardex[0];
+                var dataAjustes = respAjustes[0];
 
-                    $('#tbody_kardex').html('');
+                var movimientos = [];
 
-                    $('#kardex_producto').text(data.producto.PRO_Nombre);
-
-                    $('#kardex_stock_total').text(data.producto.cantidad_total);
-
-                    data.kardex.forEach(function (kardex) {
-
-                        let badgeTipo = '';
-
-                        if(kardex.tipo == 'Entrada'){
-
-                            badgeTipo = `
-                                <span class="badge badge-success badge-kardex">
-                                    Compra
-                                </span>
-                            `;
-
-                        }else{
-
-                            badgeTipo = `
-                                <span class="badge badge-danger badge-kardex">
-                                    Venta
-                                </span>
-                            `;
-                        }
-
-                        let fila = `
-                            <tr>
-                                <td>${kardex.fecha}</td>
-                                <td>${badgeTipo}</td>
-                                <td>${kardex.documento}</td>
-                                <td>LT_${kardex.lote_id}</td>
-                                <td class="text-center">${kardex.stock_inicial}</td>
-                                <td class="text-center">${kardex.entrada}</td>
-                                <td class="text-center">${kardex.salida}</td>
-                                <td class="text-center">${kardex.stock_final}</td>
-                            </tr>
-                        `;
-
-                        $('#tbody_kardex').append(fila);
-
+                dataKardex.kardex.forEach(function(k) {
+                    movimientos.push({
+                        fecha: k.fecha,
+                        documento: k.documento,
+                        lote_id: k.lote_id,
+                        entrada: parseFloat(k.entrada) || 0,
+                        salida: parseFloat(k.salida) || 0,
+                        origen: k.tipo == 'Entrada' ? 'COMPRA' : 'VENTA'
                     });
+                });
 
+                dataAjustes.ajustes.forEach(function(a) {
+                    movimientos.push({
+                        fecha: a.fecha,
+                        documento: a.documento,
+                        lote_id: a.lote_id,
+                        entrada: parseFloat(a.entrada) || 0,
+                        salida: parseFloat(a.salida) || 0,
+                        origen: 'AJUSTE'
+                    });
+                });
+
+                // ORDENAR ASC PARA ACUMULAR STOCK DESDE UNA BASE CORRECTA
+                movimientos.sort(function(a, b) {
+                    return new Date(a.fecha) - new Date(b.fecha);
+                });
+
+                var stock = fecha_inicio ? (parseFloat(dataAjustes.stock_previo) || 0) : 0;
+
+                movimientos.forEach(function(m) {
+                    m.stock_inicial = stock;
+                    stock += m.entrada;
+                    stock -= m.salida;
+                    m.stock_final = stock;
+                });
+
+                // ORDEN FINAL DESCENDENTE, IGUAL QUE EL KARDEX COMPARTIDO
+                movimientos.sort(function(a, b) {
+                    return new Date(b.fecha) - new Date(a.fecha);
+                });
+
+                // FILTRO DE TIPO (elegido en pantalla), aplicado solo a que
+                // se muestra: el stock acumulado de cada fila ya se calculo
+                // con el historial completo.
+                if (tipo === 'COMPRA' || tipo === 'VENTA' || tipo === 'AJUSTE') {
+                    movimientos = movimientos.filter(function(m) {
+                        return m.origen === tipo;
+                    });
                 }
-            );
+
+                $('#tbody_kardex').html('');
+
+                $('#kardex_producto').text(dataKardex.producto.PRO_Nombre);
+
+                $('#kardex_stock_total').text(dataKardex.producto.cantidad_total);
+
+                movimientos.forEach(function (m) {
+
+                    let badgeTipo = '';
+
+                    if (m.origen === 'COMPRA') {
+                        badgeTipo = '<span class="badge badge-success badge-kardex">Compra</span>';
+                    } else if (m.origen === 'VENTA') {
+                        badgeTipo = '<span class="badge badge-danger badge-kardex">Venta</span>';
+                    } else if (m.entrada > 0) {
+                        badgeTipo = '<span class="badge badge-info badge-kardex">Ajuste (Ingreso)</span>';
+                    } else {
+                        badgeTipo = '<span class="badge badge-warning badge-kardex">Ajuste (Salida)</span>';
+                    }
+
+                    let fila = `
+                        <tr>
+                            <td>${m.fecha}</td>
+                            <td>${badgeTipo}</td>
+                            <td>${m.documento}</td>
+                            <td>LT_${m.lote_id}</td>
+                            <td class="text-center">${m.stock_inicial}</td>
+                            <td class="text-center">${m.entrada}</td>
+                            <td class="text-center">${m.salida}</td>
+                            <td class="text-center">${m.stock_final}</td>
+                        </tr>
+                    `;
+
+                    $('#tbody_kardex').append(fila);
+
+                });
+
+            });
 
         }
 

@@ -94,17 +94,19 @@
             @endif
             @if(tenant_has_module('compras'))
             @can('tenant.compras.tipogasto.index')
-            <li class="nav-item has-treeview 
+            <li class="nav-item has-treeview
                 {{ request()->routeIs('tenant.compras.compra*') ||
                 request()->routeIs('tenant.compras.proveedor*') ||
                 request()->routeIs('tenant.compras.gasto*') ||
-                request()->routeIs('tenant.compras.tipogasto*')  ? 'menu-open' : '' }}" >
+                request()->routeIs('tenant.compras.tipogasto*') ||
+                request()->routeIs('tenant.compras.cuentaspagar*')  ? 'menu-open' : '' }}" >
                 <a href="#"
-                    class="nav-link 
+                    class="nav-link
                     {{ request()->routeIs('tenant.compras.compra*') ||
                     request()->routeIs('tenant.compras.proveedor*') ||
                     request()->routeIs('tenant.compras.gasto*') ||
-                    request()->routeIs('tenant.compras.tipogasto*')  ? 'active' : '' }}" >
+                    request()->routeIs('tenant.compras.tipogasto*') ||
+                    request()->routeIs('tenant.compras.cuentaspagar*')  ? 'active' : '' }}" >
                     <i class="nav-icon fas fa-shopping-cart"></i>
                     <p>
                         COMPRAS
@@ -148,7 +150,16 @@
                             </a>
                         </li>
                         @endcan
-                        
+                        @can('tenant.compras.compra.index')
+                        <li class="nav-item">
+                            <a href="{{ tenant_url('tenant.compras.cuentaspagar.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.compras.cuentaspagar*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Cuentas por Pagar</p>
+                            </a>
+                        </li>
+                        @endcan
+
                 </ul>
             </li>
             @endcan
@@ -160,12 +171,16 @@
                 {{ request()->routeIs('tenant.ventas.metodopago*') ||
                 request()->routeIs('tenant.ventas.cliente*') ||
                 request()->routeIs('tenant.ventas.caja*') ||
+                request()->routeIs('tenant.ventas.cuentascobrar*') ||
+                request()->routeIs('tenant.ventas.cotizacion*') ||
                 request()->routeIs('tenant.ventas.venta*')  ? 'menu-open' : '' }}" >
                 <a href="#"
                     class="nav-link
                     {{ request()->routeIs('tenant.ventas.metodopago*') ||
                     request()->routeIs('tenant.ventas.cliente*') ||
                     request()->routeIs('tenant.ventas.caja*') ||
+                    request()->routeIs('tenant.ventas.cuentascobrar*') ||
+                    request()->routeIs('tenant.ventas.cotizacion*') ||
                     request()->routeIs('tenant.ventas.venta*')  ? 'active' : '' }}" >
                     <i class="nav-icon fas fa-cash-register"></i>
                     <p>
@@ -212,6 +227,24 @@
                     @endcan
                     @can('tenant.ventas.venta.index')
                     <li class="nav-item">
+                        <a href="{{ tenant_url('tenant.ventas.cotizacion.index.generico') }}"
+                            class="nav-link {{ request()->routeIs('tenant.ventas.cotizacion*.generico') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Cotizaciones</p>
+                        </a>
+                    </li>
+                    @endcan
+                    @can('tenant.ventas.venta.index')
+                    <li class="nav-item">
+                        <a href="{{ tenant_url('tenant.ventas.cuentascobrar.index') }}"
+                            class="nav-link {{ request()->routeIs('tenant.ventas.cuentascobrar*') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Cuentas por Cobrar</p>
+                        </a>
+                    </li>
+                    @endcan
+                    @can('tenant.ventas.venta.index')
+                    <li class="nav-item">
                         <a href="{{ tenant_url('tenant.ventas.notas-credito.index') }}"
                             class="nav-link {{ request()->routeIs('tenant.ventas.notas-credito*') ? 'active' : '' }}">
                             <i class="far fa-circle nav-icon"></i>
@@ -228,6 +261,67 @@
                         </a>
                     </li>
                     @endcan
+                </ul>
+            </li>
+            @endcan
+            @endif
+
+            <!-- REPORTES: exclusivo de generico, reutiliza el mismo permiso
+            que ya usa Cuentas por Cobrar (tenant.ventas.venta.index), no se
+            crea ningun permiso nuevo. -->
+            @if(tenant_has_module('ventas'))
+            @can('tenant.ventas.venta.index')
+            <li class="nav-item has-treeview {{ request()->routeIs('tenant.reportes.generico*') ? 'menu-open' : '' }}">
+                <a href="#" class="nav-link {{ request()->routeIs('tenant.reportes.generico*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-chart-line"></i>
+                    <p>
+                        REPORTES
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="{{ tenant_url('tenant.reportes.generico.index') }}"
+                            class="nav-link {{ request()->routeIs('tenant.reportes.generico.index') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Resumen General</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ tenant_url('tenant.reportes.generico.utilidad') }}"
+                            class="nav-link {{ request()->routeIs('tenant.reportes.generico.utilidad') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Utilidad por Producto</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ tenant_url('tenant.reportes.generico.ranking') }}"
+                            class="nav-link {{ request()->routeIs('tenant.reportes.generico.ranking') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Productos y Clientes</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ tenant_url('tenant.reportes.generico.categorias') }}"
+                            class="nav-link {{ request()->routeIs('tenant.reportes.generico.categorias') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Utilidad por Categoría</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ tenant_url('tenant.reportes.generico.detalle') }}"
+                            class="nav-link {{ request()->routeIs('tenant.reportes.generico.detalle') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Detalle de Ventas</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ tenant_url('tenant.reportes.generico.movimientos') }}"
+                            class="nav-link {{ request()->routeIs('tenant.reportes.generico.movimientos') ? 'active' : '' }}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Movimientos de Producto</p>
+                        </a>
+                    </li>
                 </ul>
             </li>
             @endcan

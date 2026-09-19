@@ -40,6 +40,23 @@ class MetodoPagoTableSeeder extends Seeder
                 'MEP_Pago' => 'Plin',
                 'created_at' => now(),
                 'updated_at' => now(),
+            ],
+            [
+                // Se usa cuando una venta se paga con 2+ metodos a la vez
+                // (el detalle real por metodo vive en venta_pago).
+                'MEP_Id' => 6,
+                'MEP_Pago' => 'Mixto',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                // Se usa como venta.MEP_Id cuando una venta al credito no
+                // tiene ningun adelanto (0 metodos reales usados; el saldo
+                // completo queda en cuenta_cobrar).
+                'MEP_Id' => 7,
+                'MEP_Pago' => 'Crédito',
+                'created_at' => now(),
+                'updated_at' => now(),
             ]
         ]);
     }

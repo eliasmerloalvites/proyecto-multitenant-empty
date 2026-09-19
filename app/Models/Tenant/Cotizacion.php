@@ -10,6 +10,12 @@ use Illuminate\Database\Eloquent\Model;
  * porque el flujo de cotizaciones es comun a ambos verticales de negocio;
  * solo el vertical tallermoto usa RES_Id (columna ausente en el tenant
  * generico, donde una cotizacion siempre es standalone).
+ *
+ * NOTA: el vertical 'generico' tiene su PROPIA tabla/columnas de cotizacion
+ * (COT_Total, COT_Observaciones, estado numerico), con su propio modelo en
+ * App\Models\Tenant\Generico\Cotizacion. No son intercambiables: cada
+ * tenant usa la migracion de su propio vertical (tenant/tallermoto o
+ * tenant/generico), asi que nunca conviven en la misma base de datos.
  */
 class Cotizacion extends Model
 {

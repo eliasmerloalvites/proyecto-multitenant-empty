@@ -165,7 +165,7 @@ class CompraController extends Controller
 
             DB::commit(); // Confirmar la transacción
 
-            return response()->json(['success' => 'Compra y detalles registrados exitosamente!']);
+            return response()->json(['success' => 'Compra y detalles registrados exitosamente!', 'compra_id' => $compra->COM_Id]);
         } catch (\Exception $e) {
             DB::rollBack(); // Revertir la transacción si hay un error
             return response()->json(['error' => 'Error al registrar la compra: ' . $e->getMessage()], 500);

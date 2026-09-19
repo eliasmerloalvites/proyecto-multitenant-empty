@@ -249,7 +249,7 @@
             }).then((result) => {
                 if (!result.isConfirmed) return;
                 $.ajax({
-                    url: "{{ tenant_url('tenant.caja-sesion.cerrar') }}",
+                    url: "{{ tenant_url('tenant.caja-sesion.cerrar.generico') }}",
                     type: 'POST',
                     data: { caja_id: cajaId, monto_real: result.value },
                     dataType: 'json',
