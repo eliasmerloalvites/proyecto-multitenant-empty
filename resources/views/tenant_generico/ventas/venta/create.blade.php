@@ -3292,6 +3292,12 @@
             // ya no esta ligada a la cotizacion que se pudo haber cargado
             // antes, aunque la pagina siga abierta.
             limpiarCotizacionOrigen();
+            // CATALOGO: refresca el stock mostrado (la venta recien
+            // registrada ya descontio lotes; sin esto, un producto que se
+            // quedo sin stock seguia apareciendo disponible hasta recargar
+            // la pagina a mano).
+            currentPage = 1;
+            loadProducts(currentPage);
         }
 
         // =====================================================

@@ -286,6 +286,16 @@
                         </div>
                         <div class="form-group row">
                             <div class="col-12">
+                                <label class="control-label" style=" text-align: left; display: block;">Tipo:</label>
+                                <select class="form-control" id="PRO_TipoProducto" name="PRO_TipoProducto">
+                                    <option value="PRODUCTO">Producto (tiene stock)</option>
+                                    <option value="SERVICIO">Servicio (mano de obra, sin stock)</option>
+                                </select>
+                                <small class="form-text text-muted" id="ayudaTipoProducto">Un Servicio se vende igual que un producto, pero no maneja stock ni lotes (ej. mano de obra, diagnóstico, lavado).</small>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-12">
                                 <label class="control-label" style=" text-align: left; display: block;">Nombre:</label>
                                 <input type="text" id="PRO_Nombre" name="PRO_Nombre" class="form-control input_user "
                                     placeholder="Nombre" required>
@@ -332,7 +342,7 @@
                                     class="form-control input_user " placeholder="Ej. SKU del proveedor">
                             </div>
                         </div>
-                        <div class="form-group row">
+                        <div class="form-group row" id="wrapStockMinimo">
                             <div class="col-12">
                                 <label class="control-label" style=" text-align: left; display: block;">Stock Mínimo:</label>
                                 <input type="number" id="PRO_StockMinimo" name="PRO_StockMinimo" min="0" step="1"
@@ -410,6 +420,7 @@
                                 <tr>
                                     <th scope="col">Id</th>
                                     <th scope="col">Nombre</th>
+                                    <th scope="col">Tipo</th>
                                     <th scope="col">Cód. Interno</th>
                                     <th scope="col">Categoria</th>
                                     <th scope="col">P. Venta</th>
@@ -639,6 +650,15 @@
                 theme: 'bootstrap4'
             })
 
+            // Un Servicio no maneja stock/lotes: el Stock Mínimo no aplica.
+            $('#PRO_TipoProducto').on('change', function() {
+                var esServicio = $(this).val() === 'SERVICIO';
+                $('#wrapStockMinimo').toggle(!esServicio);
+                if (esServicio) {
+                    $('#PRO_StockMinimo').val(0);
+                }
+            }).trigger('change');
+
             $("#fileImagen").change(function() {
                 $nombre = document.getElementById('fileImagen').files[0].name;
                 document.querySelector('#idFileImagen').innerText = $nombre;
@@ -674,6 +694,16 @@
                         data: 'PRO_Nombre',
                         name: 'PRO_Nombre',
                         className: 'text-start'
+                    },
+                    {
+                        data: 'PRO_TipoProducto',
+                        name: 'PRO_TipoProducto',
+                        className: 'text-start',
+                        render: function(data) {
+                            return data === 'SERVICIO'
+                                ? '<span class="badge badge-info">Servicio</span>'
+                                : '<span class="badge badge-secondary">Producto</span>';
+                        }
                     },
                     {
                         data: 'PRO_CodigoInterno',
@@ -779,6 +809,7 @@
                         $('#PRO_CodigoFabricacion').val(result.data.PRO_CodigoFabricacion);
                         $('#PRO_StockMinimo').val(result.data.PRO_StockMinimo);
                         $('#PRO_MostrarCatalogo').prop('checked', !!Number(result.data.PRO_MostrarCatalogo));
+                        $('#PRO_TipoProducto').val(result.data.PRO_TipoProducto || 'PRODUCTO').change();
                         $('#CAT_Id').val(result.data.CAT_Id);
                         $('#CAT_Id').change();
 
@@ -1118,6 +1149,7 @@
                 $('#product_form').trigger("reset");
                 $("#CAT_Id").val('');
                 $('#CAT_Id').change();
+                $('#PRO_TipoProducto').val('PRODUCTO').change();
                 $('#fileImagen').val("")
                 document.querySelector('#idFileImagen').innerText = "Añadir Imagen";
                 $('#_method').val('').hide();

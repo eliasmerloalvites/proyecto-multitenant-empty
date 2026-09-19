@@ -43,6 +43,25 @@ class AppServiceProvider extends ServiceProvider
                 ? $app->make(\App\Http\Controllers\TenantTallerMotos\VentaController::class)
                 : $app->make(\App\Http\Controllers\Tenant\Generico\VentaController::class);
         });
+
+        // CompraController y AjusteController no necesitan una clase propia
+        // de generico (generico sigue usando la base tal cual): solo
+        // tallermoto necesita su propia subclase, para excluir del
+        // catalogo de "comprar"/"ajustar stock" los productos marcados
+        // como Servicio (PRO_TipoProducto, columna exclusiva de
+        // tallermoto). $app->build() evita el bucle infinito de volver a
+        // resolver la misma clase base que se esta bindeando aqui.
+        $this->app->bind(\App\Http\Controllers\Tenant\CompraController::class, function ($app) {
+            return tenant('tipo_negocio') === 'tallermoto'
+                ? $app->make(\App\Http\Controllers\TenantTallerMotos\CompraController::class)
+                : $app->build(\App\Http\Controllers\Tenant\CompraController::class);
+        });
+
+        $this->app->bind(\App\Http\Controllers\Tenant\AjusteController::class, function ($app) {
+            return tenant('tipo_negocio') === 'tallermoto'
+                ? $app->make(\App\Http\Controllers\TenantTallerMotos\AjusteController::class)
+                : $app->build(\App\Http\Controllers\Tenant\AjusteController::class);
+        });
     }
 
     /**
