@@ -20,6 +20,9 @@ class RegistroVerificacion extends Model
         'vendedor_id',
         'expira_en',
         'verificado_en',
+        'estado',
+        'error_mensaje',
+        'tenant_domain',
     ];
 
     protected $casts = [
@@ -35,5 +38,20 @@ class RegistroVerificacion extends Model
     public function estaVerificado(): bool
     {
         return $this->verificado_en !== null;
+    }
+
+    public function estaProcesando(): bool
+    {
+        return $this->estado === 'procesando';
+    }
+
+    public function estaCompletado(): bool
+    {
+        return $this->estado === 'completado';
+    }
+
+    public function tieneError(): bool
+    {
+        return $this->estado === 'error';
     }
 }

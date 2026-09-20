@@ -62,6 +62,16 @@ class AppServiceProvider extends ServiceProvider
                 ? $app->make(\App\Http\Controllers\TenantTallerMotos\AjusteController::class)
                 : $app->build(\App\Http\Controllers\Tenant\AjusteController::class);
         });
+
+        // Igual que Compra/Ajuste: solo tallermoto necesita su propia
+        // subclase, para mostrar el resumen de almacenamiento de archivos
+        // en Configuracion > Empresa (generico sigue usando la base tal
+        // cual).
+        $this->app->bind(\App\Http\Controllers\Tenant\EmpresaFacturacionController::class, function ($app) {
+            return tenant('tipo_negocio') === 'tallermoto'
+                ? $app->make(\App\Http\Controllers\TenantTallerMotos\EmpresaFacturacionController::class)
+                : $app->build(\App\Http\Controllers\Tenant\EmpresaFacturacionController::class);
+        });
     }
 
     /**

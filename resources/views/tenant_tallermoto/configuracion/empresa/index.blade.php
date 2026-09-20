@@ -196,6 +196,32 @@
             <span>Configuración General de la Empresa</span>
         </div>
 
+        <div class="card config-card">
+            <div class="card-header card-header-dark">
+                <h6><i class="fas fa-hdd"></i> Almacenamiento de Archivos</h6>
+            </div>
+            <div class="card-body">
+                @php
+                    $storagePctInt = (int) floor($storagePorcentaje);
+                    $storageColor = $storagePctInt >= 90 ? '#dc2626' : ($storagePctInt >= 70 ? '#f59e0b' : '#16a34a');
+                @endphp
+                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size:13px;">
+                    <span><strong>{{ number_format($storageUsadoMb, 2) }} MB</strong> usados de {{ number_format($storageLimiteMb, 0) }} MB de tu plan</span>
+                    <span style="font-weight:700; color: {{ $storageColor }};">{{ $storagePctInt }}%</span>
+                </div>
+                <div style="background:#e5e7eb; border-radius:20px; height:10px; overflow:hidden;">
+                    <div style="width: {{ $storagePctInt }}%; height:100%; background: {{ $storageColor }}; border-radius:20px; transition: width .3s ease;"></div>
+                </div>
+                @if ($storagePctInt >= 90)
+                    <small class="text-danger d-block mt-2"><i class="fas fa-exclamation-triangle"></i> Estás por llegar al límite de tu plan. Las fotos de productos y mantenimientos dejarán de subirse al llegar al 100%.</small>
+                @elseif ($storagePctInt >= 70)
+                    <small class="text-warning d-block mt-2"><i class="fas fa-exclamation-circle"></i> Vas usando bastante espacio de tu plan.</small>
+                @else
+                    <small class="text-muted d-block mt-2">Incluye fotos de productos, mantenimientos y logos subidos a este negocio.</small>
+                @endif
+            </div>
+        </div>
+
         <form method="POST" id="empresa_form" enctype="multipart/form-data">
             @csrf
 
