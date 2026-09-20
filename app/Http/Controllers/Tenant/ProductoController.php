@@ -204,14 +204,6 @@ class ProductoController extends Controller
         $encabezados = ['Nombre', 'Categoria', 'Marca', 'Descripcion', 'Precio Compra', 'Precio Venta', 'Stock Inicial', 'Stock Minimo'];
         $ejemplo = ['ACEITE 20W50 1L', 'LUBRICANTES', 'LIQUI MOLY', 'Aceite mineral para motor', 25.00, 35.00, 10, 3];
 
-        // Codigo Interno/Codigo Fabricacion solo existen en tallermoto.
-        if ($this->tenantTieneCodigosProducto()) {
-            $encabezados[] = 'Codigo Interno';
-            $encabezados[] = 'Codigo Fabricacion';
-            $ejemplo[] = 'INT-0001';
-            $ejemplo[] = 'LM-20W50-1L';
-        }
-
         $ultimaColumna = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($encabezados));
 
         $sheet->fromArray($encabezados, null, 'A1');
@@ -308,7 +300,7 @@ class ProductoController extends Controller
             foreach ($filas as $fila) {
                 $numeroFila++;
 
-                [$nombre, $categoriaNombre, $marca, $descripcion, $precioCompra, $precioVenta, $stockInicial, $stockMinimo, $codigoInterno, $codigoFabricacion] = array_pad($fila, 10, null);
+                [$nombre, $categoriaNombre, $marca, $descripcion, $precioCompra, $precioVenta, $stockInicial, $stockMinimo] = array_pad($fila, 8, null);
 
                 $nombre = trim((string) $nombre);
                 $categoriaNombre = trim((string) $categoriaNombre);
@@ -349,9 +341,6 @@ class ProductoController extends Controller
                     continue;
                 }
                 $stockMinimo = $stockMinimoTexto === '' ? 0 : (float) $stockMinimoTexto;
-
-                $codigoInterno = trim((string) $codigoInterno) ?: null;
-                $codigoFabricacion = trim((string) $codigoFabricacion) ?: null;
 
                 $claveCategoria = mb_strtolower($categoriaNombre);
                 if (!$categoriasCache->has($claveCategoria)) {
@@ -396,11 +385,6 @@ class ProductoController extends Controller
                         'PRO_Status' => 1,
                         'CAT_Id' => $catId,
                     ];
-
-                    if ($this->tenantTieneCodigosProducto()) {
-                        $datosProducto['PRO_CodigoInterno'] = $codigoInterno;
-                        $datosProducto['PRO_CodigoFabricacion'] = $codigoFabricacion;
-                    }
 
                     $proId = DB::table('producto')->insertGetId($datosProducto);
                     $estado = 'creado';
