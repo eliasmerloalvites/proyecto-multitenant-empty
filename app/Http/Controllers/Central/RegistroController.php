@@ -7,7 +7,6 @@ use App\Mail\RegistroVerificacionMail;
 use App\Models\Plan;
 use App\Models\RegistroVerificacion;
 use App\Models\Vendedor;
-use App\Services\TenantProvisioningService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -121,7 +120,7 @@ class RegistroController extends Controller
         return view('central.registro.revisa-correo', ['email' => $verificacion->email]);
     }
 
-    public function verificar(string $token, TenantProvisioningService $provisioning)
+    public function verificar(string $token)
     {
         $verificacion = RegistroVerificacion::where('token', $token)->first();
 
@@ -131,9 +130,25 @@ class RegistroController extends Controller
             ]);
         }
 
-        if ($verificacion->estaVerificado()) {
+        // Ya se creó (el Job de la cola ya terminó bien en algún momento):
+        // no se vuelve a aprovisionar, se manda directo al panel.
+        if ($verificacion->estaCompletado()) {
+            return view('central.registro.exito', [
+                'urlPanel' => 'https://' . $verificacion->tenant_domain . '/tenant/login',
+            ]);
+        }
+
+        // El Job ya está corriendo (el usuario recargó la pantalla de
+        // "creando tu cuenta", o volvió a abrir el link mientras tanto):
+        // no se dispara dos veces, solo se le vuelve a mostrar la misma
+        // pantalla, que sigue consultando el estado por AJAX.
+        if ($verificacion->estaProcesando()) {
+            return view('central.registro.procesando', ['token' => $token]);
+        }
+
+        if ($verificacion->tieneError()) {
             return view('central.registro.error', [
-                'mensaje' => 'Este enlace ya fue usado. Si ya creaste tu cuenta, inicia sesión normalmente.',
+                'mensaje' => $verificacion->error_mensaje ?? 'No se pudo crear tu empresa. Intenta nuevamente o contáctanos.',
             ]);
         }
 
@@ -150,50 +165,35 @@ class RegistroController extends Controller
             ]);
         }
 
-        // 7 días de prueba gratis (config('saas.cobros.dias_prueba_gratis'))
-        // antes de que arranque el primer ciclo de cobro. El primer ciclo
-        // cae en el día del mes en que termina el trial (no el día del
-        // registro), para que el cliente tenga la prueba completa antes de
-        // que el sistema empiece a marcarlo como vencido.
-        $trialEndsAt = now()->addDays((int) config('saas.cobros.dias_prueba_gratis', 7));
+        // Primera vez que se visita el link: dispara la creación en segundo
+        // plano (ver ProvisionarTenantJob) y muestra la pantalla de espera
+        // de inmediato -- esta petición nunca corre el aprovisionamiento
+        // pesado, asi que nginx nunca la va a cortar con un 504.
+        $verificacion->update(['estado' => 'procesando']);
 
-        try {
-            $tenant = $provisioning->provision([
-                'tipo_negocio' => $verificacion->tipo_negocio,
-                'plan' => $verificacion->plan,
-                'subdomain' => $verificacion->subdomain,
-                'razon_social' => $verificacion->razon_social,
-                'ruc' => $verificacion->ruc,
-                'email' => $verificacion->email,
-                // Ya viene hasheada; TenantProvisioningService la vuelve a
-                // hashear con Hash::make, así que le pasamos una contraseña
-                // aleatoria interna y actualizamos el hash real después.
-                'password' => Str::random(40),
-                'billing_day' => min($trialEndsAt->day, 28),
-                'trial_ends_at' => $trialEndsAt->toDateString(),
-                'vendedor_id' => $verificacion->vendedor_id,
-            ]);
-        } catch (\Throwable $e) {
-            report($e);
+        \App\Jobs\ProvisionarTenantJob::dispatch($verificacion->id);
 
-            return view('central.registro.error', [
-                'mensaje' => 'No se pudo crear tu empresa. Intenta nuevamente o contáctanos.',
-            ]);
+        return view('central.registro.procesando', ['token' => $token]);
+    }
+
+    /**
+     * Consultado por AJAX desde central.registro.procesando mientras el
+     * Job de aprovisionamiento corre en segundo plano.
+     */
+    public function estadoVerificacion(string $token)
+    {
+        $verificacion = RegistroVerificacion::where('token', $token)->first();
+
+        if (! $verificacion) {
+            return response()->json(['estado' => 'error', 'mensaje' => 'Enlace no válido.'], 404);
         }
 
-        // Sobreescribimos con el hash real que el usuario eligió (provision()
-        // no lo conoce porque solo recibe contraseñas en texto plano).
-        $tenant->run(function () use ($verificacion) {
-            \App\Models\Tenant\User::where('email', $verificacion->email)
-                ->update(['password' => $verificacion->password]);
-        });
-
-        $verificacion->update(['verificado_en' => now()]);
-
-        $domain = $tenant->domains()->first();
-
-        return view('central.registro.exito', [
-            'urlPanel' => 'https://' . $domain->domain . '/tenant/login',
+        return response()->json([
+            'estado' => $verificacion->estado,
+            'mensaje' => $verificacion->error_mensaje,
+            'url_panel' => $verificacion->estaCompletado()
+                ? 'https://' . $verificacion->tenant_domain . '/tenant/login'
+                : null,
         ]);
     }
 
