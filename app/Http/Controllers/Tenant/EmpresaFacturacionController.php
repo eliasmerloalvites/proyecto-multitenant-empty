@@ -16,8 +16,20 @@ class EmpresaFacturacionController extends Controller
     {
         $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
         // dd($empresa);
+        return $this->vistaEmpresa($empresa);
+    }
+
+    /**
+     * Vista de Configuracion > Empresa, usada tanto por index() como por
+     * store() (que la re-renderiza directo, sin redirect, al guardar). La
+     * base solo pasa $empresa; TenantTallerMotos\EmpresaFacturacionController
+     * la sobreescribe para agregarle el resumen de almacenamiento de
+     * archivos, exclusivo de ese vertical.
+     */
+    protected function vistaEmpresa($empresa)
+    {
         return view(
-            'tenant_'.tenant('tipo_negocio').'.configuracion.empresa.index', 
+            'tenant_'.tenant('tipo_negocio').'.configuracion.empresa.index',
             compact('empresa')
         );
     }
@@ -228,10 +240,7 @@ class EmpresaFacturacionController extends Controller
 
             DB::commit();
 
-            return view(
-                    'tenant_'.tenant('tipo_negocio').'.configuracion.empresa.index', 
-                    compact('empresa')
-                );
+            return $this->vistaEmpresa($empresa);
 
         } catch (\Exception $e) {
 

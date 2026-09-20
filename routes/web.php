@@ -39,6 +39,7 @@ Route::middleware([
     ->middleware('throttle:5,10') // máx. 5 intentos cada 10 minutos por IP
     ->name('central.registro.store');
   Route::get('/crear-empresa/verificar/{token}', [RegistroController::class, 'verificar'])->name('central.registro.verificar');
+  Route::get('/crear-empresa/verificar/{token}/estado', [RegistroController::class, 'estadoVerificacion'])->name('central.registro.estado');
 
   Route::view('/terminos-y-condiciones', 'central.legal.terminos')->name('central.terminos');
   Route::view('/politica-de-privacidad', 'central.legal.privacidad')->name('central.privacidad');
