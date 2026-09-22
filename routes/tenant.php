@@ -46,6 +46,7 @@ use App\Http\Controllers\TenantTallerMotos\ReportesController;
 use App\Http\Controllers\TenantTallerMotos\BahiaVentaController;
 use App\Http\Controllers\TenantTallerMotos\MantenimientoPlanController;
 use App\Http\Controllers\TenantTallerMotos\ReportesFinancierosController;
+use App\Http\Controllers\TenantTallerMotos\ContabilidadController;
 use App\Http\Controllers\TenantTallerMotos\NotificacionReservaController;
 use App\Http\Controllers\TenantTallerMotos\ReservacionController;
 use App\Http\Controllers\TenantTallerMotos\ProcesoTallerController;
@@ -195,6 +196,16 @@ Route::middleware([
         Route::get('/tenant/reportes/clientes',[ReportesFinancierosController::class, 'clientes'])->name('tenant.reportes.clientes');
         Route::get('/tenant/reportes/caja',[ReportesFinancierosController::class, 'caja'])->name('tenant.reportes.caja');
         Route::get('/tenant/reportes/operacion-taller',[ReportesFinancierosController::class, 'operacionTaller'])->name('tenant.reportes.operacionTaller')->middleware('tenant.module:mantenimientos');
+
+        // CONTABILIDAD: seccion de solo lectura/descarga para el perfil
+        // Contador (ver rol "Contador" en RoleAndPermissionSeeder de
+        // tallermoto) -- libro de ventas/compras, gastos y resumen de caja
+        // para conciliar, todo exportable a Excel.
+        Route::get('/tenant/contabilidad', [ContabilidadController::class, 'index'])->name('tenant.contabilidad.index');
+        Route::get('/tenant/contabilidad/libro-ventas', [ContabilidadController::class, 'libroVentas'])->name('tenant.contabilidad.libroventas');
+        Route::get('/tenant/contabilidad/libro-compras', [ContabilidadController::class, 'libroCompras'])->name('tenant.contabilidad.librocompras');
+        Route::get('/tenant/contabilidad/gastos', [ContabilidadController::class, 'gastos'])->name('tenant.contabilidad.gastos');
+        Route::get('/tenant/contabilidad/resumen-caja', [ContabilidadController::class, 'resumenCaja'])->name('tenant.contabilidad.caja');
 
     Route::middleware(['tenant.module:mantenimientos'])->group(function () {
 

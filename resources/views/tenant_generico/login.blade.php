@@ -215,7 +215,7 @@
                             title: data.success || '¡Acceso concedido!'
                         });
                         setTimeout(function() {
-                            window.location.href = "/tenant/home";
+                            window.location.href = data.redirect || "/tenant/home";
                         }, 800);
                     },
                     error: function(data) {

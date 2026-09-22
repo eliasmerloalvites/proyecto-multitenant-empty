@@ -214,6 +214,64 @@
                 </li>
                 @endcanany
 
+                <!-- CONTABILIDAD -->
+                @canany(['tenant.contabilidad.index', 'tenant.contabilidad.libroventas', 'tenant.contabilidad.librocompras', 'tenant.contabilidad.gastos', 'tenant.contabilidad.caja'])
+                <li class="nav-item has-treeview
+                    {{ request()->routeIs('tenant.contabilidad*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('tenant.contabilidad*') ? 'active': '' }}">
+                        <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                        <p>
+                            CONTABILIDAD
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+
+                    <ul class="nav nav-treeview">
+
+                        @can('tenant.contabilidad.libroventas')
+                        <li class="nav-item">
+                            <a href="{{ route('tenant.contabilidad.libroventas') }}" class="nav-link
+                            {{ request()->routeIs('tenant.contabilidad.libroventas') ? 'active' : '' }}">
+                                <i class="fas fa-file-invoice nav-icon"></i>
+                                <p>Libro de Ventas</p>
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('tenant.contabilidad.librocompras')
+                        <li class="nav-item">
+                            <a href="{{ route('tenant.contabilidad.librocompras') }}" class="nav-link
+                            {{ request()->routeIs('tenant.contabilidad.librocompras') ? 'active' : '' }}">
+                                <i class="fas fa-file-import nav-icon"></i>
+                                <p>Libro de Compras</p>
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('tenant.contabilidad.gastos')
+                        <li class="nav-item">
+                            <a href="{{ route('tenant.contabilidad.gastos') }}" class="nav-link
+                            {{ request()->routeIs('tenant.contabilidad.gastos') ? 'active' : '' }}">
+                                <i class="fas fa-receipt nav-icon"></i>
+                                <p>Registro de Gastos</p>
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('tenant.contabilidad.caja')
+                        <li class="nav-item">
+                            <a href="{{ route('tenant.contabilidad.caja') }}" class="nav-link
+                            {{ request()->routeIs('tenant.contabilidad.caja') ? 'active' : '' }}">
+                                <i class="fas fa-cash-register nav-icon"></i>
+                                <p>Resumen de Caja</p>
+                            </a>
+                        </li>
+                        @endcan
+
+                    </ul>
+                </li>
+                @endcanany
+
                 @if(tenant_has_module('mantenimientos'))
                 @canany([
                     'tenant.mantenimientos.generalinyectada.index',
