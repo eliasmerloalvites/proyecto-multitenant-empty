@@ -24,7 +24,7 @@ class UserController extends Controller
     public function showlogin()
     {
         if (Auth::guard('tenant')->check()) {
-            return redirect()->route('tenant.home');
+            return redirect()->route($this->rutaInicioPara(Auth::guard('tenant')->user()));
         }
 
         $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
@@ -66,7 +66,25 @@ class UserController extends Controller
         return response()->json([
             'success' => 'Inicio de sesión exitoso',
             'user'    => $user->only(['id', 'name', 'email']),
+            'redirect' => route($this->rutaInicioPara($user)),
         ]);
+    }
+
+    /**
+     * A donde mandar al usuario despues de entrar: el dashboard comercial
+     * de siempre, salvo que su UNICO rol sea "Contador" (exclusivo de
+     * tallermoto, ver RoleAndPermissionSeeder) -- ese perfil no tiene
+     * permiso para el dashboard, asi que va directo a Contabilidad.
+     */
+    private function rutaInicioPara(User $user): string
+    {
+        $roles = $user->roles->pluck('name');
+
+        if ($roles->count() === 1 && $roles->first() === 'Contador') {
+            return 'tenant.contabilidad.index';
+        }
+
+        return 'tenant.home';
     }
     public function logout()
     {

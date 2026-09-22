@@ -23,8 +23,34 @@ class HomeController extends Controller
      */
     const STOCK_BAJO_LIMITE = 5;
 
+    /**
+     * El rol "Contador" solo existe en tallermoto, asi que esto nunca es
+     * true para un usuario de generico (no tiene ese rol para empezar) --
+     * no hace falta ningun guard de tenant('tipo_negocio') aqui.
+     */
+    private function esSoloContador(): bool
+    {
+        $user = Auth::guard('tenant')->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        $roles = $user->roles->pluck('name');
+
+        return $roles->count() === 1 && $roles->first() === 'Contador';
+    }
+
     public function index()
     {
+        // El perfil Contador (rol exclusivo de tallermoto, ver
+        // RoleAndPermissionSeeder) no tiene permiso para ver este dashboard
+        // comercial -- si es el UNICO rol que tiene, lo mandamos directo a
+        // Contabilidad en vez de un dashboard vacio/con accesos denegados.
+        if ($this->esSoloContador()) {
+            return redirect()->route('tenant.contabilidad.index');
+        }
+
         $tenantid = tenant('id');
         $tiponegocio = tenant('tipo_negocio');
 
