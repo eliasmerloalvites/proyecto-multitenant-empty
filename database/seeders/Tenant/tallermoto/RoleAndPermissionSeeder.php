@@ -245,6 +245,13 @@ class RoleAndPermissionSeeder extends Seeder
             ['tenant.procesos.checkin',   'GestionProceso', 'Check-in de Gestion de Proceso', 'Registrar/editar el detalle de atencion y asignar mecanico'],
             ['tenant.procesos.entendido', 'GestionProceso', 'Confirmar aviso de Gestion de Proceso', 'El mecanico confirma que vio un cambio agregado por recepcion'],
 
+            // Contabilidad (perfil Contador: solo ver/descargar, nada de crear/editar/eliminar)
+            ['tenant.contabilidad.index',        'Contabilidad', 'Ver Contabilidad',        'Panel de acceso a los reportes contables'],
+            ['tenant.contabilidad.libroventas',  'Contabilidad', 'Ver Libro de Ventas',     'Boletas/facturas emitidas con desglose de IGV, exportable a Excel'],
+            ['tenant.contabilidad.librocompras', 'Contabilidad', 'Ver Libro de Compras',    'Compras registradas con desglose de IGV, exportable a Excel'],
+            ['tenant.contabilidad.gastos',       'Contabilidad', 'Ver Registro de Gastos',  'Gastos operativos por tipo y metodo de pago, exportable a Excel'],
+            ['tenant.contabilidad.caja',         'Contabilidad', 'Ver Resumen de Caja',     'Sesiones de caja cerradas y cuentas por cobrar pendientes, exportable a Excel'],
+
         ];
 
         foreach ($permissions as [$name, $group, $nombre, $description]) {
@@ -469,6 +476,12 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.procesos.checkin',
             'tenant.procesos.entendido',
 
+            'tenant.contabilidad.index',
+            'tenant.contabilidad.libroventas',
+            'tenant.contabilidad.librocompras',
+            'tenant.contabilidad.gastos',
+            'tenant.contabilidad.caja',
+
         ]);
 
         $gerenteRole->givePermissionTo([
@@ -644,6 +657,31 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.procesos.index',
             'tenant.procesos.checkin',
             'tenant.procesos.entendido',
+
+            'tenant.contabilidad.index',
+            'tenant.contabilidad.libroventas',
+            'tenant.contabilidad.librocompras',
+            'tenant.contabilidad.gastos',
+            'tenant.contabilidad.caja',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | ROL CONTADOR: solo ver/descargar la seccion de Contabilidad, nada
+        | mas del sistema (ni ventas, ni inventario, ni configuracion).
+        |--------------------------------------------------------------------------
+        */
+        $contadorRole = Role::firstOrCreate([
+            'name'       => 'Contador',
+            'guard_name' => $guard,
+        ]);
+
+        $contadorRole->givePermissionTo([
+            'tenant.contabilidad.index',
+            'tenant.contabilidad.libroventas',
+            'tenant.contabilidad.librocompras',
+            'tenant.contabilidad.gastos',
+            'tenant.contabilidad.caja',
         ]);
 
         /*
