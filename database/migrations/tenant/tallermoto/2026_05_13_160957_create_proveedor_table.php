@@ -17,8 +17,8 @@ return new class extends Migration
             /* CAMPOS */
             $table->string('PROV_TipoDocumento', 50);
             $table->string('PROV_NumDocumento', 12);
-            $table->string('PROV_RazonSocial', 50);
-            $table->string('PROV_Direccion', 50)->nullable();
+            $table->string('PROV_RazonSocial', 150);
+            $table->string('PROV_Direccion', 150)->nullable();
             $table->string('PROV_Descripcion', 100)->nullable();
             $table->string('PROV_Celular', 9)->nullable();
             $table->string('PROV_Correo', 50)->nullable();
