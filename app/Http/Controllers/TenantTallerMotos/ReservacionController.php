@@ -451,7 +451,7 @@ class ReservacionController extends Controller
 		}
 
 		try {
-			$Reservacion->update($request->all());
+			$Reservacion->update($request->except('_token'));
 		} catch (QueryException $e) {
 			if (Reservacion::esConflictoDeSlot($e)) {
 				return response()->json(['success' => false, 'message' => 'Esa bahía y turno acaban de ser reservados por otra persona. Elige otro horario.'], 409);

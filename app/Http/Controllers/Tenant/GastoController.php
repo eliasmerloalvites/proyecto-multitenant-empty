@@ -91,7 +91,7 @@ class GastoController extends Controller
                 'GAS_Fecha' =>  $fecha.' '.$horaactual
             ]);
 
-            $gasto = Gasto::create($request->all());
+            $gasto = Gasto::create($request->except('_token'));
 
             $ubicacionNegocio = "";
             $id = null;

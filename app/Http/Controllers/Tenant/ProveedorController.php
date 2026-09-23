@@ -61,7 +61,7 @@ class ProveedorController extends Controller
 
             return response()->json(['error' => 'Proveedor ya se encuentra registrado'], 401);
         } else {
-            $Proveedor = Proveedor::create($request->all());
+            $Proveedor = Proveedor::create($request->except('_token'));
             return response()->json(['success' => 'Proveedor Registrado Exitosamente!', compact('Proveedor')]);
         }
     }
@@ -91,7 +91,7 @@ class ProveedorController extends Controller
     public function update(Request $request, string $id)
     {
         $Proveedor = Proveedor::findOrFail($id);
-        $Proveedor->update($request->all());
+        $Proveedor->update($request->except('_token'));
 
         return response()->json(['success' => 'Proveedor Editado Exitosamente.', compact('Proveedor')]);
     }
