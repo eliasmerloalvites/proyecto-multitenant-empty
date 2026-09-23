@@ -58,7 +58,7 @@ class ClienteController extends Controller
             return response()->json(['error' => 'Cliente ya registrado'], 401);                   
         }
         else{
-            $Cliente = Cliente::create($request->all());
+            $Cliente = Cliente::create($request->except('_token'));
             return response()->json(['success' => 'Cliente Registrado Exitosamente!',compact('Cliente')]);    
         }
     }
@@ -88,7 +88,7 @@ class ClienteController extends Controller
     public function update(Request $request, string $id)
     {
         $cliente=Cliente::findOrFail($id);
-		$cliente->update($request->all());
+		$cliente->update($request->except('_token'));
 
         return response()->json(['success' => 'Cliente Editado Exitosamente.',compact('cliente')]);
     }
