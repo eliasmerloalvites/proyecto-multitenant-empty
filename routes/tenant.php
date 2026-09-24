@@ -17,6 +17,7 @@ use App\Http\Controllers\Tenant\MetodoPagoController;
 use App\Http\Controllers\Tenant\CajaController;
 use App\Http\Controllers\Tenant\CajaSesionController;
 use App\Http\Controllers\TenantTallerMotos\CuentaPorCobrarController;
+use App\Http\Controllers\TenantTallerMotos\CuentaPorPagarController;
 use App\Http\Controllers\Tenant\ProductoController;
 use App\Http\Controllers\Tenant\ProveedorController;
 use App\Http\Controllers\Tenant\SedeController;
@@ -608,6 +609,13 @@ Route::middleware([
             ])->parameters([
                 'compra' => 'compra'
             ]);
+
+            // CUENTAS POR PAGAR: compras registradas al credito, exclusivo
+            // de tallermoto (mismo criterio que Cuentas por Cobrar del
+            // lado de Ventas).
+            Route::get('/tenant/compras/cuentasporpagar', [CuentaPorPagarController::class, 'index'])->name('tenant.compras.cuentasporpagar.index');
+            Route::get('/tenant/compras/cuentasporpagar/{id}', [CuentaPorPagarController::class, 'show'])->name('tenant.compras.cuentasporpagar.show');
+            Route::post('/tenant/compras/cuentasporpagar/{id}/abonar', [CuentaPorPagarController::class, 'abonar'])->name('tenant.compras.cuentasporpagar.abonar');
 
             Route::resource('/tenant/compras/proveedor', ProveedorController::class)->names([
                 'index' => 'tenant.compras.proveedor.index',
