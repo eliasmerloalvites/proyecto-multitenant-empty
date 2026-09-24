@@ -53,7 +53,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-12 mt-3">
+                <div class="col-12 mt-3" id="wrapMetodoPagoCompra">
                     <div class="input-group">
                         <div class="input-group-prepend">
                             <span class="input-group-text">
@@ -68,6 +68,34 @@
                         </select>
                     </div>
                 </div>
+
+                {{-- Credito a proveedor: solo aparece con Tipo pago = Credito.
+                     No reemplaza el guardado normal de la compra: solo
+                     captura la fecha de vencimiento y un adelanto opcional
+                     para crear la Cuenta por Pagar en el mismo store(). --}}
+                <div class="col-12 mt-3" id="bloqueCreditoCompra" style="display:none;">
+                    <div class="input-group mb-2">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Vence</span>
+                        </div>
+                        <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento">
+                    </div>
+                    <label class="mb-1" style="font-size: 12px; color: #6c757d;">Adelanto al proveedor (S/, opcional)</label>
+                    <input type="number" step="0.01" min="0" class="form-control mb-2" id="monto_inicial" name="monto_inicial" value="0.00">
+                    <div class="input-group" id="wrapMetodoInicial" style="display:none;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Metodo del adelanto</span>
+                        </div>
+                        <select class="form-control" id="metodo_pago_inicial" name="metodo_pago_inicial">
+                            <option value="">Seleccione metodo</option>
+                            @foreach ($metodo_pago as $mep)
+                                <option value="{{ $mep->MEP_Id }}">{{ $mep->MEP_Pago }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <small class="text-muted d-block mt-1">Deja el adelanto en 0.00 si nada se paga ahora: toda la compra queda como cuenta por pagar.</small>
+                </div>
+
                 <div class="row col-12 mt-3">
                     <div class="col-lg-11 col-md-11 col-sm-11 col-xs-11 " >
                         <div class="input-group">
@@ -410,6 +438,30 @@
                 $('.select2bs4').select2({
                     theme: 'bootstrap4'
                 })
+
+                // Credito a proveedor: al elegir "Credito" como Tipo pago,
+                // el Metodo de pago normal ya no aplica (no hay dinero
+                // entregado todavia) -- se oculta y se pide fecha de
+                // vencimiento en su lugar. El total lo calcula el backend
+                // solo, asi que no hace falta mostrarlo aqui.
+                $('#idCOM_TipoPago').on('change', function() {
+                    var esCredito = $(this).val() === 'Credito';
+                    $('#wrapMetodoPagoCompra').toggle(!esCredito);
+                    $('#idMEP_Id').prop('required', !esCredito);
+                    $('#bloqueCreditoCompra').toggle(esCredito);
+                    $('#fecha_vencimiento').prop('required', esCredito);
+                    if (!esCredito) {
+                        $('#monto_inicial').val('0.00');
+                        $('#wrapMetodoInicial').hide();
+                        $('#metodo_pago_inicial').prop('required', false).val('');
+                    }
+                });
+
+                $('#monto_inicial').on('input', function() {
+                    var conAdelanto = parseFloat($(this).val()) > 0;
+                    $('#wrapMetodoInicial').toggle(conAdelanto);
+                    $('#metodo_pago_inicial').prop('required', conAdelanto);
+                });
                 myModal = new bootstrap.Modal(document.getElementById('myModal'), {
                     keyboard: false
                 })
@@ -762,18 +814,31 @@
                 $tipoPago = $('#idCOM_TipoPago').val();
                 $proveedor = $('#PROV_Id').val();
                 $metodoPago = $('#idMEP_Id').val();
+                var esCredito = $tipoPago === 'Credito';
                 console.log("numDocumento", $numDocumento);
                 console.log("tipoDocumento", $tipoDocumento);
                 console.log("tipoPago", $tipoPago);
                 console.log("proveedor", $proveedor);
                 console.log("metodoPago", $metodoPago);
-                if($numDocumento == "" || $tipoDocumento == "" || $tipoPago == "" || $proveedor == "" || $metodoPago == "" ){
+                if($numDocumento == "" || $tipoDocumento == "" || $tipoPago == "" || $proveedor == "" || (!esCredito && $metodoPago == "") ){
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
                         text: 'Por favor complete todos los campos requeridos.'
                     });
                     return; // Detiene la ejecución si falta algún campo
+                }
+
+                if (esCredito) {
+                    if (!$('#fecha_vencimiento').val()) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Indica la fecha de vencimiento de la compra al credito.' });
+                        return;
+                    }
+                    var adelanto = parseFloat($('#monto_inicial').val()) || 0;
+                    if (adelanto > 0 && !$('#metodo_pago_inicial').val()) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Indica el metodo de pago del adelanto.' });
+                        return;
+                    }
                 }
 
                 if(ListPedido.length === 0){
