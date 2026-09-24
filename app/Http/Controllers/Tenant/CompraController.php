@@ -33,6 +33,38 @@ class CompraController extends Controller
     }
 
     /**
+     * MEP_Id sintetico para "Credito" (no representa dinero entregado):
+     * mismo metodo y mismo criterio que VentaController::metodoPagoCreditoId(),
+     * asi una compra al credito no depende de que el metodo real llegue
+     * desde el formulario.
+     */
+    private function metodoPagoCreditoId(): int
+    {
+        $existente = DB::table('metodo_pago')->where('MEP_Pago', 'Credito')->first();
+
+        if ($existente) {
+            return $existente->MEP_Id;
+        }
+
+        return DB::table('metodo_pago')->insertGetId([
+            'MEP_Pago' => 'Credito',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Hook para verticales con Cuentas por Pagar propias (tallermoto): la
+     * base no crea nada, TenantTallerMotos\CompraController lo
+     * sobreescribe para registrar la cuenta por pagar cuando la compra se
+     * guarda al credito.
+     */
+    protected function registrarCreditoCompra(Request $request, Compra $compra): void
+    {
+        //
+    }
+
+    /**
      * Guarda de servidor para store(): la base no rechaza nada (no todos
      * los verticales tienen productos "no comprables");
      * TenantTallerMotos\CompraController la sobreescribe para rechazar
@@ -124,12 +156,17 @@ class CompraController extends Controller
         try {
             $idUsuario = Auth::user()->id;
 
+            // Compra al credito: "Credito" no es un metodo de pago real
+            // (no representa dinero entregado), asi que se fuerza aqui en
+            // vez de depender de que el formulario mande el MEP_Id correcto.
+            $esCredito = $request->input('COM_TipoPago') === 'Credito';
+
             // Registrar la compra
             $compra = new Compra();
             $compra->COM_TipoDocumento = $request->COM_TipoDocumento;
             $compra->COM_NumDocumento = $request->COM_NumDocumento;
             $compra->COM_TipoPago = $request->COM_TipoPago;
-            $compra->MEP_Id = $request->MEP_Id;
+            $compra->MEP_Id = $esCredito ? $this->metodoPagoCreditoId() : $request->MEP_Id;
             $compra->PROV_Id = $request->PROV_Id;
             $compra->CAJ_Id = tenant_caja_activa_id();
             $compra->CS_Id = tenant_caja_sesion_activa_id();
@@ -189,6 +226,13 @@ class CompraController extends Controller
             $movi->tipo = "Entrada";
             $movi->idcv = $compra->COM_Id;
             $movi->save();
+
+            // Recien aqui se sabe el total real de la compra (suma de
+            // DCOM_Cantidad*DCOM_PrecioCompra ya guardada arriba), asi que
+            // la cuenta por pagar (si aplica) se crea al final.
+            if ($esCredito) {
+                $this->registrarCreditoCompra($request, $compra);
+            }
 
             DB::commit(); // Confirmar la transacción
 

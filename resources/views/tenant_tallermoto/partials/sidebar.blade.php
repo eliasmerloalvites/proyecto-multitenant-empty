@@ -531,6 +531,13 @@
                                         <p>Compras</p>
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="{{ tenant_url('tenant.compras.cuentasporpagar.index') }}"
+                                        class="nav-link {{ request()->routeIs('tenant.compras.cuentasporpagar*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Cuentas por Pagar</p>
+                                    </a>
+                                </li>
                             @endcan
                             @can('tenant.compras.proveedor.index')
                                 <li class="nav-item">
