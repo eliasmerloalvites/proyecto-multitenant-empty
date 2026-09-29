@@ -373,6 +373,14 @@
                                 <label for="certificado_password">Password Certificado</label>
                                 <input type="password" class="form-control" value="{{ $empresa->certificado_password ?? '' }}" id="certificado_password" name="certificado_password">
                             </div>
+
+                            <div class="form-group mb-0">
+                                <label for="sunat_reintento_hora">Reintento automático de comprobantes</label>
+                                <input type="time" class="form-control" value="{{ substr($empresa->sunat_reintento_hora ?? '21:00:00', 0, 5) }}" id="sunat_reintento_hora" name="sunat_reintento_hora">
+                                <small class="form-text text-muted">
+                                    Todos los días, a esta hora, el sistema reintenta solo las boletas/facturas que quedaron pendientes o con error de envío a SUNAT. Elige un horario en que el negocio no esté en uso.
+                                </small>
+                            </div>
                         </div>
                     </div>
                 </div>

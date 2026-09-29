@@ -39,7 +39,8 @@ class EmpresaFacturacionController extends Controller
         DB::beginTransaction();
 
         try {
-            
+            $empresaExistente = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
+
             $empresa = EmpresaFacturacion::updateOrCreate(
                 [
                     'tenant_id' => tenant('id')
@@ -80,6 +81,14 @@ class EmpresaFacturacionController extends Controller
                     'ambiente' => $request->ambiente,
                     //'proveedor_facturacion' => $request->proveedor_facturacion,
                     //'facturacion_electronica' => $request->facturacion_electronica,
+
+                    // Hora del reintento automatico de comprobantes SUNAT que
+                    // quedaron en PENDIENTE/ERROR (ver sunat:reintentar-pendientes).
+                    // Si llega vacio se conserva el default de la migracion
+                    // (21:00) en vez de guardar null.
+                    'sunat_reintento_hora' => $request->filled('sunat_reintento_hora')
+                        ? $request->sunat_reintento_hora
+                        : ($empresaExistente->sunat_reintento_hora ?? '21:00:00'),
 
                     // SERIES
                     'serie_factura' => $request->serie_factura,

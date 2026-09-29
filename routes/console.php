@@ -32,3 +32,13 @@ Schedule::command('plan:auditar-limites')
     ->weeklyOn(1, '07:00')
     ->timezone('America/Lima')
     ->withoutOverlapping();
+
+// Reintenta boletas/facturas que quedaron en PENDIENTE o ERROR (nunca
+// llegaron a SUNAT, o el envio fallo), a la hora que cada tenant configuro
+// en Configuracion > Empresa (21:00 por defecto). Corre cada minuto para
+// poder disparar en la hora exacta de cada tenant -- mismo patron que
+// caja:programacion.
+Schedule::command('sunat:reintentar-pendientes')
+    ->everyMinute()
+    ->timezone('America/Lima')
+    ->withoutOverlapping();
