@@ -85,6 +85,10 @@ class EmpresaFacturacion extends Model
         'reserva_notif_activo',
         'reserva_notif_hora',
         'reserva_notif_mensaje',
+
+        // REINTENTO AUTOMATICO DE COMPROBANTES SUNAT (ver comando
+        // sunat:reintentar-pendientes)
+        'sunat_reintento_hora',
     ];
 
     protected $casts = [
