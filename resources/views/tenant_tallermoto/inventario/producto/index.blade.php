@@ -590,8 +590,9 @@
                 <div class="modal-body">
 
                     <p class="text-muted">
-                        Sube un Excel con tus productos, su stock inicial y su stock mínimo. Los productos nuevos se crean; si el nombre
-                        ya existe, no se duplica y solo se le agrega el stock. Las categorías que no existan se crean solas.
+                        Sube un Excel con tus productos, su stock inicial y su stock mínimo. Un producto se considera repetido solo si
+                        coinciden el Nombre y el Código Interno con uno ya existente: antes de guardar nada, te mostramos cuáles son
+                        repetidos para que decidas a cuáles agregarles stock. Las categorías que no existan se crean solas.
                     </p>
 
                     <a href="{{ tenant_url('tenant.inventario.producto.importar.plantilla') }}" class="btn btn-outline-primary btn-sm mb-3">
@@ -618,14 +619,62 @@
 
                     </form>
 
+                    {{-- Paso 2: previsualizacion. Se llena con importarPreview() antes de
+                         tocar la BD, para que el usuario vea que productos van a "chocar"
+                         (mismo Nombre + Codigo Interno que uno ya existente) y decida, uno
+                         por uno, si a esos se les agrega el stock de este archivo o no. --}}
+                    <div id="importar_preview_wrapper" style="display:none;" class="mt-3">
+                        <div id="importar_preview_resumen"></div>
+
+                        <div id="importar_preview_repetidos_wrapper" style="display:none;" class="mt-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <strong style="font-size:13px;">Productos repetidos encontrados (mismo nombre + código interno):</strong>
+                                <div>
+                                    <a href="javascript:void(0)" id="btnMarcarTodosRepetidos" class="small mr-2">Marcar todos</a>
+                                    <a href="javascript:void(0)" id="btnDesmarcarTodosRepetidos" class="small">Desmarcar todos</a>
+                                </div>
+                            </div>
+                            <p class="text-muted" style="font-size:12px;">
+                                Desmarca los que NO quieras que les sumen stock con esta carga (se dejarán tal como están).
+                            </p>
+                            <div class="table-responsive" style="max-height:220px; overflow-y:auto;">
+                                <table class="table table-sm table-bordered mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th style="width:36px;"></th>
+                                            <th>Producto</th>
+                                            <th>Código interno</th>
+                                            <th>Stock actual</th>
+                                            <th>Stock a agregar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody_importar_preview_repetidos"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="importar_preview_errores_wrapper" style="display:none;" class="mt-2">
+                            <div class="alert alert-warning mb-0">
+                                <b>Filas con error (no se procesarán):</b>
+                                <ul class="mb-0" id="lista_importar_preview_errores"></ul>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="importar_resultado" style="display:none; max-height: 260px; overflow-y: auto;" class="mt-3"></div>
 
                 </div>
 
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-light border px-4" data-dismiss="modal">Cerrar</button>
-                    <button type="button" class="btn btn-success px-4" id="btnImportarProducto">
-                        <i class="fa fa-upload mr-1"></i> Importar
+                    <button type="button" class="btn btn-outline-secondary px-4" id="btnVolverImportarProducto" style="display:none;">
+                        <i class="fa fa-arrow-left mr-1"></i> Volver
+                    </button>
+                    <button type="button" class="btn btn-primary px-4" id="btnPrevisualizarProducto">
+                        <i class="fa fa-search mr-1"></i> Previsualizar
+                    </button>
+                    <button type="button" class="btn btn-success px-4" id="btnImportarProducto" style="display:none;">
+                        <i class="fa fa-upload mr-1"></i> Confirmar e Importar
                     </button>
                 </div>
 
@@ -1232,13 +1281,118 @@
                 });
             });
 
-            // IMPORTAR PRODUCTOS
-            $('#btnImportarProducto').on('click', function() {
+            // IMPORTAR PRODUCTOS -- paso 1: previsualizar (no toca la BD).
+            function resetModalImportar() {
+                $('#importar_preview_wrapper').hide();
+                $('#importar_preview_repetidos_wrapper').hide();
+                $('#importar_preview_errores_wrapper').hide();
+                $('#importar_resultado').hide().html('');
+                $('#tbody_importar_preview_repetidos').empty();
+                $('#btnPrevisualizarProducto').show();
+                $('#btnImportarProducto').hide();
+                $('#btnVolverImportarProducto').hide();
+                $('#form_importar_producto').show();
+            }
+
+            $('#modalImportarProducto').on('hidden.bs.modal', function() {
+                $('#form_importar_producto')[0].reset();
+                resetModalImportar();
+            });
+
+            $('#btnVolverImportarProducto').on('click', function() {
+                resetModalImportar();
+            });
+
+            $('#btnPrevisualizarProducto').on('click', function() {
                 if (!document.getElementById('form_importar_producto').reportValidity()) {
                     return;
                 }
 
                 var formData = new FormData(document.getElementById('form_importar_producto'));
+                var $btn = $(this);
+
+                $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Revisando...');
+
+                $.ajax({
+                    url: "{{ tenant_url('tenant.inventario.producto.importar.preview') }}",
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(data) {
+                        var html = '<div class="alert alert-info mb-2">' +
+                            '<b>' + data.resumen.nuevos + '</b> producto(s) nuevo(s) se crearán, ' +
+                            '<b>' + data.resumen.repetidos + '</b> ya existen (mismo nombre + código interno), ' +
+                            '<b>' + data.resumen.errores + '</b> fila(s) con error.' +
+                            '</div>';
+                        $('#importar_preview_resumen').html(html);
+
+                        var $tbody = $('#tbody_importar_preview_repetidos');
+                        $tbody.empty();
+
+                        if (data.repetidos.length) {
+                            data.repetidos.forEach(function(r) {
+                                $tbody.append(
+                                    '<tr data-fila="' + r.fila + '">' +
+                                        '<td class="text-center"><input type="checkbox" class="chk_agregar_stock_repetido" checked></td>' +
+                                        '<td>' + r.nombre + '</td>' +
+                                        '<td>' + (r.codigo_interno || '-') + '</td>' +
+                                        '<td>' + r.stock_actual + '</td>' +
+                                        '<td>' + r.stock_a_agregar + '</td>' +
+                                    '</tr>'
+                                );
+                            });
+                            $('#importar_preview_repetidos_wrapper').show();
+                        } else {
+                            $('#importar_preview_repetidos_wrapper').hide();
+                        }
+
+                        if (data.errores.length) {
+                            var $lista = $('#lista_importar_preview_errores').empty();
+                            data.errores.forEach(function(e) {
+                                $lista.append('<li>Fila ' + e.fila + ': ' + e.detalle + '</li>');
+                            });
+                            $('#importar_preview_errores_wrapper').show();
+                        } else {
+                            $('#importar_preview_errores_wrapper').hide();
+                        }
+
+                        $('#importar_preview_wrapper').show();
+                        $('#form_importar_producto').hide();
+                        $btn.hide();
+                        $('#btnImportarProducto').show();
+                        $('#btnVolverImportarProducto').show();
+                    },
+                    error: function(data) {
+                        var msg = (data.responseJSON && data.responseJSON.error) ? data.responseJSON.error :
+                            'No se pudo previsualizar el archivo.';
+                        Toast.fire({ type: 'error', title: msg, icon: 'error' });
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).html('<i class="fa fa-search mr-1"></i> Previsualizar');
+                    }
+                });
+            });
+
+            $('#btnMarcarTodosRepetidos').on('click', function() {
+                $('.chk_agregar_stock_repetido').prop('checked', true);
+            });
+            $('#btnDesmarcarTodosRepetidos').on('click', function() {
+                $('.chk_agregar_stock_repetido').prop('checked', false);
+            });
+
+            // Paso 2: confirmar e importar de verdad, ya con la decision del
+            // usuario sobre a cuales repetidos NO agregarles stock.
+            $('#btnImportarProducto').on('click', function() {
+                var formData = new FormData(document.getElementById('form_importar_producto'));
+
+                $('#tbody_importar_preview_repetidos tr').each(function() {
+                    var $chk = $(this).find('.chk_agregar_stock_repetido');
+                    if (!$chk.is(':checked')) {
+                        formData.append('omitir_stock_filas[]', $(this).data('fila'));
+                    }
+                });
+
                 var $btn = $(this);
                 var $resultado = $('#importar_resultado');
 
@@ -1255,7 +1409,8 @@
                         var r = data.resumen;
                         var html = '<div class="alert alert-success mb-2">' +
                             '<b>' + r.creados + '</b> productos creados, ' +
-                            '<b>' + r.con_stock_agregado + '</b> ya existían (se les agregó stock), ' +
+                            '<b>' + r.con_stock_agregado + '</b> actualizados con stock nuevo, ' +
+                            '<b>' + r.repetidos_sin_cambios + '</b> repetidos dejados sin cambios, ' +
                             '<b>' + r.errores + '</b> filas con error.' +
                             '</div>';
 
@@ -1273,7 +1428,10 @@
                             html += '</ul></div>';
                         }
 
+                        $('#importar_preview_wrapper').hide();
                         $resultado.html(html).show();
+                        $btn.hide();
+                        $('#btnVolverImportarProducto').hide();
                         table.ajax.reload(null, false);
 
                         Toast.fire({
@@ -1294,7 +1452,7 @@
                         });
                     },
                     complete: function() {
-                        $btn.prop('disabled', false).html('<i class="fa fa-upload mr-1"></i> Importar');
+                        $btn.prop('disabled', false).html('<i class="fa fa-upload mr-1"></i> Confirmar e Importar');
                     }
                 });
             });

@@ -258,15 +258,214 @@ class ProductoController extends \App\Http\Controllers\Tenant\ProductoController
     }
 
     /**
+     * Lee y valida una fila del Excel de importacion (sin tocar la BD salvo
+     * lecturas). Devuelve ['error' => string] si la fila es invalida, o los
+     * datos ya limpios/tipados listos para usar tanto en la previsualizacion
+     * como en el procesamiento real -- asi ambas rutas quedan siempre de
+     * acuerdo en que es una fila valida.
+     */
+    private function parsearFilaImportacion(array $fila): array
+    {
+        [$nombre, $categoriaNombre, $marca, $descripcion, $precioCompra, $precioVenta, $stockInicial, $stockMinimo, $codigoInterno, $codigoFabricacion, $tipoProductoTexto, $mostrarCatalogoTexto] = array_pad($fila, 12, null);
+
+        $nombre = trim((string) $nombre);
+        $categoriaNombre = trim((string) $categoriaNombre);
+
+        // Fila totalmente vacia (ej. al final del archivo): se ignora en silencio.
+        if ($nombre === '' && $categoriaNombre === '') {
+            return ['vacia' => true];
+        }
+
+        if ($nombre === '') {
+            return ['error' => 'Falta el nombre del producto.'];
+        }
+
+        if ($categoriaNombre === '') {
+            return ['error' => "\"$nombre\": falta la categoria."];
+        }
+
+        if (!is_numeric($precioVenta) || (float) $precioVenta < 0) {
+            return ['error' => "\"$nombre\": el precio de venta no es un numero valido."];
+        }
+
+        if (!is_numeric($stockInicial) || (float) $stockInicial < 0) {
+            return ['error' => "\"$nombre\": el stock inicial no es un numero valido."];
+        }
+
+        $stockMinimoTexto = trim((string) $stockMinimo);
+        if ($stockMinimoTexto !== '' && (!is_numeric($stockMinimoTexto) || (float) $stockMinimoTexto < 0)) {
+            return ['error' => "\"$nombre\": el stock minimo no es un numero valido."];
+        }
+        $stockMinimo = $stockMinimoTexto === '' ? 0 : (float) $stockMinimoTexto;
+
+        $codigoInterno = trim((string) $codigoInterno) ?: null;
+        $codigoFabricacion = trim((string) $codigoFabricacion) ?: null;
+
+        // Tipo: vacio = PRODUCTO (para no romper plantillas viejas, de antes
+        // de que existiera esta columna).
+        $tipoProductoTexto = mb_strtoupper(trim((string) $tipoProductoTexto));
+        if ($tipoProductoTexto !== '' && !in_array($tipoProductoTexto, ['PRODUCTO', 'SERVICIO'], true)) {
+            return ['error' => "\"$nombre\": el Tipo debe ser PRODUCTO o SERVICIO."];
+        }
+        $tipoProducto = $tipoProductoTexto === 'SERVICIO' ? 'SERVICIO' : 'PRODUCTO';
+
+        if ($tipoProducto === 'SERVICIO' && $stockInicial > 0) {
+            return ['error' => "\"$nombre\": es un Servicio, no se le puede cargar stock inicial."];
+        }
+
+        // Mostrar en Catalogo Web: vacio = SI (mismo default que el checkbox
+        // del formulario normal de creacion).
+        $mostrarCatalogoTexto = mb_strtoupper(trim((string) $mostrarCatalogoTexto));
+        if ($mostrarCatalogoTexto !== '' && !in_array($mostrarCatalogoTexto, ['SI', 'NO'], true)) {
+            return ['error' => "\"$nombre\": \"Mostrar en Catalogo Web\" debe ser SI o NO."];
+        }
+        $mostrarCatalogo = $mostrarCatalogoTexto !== 'NO';
+
+        return [
+            'nombre' => $nombre,
+            'categoriaNombre' => $categoriaNombre,
+            'marca' => $marca,
+            'descripcion' => $descripcion,
+            'precioCompra' => is_numeric($precioCompra) ? (float) $precioCompra : 0,
+            'precioVenta' => (float) $precioVenta,
+            'stockInicial' => (float) $stockInicial,
+            'stockMinimo' => $stockMinimo,
+            'codigoInterno' => $codigoInterno,
+            'codigoFabricacion' => $codigoFabricacion,
+            'tipoProducto' => $tipoProducto,
+            'mostrarCatalogo' => $mostrarCatalogo,
+        ];
+    }
+
+    /**
+     * Un producto de la fila se considera "el mismo" que uno ya existente
+     * solo si coinciden Nombre Y Codigo Interno (ambos vacios cuenta como
+     * coincidencia, para no romper productos viejos sin codigo). Antes solo
+     * se comparaba el nombre, lo que hacia que dos productos distintos con
+     * el mismo nombre pero codigo distinto terminaran mezclados en un solo
+     * stock.
+     */
+    private function buscarProductoDuplicado(string $nombre, ?string $codigoInterno)
+    {
+        $candidatos = DB::table('producto')
+            ->whereRaw('LOWER(PRO_Nombre) = ?', [mb_strtolower($nombre)])
+            ->get();
+
+        if ($candidatos->isEmpty()) {
+            return null;
+        }
+
+        $codigoNormalizado = $codigoInterno !== null ? mb_strtolower(trim($codigoInterno)) : '';
+
+        foreach ($candidatos as $candidato) {
+            $codigoExistente = $candidato->PRO_CodigoInterno !== null ? mb_strtolower(trim($candidato->PRO_CodigoInterno)) : '';
+            if ($codigoExistente === $codigoNormalizado) {
+                return $candidato;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Previsualizacion de la carga masiva: lee el Excel y clasifica cada
+     * fila en nueva/repetida/error SIN escribir nada en la BD, para que el
+     * usuario vea que productos van a chocar con uno ya existente (mismo
+     * Nombre + Codigo Interno) antes de decidir si a esos se les agrega
+     * stock o no.
+     */
+    public function importarPreview(Request $request)
+    {
+        $request->validate([
+            'archivo' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+
+        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($request->file('archivo')->getRealPath());
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($request->file('archivo')->getRealPath());
+        $filas = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
+        array_shift($filas);
+
+        $nuevos = [];
+        $repetidos = [];
+        $errores = [];
+        $numeroFila = 1;
+
+        foreach ($filas as $fila) {
+            $numeroFila++;
+
+            $datos = $this->parsearFilaImportacion($fila);
+
+            if (!empty($datos['vacia'])) {
+                continue;
+            }
+
+            if (isset($datos['error'])) {
+                $errores[] = ['fila' => $numeroFila, 'detalle' => $datos['error']];
+                continue;
+            }
+
+            $existente = $this->buscarProductoDuplicado($datos['nombre'], $datos['codigoInterno']);
+
+            if ($existente) {
+                if ($this->esProductoServicio($existente) && $datos['stockInicial'] > 0) {
+                    $errores[] = ['fila' => $numeroFila, 'detalle' => "\"{$datos['nombre']}\": es un Servicio, no se le puede agregar stock."];
+                    continue;
+                }
+
+                $stockActual = DB::table('lote')->where('PRO_Id', $existente->PRO_Id)->sum('LOT_CantidadReal');
+
+                $repetidos[] = [
+                    'fila' => $numeroFila,
+                    'nombre' => $datos['nombre'],
+                    'codigo_interno' => $datos['codigoInterno'],
+                    'categoria' => $datos['categoriaNombre'],
+                    'stock_actual' => (float) $stockActual,
+                    'stock_a_agregar' => $datos['stockInicial'],
+                ];
+            } else {
+                $nuevos[] = [
+                    'fila' => $numeroFila,
+                    'nombre' => $datos['nombre'],
+                    'codigo_interno' => $datos['codigoInterno'],
+                    'categoria' => $datos['categoriaNombre'],
+                    'stock_inicial' => $datos['stockInicial'],
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'resumen' => [
+                'nuevos' => count($nuevos),
+                'repetidos' => count($repetidos),
+                'errores' => count($errores),
+            ],
+            'nuevos' => $nuevos,
+            'repetidos' => $repetidos,
+            'errores' => $errores,
+        ]);
+    }
+
+    /**
      * Carga masiva de productos desde un Excel, con las columnas propias de
      * este vertical (codigos, tipo de producto, catalogo web).
+     *
+     * omitir_stock_filas: numeros de fila (los que ya vio el usuario en
+     * importarPreview como "repetidos") a los que el usuario decidio NO
+     * agregarles el stock de esta carga -- se dejan sin tocar en vez de
+     * sumarles un lote nuevo.
      */
     public function importar(Request $request)
     {
         $request->validate([
             'ALM_Id' => 'required|integer|exists:almacen,ALM_Id',
             'archivo' => 'required|file|mimes:xlsx,xls,csv',
+            'omitir_stock_filas' => 'nullable|array',
+            'omitir_stock_filas.*' => 'integer',
         ]);
+
+        $filasAOmitirStock = array_map('intval', $request->get('omitir_stock_filas', []));
 
         $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($request->file('archivo')->getRealPath());
         $reader->setReadDataOnly(true);
@@ -285,6 +484,7 @@ class ProductoController extends \App\Http\Controllers\Tenant\ProductoController
         $resultados = [];
         $creados = 0;
         $conStockAgregado = 0;
+        $repetidosSinCambios = 0;
         $errores = 0;
         $numeroFila = 1; // fila 1 = encabezados
 
@@ -293,79 +493,23 @@ class ProductoController extends \App\Http\Controllers\Tenant\ProductoController
             foreach ($filas as $fila) {
                 $numeroFila++;
 
-                [$nombre, $categoriaNombre, $marca, $descripcion, $precioCompra, $precioVenta, $stockInicial, $stockMinimo, $codigoInterno, $codigoFabricacion, $tipoProductoTexto, $mostrarCatalogoTexto] = array_pad($fila, 12, null);
+                $datos = $this->parsearFilaImportacion($fila);
 
-                $nombre = trim((string) $nombre);
-                $categoriaNombre = trim((string) $categoriaNombre);
-
-                // Fila totalmente vacia (ej. al final del archivo): se ignora en silencio.
-                if ($nombre === '' && $categoriaNombre === '') {
+                if (!empty($datos['vacia'])) {
                     continue;
                 }
 
-                if ($nombre === '') {
-                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => 'Falta el nombre del producto.'];
+                if (isset($datos['error'])) {
+                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => $datos['error']];
                     $errores++;
                     continue;
                 }
 
-                if ($categoriaNombre === '') {
-                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": falta la categoria."];
-                    $errores++;
-                    continue;
-                }
-
-                if (!is_numeric($precioVenta) || (float) $precioVenta < 0) {
-                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": el precio de venta no es un numero valido."];
-                    $errores++;
-                    continue;
-                }
-
-                if (!is_numeric($stockInicial) || (float) $stockInicial < 0) {
-                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": el stock inicial no es un numero valido."];
-                    $errores++;
-                    continue;
-                }
-
-                $stockMinimoTexto = trim((string) $stockMinimo);
-                if ($stockMinimoTexto !== '' && (!is_numeric($stockMinimoTexto) || (float) $stockMinimoTexto < 0)) {
-                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": el stock minimo no es un numero valido."];
-                    $errores++;
-                    continue;
-                }
-                $stockMinimo = $stockMinimoTexto === '' ? 0 : (float) $stockMinimoTexto;
-
-                $codigoInterno = trim((string) $codigoInterno) ?: null;
-                $codigoFabricacion = trim((string) $codigoFabricacion) ?: null;
-
-                // Tipo: vacio = PRODUCTO (para no romper plantillas viejas,
-                // de antes de que existiera esta columna).
-                $tipoProductoTexto = mb_strtoupper(trim((string) $tipoProductoTexto));
-                if ($tipoProductoTexto !== '' && !in_array($tipoProductoTexto, ['PRODUCTO', 'SERVICIO'], true)) {
-                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": el Tipo debe ser PRODUCTO o SERVICIO."];
-                    $errores++;
-                    continue;
-                }
-                $tipoProducto = $tipoProductoTexto === 'SERVICIO' ? 'SERVICIO' : 'PRODUCTO';
-
-                // Un Servicio no tiene lotes: si la fila trae stock inicial
-                // para un Servicio (nuevo o existente), se rechaza aqui
-                // mismo, antes de crear nada.
-                if ($tipoProducto === 'SERVICIO' && $stockInicial > 0) {
-                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": es un Servicio, no se le puede cargar stock inicial."];
-                    $errores++;
-                    continue;
-                }
-
-                // Mostrar en Catalogo Web: vacio = SI (mismo default que el
-                // checkbox del formulario normal de creacion).
-                $mostrarCatalogoTexto = mb_strtoupper(trim((string) $mostrarCatalogoTexto));
-                if ($mostrarCatalogoTexto !== '' && !in_array($mostrarCatalogoTexto, ['SI', 'NO'], true)) {
-                    $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": \"Mostrar en Catalogo Web\" debe ser SI o NO."];
-                    $errores++;
-                    continue;
-                }
-                $mostrarCatalogo = $mostrarCatalogoTexto !== 'NO';
+                $nombre = $datos['nombre'];
+                $categoriaNombre = $datos['categoriaNombre'];
+                $precioCompra = $datos['precioCompra'];
+                $precioVenta = $datos['precioVenta'];
+                $stockInicial = $datos['stockInicial'];
 
                 $claveCategoria = mb_strtolower($categoriaNombre);
                 if (!$categoriasCache->has($claveCategoria)) {
@@ -383,11 +527,7 @@ class ProductoController extends \App\Http\Controllers\Tenant\ProductoController
                 }
                 $catId = $categoriasCache[$claveCategoria];
 
-                $precioCompra = is_numeric($precioCompra) ? (float) $precioCompra : 0;
-                $precioVenta = (float) $precioVenta;
-                $stockInicial = (float) $stockInicial;
-
-                $productoExistente = DB::table('producto')->whereRaw('LOWER(PRO_Nombre) = ?', [mb_strtolower($nombre)])->first();
+                $productoExistente = $this->buscarProductoDuplicado($nombre, $datos['codigoInterno']);
 
                 if ($productoExistente && $this->esProductoServicio($productoExistente) && $stockInicial > 0) {
                     $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": es un Servicio, no se le puede agregar stock."];
@@ -395,24 +535,34 @@ class ProductoController extends \App\Http\Controllers\Tenant\ProductoController
                     continue;
                 }
 
+                $omitirStockDeEstaFila = in_array($numeroFila, $filasAOmitirStock, true);
+
                 if ($productoExistente) {
                     $proId = $productoExistente->PRO_Id;
-                    $estado = 'stock_agregado';
-                    $conStockAgregado++;
+
+                    if ($omitirStockDeEstaFila) {
+                        $estado = 'repetido_sin_cambios';
+                        $repetidosSinCambios++;
+                    } else {
+                        $estado = 'stock_agregado';
+                        $conStockAgregado++;
+                    }
                 } else {
                     $datosProducto = [
                         'PRO_Nombre' => $nombre,
-                        'PRO_Descripcion' => $descripcion,
+                        'PRO_Descripcion' => $datos['descripcion'],
                         'PRO_PrecioCompra' => $precioCompra,
                         'PRO_PrecioVenta' => $precioVenta,
-                        'PRO_Marca' => $marca,
-                        'PRO_StockMinimo' => $stockMinimo,
+                        'PRO_Marca' => $datos['marca'],
+                        'PRO_StockMinimo' => $datos['stockMinimo'],
                         'PRO_Status' => 1,
                         'CAT_Id' => $catId,
-                        'PRO_CodigoInterno' => $codigoInterno,
-                        'PRO_CodigoFabricacion' => $codigoFabricacion,
-                        'PRO_TipoProducto' => $tipoProducto,
-                        'PRO_MostrarCatalogo' => $mostrarCatalogo,
+                        'PRO_CodigoInterno' => $datos['codigoInterno'],
+                        'PRO_CodigoFabricacion' => $datos['codigoFabricacion'],
+                        'PRO_TipoProducto' => $datos['tipoProducto'],
+                        'PRO_MostrarCatalogo' => $datos['mostrarCatalogo'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ];
 
                     $proId = DB::table('producto')->insertGetId($datosProducto);
@@ -420,7 +570,7 @@ class ProductoController extends \App\Http\Controllers\Tenant\ProductoController
                     $creados++;
                 }
 
-                if ($stockInicial > 0) {
+                if ($stockInicial > 0 && !$omitirStockDeEstaFila) {
                     DB::table('lote')->insert([
                         'ALM_Id' => $request->ALM_Id,
                         'PRO_Id' => $proId,
@@ -449,6 +599,7 @@ class ProductoController extends \App\Http\Controllers\Tenant\ProductoController
             'resumen' => [
                 'creados' => $creados,
                 'con_stock_agregado' => $conStockAgregado,
+                'repetidos_sin_cambios' => $repetidosSinCambios,
                 'errores' => $errores,
                 'categorias_creadas' => array_values(array_unique($categoriasCreadas)),
             ],
