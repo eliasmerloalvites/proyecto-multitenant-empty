@@ -213,44 +213,82 @@
                 ]
             });
 
+            // El selector busca contra el backend a medida que se escribe
+            // (en vez de cargar una sola vez los primeros 30 productos y
+            // filtrar solo esos en el navegador), para que cualquier
+            // producto sea encontrable sin importar cuantos haya. El
+            // backend (AjusteController::productos) ya busca por nombre,
+            // codigo interno y codigo de fabricacion -- aqui solo se
+            // muestran esos codigos en el resultado.
+            function initSelectorProductoAjuste(almacenId) {
+                var $selector = $('#selector_producto_ajuste');
+
+                if ($selector.hasClass('select2-hidden-accessible')) {
+                    $selector.select2('destroy');
+                }
+
+                $selector.empty();
+
+                $selector.select2({
+                    width: '100%',
+                    placeholder: 'Buscar por nombre o código ...',
+                    minimumInputLength: 0,
+                    ajax: {
+                        url: "{{ tenant_url('tenant.inventario.ajuste.productos') }}",
+                        dataType: 'json',
+                        delay: 250,
+                        data: function(params) {
+                            return { ALM_Id: almacenId, search: params.term };
+                        },
+                        processResults: function(productos) {
+                            return {
+                                results: productos.map(function(p) {
+                                    var codigos = [
+                                        p.PRO_CodigoInterno ? 'Cód. interno: ' + p.PRO_CodigoInterno : null,
+                                        p.PRO_CodigoFabricacion ? 'Cód. fabricación: ' + p.PRO_CodigoFabricacion : null
+                                    ].filter(Boolean).join(' · ');
+
+                                    var texto = p.PRO_Nombre + (codigos ? ' (' + codigos + ')' : '') + ' — stock: ' + p.stock;
+
+                                    return { id: p.PRO_Id, text: texto, nombre: p.PRO_Nombre, stock: p.stock };
+                                })
+                            };
+                        },
+                        cache: true
+                    }
+                });
+            }
+
             $('#ALM_Id').on('change', function() {
                 var almacenId = $(this).val();
                 itemsAjuste = {};
                 renderItemsAjuste();
 
                 var $selector = $('#selector_producto_ajuste');
-                $selector.empty().append('<option value="">Buscar producto ...</option>');
 
                 if (!almacenId) {
+                    if ($selector.hasClass('select2-hidden-accessible')) {
+                        $selector.select2('destroy');
+                    }
+                    $selector.empty().append('<option value="">Elige primero el almacén ...</option>');
                     $selector.prop('disabled', true);
                     return;
                 }
 
                 $selector.prop('disabled', false);
-
-                $.get("{{ tenant_url('tenant.inventario.ajuste.productos') }}", { ALM_Id: almacenId }, function(productos) {
-                    productos.forEach(function(p) {
-                        $selector.append(
-                            $('<option>').val(p.PRO_Id).text(p.PRO_Nombre + ' (stock: ' + p.stock + ')').data('stock', p.stock).data('nombre', p.PRO_Nombre)
-                        );
-                    });
-                });
+                initSelectorProductoAjuste(almacenId);
             });
 
-            $('#selector_producto_ajuste').on('change', function() {
-                var proId = $(this).val();
-                if (!proId) return;
-
-                var $option = $(this).find('option:selected');
-                var stock = parseFloat($option.data('stock'));
-                var nombre = $option.data('nombre');
+            $('#selector_producto_ajuste').on('select2:select', function(e) {
+                var data = e.params.data;
+                var proId = data.id;
 
                 if (!itemsAjuste[proId]) {
-                    itemsAjuste[proId] = { nombre: nombre, stock: stock, tipo: 'DECREMENTO', cantidad: 1 };
+                    itemsAjuste[proId] = { nombre: data.nombre, stock: parseFloat(data.stock), tipo: 'DECREMENTO', cantidad: 1 };
                 }
 
                 renderItemsAjuste();
-                $(this).val('').trigger('change.select2');
+                $(this).val(null).trigger('change');
             });
 
             function renderItemsAjuste() {
