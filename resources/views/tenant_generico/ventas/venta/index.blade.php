@@ -72,6 +72,12 @@
                                 id="btnbuscar"><i class="fa fa-search"></i></button></span>
                     </div>
                 </div>
+                <div class="text-right mb-2">
+                    <button type="button" class="btn btn-success btn-sm" id="btnExportarVentas"
+                        title="Descarga en Excel las ventas del periodo elegido">
+                        <i class="fa fa-file-excel mr-1"></i> Exportar a Excel
+                    </button>
+                </div>
                 <p class="card-text">
                 <div class="table-responsive" style="background:#FFF;">
                     <table class="table" id="lista_ventas">
@@ -938,6 +944,16 @@
         function buscar() {
             mostrarSeleccionado();
         }
+
+        // Exporta a Excel las ventas del periodo elegido en el filtro de fechas.
+        $('#btnExportarVentas').on('click', function() {
+            var rango = ($('#date_range').val() || '').split(' - ');
+            var params = $.param({
+                fecha_inicio: rango[0] || '',
+                fecha_fin: rango[1] || ''
+            });
+            window.location.href = "{{ tenant_url('tenant.ventas.venta.exportar') }}?" + params;
+        });
 
         function mostrarSeleccionado() {
             $("#lista_ventas").dataTable().fnDestroy();

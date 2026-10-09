@@ -182,6 +182,12 @@
                             title="Quitar filtros"><i class="fa fa-eraser"></i></button>
                     </div>
                 </div>
+                <div class="text-right mb-2">
+                    <button type="button" class="btn btn-success btn-sm" id="btnExportarVentas"
+                        title="Descarga en Excel las ventas con los filtros que tengas aplicados">
+                        <i class="fa fa-file-excel mr-1"></i> Exportar a Excel
+                    </button>
+                </div>
                 <p class="card-text">
                 <div class="table-responsive" style="background:#FFF;">
                     <table class="table" id="lista_ventas">
@@ -1055,6 +1061,22 @@
         function buscar() {
             table.ajax.reload();
         }
+
+        // Exporta a Excel con los mismos filtros que tiene aplicados el listado.
+        $('#btnExportarVentas').on('click', function() {
+            var rango = ($('#date_range').val() || '').split(' - ');
+            var params = $.param({
+                fecha_inicio: rango[0] || '',
+                fecha_fin: rango[1] || '',
+                estado: $('#f_estado').val() || '',
+                tipo: $('#f_tipo').val() || '',
+                anulado: $('#f_anulado').val() || '',
+                almacen_id: $('#f_almacen').val() || '',
+                metodo_pago_id: $('#f_metodo_pago').val() || '',
+                cliente: $('#f_cliente').val() || ''
+            });
+            window.location.href = "{{ tenant_url('tenant.ventas.venta.exportar') }}?" + params;
+        });
 
         function limpiarFiltros() {
             $('#date_range').val('');

@@ -393,6 +393,8 @@ Route::middleware([
         ]);
         
         Route::middleware(['tenant.module:ventas'])->group(function () {
+            // Exportar a Excel (mismos filtros que el listado).
+            Route::get('/tenant/ventas/venta/exportar', [VentaController::class, 'exportar'])->middleware('can:tenant.ventas.venta.index')->name('tenant.ventas.venta.exportar');
             Route::get('/tenant/ventas/venta/productos',[VentaController::class, 'getProductos'])->name('tenant.ventas.venta.productos');
             Route::get('/tenant/ventas/venta/searchClientes',[VentaController::class, 'searchClientes'])->name('tenant.ventas.venta.searchClientes');
             Route::post('/tenant/ventas/venta/createCliente',[VentaController::class, 'createCliente'])->name('tenant.ventas.venta.createCliente');
@@ -598,6 +600,8 @@ Route::middleware([
         });
 
         Route::middleware(['tenant.module:compras'])->group(function () {
+            // Exportar a Excel: va antes del resource para que "exportar" no se confunda con un {compra}.
+            Route::get('/tenant/compras/compra/exportar', [CompraController::class, 'exportar'])->middleware('can:tenant.compras.compra.index')->name('tenant.compras.compra.exportar');
             Route::resource('/tenant/compras/compra', CompraController::class)->names([
                 'index' => 'tenant.compras.compra.index',
                 'create' => 'tenant.compras.compra.create',
@@ -681,6 +685,8 @@ Route::middleware([
         });
 
         Route::middleware(['tenant.module:productos'])->group(function () {
+            // Exportar a Excel: va antes del resource para que "exportar" no se confunda con un {producto}.
+            Route::get('/tenant/inventario/producto/exportar', [ProductoController::class, 'exportar'])->middleware('can:tenant.inventario.producto.index')->name('tenant.inventario.producto.exportar');
             Route::resource('/tenant/inventario/producto', ProductoController::class)->names([
                 'index' => 'tenant.inventario.producto.index',
                 'create' => 'tenant.inventario.producto.create',

@@ -10,6 +10,10 @@
                     onclick="window.location.href='{{ tenant_url('tenant.compras.compra.create') }}'">
                     + Nuevo
                 </button>
+                <button type="button" class="btn btn-success btn-lg float-right mr-2" data-toggle="modal"
+                    data-target="#modalExportarCompras" title="Descarga las compras en Excel">
+                    <i class="fa fa-file-excel mr-1"></i> Exportar
+                </button>
                 <div class="table-responsive" style="background:#FFF;">
                     <table class="table" id="tabla_compra">
                         <thead>
@@ -179,6 +183,47 @@
         </div>
     </div>
 
+
+    <!-- EXPORTAR COMPRAS A EXCEL -->
+    <div class="modal fade" id="modalExportarCompras" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title"><i class="fa fa-file-excel text-success mr-2"></i> Exportar compras a Excel</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Elige el periodo y, si quieres, un proveedor. Déjalos vacíos para exportar todas las compras.</p>
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label for="exportar_fecha_inicio">Desde</label>
+                            <input type="date" class="form-control" id="exportar_fecha_inicio">
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="exportar_fecha_fin">Hasta</label>
+                            <input type="date" class="form-control" id="exportar_fecha_fin">
+                        </div>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="exportar_proveedor">Proveedor</label>
+                        <select class="form-control" id="exportar_proveedor">
+                            <option value="">Todos los proveedores</option>
+                            @foreach ($proveedor as $prov)
+                                <option value="{{ $prov->PROV_Id }}">{{ $prov->PROV_RazonSocial }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light border px-4" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success px-4" id="btnConfirmarExportarCompras">
+                        <i class="fa fa-download mr-1"></i> Descargar Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 @section('script')
     <script>
@@ -190,6 +235,26 @@
                 showConfirmButton: false,
                 timer: 3000
             });
+
+            // EXPORTAR a Excel (periodo y proveedor opcionales).
+            $('#btnConfirmarExportarCompras').on('click', function() {
+                var desde = $('#exportar_fecha_inicio').val();
+                var hasta = $('#exportar_fecha_fin').val();
+
+                if (desde && hasta && desde > hasta) {
+                    Toast.fire({ type: 'error', icon: 'error', title: 'La fecha "Desde" no puede ser mayor que "Hasta".' });
+                    return;
+                }
+
+                var params = $.param({
+                    fecha_inicio: desde,
+                    fecha_fin: hasta,
+                    proveedor_id: $('#exportar_proveedor').val()
+                });
+                window.location.href = "{{ tenant_url('tenant.compras.compra.exportar') }}?" + params;
+                $('#modalExportarCompras').modal('hide');
+            });
+
 
             var table = $('#tabla_compra').DataTable({
                 responsive: true,
