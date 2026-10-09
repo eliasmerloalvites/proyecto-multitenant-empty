@@ -406,6 +406,9 @@
                                 <option value="INA">Inactivos</option>
                                 <option value="TODOS">Todos</option>
                             </select>
+                            <button type="button" class="btn btn-success btn-sm" id="btnExportarProductos" title="Descarga el listado en Excel con el estado elegido">
+                                <i class="fa fa-file-excel mr-1"></i> Exportar
+                            </button>
                             @can('tenant.inventario.producto.create')
                             <button type="button" class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#modalImportarProducto">
                                 <i class="fa fa-file-excel mr-1"></i> Importar
@@ -1279,6 +1282,12 @@
                         });
                     }
                 });
+            });
+
+            // EXPORTAR a Excel con el mismo filtro de Estado del listado.
+            $('#btnExportarProductos').on('click', function() {
+                window.location.href = "{{ tenant_url('tenant.inventario.producto.exportar') }}" +
+                    '?estado=' + encodeURIComponent($('#filtroEstadoProducto').val());
             });
 
             // IMPORTAR PRODUCTOS -- paso 1: previsualizar (no toca la BD).

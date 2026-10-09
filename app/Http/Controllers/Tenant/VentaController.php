@@ -11,6 +11,7 @@ use App\Models\Tenant\DetalleVenta;
 use App\Models\Tenant\DocumentoVenta;
 use App\Models\Tenant\Lote;
 use App\Models\Tenant\Movimiento;
+use App\Services\Exportacion\ExcelExporter;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -196,6 +197,160 @@ class VentaController extends Controller
             'almacenes' => DB::table('almacen')->orderBy('ALM_NombreAlmacen')->get(),
             'metodosPago' => DB::table('metodo_pago')->orderBy('MEP_Pago')->get(),
         ]);
+    }
+
+    /**
+     * Exporta a Excel las ventas del listado con los MISMOS filtros que se
+     * ven en pantalla (consultaVentas): hoja "Ventas" con una fila por venta
+     * y hoja "Detalle de items" con los productos de cada una. Los totales
+     * excluyen las ventas anuladas.
+     */
+    public function exportar(Request $request)
+    {
+        $ventas = $this->consultaVentas($request)
+            ->orderByDesc('v.created_at')
+            ->get();
+
+        $tiposComprobante = ['BOL' => 'Boleta', 'FAC' => 'Factura', 'NCR' => 'Nota de crédito'];
+
+        $filas = $ventas->map(function ($v) use ($tiposComprobante) {
+            $esElectronico = isset($tiposComprobante[$v->DOV_Tipo]);
+
+            return [
+                $v->fechaVenta,
+                $v->fechaVentaT ? substr($v->fechaVentaT, 0, 5) : null,
+                $tiposComprobante[$v->DOV_Tipo] ?? 'Nota de venta',
+                trim($v->DOV_Serie . '-' . $v->DOV_Numero, '-'),
+                $v->CLI_Nombre,
+                $v->CLI_NumDocumento,
+                $v->ALM_NombreAlmacen,
+                $v->empleado,
+                $v->MEP_Pago,
+                (int) $v->tipopago === 2 ? 'Crédito' : 'Contado',
+                $esElectronico ? ucfirst(strtolower((string) $v->estadoDocVenta)) : '—',
+                $v->DOV_Anulado ? 'SI' : 'NO',
+                (float) $v->total_descuento,
+                (float) $v->total_venta,
+            ];
+        })->all();
+
+        $columnas = [
+            ['titulo' => 'Fecha', 'tipo' => ExcelExporter::FECHA, 'ancho' => 12],
+            ['titulo' => 'Hora', 'ancho' => 8, 'centrar' => true],
+            ['titulo' => 'Comprobante', 'ancho' => 16, 'centrar' => true],
+            ['titulo' => 'Número', 'ancho' => 16, 'centrar' => true],
+            ['titulo' => 'Cliente', 'ancho' => 34],
+            ['titulo' => 'Documento del cliente', 'ancho' => 16, 'centrar' => true],
+            ['titulo' => 'Sede / Almacén', 'ancho' => 20],
+            ['titulo' => 'Vendedor', 'ancho' => 20],
+            ['titulo' => 'Método de pago', 'ancho' => 18],
+            ['titulo' => 'Forma de pago', 'ancho' => 13, 'centrar' => true],
+            ['titulo' => 'Estado SUNAT', 'ancho' => 14, 'centrar' => true],
+            ['titulo' => 'Anulada', 'ancho' => 10, 'centrar' => true],
+            ['titulo' => 'Descuento', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 13, 'total' => true],
+            ['titulo' => 'Total', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 14, 'total' => true],
+        ];
+
+        // Detalle: los items de las ventas exportadas (por tandas, por si son muchas).
+        $nombrePersonalizado = \Illuminate\Support\Facades\Schema::hasColumn('detalle_venta', 'DEV_NombrePersonalizado');
+        $filasDetalle = [];
+
+        foreach ($ventas->pluck('VEN_Id')->chunk(1000) as $ids) {
+            $items = DB::table('detalle_venta as dv')
+                ->join('venta as v', 'v.VEN_Id', '=', 'dv.VEN_Id')
+                ->join('documento_venta as dov', 'dov.VEN_Id', '=', 'v.VEN_Id')
+                ->join('cliente as c', 'c.CLI_Id', '=', 'v.CLI_Id')
+                ->join('producto as p', 'p.PRO_Id', '=', 'dv.PRO_Id')
+                ->whereIn('dv.VEN_Id', $ids)
+                ->orderByDesc('v.created_at')
+                ->orderBy('dv.DEV_Item')
+                ->select(
+                    'dv.VEN_Id', 'dv.DEV_Cantidad', 'dv.DEV_PrecioUnitario', 'dv.DEV_Descuento',
+                    'p.PRO_Nombre', 'dov.DOV_Serie', 'dov.DOV_Numero', 'dov.DOV_Anulado',
+                    'c.CLI_Nombre', DB::raw('date(v.created_at) as fecha'),
+                    $nombrePersonalizado ? 'dv.DEV_NombrePersonalizado' : DB::raw('NULL as DEV_NombrePersonalizado')
+                )
+                ->get();
+
+            foreach ($items as $it) {
+                $filasDetalle[] = [
+                    $it->fecha,
+                    trim($it->DOV_Serie . '-' . $it->DOV_Numero, '-'),
+                    $it->CLI_Nombre,
+                    $it->DEV_NombrePersonalizado ?: $it->PRO_Nombre,
+                    (float) $it->DEV_Cantidad,
+                    (float) $it->DEV_PrecioUnitario,
+                    (float) $it->DEV_Descuento,
+                    round((float) $it->DEV_Cantidad * (float) $it->DEV_PrecioUnitario, 2),
+                    $it->DOV_Anulado ? 'SI' : 'NO',
+                ];
+            }
+        }
+
+        $columnasDetalle = [
+            ['titulo' => 'Fecha', 'tipo' => ExcelExporter::FECHA, 'ancho' => 12],
+            ['titulo' => 'Número', 'ancho' => 16, 'centrar' => true],
+            ['titulo' => 'Cliente', 'ancho' => 30],
+            ['titulo' => 'Producto / Servicio', 'ancho' => 44],
+            ['titulo' => 'Cantidad', 'tipo' => ExcelExporter::DECIMAL, 'ancho' => 11],
+            ['titulo' => 'Precio unitario', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 14],
+            ['titulo' => 'Descuento', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 13, 'total' => true],
+            ['titulo' => 'Subtotal', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 14, 'total' => true],
+            ['titulo' => 'Anulada', 'ancho' => 10, 'centrar' => true],
+        ];
+
+        $filtros = $this->descripcionFiltrosExport($request);
+
+        return ExcelExporter::descargar(ExcelExporter::nombreArchivo('ventas'), [
+            [
+                'nombre' => 'Ventas',
+                'titulo' => 'Reporte de Ventas',
+                'filtros' => $filtros,
+                'columnas' => $columnas,
+                'filas' => $filas,
+                'total_excluye' => [11, 'SI'],
+                'total_etiqueta' => 'TOTAL (sin anuladas)',
+            ],
+            [
+                'nombre' => 'Detalle de items',
+                'titulo' => 'Detalle de Items Vendidos',
+                'filtros' => $filtros,
+                'columnas' => $columnasDetalle,
+                'filas' => $filasDetalle,
+                'total_excluye' => [8, 'SI'],
+                'total_etiqueta' => 'TOTAL (sin anuladas)',
+            ],
+        ]);
+    }
+
+    /** Texto legible de los filtros aplicados, para el encabezado del Excel. */
+    private function descripcionFiltrosExport(Request $request): array
+    {
+        $filtros = [];
+
+        if ($request->filled('fecha_inicio') || $request->filled('fecha_fin')) {
+            $filtros[] = 'Periodo: ' . ($request->input('fecha_inicio') ?: '…') . ' al ' . ($request->input('fecha_fin') ?: '…');
+        }
+        if ($request->filled('tipo')) {
+            $filtros[] = 'Comprobante: ' . $request->input('tipo');
+        }
+        if ($request->filled('estado')) {
+            $filtros[] = 'Estado SUNAT: ' . $request->input('estado');
+        }
+        if ($request->filled('anulado')) {
+            $filtros[] = $request->input('anulado') ? 'Solo anuladas' : 'Sin anuladas';
+        }
+        if ($request->filled('almacen_id')) {
+            $filtros[] = 'Sede: ' . (DB::table('almacen')->where('ALM_Id', $request->input('almacen_id'))->value('ALM_NombreAlmacen') ?? $request->input('almacen_id'));
+        }
+        if ($request->filled('metodo_pago_id')) {
+            $filtros[] = 'Método de pago: ' . (DB::table('metodo_pago')->where('MEP_Id', $request->input('metodo_pago_id'))->value('MEP_Pago') ?? $request->input('metodo_pago_id'));
+        }
+        if ($request->filled('cliente')) {
+            $filtros[] = 'Cliente: ' . $request->input('cliente');
+        }
+
+        return $filtros;
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant\Producto;
 use App\Models\TenantTallerMotos\ProductoImagen;
+use App\Services\Exportacion\ExcelExporter;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -112,6 +113,137 @@ class ProductoController extends Controller
         $categorias = DB::table('categoria')->get();
         $almacenes = DB::table('almacen')->orderBy('ALM_NombreAlmacen')->get();
         return view('tenant_'.tenant('tipo_negocio').'.inventario.producto.index', compact('categorias', 'almacenes'));
+    }
+
+    /**
+     * Exporta el catalogo de productos a Excel: hoja "Productos" con precios,
+     * margen, stock total, situacion y valor en stock, y hoja "Stock por
+     * almacen" con el stock de cada producto en cada sede. Respeta el mismo
+     * filtro de Estado que el listado (por defecto, solo activos).
+     */
+    public function exportar(Request $request)
+    {
+        $estado = $request->input('estado', 'ACT');
+        $tieneCodigos = $this->tenantTieneCodigosProducto();
+        $tieneTipo = \Illuminate\Support\Facades\Schema::hasColumn('producto', 'PRO_TipoProducto');
+
+        $productos = DB::table('producto as pd')
+            ->join('categoria as ct', 'pd.CAT_Id', '=', 'ct.CAT_Id')
+            ->select('pd.*', 'ct.CAT_Nombre')
+            ->when($estado === 'ACT', fn ($q) => $q->where('pd.PRO_Status', 1))
+            ->when($estado === 'INA', fn ($q) => $q->where('pd.PRO_Status', 0))
+            ->orderBy('ct.CAT_Nombre')
+            ->orderBy('pd.PRO_Nombre')
+            ->get();
+
+        $almacenes = DB::table('almacen')->orderBy('ALM_NombreAlmacen')->get();
+
+        $stockPorProducto = DB::table('lote')
+            ->select('PRO_Id', 'ALM_Id', DB::raw('SUM(LOT_CantidadReal) as stock'))
+            ->groupBy('PRO_Id', 'ALM_Id')
+            ->get()
+            ->groupBy('PRO_Id');
+
+        $columnas = [];
+        if ($tieneCodigos) {
+            $columnas[] = ['titulo' => 'Código interno', 'ancho' => 16];
+            $columnas[] = ['titulo' => 'Código fabricación', 'ancho' => 18];
+        }
+        $columnas[] = ['titulo' => 'Producto', 'ancho' => 42];
+        $columnas[] = ['titulo' => 'Categoría', 'ancho' => 22];
+        $columnas[] = ['titulo' => 'Marca', 'ancho' => 16];
+        if ($tieneTipo) {
+            $columnas[] = ['titulo' => 'Tipo', 'ancho' => 12, 'centrar' => true];
+        }
+        $columnas[] = ['titulo' => 'Precio de compra', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 15];
+        $columnas[] = ['titulo' => 'Precio de venta', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 15];
+        $columnas[] = ['titulo' => 'Margen', 'tipo' => ExcelExporter::PORCENTAJE, 'ancho' => 10];
+        $columnas[] = ['titulo' => 'Stock total', 'tipo' => ExcelExporter::DECIMAL, 'ancho' => 12, 'total' => true];
+        $columnas[] = ['titulo' => 'Stock mínimo', 'tipo' => ExcelExporter::DECIMAL, 'ancho' => 12];
+        $columnas[] = ['titulo' => 'Situación', 'ancho' => 14, 'centrar' => true];
+        $columnas[] = ['titulo' => 'Valor en stock (a costo)', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 18, 'total' => true];
+        $columnas[] = ['titulo' => 'Estado', 'ancho' => 11, 'centrar' => true];
+
+        $filas = [];
+        $filasStock = [];
+
+        foreach ($productos as $p) {
+            $porAlmacen = ($stockPorProducto[$p->PRO_Id] ?? collect())->pluck('stock', 'ALM_Id');
+            $stock = (float) $porAlmacen->sum();
+            $esServicio = $tieneTipo && ($p->PRO_TipoProducto ?? 'PRODUCTO') === 'SERVICIO';
+            $minimo = (float) ($p->PRO_StockMinimo ?? 0);
+
+            if ($esServicio) {
+                $situacion = 'Servicio';
+            } elseif ($stock <= 0) {
+                $situacion = 'Sin stock';
+            } elseif ($stock <= $minimo) {
+                $situacion = 'Stock bajo';
+            } else {
+                $situacion = 'Normal';
+            }
+
+            $venta = (float) $p->PRO_PrecioVenta;
+            $compra = (float) $p->PRO_PrecioCompra;
+
+            $fila = [];
+            if ($tieneCodigos) {
+                $fila[] = $p->PRO_CodigoInterno;
+                $fila[] = $p->PRO_CodigoFabricacion;
+            }
+            $fila[] = $p->PRO_Nombre;
+            $fila[] = $p->CAT_Nombre;
+            $fila[] = $p->PRO_Marca;
+            if ($tieneTipo) {
+                $fila[] = $esServicio ? 'Servicio' : 'Producto';
+            }
+            $fila[] = $compra;
+            $fila[] = $venta;
+            $fila[] = $venta > 0 ? ($venta - $compra) / $venta : null;
+            $fila[] = $esServicio ? null : $stock;
+            $fila[] = $esServicio ? null : $minimo;
+            $fila[] = $situacion;
+            $fila[] = $esServicio ? null : round($stock * $compra, 2);
+            $fila[] = (int) $p->PRO_Status === 1 ? 'Activo' : 'Inactivo';
+            $filas[] = $fila;
+
+            if (! $esServicio) {
+                $filaStock = [$p->PRO_Nombre, $p->CAT_Nombre];
+                foreach ($almacenes as $a) {
+                    $filaStock[] = (float) ($porAlmacen[$a->ALM_Id] ?? 0);
+                }
+                $filaStock[] = $stock;
+                $filasStock[] = $filaStock;
+            }
+        }
+
+        $columnasStock = [
+            ['titulo' => 'Producto', 'ancho' => 42],
+            ['titulo' => 'Categoría', 'ancho' => 22],
+        ];
+        foreach ($almacenes as $a) {
+            $columnasStock[] = ['titulo' => $a->ALM_NombreAlmacen, 'tipo' => ExcelExporter::DECIMAL, 'ancho' => 16, 'total' => true];
+        }
+        $columnasStock[] = ['titulo' => 'Total', 'tipo' => ExcelExporter::DECIMAL, 'ancho' => 14, 'total' => true];
+
+        $filtro = ['Estado: ' . ($estado === 'ACT' ? 'solo activos' : ($estado === 'INA' ? 'solo inactivos' : 'todos'))];
+
+        return ExcelExporter::descargar(ExcelExporter::nombreArchivo('productos'), [
+            [
+                'nombre' => 'Productos',
+                'titulo' => 'Catálogo de Productos',
+                'filtros' => $filtro,
+                'columnas' => $columnas,
+                'filas' => $filas,
+            ],
+            [
+                'nombre' => 'Stock por almacén',
+                'titulo' => 'Stock por Almacén',
+                'filtros' => $filtro,
+                'columnas' => $columnasStock,
+                'filas' => $filasStock,
+            ],
+        ]);
     }
 
     /**
