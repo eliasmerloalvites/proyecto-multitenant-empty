@@ -96,7 +96,10 @@ class ExcelExporter
         $filas = $hoja['filas'];
         $numColumnas = count($columnas);
         $ultimaLetra = Coordinate::stringFromColumnIndex($numColumnas);
-        $filaEnc = self::FILA_ENCABEZADO;
+        // Si la hoja trae un bloque de datos generales ('info'), la tabla
+        // empieza mas abajo: una fila por dato mas una de separacion.
+        $info = $hoja['info'] ?? [];
+        $filaEnc = self::FILA_ENCABEZADO + ($info ? count($info) + 1 : 0);
         $primeraDato = $filaEnc + 1;
         $ultimaDato = $filaEnc + max(count($filas), 1);
 
@@ -121,6 +124,11 @@ class ExcelExporter
 
         $sheet->getRowDimension(5)->setRowHeight(6);
 
+        if ($info) {
+            self::bloqueInfo($sheet, $info, self::FILA_ENCABEZADO, $ultimaLetra, $colorBase);
+            $sheet->getRowDimension($filaEnc - 1)->setRowHeight(10);
+        }
+
         // Encabezado de la tabla.
         foreach ($columnas as $i => $columna) {
             $letra = Coordinate::stringFromColumnIndex($i + 1);
@@ -143,7 +151,7 @@ class ExcelExporter
 
         // Datos.
         if (empty($filas)) {
-            $sheet->setCellValue("A{$primeraDato}", 'No hay datos para los filtros seleccionados.');
+            $sheet->setCellValue("A{$primeraDato}", $hoja['mensaje_vacio'] ?? 'No hay datos para los filtros seleccionados.');
             $sheet->mergeCells("A{$primeraDato}:{$ultimaLetra}{$primeraDato}");
             $sheet->getStyle("A{$primeraDato}")->getFont()->setItalic(true)->getColor()->setRGB('6B7280');
             $sheet->getStyle("A{$primeraDato}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
@@ -188,7 +196,20 @@ class ExcelExporter
                 }
             }
 
-            $sheet->setAutoFilter("A{$filaEnc}:{$ultimaLetra}{$ultimaDato}");
+            // Filas destacadas (indices de $filas): negrita y fondo de totales,
+            // para renglones como "NETO" que resumen a los de arriba.
+            foreach ($hoja['filas_resaltadas'] ?? [] as $indiceFila) {
+                $r = $primeraDato + $indiceFila;
+                $sheet->getStyle("A{$r}:{$ultimaLetra}{$r}")->applyFromArray([
+                    'font' => ['bold' => true],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E0E7EF']],
+                    'borders' => ['top' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => $colorBase]]],
+                ]);
+            }
+
+            if (empty($hoja['sin_autofiltro'])) {
+                $sheet->setAutoFilter("A{$filaEnc}:{$ultimaLetra}{$ultimaDato}");
+            }
 
             // Fila de totales (formulas, para que sigan vivas si el usuario filtra o edita).
             if (collect($columnas)->contains(fn ($c) => ! empty($c['total']))) {
@@ -197,7 +218,11 @@ class ExcelExporter
         }
 
         // Encabezado fijo y configuracion de impresion.
-        $sheet->freezePane('A' . $primeraDato);
+        // Con bloque de datos generales no se congela nada: dejaria media
+        // pantalla fija. Solo se fija el encabezado en tablas "limpias".
+        if (! $info) {
+            $sheet->freezePane('A' . $primeraDato);
+        }
         $sheet->getPageSetup()
             ->setOrientation($numColumnas > 7 ? PageSetup::ORIENTATION_LANDSCAPE : PageSetup::ORIENTATION_PORTRAIT)
             ->setPaperSize(PageSetup::PAPERSIZE_A4)
@@ -207,6 +232,47 @@ class ExcelExporter
         $sheet->getPageSetup()->setFitToPage(true);
         $sheet->getPageMargins()->setTop(0.5)->setBottom(0.6)->setLeft(0.4)->setRight(0.4);
         $sheet->getHeaderFooter()->setOddFooter('&L' . $empresa . '&RPágina &P de &N');
+    }
+
+    /**
+     * Bloque "Etiqueta | Valor" (datos generales del reporte). Cada elemento
+     * de $info es [etiqueta, valor, tipo (opcional), colorRGB (opcional)].
+     * El valor se combina de la columna B a la ultima para que los textos
+     * largos (ej. una observacion) no se corten.
+     */
+    private static function bloqueInfo($sheet, array $info, int $filaInicial, string $ultimaLetra, string $colorBase): void
+    {
+        foreach ($info as $i => $dato) {
+            $fila = $filaInicial + $i;
+            [$etiqueta, $valor] = $dato;
+            $tipo = $dato[2] ?? self::TEXTO;
+            $color = $dato[3] ?? null;
+
+            $sheet->setCellValue("A{$fila}", $etiqueta);
+            $sheet->getStyle("A{$fila}")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 10, 'color' => ['rgb' => '374151']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E5EAF1']],
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+            ]);
+
+            if ($ultimaLetra !== 'A') {
+                $sheet->mergeCells("B{$fila}:{$ultimaLetra}{$fila}");
+            }
+
+            self::escribirCelda($sheet, "B{$fila}", $valor, $tipo);
+            $estilo = $sheet->getStyle("B{$fila}:{$ultimaLetra}{$fila}");
+            $estilo->getFont()->setSize(10)->getColor()->setRGB($color ?? '1F2937');
+            if ($color) {
+                $estilo->getFont()->setBold(true);
+            }
+            $estilo->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setVertical(Alignment::VERTICAL_CENTER)->setWrapText(true);
+            if (isset(self::FORMATOS[$tipo])) {
+                $estilo->getNumberFormat()->setFormatCode(self::FORMATOS[$tipo]);
+            }
+
+            $sheet->getStyle("A{$fila}:{$ultimaLetra}{$fila}")->getBorders()->getBottom()
+                ->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('D5DCE4');
+        }
     }
 
     private static function escribirCelda($sheet, string $coordenada, $valor, string $tipo): void

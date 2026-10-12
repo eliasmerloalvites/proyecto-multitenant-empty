@@ -26,7 +26,7 @@
                                 <th>Diferencia</th>
                                 <th>Estado</th>
                                 <th>Usuarios (apertura/cierre)</th>
-                                <th>Ver</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                     </table>
@@ -45,6 +45,12 @@
                 </div>
                 <div class="modal-body" id="detalleSesionBody">
                     <p class="text-muted">Cargando...</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id="btnExportarDesdeModal" data-id="">
+                        <i class="fa fa-file-excel mr-1"></i> Exportar a Excel
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
@@ -83,8 +89,22 @@
                 ]
             });
 
+            // Descarga el detalle del turno en Excel (desde la fila o desde el modal).
+            function descargarDetalleSesion(id) {
+                window.location.href = '{{ tenant_url('tenant.ventas.caja.historial.exportar', ['id' => ':id']) }}'.replace(':id', id);
+            }
+
+            $('body').on('click', '.exportarDetalleSesion', function() {
+                descargarDetalleSesion($(this).data('id'));
+            });
+
+            $('#btnExportarDesdeModal').on('click', function() {
+                descargarDetalleSesion($(this).data('id'));
+            });
+
             $('body').on('click', '.verDetalleSesion', function() {
                 var id = $(this).data('id');
+                $('#btnExportarDesdeModal').data('id', id);
                 $('#detalleSesionBody').html('<p class="text-muted">Cargando...</p>');
                 $('#modalDetalleSesion').modal('show');
 
