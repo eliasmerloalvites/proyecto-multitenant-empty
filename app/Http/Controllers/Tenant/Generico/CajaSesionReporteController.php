@@ -124,6 +124,23 @@ class CajaSesionReporteController extends Controller
     }
 
     /**
+     * Excel con el detalle completo de un turno, a partir del detalle() de
+     * generico (que es el que muestra su pantalla), para que coincidan.
+     */
+    public function exportar(string $id)
+    {
+        $respuesta = $this->detalle($id);
+
+        if ($respuesta->getStatusCode() !== 200) {
+            return $respuesta;
+        }
+
+        $sesion = CajaSesion::with(['caja', 'usuarioApertura:id,name', 'usuarioCierre:id,name'])->findOrFail($id);
+
+        return \App\Services\Exportacion\CajaSesionExcel::descargar($sesion, $respuesta->getData(true));
+    }
+
+    /**
      * Igual que CajaSesionController::calcularMontoEsperado(), pero la
      * porcion de "ventas en efectivo" se calcula desde venta_pago cuando la
      * venta tiene su detalle de pago dividido guardado, y cae al calculo

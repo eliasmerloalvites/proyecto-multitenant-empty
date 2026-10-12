@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant\Caja;
 use App\Models\Tenant\CajaSesion;
+use App\Services\Exportacion\CajaSesionExcel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -275,7 +276,8 @@ class CajaSesionController extends Controller
                     return $apertura . ' / ' . $cierre;
                 })
                 ->addColumn('action', function ($row) {
-                    return '<a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary verDetalleSesion" data-id="' . $row->CS_Id . '"><i class="fa fa-eye"></i></a>';
+                    return '<a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary verDetalleSesion" data-id="' . $row->CS_Id . '" title="Ver detalle"><i class="fa fa-eye"></i></a> '
+                        . '<a href="javascript:void(0)" class="btn btn-sm btn-success exportarDetalleSesion" data-id="' . $row->CS_Id . '" title="Descargar el detalle en Excel"><i class="fa fa-file-excel"></i></a>';
                 })
                 ->rawColumns(['diferencia', 'estado', 'action'])
                 ->make(true);
@@ -350,6 +352,24 @@ class CajaSesionController extends Controller
             'compras' => $compras,
             'gastos' => $gastos,
         ]);
+    }
+
+    /**
+     * Excel con el detalle completo de un turno (resumen del arqueo + ventas,
+     * compras y gastos). Parte del mismo detalle() que muestra la pantalla,
+     * para que el archivo y el modal nunca discrepen.
+     */
+    public function exportar(string $id)
+    {
+        $respuesta = $this->detalle($id);
+
+        if ($respuesta->getStatusCode() !== 200) {
+            return $respuesta;
+        }
+
+        $sesion = CajaSesion::with(['caja', 'usuarioApertura:id,name', 'usuarioCierre:id,name'])->findOrFail($id);
+
+        return CajaSesionExcel::descargar($sesion, $respuesta->getData(true));
     }
 
     /**

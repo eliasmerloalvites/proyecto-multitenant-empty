@@ -175,6 +175,7 @@ Route::middleware([
         Route::post('/tenant/caja-sesion/cerrar', [CajaSesionController::class, 'cerrar'])->name('tenant.caja-sesion.cerrar');
         Route::get('/tenant/ventas/caja/historial', [CajaSesionController::class, 'historial'])->name('tenant.ventas.caja.historial');
         Route::get('/tenant/ventas/caja/historial/{id}', [CajaSesionController::class, 'detalle'])->name('tenant.ventas.caja.historial.detalle');
+        Route::get('/tenant/ventas/caja/historial/{id}/exportar', [CajaSesionController::class, 'exportar'])->name('tenant.ventas.caja.historial.exportar');
 
         Route::get('/tenant/ventas/cuentasporcobrar', [CuentaPorCobrarController::class, 'index'])->name('tenant.ventas.cuentasporcobrar.index');
         Route::get('/tenant/ventas/cuentasporcobrar/{id}', [CuentaPorCobrarController::class, 'show'])->name('tenant.ventas.cuentasporcobrar.show');
@@ -186,6 +187,7 @@ Route::middleware([
         // siguen usando tal cual.
         Route::post('/tenant/caja-sesion/cerrar-generico', [GenericoCajaSesionReporteController::class, 'cerrar'])->name('tenant.caja-sesion.cerrar.generico');
         Route::get('/tenant/ventas/caja/historial/{id}/generico', [GenericoCajaSesionReporteController::class, 'detalle'])->name('tenant.ventas.caja.historial.detalle.generico');
+        Route::get('/tenant/ventas/caja/historial/{id}/exportar-generico', [GenericoCajaSesionReporteController::class, 'exportar'])->name('tenant.ventas.caja.historial.exportar.generico');
         
         //REPORTES
         Route::get('/tenant/reportes/listageneral',[ReportesController::class, 'listageneral'])->name('tenant.reportes.listageneral');
