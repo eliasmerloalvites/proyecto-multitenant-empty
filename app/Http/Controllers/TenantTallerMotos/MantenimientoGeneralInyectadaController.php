@@ -58,6 +58,12 @@ class MantenimientoGeneralInyectadaController extends Controller
 
                 return Datatables::of($data)
                     ->addIndexColumn()
+                    // "personal" es un alias calculado (nombre del mecanico), no una columna de
+                    // la tabla de mantenimiento: sin esto la busqueda global intenta filtrar por
+                    // <tabla>.personal y la consulta truena con "Unknown column".
+                    ->filterColumn('personal', function ($query, $keyword) {
+                        $query->whereRaw('LOWER(p.name) LIKE ?', ['%' . mb_strtolower($keyword) . '%']);
+                    })
                     ->addColumn('estado', function ($row) {
                         if ($row->MGI_Estado == 'APROBADO') {
                             $btn = '<button type="button" class="btn btn-sm btn-outline-success">' . $row->MGI_Estado . '</button>';
@@ -129,6 +135,12 @@ class MantenimientoGeneralInyectadaController extends Controller
 
                 return Datatables::of($data)
                     ->addIndexColumn()
+                    // "personal" es un alias calculado (nombre del mecanico), no una columna de
+                    // la tabla de mantenimiento: sin esto la busqueda global intenta filtrar por
+                    // <tabla>.personal y la consulta truena con "Unknown column".
+                    ->filterColumn('personal', function ($query, $keyword) {
+                        $query->whereRaw('LOWER(p.name) LIKE ?', ['%' . mb_strtolower($keyword) . '%']);
+                    })
                     ->addColumn('estado', function ($row) {
                         if ($row->MGI_Estado == 'APROBADO') {
                             $btn = '<button type="button" class="btn btn-sm btn-outline-success">' . $row->MGI_Estado . '</button>';
