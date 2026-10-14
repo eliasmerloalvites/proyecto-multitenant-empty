@@ -200,7 +200,45 @@ class ClientController extends Controller
                 'plan'              => $tenant->plan ?? null,
                 'tipo_negocio'      => $tenant->tipo_negocio ?? null,
                 'domain'            => $domain->domain ?? null,
+                'app_movil'         => (bool) (($tenant->modules ?? [])['app_movil'] ?? false),
+                'codigo_app'        => $tenant->codigo_app ?? null,
             ],
+        ]);
+    }
+
+    /**
+     * Codigo publico del taller para la app movil (el que va en el QR). Solo
+     * identifica al taller; no da acceso a ningun dato. Sin caracteres que se
+     * confunden (0/O, 1/I).
+     */
+    private function generarCodigoApp(): string
+    {
+        $alfabeto = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        $largo = (int) config('app_movil.directorio.longitud_codigo');
+
+        do {
+            $codigo = '';
+            for ($i = 0; $i < $largo; $i++) {
+                $codigo .= $alfabeto[random_int(0, strlen($alfabeto) - 1)];
+            }
+        } while (Tenant::where('data->codigo_app', $codigo)->exists());
+
+        return $codigo;
+    }
+
+    /** QR (SVG) con el enlace publico del taller para la app movil. */
+    public function qr(Client $client)
+    {
+        $tenant = Tenant::find($client->tenant_id);
+        $codigo = $tenant?->codigo_app;
+
+        abort_unless($codigo, 404);
+
+        $dominioCentral = ((array) config('tenancy.central_domains'))[0] ?? request()->getHost();
+        $enlace = config('app_movil.esquema') . '://' . $dominioCentral . '/t/' . $codigo;
+
+        return response(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(400)->margin(2)->generate($enlace), 200, [
+            'Content-Type' => 'image/svg+xml',
         ]);
     }
 
@@ -303,6 +341,22 @@ class ClientController extends Controller
                     $tenant->limits = $planConfig['data']['limits'];
                     if (! $tenant->branding) {
                         $tenant->branding = $planConfig['data']['branding'];
+                    }
+                }
+
+                // App movil de clientes (modulo opcional por taller, no depende
+                // del plan). Va despues del bloque de arriba para que un cambio
+                // de plan, que reemplaza todos los modulos, no lo apague sin
+                // querer. Al activarlo por primera vez se genera el codigo
+                // publico del taller (el del QR); al desactivarlo el codigo se
+                // conserva, asi el QR impreso sigue siendo el mismo.
+                if ($request->has('modulos_app_form') && $tenant->tipo_negocio === 'tallermoto') {
+                    $modules = $tenant->modules ?? [];
+                    $modules['app_movil'] = $request->boolean('app_movil');
+                    $tenant->modules = $modules;
+
+                    if ($modules['app_movil'] && ! $tenant->codigo_app) {
+                        $tenant->codigo_app = $this->generarCodigoApp();
                     }
                 }
 

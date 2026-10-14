@@ -46,6 +46,12 @@ return [
             'provider' => 'tenant_users',
         ],
 
+        // Clientes finales de la app movil (token Sanctum, sin sesion web).
+        'cliente' => [
+            'driver' => 'sanctum',
+            'provider' => 'cuentas_moviles',
+        ],
+
         // 'web' => [
         //     'driver' => 'session',
         //     'provider' => 'users',
@@ -84,6 +90,11 @@ return [
         'tenant_users' => [
             'driver' => 'eloquent',
             'model' => App\Models\Tenant\User::class,
+        ],
+
+        'cuentas_moviles' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\TenantTallerMotos\CuentaMovil::class,
         ],
 
         // 'users' => [

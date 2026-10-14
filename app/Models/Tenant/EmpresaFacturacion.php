@@ -91,6 +91,21 @@ class EmpresaFacturacion extends Model
         'sunat_reintento_hora',
     ];
 
+    /**
+     * Credenciales SUNAT y del certificado digital: nunca deben salir cuando
+     * el modelo se convierte a JSON/array (por ejemplo, al devolverlo en una
+     * respuesta). El acceso directo ($empresa->sol_password) no se afecta, asi
+     * que la facturacion sigue funcionando igual.
+     */
+    protected $hidden = [
+        'sol_usuario',
+        'sol_password',
+        'gre_client_id',
+        'gre_client_secret',
+        'certificado_ruta',
+        'certificado_password',
+    ];
+
     protected $casts = [
 
         'activo' => 'boolean',

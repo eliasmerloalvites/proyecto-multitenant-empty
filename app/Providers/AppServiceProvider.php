@@ -32,6 +32,15 @@ class AppServiceProvider extends ServiceProvider
         // controlador en el momento de atender el request (ahi si hay
         // tenant() disponible) y la redirige a la subclase que corresponda,
         // sin tocar rutas ni vistas de ningun vertical.
+        // Canal por el que se entrega el codigo de verificacion de la app
+        // movil. Hoy solo existe el canal de desarrollo ('log'); un canal real
+        // (WhatsApp/SMS) se agrega implementando OtpChannel y mapeandolo aqui.
+        $this->app->bind(\App\Services\AppMovil\Contracts\OtpChannel::class, function () {
+            return match (config('app_movil.otp.canal')) {
+                default => new \App\Services\AppMovil\Canales\LogOtpChannel(),
+            };
+        });
+
         $this->app->bind(\App\Http\Controllers\Tenant\ProductoController::class, function ($app) {
             return tenant('tipo_negocio') === 'tallermoto'
                 ? $app->make(\App\Http\Controllers\TenantTallerMotos\ProductoController::class)
@@ -86,6 +95,19 @@ class AppServiceProvider extends ServiceProvider
         // Se lee vía config() (no env() directo): con el config cacheado en
         // producción, env() fuera de un archivo config/*.php devuelve null
         // aunque la variable exista en el .env.
+        // API movil: limites de peticiones. Los limites por celular (espera
+        // entre envios, maximo por hora) los aplica OtpService desde la base.
+        \Illuminate\Support\Facades\RateLimiter::for('app-movil-directorio', fn ($request) => \Illuminate\Cache\RateLimiting\Limit::perMinute(30)->by($request->ip()));
+        \Illuminate\Support\Facades\RateLimiter::for('app-movil-otp-solicitar', fn ($request) => [
+            \Illuminate\Cache\RateLimiting\Limit::perMinute(5)->by($request->ip()),
+            \Illuminate\Cache\RateLimiting\Limit::perHour(20)->by($request->ip()),
+        ]);
+        \Illuminate\Support\Facades\RateLimiter::for('app-movil-otp-verificar', fn ($request) => [
+            \Illuminate\Cache\RateLimiting\Limit::perMinute(10)->by($request->ip()),
+            \Illuminate\Cache\RateLimiting\Limit::perHour(30)->by($request->ip() . '|' . $request->input('celular')),
+        ]);
+        \Illuminate\Support\Facades\RateLimiter::for('app-movil-api', fn ($request) => \Illuminate\Cache\RateLimiting\Limit::perMinute(120)->by($request->user('cliente')?->getAuthIdentifier() ?: $request->ip()));
+
         Mail::extend('brevo', function () {
             return (new BrevoTransportFactory())->create(
                 new Dsn('brevo+api', 'default', config('mail.mailers.brevo.key'))

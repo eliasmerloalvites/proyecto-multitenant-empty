@@ -130,13 +130,11 @@
                                                     $fechaClave = $dia['fecha'];
                                                     $state = 'estado-disponible';
                                                     $statename = 'DISPONIBLE';
-                                                    $cliente = '';
 
                                                     if (isset($reservas[$fechaClave][$turno->TUR_Id][$bahia->BAH_Id])) {
                                                         $resData =
                                                             $reservas[$fechaClave][$turno->TUR_Id][$bahia->BAH_Id];
                                                         $estadoReserva = $resData[0];
-                                                        $cliente = $resData[2] ?? '';
 
                                                         if ($estadoReserva == 'APROBADO') {
                                                             $statename = 'OCUPADO';
@@ -166,12 +164,6 @@
                                                                         class="text-[10px] text-red-500/70 font-bold tracking-widest">
                                                                         {{ $statename }}</p>
                                                                 </div>
-                                                            </div>
-                                                            <div class="text-right">
-                                                                <span
-                                                                    class="block text-[9px] text-gray-600 font-bold">CLIENTE</span>
-                                                                <span
-                                                                    class="text-[10px] text-gray-500 font-mono">{{ $cliente }}</span>
                                                             </div>
                                                         </div>
                                                     </div>

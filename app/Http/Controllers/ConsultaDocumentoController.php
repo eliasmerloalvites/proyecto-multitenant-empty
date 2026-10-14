@@ -22,18 +22,29 @@ class ConsultaDocumentoController extends Controller
         return view('buscadorsunat');
     }
 
+    /**
+     * Token del servicio de consulta DNI/RUC (migo.pe). Antes estaba escrito
+     * directamente en este archivo (y por lo tanto en el repositorio); ahora
+     * se lee de MIGO_TOKEN en el .env, via config/services.php.
+     */
+    private function tokenMigo(): ?string
+    {
+        return config('services.migo.token') ?: null;
+    }
+
 
 
     public function buscarDni(Request $request,$id)
     {
-        header('Access-Control-Allow-Origin: *');
-        header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
-        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
+        if (! $this->tokenMigo()) {
+            return response()->json(['success' => [1 => false], 'message' => 'Servicio de consulta no configurado'], 200);
+        }
+
 
                 $curl = curl_init();
 
         $data = [
-            'token' => 'I5Q2isdGve4xgTW53inHchckBvpTNnWeLaiDmN4isvuriO8cPAMwriqz5F1U',
+            'token' => $this->tokenMigo(),
             'dni' => $id
         ];
 
@@ -44,6 +55,7 @@ class ConsultaDocumentoController extends Controller
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST => "POST",
             CURLOPT_POSTFIELDS => $post_data,
+            CURLOPT_TIMEOUT => 10,
         ));
 
         $response = curl_exec($curl);
@@ -85,14 +97,11 @@ class ConsultaDocumentoController extends Controller
 
     /* function buscarRuc(Request $request,$id)
     {
-        header('Access-Control-Allow-Origin: *');
-        header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
-        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
 
         $curl = curl_init();
 
         $data = [
-            'token' => 'I5Q2isdGve4xgTW53inHchckBvpTNnWeLaiDmN4isvuriO8cPAMwriqz5F1U',
+            'token' => $this->tokenMigo(),
             'ruc' => $id
         ];
 
@@ -103,6 +112,7 @@ class ConsultaDocumentoController extends Controller
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST => "POST",
             CURLOPT_POSTFIELDS => $post_data,
+            CURLOPT_TIMEOUT => 10,
         ));
 
         $response = curl_exec($curl);
@@ -135,14 +145,15 @@ class ConsultaDocumentoController extends Controller
     } */
     function buscarRuc(Request $request, $id)
     {
-        header('Access-Control-Allow-Origin: *');
-        header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
-        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
+        if (! $this->tokenMigo()) {
+            return response()->json(['success' => false, 'message' => 'Servicio de consulta no configurado'], 200);
+        }
+
     
         $curl = curl_init();
     
         $data = [
-            'token' => 'I5Q2isdGve4xgTW53inHchckBvpTNnWeLaiDmN4isvuriO8cPAMwriqz5F1U',
+            'token' => $this->tokenMigo(),
             'ruc' => $id
         ];
     
@@ -153,6 +164,7 @@ class ConsultaDocumentoController extends Controller
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST => "POST",
             CURLOPT_POSTFIELDS => $post_data,
+            CURLOPT_TIMEOUT => 10,
         ));
     
         $response = curl_exec($curl);
