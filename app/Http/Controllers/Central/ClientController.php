@@ -200,6 +200,8 @@ class ClientController extends Controller
                 'plan'              => $tenant->plan ?? null,
                 'tipo_negocio'      => $tenant->tipo_negocio ?? null,
                 'domain'            => $domain->domain ?? null,
+                'garantia_hero'     => (bool) (($tenant->modules ?? [])['garantia_hero'] ?? false),
+                'garantia_lifan'    => (bool) (($tenant->modules ?? [])['garantia_lifan'] ?? false),
                 'app_movil'         => (bool) (($tenant->modules ?? [])['app_movil'] ?? false),
                 'codigo_app'        => $tenant->codigo_app ?? null,
             ],
@@ -344,6 +346,18 @@ class ClientController extends Controller
                     if (! $tenant->branding) {
                         $tenant->branding = $planConfig['data']['branding'];
                     }
+                }
+
+                // Módulos opcionales por cliente (no dependen del plan). Van después
+                // del bloque de arriba para que un cambio de plan, que reemplaza
+                // todos los módulos, no los apague sin querer. Solo se tocan si el
+                // formulario los envió (modulos_opcionales_form) y el tenant es de
+                // Taller de Motos.
+                if ($request->has('modulos_opcionales_form') && $tenant->tipo_negocio === 'tallermoto') {
+                    $modules = $tenant->modules ?? [];
+                    $modules['garantia_hero'] = $request->boolean('garantia_hero');
+                    $modules['garantia_lifan'] = $request->boolean('garantia_lifan');
+                    $tenant->modules = $modules;
                 }
 
                 // App movil de clientes (modulo opcional por taller, no depende

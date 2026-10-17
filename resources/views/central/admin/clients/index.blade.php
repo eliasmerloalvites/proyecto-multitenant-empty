@@ -406,6 +406,24 @@
                                 </select>
                             </div>
 
+                            {{-- Módulos opcionales por cliente (solo Taller de Motos). No dependen
+                                 del plan: se activan aquí para este cliente en particular. --}}
+                            <div class="col-md-12 mb-3" id="wrap_modulos_opcionales" style="display:none;">
+                                <input type="hidden" name="modulos_opcionales_form" value="1">
+                                <label>Módulos opcionales</label>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="edit_garantia_hero" name="garantia_hero" value="1">
+                                    <label class="custom-control-label" for="edit_garantia_hero">Garantía Hero</label>
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="edit_garantia_lifan" name="garantia_lifan" value="1">
+                                    <label class="custom-control-label" for="edit_garantia_lifan">Garantía Lifan</label>
+                                </div>
+                                <small class="form-text text-muted">Activa los módulos de mantenimiento por garantía
+                                    solo para este cliente. Antes de activarlos, hay que correr las migraciones de su
+                                    base de datos.</small>
+                            </div>
+
                             {{-- App móvil para los clientes del taller (solo Taller de Motos).
                                  Módulo opcional por cliente: no depende del plan. --}}
                             <div class="col-md-12 mb-3" id="wrap_app_movil" style="display:none;">
@@ -751,6 +769,9 @@
                         $('#edit_next_payment_date').val(data.next_payment_date);
                         $('#edit_precio_personalizado').val(data.precio_personalizado);
                         $('#edit_status').val(data.status);
+                        $('#wrap_modulos_opcionales').toggle(data.tipo_negocio === 'tallermoto');
+                        $('#edit_garantia_hero').prop('checked', !!data.garantia_hero);
+                        $('#edit_garantia_lifan').prop('checked', !!data.garantia_lifan);
                         $('#wrap_app_movil').toggle(data.tipo_negocio === 'tallermoto');
                         $('#edit_app_movil').prop('checked', !!data.app_movil);
                         if (data.codigo_app) {

@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Lee, por placa o por celular, los registros que el taller ya tiene (los 5
- * tipos de mantenimiento y las reservas). No escribe nada.
+ * tipos de mantenimiento, mas Garantia Hero/Lifan si el taller los tiene
+ * activos, y las reservas). No escribe nada.
  *
  * REGLA DE VISIBILIDAD (que registros de una moto puede ver una cuenta):
  *  - vinculo COMPLETO (el taller respalda que es el dueno): todos los
@@ -33,7 +34,7 @@ class RegistrosMotoService
     {
         $registros = collect();
 
-        foreach (GestionProcesoService::TIPOS as $meta) {
+        foreach (GestionProcesoService::tipos() as $meta) {
             $p = $meta['prefijo'];
 
             $filas = DB::table($meta['tabla'])
@@ -98,7 +99,7 @@ class RegistrosMotoService
 
         $origenes = [];
 
-        foreach (GestionProcesoService::TIPOS as $meta) {
+        foreach (GestionProcesoService::tipos() as $meta) {
             $p = $meta['prefijo'];
             $origenes[] = ['tabla' => $meta['tabla'], 'placa' => "{$p}_Placa", 'celular' => "{$p}_celular", 'unidad' => "{$p}_Unidad", 'fecha' => "{$p}_FechaCreacion"];
         }

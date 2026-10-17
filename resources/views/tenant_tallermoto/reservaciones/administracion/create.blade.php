@@ -1023,6 +1023,12 @@
                                     <option value="MANTENIMIENTO GENERAL INYECTADA">Mantenimiento General (Inyectada)</option>
                                     <option value="MANTENIMIENTO PREVENTIVO CARBURADA">Mantenimiento Preventivo (Carburada)</option>
                                     <option value="MANTENIMIENTO PREVENTIVO INYECTADA">Mantenimiento Preventivo (Inyectada)</option>
+                                    @if(tenant_has_module('garantia_hero'))
+                                    <option value="MANTENIMIENTO GARANTIA HERO">Mantenimiento Garantía Hero</option>
+                                    @endif
+                                    @if(tenant_has_module('garantia_lifan'))
+                                    <option value="MANTENIMIENTO GARANTIA LIFAN">Mantenimiento Garantía Lifan</option>
+                                    @endif
                                     <option value="ACTIVIDAD VARIADA">Otro / Actividad variada</option>
                                 </select>
 
@@ -1328,6 +1334,12 @@
                                         <option value="MANTENIMIENTO GENERAL INYECTADA">Mantenimiento General (Inyectada)</option>
                                         <option value="MANTENIMIENTO PREVENTIVO CARBURADA">Mantenimiento Preventivo (Carburada)</option>
                                         <option value="MANTENIMIENTO PREVENTIVO INYECTADA">Mantenimiento Preventivo (Inyectada)</option>
+                                        @if(tenant_has_module('garantia_hero'))
+                                        <option value="MANTENIMIENTO GARANTIA HERO">Mantenimiento Garantía Hero</option>
+                                        @endif
+                                        @if(tenant_has_module('garantia_lifan'))
+                                        <option value="MANTENIMIENTO GARANTIA LIFAN">Mantenimiento Garantía Lifan</option>
+                                        @endif
                                         <option value="ACTIVIDAD VARIADA">Otro / Actividad variada</option>
                                     </select>
 

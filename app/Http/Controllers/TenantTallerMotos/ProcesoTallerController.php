@@ -50,7 +50,7 @@ class ProcesoTallerController extends Controller
     {
         $resultado = [];
 
-        foreach (GestionProcesoService::TIPOS as $tipo => $meta) {
+        foreach (GestionProcesoService::tipos() as $tipo => $meta) {
             DB::table($meta['tabla'])
                 ->whereIn('RES_Id', $resIds)
                 ->get()
@@ -129,7 +129,7 @@ class ProcesoTallerController extends Controller
             'fechaSiguiente' => $fechaSeleccionada->copy()->addDay()->toDateString(),
             'fechaHoyIso' => $hoy,
             'vistaCompleta' => $vistaCompleta,
-            'tipos' => GestionProcesoService::TIPOS,
+            'tipos' => GestionProcesoService::tipos(),
             'mecanicos' => User::role('Mecanico')->select('id', 'name')->orderBy('name')->get(),
         ]);
     }
@@ -145,7 +145,7 @@ class ProcesoTallerController extends Controller
         $reserva = Reservacion::findOrFail($reservacionId);
 
         $validated = $request->validate([
-            'tipo_mantenimiento' => 'required|string|in:' . implode(',', array_keys(GestionProcesoService::TIPOS)),
+            'tipo_mantenimiento' => 'required|string|in:' . implode(',', array_keys(GestionProcesoService::tipos())),
             'detalle' => 'required|string|max:2000',
             'mecanico_id' => 'required|integer|exists:users,id',
         ]);
@@ -180,7 +180,7 @@ class ProcesoTallerController extends Controller
      */
     public function entendido(string $tabla, string $id)
     {
-        $meta = collect(GestionProcesoService::TIPOS)->firstWhere('tabla', $tabla);
+        $meta = collect(GestionProcesoService::tipos())->firstWhere('tabla', $tabla);
 
         if (!$meta) {
             abort(404);
@@ -214,7 +214,7 @@ class ProcesoTallerController extends Controller
         $miId = Auth::id();
         $alertas = [];
 
-        foreach (GestionProcesoService::TIPOS as $tipo => $meta) {
+        foreach (GestionProcesoService::tipos() as $tipo => $meta) {
             DB::table($meta['tabla'] . ' as m')
                 ->join('reservacion as r', 'r.RES_Id', '=', 'm.RES_Id')
                 ->where('m.PER_Id', $miId)

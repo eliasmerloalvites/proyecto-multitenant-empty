@@ -4,6 +4,8 @@ namespace App\Services\TenantTallerMotos;
 
 use App\Models\TenantTallerMotos\MantenimientoActividadVariada;
 use App\Models\TenantTallerMotos\MantenimientoGeneralCarburada;
+use App\Models\TenantTallerMotos\MantenimientoGarantiaHero;
+use App\Models\TenantTallerMotos\MantenimientoGarantiaLifan;
 use App\Models\TenantTallerMotos\MantenimientoGeneralInyectada;
 use App\Models\TenantTallerMotos\MantenimientoPreventivoCarburada;
 use App\Models\TenantTallerMotos\MantenimientoPreventivoInyectada;
@@ -76,13 +78,71 @@ class GestionProcesoService
     ];
 
     /**
+     * Tipos opcionales por cliente: solo existen para los tenants que tienen
+     * activado el modulo (config/saas.php + tenant_has_module()). Se mantienen
+     * fuera de TIPOS para que el resto de tenants no consulte tablas que no
+     * tienen; usar tipos() en vez de TIPOS cuando se recorra "todos los tipos".
+     */
+    public const TIPOS_OPCIONALES = [
+        'garantia_hero' => [
+            'MANTENIMIENTO GARANTIA HERO' => [
+                'tabla' => 'mantenimiento_garantia_hero',
+                'prefijo' => 'MGH',
+                'modelo' => MantenimientoGarantiaHero::class,
+                'ruta_edit' => 'tenant.mantenimientos.garantiahero.edit',
+                'ruta_param' => 'garantiahero',
+                'etiqueta' => 'Garantía Hero',
+            ],
+        ],
+        'garantia_lifan' => [
+            'MANTENIMIENTO GARANTIA LIFAN' => [
+                'tabla' => 'mantenimiento_garantia_lifan',
+                'prefijo' => 'MGL',
+                'modelo' => MantenimientoGarantiaLifan::class,
+                'ruta_edit' => 'tenant.mantenimientos.garantialifan.edit',
+                'ruta_param' => 'garantialifan',
+                'etiqueta' => 'Garantía Lifan',
+            ],
+        ],
+    ];
+
+    /**
+     * Datos planos de los tipos opcionales activos para el tenant actual, en
+     * el formato que usan las listas fijas de reportes/dashboard
+     * (tabla, prefijo, alias, url, etiqueta y el texto "MTTO ..." de reportes).
+     */
+    public static function opcionalesActivos(): array
+    {
+        $catalogo = [
+            'garantia_hero' => ['tabla' => 'mantenimiento_garantia_hero', 'prefijo' => 'MGH', 'alias' => 'mgh', 'url' => '/tenant/mantenimientos/garantiahero', 'etiqueta' => 'Garantía Hero', 'tipo' => 'MTTO GARANTIA HERO', 'clave' => 'MANTENIMIENTO GARANTIA HERO'],
+            'garantia_lifan' => ['tabla' => 'mantenimiento_garantia_lifan', 'prefijo' => 'MGL', 'alias' => 'mgl', 'url' => '/tenant/mantenimientos/garantialifan', 'etiqueta' => 'Garantía Lifan', 'tipo' => 'MTTO GARANTIA LIFAN', 'clave' => 'MANTENIMIENTO GARANTIA LIFAN'],
+        ];
+
+        return array_values(array_filter($catalogo, fn ($_, $modulo) => tenant_has_module($modulo), ARRAY_FILTER_USE_BOTH));
+    }
+
+    /** Los 5 tipos base mas los opcionales que el tenant actual tenga activados. */
+    public static function tipos(): array
+    {
+        $tipos = self::TIPOS;
+
+        foreach (self::TIPOS_OPCIONALES as $modulo => $definiciones) {
+            if (tenant_has_module($modulo)) {
+                $tipos += $definiciones;
+            }
+        }
+
+        return $tipos;
+    }
+
+    /**
      * Busca si una reserva ya tiene un registro de mantenimiento (en
      * cualquiera de los 5 tipos). Devuelve la fila cruda + su metadata de
      * tipo, o null si la reserva todavia no tiene nada (solo agendada).
      */
     public static function mantenimientoDeReserva(int $resId): ?array
     {
-        foreach (self::TIPOS as $tipo => $meta) {
+        foreach (self::tipos() as $tipo => $meta) {
             $registro = DB::table($meta['tabla'])->where('RES_Id', $resId)->first();
 
             if ($registro) {
@@ -105,11 +165,11 @@ class GestionProcesoService
      */
     public static function checkIn(Reservacion $reserva, string $tipoMantenimiento, string $detalleIngreso, int $mecanicoId): array
     {
-        if (!array_key_exists($tipoMantenimiento, self::TIPOS)) {
+        if (!array_key_exists($tipoMantenimiento, self::tipos())) {
             throw new Exception('Tipo de mantenimiento no valido.');
         }
 
-        $meta = self::TIPOS[$tipoMantenimiento];
+        $meta = self::tipos()[$tipoMantenimiento];
         $existente = self::mantenimientoDeReserva($reserva->RES_Id);
         $eraPrimerCheckIn = $reserva->RES_CheckIn === null;
 
@@ -151,7 +211,7 @@ class GestionProcesoService
      */
     public static function marcarEntendido(string $tabla, int $id): void
     {
-        $meta = collect(self::TIPOS)->firstWhere('tabla', $tabla);
+        $meta = collect(self::tipos())->firstWhere('tabla', $tabla);
 
         if (!$meta) {
             throw new Exception('Tipo de mantenimiento no valido.');
@@ -315,6 +375,40 @@ class GestionProcesoService
             $mtto->PER_Id = $idper;
             $mtto->RES_Id = $reserva->RES_Id;
             $mtto->save();
+        } elseif (in_array($tipoMantenimiento, ['MANTENIMIENTO GARANTIA HERO', 'MANTENIMIENTO GARANTIA LIFAN'], true)) {
+            // Garantia Hero / Lifan: misma estructura que Preventivo Carburada
+            // (11 Det), solo cambia el prefijo de columnas y el modelo.
+            $esHero = $tipoMantenimiento === 'MANTENIMIENTO GARANTIA HERO';
+            $p = $esHero ? 'MGH' : 'MGL';
+            $mtto = $esHero ? new MantenimientoGarantiaHero : new MantenimientoGarantiaLifan;
+            $mtto->{"{$p}_Placa"} = $placa;
+            $mtto->{"{$p}_Propietario"} = $propietario;
+            $mtto->{"{$p}_celular"} = $celular;
+            $mtto->{"{$p}_Unidad"} = $unidad;
+            $mtto->{"{$p}_KMEntrada"} = "";
+            $mtto->{"{$p}_DetalleIngreso"} = $detalleIngreso;
+            $mtto->{"{$p}_DetalleObservacion"} = $detalleObservacion;
+            foreach (range(1, 11) as $n) {
+                $mtto->{"{$p}_Det{$n}"} = "NO";
+            }
+            $mtto->{"{$p}_Det1Informacion"} = "";
+            $mtto->{"{$p}_Det7Admision"} = "";
+            $mtto->{"{$p}_Det7Escape"} = "";
+            $mtto->{"{$p}_Det8Medida"} = "";
+            $mtto->{"{$p}_Det11Vida"} = "";
+            $mtto->{"{$p}_Det11Carga"} = "";
+            $mtto->{"{$p}_Det11Arranque"} = "";
+            $mtto->{"{$p}_DetalleRealizado"} = "";
+            $mtto->{"{$p}_CorrecionObservacion"} = "";
+            $mtto->{"{$p}_ProximoCambioAceite"} = "";
+            $mtto->{"{$p}_ProximoServicio"} = "";
+            $mtto->{"{$p}_FechaCreacion"} = $mytime->toDateTimeString();
+            $mtto->{"{$p}_FechaEdicion"} = $mytime->toDateTimeString();
+            $mtto->{"{$p}_UsuarioCreacion"} = $idusu;
+            $mtto->{"{$p}_UsuarioEditado"} = $idusu;
+            $mtto->PER_Id = $idper;
+            $mtto->RES_Id = $reserva->RES_Id;
+            $mtto->save();
         } elseif ($tipoMantenimiento === 'ACTIVIDAD VARIADA') {
             $mtto = new MantenimientoActividadVariada;
             $mtto->MAV_Placa = $placa;
@@ -346,7 +440,7 @@ class GestionProcesoService
      */
     public static function validarMantenimiento(string $tabla, int $id): array
     {
-        $meta = collect(self::TIPOS)->firstWhere('tabla', $tabla);
+        $meta = collect(self::tipos())->firstWhere('tabla', $tabla);
 
         if (!$meta) {
             throw new Exception('Tipo de mantenimiento no valido.');

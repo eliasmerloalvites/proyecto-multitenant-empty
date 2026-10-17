@@ -29,8 +29,24 @@ class MotoController extends Controller
         ['mantenimiento_actividad_variadas', 'MAV', 'Actividad Variada', 'tenant.actividades.mantenimientoactividadvariada.edit', 'mantenimientoactividadvariada'],
     ];
 
+    /** Los 5 tipos base mas Garantia Hero/Lifan si el tenant tiene esos modulos activos. */
+    private function tipos(): array
+    {
+        $tipos = self::TIPOS;
+
+        if (tenant_has_module('garantia_hero')) {
+            $tipos[] = ['mantenimiento_garantia_hero', 'MGH', 'Garantía Hero', 'tenant.mantenimientos.garantiahero.edit', 'garantiahero'];
+        }
+
+        if (tenant_has_module('garantia_lifan')) {
+            $tipos[] = ['mantenimiento_garantia_lifan', 'MGL', 'Garantía Lifan', 'tenant.mantenimientos.garantialifan.edit', 'garantialifan'];
+        }
+
+        return $tipos;
+    }
+
     /**
-     * UNION ALL de los 5 tipos con columnas normalizadas, para poder
+     * UNION ALL de los tipos con columnas normalizadas, para poder
      * agrupar/rankear por placa sin importar en qué tabla vive cada
      * registro.
      */
@@ -38,7 +54,7 @@ class MotoController extends Controller
     {
         $selects = [];
 
-        foreach (self::TIPOS as [$tabla, $prefijo, $etiqueta]) {
+        foreach ($this->tipos() as [$tabla, $prefijo, $etiqueta]) {
             $selects[] = "SELECT
                 {$prefijo}_Placa AS placa,
                 {$prefijo}_Propietario AS propietario,
@@ -159,7 +175,7 @@ class MotoController extends Controller
 
         // Mapa tipo => [nombre de ruta, nombre del param] para armar los
         // links "ver detalle completo" de cada registro del historial.
-        $rutasPorTipo = collect(self::TIPOS)->mapWithKeys(fn ($t) => [$t[2] => ['ruta' => $t[3], 'param' => $t[4]]]);
+        $rutasPorTipo = collect($this->tipos())->mapWithKeys(fn ($t) => [$t[2] => ['ruta' => $t[3], 'param' => $t[4]]]);
 
         return view('tenant_tallermoto.motos.detalle', [
             'placa' => $placa,

@@ -48,6 +48,8 @@ class OrdenesMotoService
         'MPC' => \App\Http\Controllers\TenantTallerMotos\MantenimientoPreventivoCarburadaController::class,
         'MPI' => \App\Http\Controllers\TenantTallerMotos\MantenimientoPreventivoInyectadaController::class,
         'MAV' => \App\Http\Controllers\TenantTallerMotos\MantenimientoActividadVariadaController::class,
+        'MGH' => \App\Http\Controllers\TenantTallerMotos\MantenimientoGarantiaHeroController::class,
+        'MGL' => \App\Http\Controllers\TenantTallerMotos\MantenimientoGarantiaLifanController::class,
     ];
 
     public function __construct(private RegistrosMotoService $registros)
@@ -112,14 +114,14 @@ class OrdenesMotoService
      */
     public function localizar(CuentaMovil $cuenta, string $ref): ?array
     {
-        if (! preg_match('/^(mgc|mgi|mpc|mpi|mav)-(\d{1,10})$/', $ref, $m)) {
+        if (! preg_match('/^(mgc|mgi|mpc|mpi|mav|mgh|mgl)-(\d{1,10})$/', $ref, $m)) {
             return null;
         }
 
         $prefijo = strtoupper($m[1]);
         $id = (int) $m[2];
 
-        $meta = collect(GestionProcesoService::TIPOS)->firstWhere('prefijo', $prefijo);
+        $meta = collect(GestionProcesoService::tipos())->firstWhere('prefijo', $prefijo);
         $placa = $meta ? DB::table($meta['tabla'])->where("{$prefijo}_Id", $id)->value("{$prefijo}_Placa") : null;
         $placaNormalizada = NormalizadorPlaca::normalizar($placa);
 
@@ -215,7 +217,7 @@ class OrdenesMotoService
     /** Campos de texto del registro que se muestran al cliente (lista blanca). */
     public function textos(string $prefijo, int $id): ?object
     {
-        $meta = collect(GestionProcesoService::TIPOS)->firstWhere('prefijo', $prefijo);
+        $meta = collect(GestionProcesoService::tipos())->firstWhere('prefijo', $prefijo);
 
         return DB::table($meta['tabla'])
             ->where("{$prefijo}_Id", $id)

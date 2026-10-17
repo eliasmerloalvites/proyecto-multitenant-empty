@@ -289,7 +289,9 @@
                     'tenant.mantenimientos.generalinyectada.index',
                     'tenant.mantenimientos.generalcarburada.index',
                     'tenant.mantenimientos.preventivoinyectada.index',
-                    'tenant.mantenimientos.preventivocarburada.index'
+                    'tenant.mantenimientos.preventivocarburada.index',
+                    'tenant.mantenimientos.garantiahero.index',
+                    'tenant.mantenimientos.garantialifan.index'
                 ])
                 <!-- MANTENIMIENTOS -->
                 <li class="nav-item has-treeview
@@ -362,6 +364,46 @@
                                 </li>
                             </ul>
                         </li>
+
+                        <!-- GARANTIA (modulos opcionales por cliente: Hero / Lifan) -->
+                        @if(tenant_has_module('garantia_hero') || tenant_has_module('garantia_lifan'))
+                        <li class="nav-item has-treeview
+                        {{ request()->routeIs('tenant.mantenimientos.garantiahero*') ||
+                            request()->routeIs('tenant.mantenimientos.garantialifan*') ? 'menu-open' : '' }}">
+                            <a href="#" class="nav-link {{ request()->routeIs('tenant.mantenimientos.garantiahero*') ||
+                                request()->routeIs('tenant.mantenimientos.garantialifan*') ? 'active': '' }}">
+                                <i class="nav-icon fas fa-certificate text-info"></i>
+                                <p>
+                                    Garantía
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                @if(tenant_has_module('garantia_hero'))
+                                @can('tenant.mantenimientos.garantiahero.index')
+                                <li class="nav-item">
+                                    <a href="{{ tenant_url('tenant.mantenimientos.garantiahero.index') }}"
+                                        class="nav-link {{ request()->routeIs('tenant.mantenimientos.garantiahero*') ? 'active' : '' }}">
+                                        <i class="fas fa-motorcycle nav-icon text-danger"></i>
+                                        <p>Hero</p>
+                                    </a>
+                                </li>
+                                @endcan
+                                @endif
+                                @if(tenant_has_module('garantia_lifan'))
+                                @can('tenant.mantenimientos.garantialifan.index')
+                                <li class="nav-item">
+                                    <a href="{{ tenant_url('tenant.mantenimientos.garantialifan.index') }}"
+                                        class="nav-link {{ request()->routeIs('tenant.mantenimientos.garantialifan*') ? 'active' : '' }}">
+                                        <i class="fas fa-motorcycle nav-icon text-primary"></i>
+                                        <p>Lifan</p>
+                                    </a>
+                                </li>
+                                @endcan
+                                @endif
+                            </ul>
+                        </li>
+                        @endif
 
                         @can('tenant.mantenimientos.planes.index')
                         <li class="nav-item">

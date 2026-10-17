@@ -233,6 +233,10 @@ class HomeController extends Controller
                 ['tabla' => 'mantenimiento_actividad_variadas', 'prefix' => 'MAV', 'label' => 'Actividad Variada'],
             ];
 
+            foreach (\App\Services\TenantTallerMotos\GestionProcesoService::opcionalesActivos() as $opcional) {
+                $tiposMantenimiento[] = ['tabla' => $opcional['tabla'], 'prefix' => $opcional['prefijo'], 'label' => $opcional['etiqueta']];
+            }
+
             $data['reservasHoy'] = Reservacion::whereDate('RES_FechaProgramada', $hoy->toDateString())
                 ->where('RES_Estado', 'ACT')
                 ->where('RES_State', 'APROBADO')
@@ -786,6 +790,11 @@ class HomeController extends Controller
             ['tabla' => 'mantenimiento_preventivo_inyectada', 'prefix' => 'MPI', 'tipo' => 'MTTO PREVENTIVOS INYECTADAS'],
             ['tabla' => 'mantenimiento_actividad_variadas', 'prefix' => 'MAV', 'tipo' => 'ACTIVIDADES VARIADAS'],
         ];
+
+        // Garantia Hero / Lifan, solo si el taller tiene el modulo activo.
+        foreach (\App\Services\TenantTallerMotos\GestionProcesoService::opcionalesActivos() as $opcional) {
+            $tablas[] = ['tabla' => $opcional['tabla'], 'prefix' => $opcional['prefijo'], 'tipo' => $opcional['tipo']];
+        }
 
         $queries = [];
 

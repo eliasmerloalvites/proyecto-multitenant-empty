@@ -349,7 +349,8 @@ class ReservacionController extends Controller
             'RES_Celular' => 'required|string|max:12',
             'RES_Detalle' => 'nullable|string|max:250',
             'RES_Adicional' => 'nullable|string|max:250',
-            'TIP_Mantenimiento' => 'nullable|string|in:MANTENIMIENTO GENERAL CARBURADA,MANTENIMIENTO GENERAL INYECTADA,MANTENIMIENTO PREVENTIVO CARBURADA,MANTENIMIENTO PREVENTIVO INYECTADA,ACTIVIDAD VARIADA',
+            'TIP_Mantenimiento' => 'nullable|string|in:MANTENIMIENTO GENERAL CARBURADA,MANTENIMIENTO GENERAL INYECTADA,MANTENIMIENTO PREVENTIVO CARBURADA,MANTENIMIENTO PREVENTIVO INYECTADA,ACTIVIDAD VARIADA'
+                . implode('', array_map(fn ($o) => ',' . $o['clave'], \App\Services\TenantTallerMotos\GestionProcesoService::opcionalesActivos())),
             'CAM_Aceite' => 'nullable|string|in:SI,NO',
             'aceite' => 'nullable|string|max:100',
             'CAM_FiltroAceite' => 'nullable|string|in:SI,NO',
