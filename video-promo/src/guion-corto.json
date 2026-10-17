@@ -1,0 +1,45 @@
+{
+  "voz": "es-PE-AlexNeural",
+  "velocidad": "+22%",
+  "tono": "+9Hz",
+  "escenas": [
+    {
+      "id": "gancho",
+      "visual": "gancho",
+      "fondo": "oscuro",
+      "texto": "¿Tu taller de motos pierde plata y ni lo sabes? ¡Mira esto!",
+      "resaltar": ["pierde", "plata", "esto!"]
+    },
+    {
+      "id": "senales",
+      "visual": "caos",
+      "fondo": "claro",
+      "etiqueta": "3 SEÑALES DE ALERTA",
+      "texto": "Uno: motos sin registro. Dos: stock que no cuadra. Tres: una caja que siempre descuadra.",
+      "resaltar": ["registro.", "stock", "descuadra."]
+    },
+    {
+      "id": "solucion",
+      "visual": "tablero",
+      "fondo": "claro",
+      "etiqueta": "LA SOLUCIÓN",
+      "texto": "Con un solo sistema ves cada moto, cada mecánico y cada repuesto.",
+      "resaltar": ["sistema", "moto,", "repuesto."]
+    },
+    {
+      "id": "numeros",
+      "visual": "caja",
+      "fondo": "claro",
+      "etiqueta": "NÚMEROS CLAROS",
+      "texto": "Cierra tu caja sin descuadres y sabes cuánto ganas de verdad.",
+      "resaltar": ["caja", "descuadres", "ganas"]
+    },
+    {
+      "id": "cierre",
+      "visual": "cierre",
+      "fondo": "oscuro",
+      "texto": "¡Síguenos y pide tu demo por mensaje! Kael Tech, sistemas para negocios.",
+      "resaltar": ["Síguenos", "demo", "Kael", "Tech,"]
+    }
+  ]
+}

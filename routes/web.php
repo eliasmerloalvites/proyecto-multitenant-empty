@@ -82,6 +82,7 @@ Route::middleware([
       'destroy' => 'admin.clients.destroy',
       'show' => 'admin.clients.show'
     ]);
+    Route::get('admin/clients/{client}/qr', [ClientController::class, 'qr'])->name('admin.clients.qr');
     Route::patch('admin/clients/{client}/toggle-status', [ClientController::class, 'toggleStatus'])
       ->name('admin.clients.toggleStatus');
 
@@ -125,11 +126,4 @@ Route::middleware([
     Route::get('mi-panel/comisiones', [VendedorComisionController::class, 'index'])
       ->middleware('can:vendedor.comisiones.index')->name('vendedor.comisiones.index');
   });
-});
-Route::get('/__who', fn () => dd('CENTRAL', tenant()));
-Route::get('/__central-debug', function () {
-    dd([
-        'tenant' => tenant(),
-        'middleware' => app('router')->getRoutes()->getByName('central.inicio')->middleware(),
-    ]);
 });

@@ -2371,6 +2371,12 @@
 
                                     <div class="payment-total-value" id="checkoutTotal"></div>
                                     <div class="payment-items" id="checkoutItems2"></div>
+                                    @if (($adelantoBahia ?? 0) > 0)
+                                        <div id="checkoutAdelanto" style="margin-top:8px; font-size:.9rem; font-weight:700;">
+                                            <span style="color:#BBF7D0;">Adelantado en bahía: - S/ <span id="checkoutAdelantoMonto">{{ number_format($adelantoBahia, 2, '.', '') }}</span></span><br>
+                                            <span>Por cobrar ahora: S/ <span id="checkoutPorCobrar">0.00</span></span>
+                                        </div>
+                                    @endif
 
                                 </div>
 
@@ -2664,6 +2670,18 @@
         // Si se viene del tablero de Ventas por Bahia, se precarga el carrito
         // con lo que ya se le habia cargado a la cuenta.
         window.CUENTA_BAHIA_ID = @json($cuentaBahiaId ?? null);
+        // Lo que el cliente ya adelanto en la bahia (entro a caja ese dia):
+        // aqui solo se cobra el saldo.
+        window.ADELANTO_BAHIA = @json((float) ($adelantoBahia ?? 0));
+
+        function totalCarrito() {
+            return parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
+        }
+
+        // Lo que queda por cobrar en esta venta: el total menos el adelanto.
+        function totalACobrar() {
+            return Math.max(0, Math.round((totalCarrito() - (window.ADELANTO_BAHIA || 0)) * 100) / 100);
+        }
         const PREFILL_CARRITO = @json($prefillCarrito ?? []);
         const PREFILL_CLIENTE = @json($prefillCliente ?? null);
 
@@ -2680,7 +2698,7 @@
         // ese saldo (ver VentaController::store()).
         const REEMITIR_INFO = @json($reemitirInfo ?? null);
         window.REEMITIR_VENTA_ID = REEMITIR_INFO ? REEMITIR_INFO.ven_id : null;
-        let creditoYaAbonado = REEMITIR_INFO ? (REEMITIR_INFO.ya_abonado || 0) : 0;
+        let creditoYaAbonado = (REEMITIR_INFO ? (REEMITIR_INFO.ya_abonado || 0) : 0) + (window.ADELANTO_BAHIA || 0);
 
         if (REEMITIR_INFO) {
             voucherType = 'BOLETA';
@@ -3450,6 +3468,7 @@
             // TOTAL
             $('#cartTotal').html(`S/ ${total.toFixed(2)}`);
             $('#checkoutTotal').html(`S/ ${total.toFixed(2)}`);
+            $('#checkoutPorCobrar').text(Math.max(0, total - (window.ADELANTO_BAHIA || 0)).toFixed(2));
 
 
         }
@@ -3519,7 +3538,7 @@
 
 
         function calculateChange() {
-            let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
+            let total = totalACobrar();
             let payment = parseFloat($('#inputPago').val()) || 0;
             let change = payment - total;
 
@@ -3653,7 +3672,7 @@
         });
 
         function actualizarResumenPagoMixto() {
-            let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
+            let total = totalACobrar();
             let asignado = 0;
 
             $('.fila-pago-monto').each(function() {
@@ -3726,6 +3745,15 @@
                 return;
             }
 
+            // Cobro de una cuenta de bahía con adelanto: el pago debe cubrir el saldo.
+            if ((window.ADELANTO_BAHIA || 0) > 0 && !esCredito && !$('#pagoMixtoToggle').is(':checked')) {
+                let pagoSimple = parseFloat($('#inputPago').val()) || 0;
+                if (pagoSimple + 0.009 < totalACobrar()) {
+                    showToast('warning', 'El pago (S/ ' + pagoSimple.toFixed(2) + ') no cubre lo que falta cobrar (S/ ' + totalACobrar().toFixed(2) + ')');
+                    return;
+                }
+            }
+
             //  DATA
 
             let data = {
@@ -3755,7 +3783,7 @@
                 // PAGO MIXTO: si esta activo, se reemplaza
                 // metodo_pago/pago_recibido por el detalle real de cada
                 // metodo usado.
-                let total = parseFloat($('#cartTotal').text().replace('S/', '').trim()) || 0;
+                let total = totalACobrar();
                 let pagos = obtenerPagosMixtos();
 
                 if (pagos.length < 2) {

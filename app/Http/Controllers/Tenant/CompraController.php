@@ -12,6 +12,7 @@ use App\Models\Tenant\MetodoPago;
 use App\Models\Tenant\Movimiento;
 use App\Models\Tenant\Producto;
 use App\Models\Tenant\Proveedor;
+use App\Services\Exportacion\ExcelExporter;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -113,6 +114,129 @@ class CompraController extends Controller
         // modulo de ventas, no metodos reales con los que se pague una compra.
         $metodo_pago = MetodoPago::whereNotIn('MEP_Pago', ['Credito', 'Pago Mixto'])->get();
         return view('tenant_'.tenant('tipo_negocio').'.compras.compra.index', compact('proveedor', 'metodo_pago'));
+    }
+
+    /**
+     * Exporta las compras a Excel: hoja "Compras" (una fila por compra, con
+     * su total calculado desde el detalle) y hoja "Detalle de items".
+     * Filtros opcionales: fecha_inicio, fecha_fin y proveedor_id.
+     */
+    public function exportar(Request $request)
+    {
+        $base = fn () => DB::table('compra as c')
+            ->join('proveedor as p', 'p.PROV_Id', '=', 'c.PROV_Id')
+            ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'c.MEP_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'c.USU_Id')
+            ->when($request->filled('fecha_inicio'), fn ($q) => $q->whereDate('c.created_at', '>=', $request->input('fecha_inicio')))
+            ->when($request->filled('fecha_fin'), fn ($q) => $q->whereDate('c.created_at', '<=', $request->input('fecha_fin')))
+            ->when($request->filled('proveedor_id'), fn ($q) => $q->where('c.PROV_Id', $request->input('proveedor_id')));
+
+        $totales = DB::table('detalle_compra')
+            ->select('COM_Id', DB::raw('SUM(DCOM_Cantidad * DCOM_PrecioCompra) as total'), DB::raw('COUNT(*) as items'))
+            ->groupBy('COM_Id');
+
+        $compras = $base()
+            ->leftJoinSub($totales, 't', 't.COM_Id', '=', 'c.COM_Id')
+            ->select('c.*', 'p.PROV_RazonSocial', 'p.PROV_NumDocumento', 'mp.MEP_Pago', 'u.name as registrado_por', DB::raw('COALESCE(t.total, 0) as total'), DB::raw('COALESCE(t.items, 0) as items'))
+            ->orderByDesc('c.created_at')
+            ->get();
+
+        $tiposDocumento = ['BOL' => 'Boleta', 'FAC' => 'Factura', 'NOV' => 'Nota de venta'];
+
+        $filas = $compras->map(fn ($c) => [
+            substr((string) $c->created_at, 0, 10),
+            substr((string) $c->created_at, 11, 5),
+            $tiposDocumento[$c->COM_TipoDocumento] ?? $c->COM_TipoDocumento,
+            $c->COM_NumDocumento,
+            $c->PROV_RazonSocial,
+            $c->PROV_NumDocumento,
+            $c->COM_TipoPago,
+            $c->MEP_Pago,
+            $c->registrado_por,
+            (int) $c->items,
+            (float) $c->total,
+            (int) $c->COM_Status === 1 ? 'Activa' : 'Inactiva',
+        ])->all();
+
+        $columnas = [
+            ['titulo' => 'Fecha', 'tipo' => ExcelExporter::FECHA, 'ancho' => 12],
+            ['titulo' => 'Hora', 'ancho' => 8, 'centrar' => true],
+            ['titulo' => 'Documento', 'ancho' => 16, 'centrar' => true],
+            ['titulo' => 'Número', 'ancho' => 18, 'centrar' => true],
+            ['titulo' => 'Proveedor', 'ancho' => 36],
+            ['titulo' => 'RUC / Documento', 'ancho' => 16, 'centrar' => true],
+            ['titulo' => 'Tipo de pago', 'ancho' => 13, 'centrar' => true],
+            ['titulo' => 'Método de pago', 'ancho' => 18],
+            ['titulo' => 'Registrado por', 'ancho' => 20],
+            ['titulo' => 'Items', 'tipo' => ExcelExporter::ENTERO, 'ancho' => 8],
+            ['titulo' => 'Total', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 15, 'total' => true],
+            ['titulo' => 'Estado', 'ancho' => 11, 'centrar' => true],
+        ];
+
+        $filasDetalle = [];
+        foreach ($compras->pluck('COM_Id')->chunk(1000) as $ids) {
+            $items = DB::table('detalle_compra as dc')
+                ->join('compra as c', 'c.COM_Id', '=', 'dc.COM_Id')
+                ->join('proveedor as p', 'p.PROV_Id', '=', 'c.PROV_Id')
+                ->join('producto as pr', 'pr.PRO_Id', '=', 'dc.PRO_Id')
+                ->leftJoin('almacen as a', 'a.ALM_Id', '=', 'dc.ALM_Id')
+                ->whereIn('dc.COM_Id', $ids)
+                ->orderByDesc('c.created_at')
+                ->orderBy('dc.DCOM_Item')
+                ->select('c.created_at', 'c.COM_NumDocumento', 'p.PROV_RazonSocial', 'pr.PRO_Nombre', 'a.ALM_NombreAlmacen', 'dc.DCOM_Cantidad', 'dc.DCOM_PrecioCompra', 'dc.DCOM_PrecioVenta')
+                ->get();
+
+            foreach ($items as $it) {
+                $filasDetalle[] = [
+                    substr((string) $it->created_at, 0, 10),
+                    $it->COM_NumDocumento,
+                    $it->PROV_RazonSocial,
+                    $it->PRO_Nombre,
+                    $it->ALM_NombreAlmacen,
+                    (float) $it->DCOM_Cantidad,
+                    (float) $it->DCOM_PrecioCompra,
+                    (float) $it->DCOM_PrecioVenta,
+                    round((float) $it->DCOM_Cantidad * (float) $it->DCOM_PrecioCompra, 2),
+                ];
+            }
+        }
+
+        $columnasDetalle = [
+            ['titulo' => 'Fecha', 'tipo' => ExcelExporter::FECHA, 'ancho' => 12],
+            ['titulo' => 'Número', 'ancho' => 18, 'centrar' => true],
+            ['titulo' => 'Proveedor', 'ancho' => 30],
+            ['titulo' => 'Producto', 'ancho' => 44],
+            ['titulo' => 'Sede / Almacén', 'ancho' => 20],
+            ['titulo' => 'Cantidad', 'tipo' => ExcelExporter::DECIMAL, 'ancho' => 11],
+            ['titulo' => 'Precio de compra', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 15],
+            ['titulo' => 'Precio de venta', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 15],
+            ['titulo' => 'Subtotal', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 15, 'total' => true],
+        ];
+
+        $filtros = [];
+        if ($request->filled('fecha_inicio') || $request->filled('fecha_fin')) {
+            $filtros[] = 'Periodo: ' . ($request->input('fecha_inicio') ?: '…') . ' al ' . ($request->input('fecha_fin') ?: '…');
+        }
+        if ($request->filled('proveedor_id')) {
+            $filtros[] = 'Proveedor: ' . (DB::table('proveedor')->where('PROV_Id', $request->input('proveedor_id'))->value('PROV_RazonSocial') ?? $request->input('proveedor_id'));
+        }
+
+        return ExcelExporter::descargar(ExcelExporter::nombreArchivo('compras'), [
+            [
+                'nombre' => 'Compras',
+                'titulo' => 'Reporte de Compras',
+                'filtros' => $filtros,
+                'columnas' => $columnas,
+                'filas' => $filas,
+            ],
+            [
+                'nombre' => 'Detalle de items',
+                'titulo' => 'Detalle de Items Comprados',
+                'filtros' => $filtros,
+                'columnas' => $columnasDetalle,
+                'filas' => $filasDetalle,
+            ],
+        ]);
     }
 
     /**

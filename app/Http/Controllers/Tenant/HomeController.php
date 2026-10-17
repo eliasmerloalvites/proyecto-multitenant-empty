@@ -13,6 +13,7 @@ use App\Models\TenantTallerMotos\Turno;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\RateLimiter;
 use ReflectionFunction;
 
 class HomeController extends Controller
@@ -431,7 +432,9 @@ class HomeController extends Controller
             $bahias = DB::table('bahia as b')
                 ->join('almacen as l', 'l.ALM_Id', '=', 'b.ALM_Id')
                 ->join('users as u', 'u.id', '=', 'b.USU_Id')
-                ->select('b.*', 'l.ALM_NombreAlmacen as Local', 'u.id', DB::raw("SUBSTRING_INDEX(u.name, ' ', 1) as Nombre"))  // Solo el primer nombre
+                // Solo lo que la pagina publica necesita de cada bahia: antes se
+                // enviaban tambien el id y el nombre del mecanico asignado.
+                ->select('b.BAH_Id', 'b.BAH_Nombre', 'b.ALM_Id', 'l.ALM_NombreAlmacen as Local')
                 ->where('l.ALM_Id', $idlocal)
                 ->where('b.BAH_Estado', 'ACT')
                 ->get();
@@ -489,7 +492,10 @@ class HomeController extends Controller
                 $horarioprogramado[$dia][] = $turno;
             }
             $reservasRaw = Reservacion::whereBetween('RES_FechaProgramada', [$fechaInicial, $fechaFinal])->where('RES_State', '!=', 'RECHAZADO')
-                ->get(['RES_Id', 'RES_FechaProgramada', 'TUR_Id', 'BAH_Id', 'RES_State', 'RES_Cliente']); // solo las columnas necesarias
+                // Solo lo necesario para pintar el calendario. NO se trae RES_Cliente:
+                // esta pagina es publica y mostraba el nombre completo de quienes
+                // ya tenian reserva.
+                ->get(['RES_Id', 'RES_FechaProgramada', 'TUR_Id', 'BAH_Id', 'RES_State']);
 
             $reservas = [];
 
@@ -499,7 +505,6 @@ class HomeController extends Controller
                 $bahia = $reserva->BAH_Id;
                 $state = $reserva->RES_State;
                 $idreserva = $reserva->RES_Id;
-                $cliente = $reserva->RES_Cliente;
 
                 // Inicializar si no existe
                 if (!isset($reservas[$fecha])) {
@@ -513,7 +518,6 @@ class HomeController extends Controller
                 }
                 $reservas[$fecha][$turno][$bahia][] = $state;
                 $reservas[$fecha][$turno][$bahia][] = $idreserva;
-                $reservas[$fecha][$turno][$bahia][] = $cliente;
             }
 
             if ($plan == 'start') {
@@ -552,14 +556,53 @@ class HomeController extends Controller
             'ALM_Id' => 'required|integer|exists:almacen,ALM_Id',
             'TUR_Id' => 'required|integer|exists:turno,TUR_Id',
             'BAH_Id' => 'required|integer|exists:bahia,BAH_Id',
-            'RES_FechaProgramada' => 'required|string',
+            // Fecha real (la pagina publica solo ofrece los proximos dias).
+            'RES_FechaProgramada' => 'required|date_format:Y-m-d|after_or_equal:today|before_or_equal:+60 days',
             'RES_Placa' => 'required|string|max:20',
             'RES_Moto' => 'required|string|max:150',
             'RES_Cliente' => 'required|string|max:120',
-            'RES_Celular' => 'required|string|max:12',
+            'RES_Celular' => ['required', 'string', 'max:12', 'regex:/^\+?[0-9 \-]{7,12}$/'],
             'RES_Detalle' => 'nullable|string|max:250',
             'RES_Adicional' => 'nullable|string|max:250',
+        ], [
+            'RES_FechaProgramada.date_format' => 'La fecha de la reserva no es valida.',
+            'RES_FechaProgramada.after_or_equal' => 'La fecha de la reserva no puede ser anterior a hoy.',
+            'RES_FechaProgramada.before_or_equal' => 'Solo se puede reservar con hasta 60 dias de anticipacion.',
+            'RES_Celular.regex' => 'Ingresa un numero de celular valido.',
         ]);
+
+        // La bahia debe ser de la sede elegida y el turno debe estar en el
+        // horario de esa sede ese dia: antes solo se validaba que cada id
+        // existiera, asi que se podian reservar combinaciones que no existen.
+        $bahiaDeLaSede = Bahia::where('BAH_Id', $validated['BAH_Id'])
+            ->where('ALM_Id', $validated['ALM_Id'])
+            ->where('BAH_Estado', 'ACT')
+            ->exists();
+
+        $dia = $this->normalizarDia(Carbon::parse($validated['RES_FechaProgramada'])->locale('es')->translatedFormat('l'));
+
+        $turnoEnHorario = DB::table('horario')
+            ->where('ALM_Id', $validated['ALM_Id'])
+            ->where('TUR_Id', $validated['TUR_Id'])
+            ->where('HOR_Dia', $dia)
+            ->where('HOR_Estado', 'ACT')
+            ->exists();
+
+        if (!$bahiaDeLaSede || !$turnoEnHorario) {
+            return $this->reservaInvalidaResponse($request, 'Ese horario no esta disponible para reservar. Elige otra bahia, turno o dia.');
+        }
+
+        // Tope de reservas pendientes por celular: sin esto una sola persona
+        // podia ocupar toda la agenda con reservas falsas.
+        $celularLimpio = preg_replace('/\D/', '', $validated['RES_Celular']);
+        $pendientes = Reservacion::where('RES_Celular', $validated['RES_Celular'])
+            ->where('RES_Estado', 'ACT')
+            ->where('RES_State', 'PENDIENTE')
+            ->count();
+
+        if (strlen($celularLimpio) >= 7 && $pendientes >= 3) {
+            return $this->reservaInvalidaResponse($request, 'Ya tienes varias reservas pendientes de confirmar. Espera a que el taller las atienda o llama para modificarlas.');
+        }
 
         // Pre-chequeo: da un mensaje inmediato en el caso normal (sin carrera).
         if (Reservacion::slotEstaOcupado($validated['BAH_Id'], $validated['TUR_Id'], $validated['RES_FechaProgramada'])) {
@@ -586,6 +629,15 @@ class HomeController extends Controller
         }
 
         return redirect()->back()->with('success', 'Reserva realizada con éxito');
+    }
+
+    private function reservaInvalidaResponse(Request $request, string $mensaje)
+    {
+        if ($request->wantsJson()) {
+            return response()->json(['success' => false, 'message' => $mensaje], 422);
+        }
+
+        return redirect()->back()->withInput()->with('error', $mensaje);
     }
 
     private function reservaOcupadaResponse(Request $request)
@@ -619,153 +671,87 @@ class HomeController extends Controller
             return view('tenant_' . $tiponegocio . '.welcome', compact('tenantid', 'plan', 'tiponegocio', 'empresa', 'colorview'));
         }
 
-        $placaSeleccionada = strtoupper(trim($request->query('Placa', '')));
+        // Consulta publica: exige la placa Y los ultimos 4 digitos del celular
+        // registrado en el taller, y NO devuelve datos personales (ni dueno,
+        // ni telefono, ni mecanico, ni enlace a PDF). Antes bastaba conocer una
+        // placa para ver la ficha del dueno.
+        $placaIngresada = $this->normalizarPlaca((string) $request->query('Placa', ''));
+        $ultimos4 = preg_replace('/\D/', '', (string) $request->query('Celular', ''));
+        $consultaIntentada = $placaIngresada !== '' || $ultimos4 !== '';
         $ultimoMtto = null;
-        //dd($placaSeleccionada);
-        if ($placaSeleccionada !== '') {
-            // Mapeo de tablas y metadatos
-            $tablas = [
-                [
-                    'tabla' => 'mantenimiento_general_carburada',
-                    'prefix' => 'MGC',
-                    'tipo' => 'MTTO GENERAL CARBURADAS',
-                    'url' => '/tenant/mantenimientos/generalcarburada',
-                ],
-                [
-                    'tabla' => 'mantenimiento_general_inyectada',
-                    'prefix' => 'MGI',
-                    'tipo' => 'MTTO GENERAL INYECTADAS',
-                    'url' => '/tenant/mantenimientos/generalinyectada'
-                ],
-                [
-                    'tabla' => 'mantenimiento_preventivo_carburada',
-                    'prefix' => 'MPC',
-                    'tipo' => 'MTTO PREVENTIVOS CARBURADAS',
-                    'url' => '/tenant/mantenimientos/preventivocarburada'
-                ],
-                [
-                    'tabla' => 'mantenimiento_preventivo_inyectada',
-                    'prefix' => 'MPI',
-                    'tipo' => 'MTTO PREVENTIVOS INYECTADAS',
-                    'url' => '/tenant/mantenimientos/preventivoinyectada'
-                ],
-                [
-                    'tabla' => 'mantenimiento_actividad_variadas',
-                    'prefix' => 'MAV',
-                    'tipo' => 'ACTIVIDADES VARIADAS',
-                    'url' => '/tenant/actividades/mantenimientoactividadvariada'
-                ],
-            ];
+        $bloqueado = false;
 
-            foreach (\App\Services\TenantTallerMotos\GestionProcesoService::opcionalesActivos() as $opcional) {
-                $tablas[] = ['tabla' => $opcional['tabla'], 'prefix' => $opcional['prefijo'], 'tipo' => $opcional['tipo'], 'url' => $opcional['url']];
+        if ($placaIngresada !== '' && strlen($ultimos4) === 4) {
+            // Tope de intentos fallidos POR PLACA (sin importar la IP): con 4
+            // digitos hay solo 10.000 combinaciones, asi que sin esto se
+            // podria adivinar el celular probando desde varias IP.
+            $claveLimite = 'historial-placa:' . tenant('id') . ':' . $placaIngresada;
+
+            if (RateLimiter::tooManyAttempts($claveLimite, 5)) {
+                $bloqueado = true;
+            } else {
+                $ultimoMtto = $this->ultimoMantenimientoPublico($placaIngresada, $ultimos4);
+
+                if (!$ultimoMtto) {
+                    RateLimiter::hit($claveLimite, 3600);
+                }
             }
-
-            $queries = [];
-
-            foreach ($tablas as $item) {
-                $p = $item['prefix'];
-
-                $queries[] = DB::table("{$item['tabla']} as t")
-                    ->join('users as u', 'u.id', '=', 't.PER_Id')
-                    ->select(
-                        "t.{$p}_Id as Id",
-                        "t.{$p}_Placa as Placa",
-                        "t.{$p}_celular as Celular",
-                        "t.{$p}_Propietario as Propietario",
-                        "t.{$p}_Unidad as Unidad",
-                        "t.{$p}_KMEntrada as KMEntrada",
-                        "t.{$p}_ProximoCambioAceite as ProximoCambioAceite",
-                        "t.{$p}_ProximoServicio as ProximoServicio",
-                        "t.{$p}_FechaCreacion as FechaCreacion",
-                        DB::raw('CONCAT(u.name) as personal'),
-                        DB::raw("'{$item['tipo']}' as Tipo"),
-                        DB::raw("'{$item['url']}' as url")
-                    )
-                    ->whereRaw("UPPER(t.{$p}_Placa) = ?", [$placaSeleccionada]);
-            }
-
-
-            // Unimos las 5 consultas en una sola
-            $firstQuery = array_shift($queries);
-            foreach ($queries as $query) {
-                $firstQuery->unionAll($query);
-            }
-
-            // Ejecutamos la consulta consolidada y ordenamos los resultados
-            $ultimoMtto = DB::query()
-                ->fromSub($firstQuery, 'unioned_maintenances')
-                ->orderByDesc('FechaCreacion')
-                ->first();
         }
 
         $hayResultados = !is_null($ultimoMtto);
 
+        // Mensaje unico para "no existe" y "el celular no coincide", para que
+        // la pagina no sirva para averiguar si una placa esta registrada.
         $data = [
             'validacion' => $hayResultados ? 'true' : 'false',
-            'mensaje'    => $hayResultados
-                ? 'Se encontró mantenimientos de esta placa correctamente'
-                : 'Error, no se encontraron mantenimientos con esta Placa',
+            'mensaje'    => match (true) {
+                $hayResultados => 'Se encontró el mantenimiento de esta placa correctamente',
+                $bloqueado => 'Demasiados intentos con esta placa. Inténtalo de nuevo en una hora o consulta en el taller.',
+                $consultaIntentada => 'No encontramos un mantenimiento con esos datos. Verifica la placa y los últimos 4 dígitos del celular registrado en el taller.',
+                default => '',
+            },
         ];
 
         if ($hayResultados) {
-            if ($ultimoMtto) {
-                // 1. Mapeo de tabla y prefijo según el tipo encontrado
-                $mapa = match ($ultimoMtto->Tipo) {
-                    'MTTO GENERAL CARBURADAS'     => ['tabla' => 'mantenimiento_general_carburada', 'p' => 'MGC'],
-                    'MTTO GENERAL INYECTADAS'     => ['tabla' => 'mantenimiento_general_inyectada', 'p' => 'MGI'],
-                    'MTTO PREVENTIVOS CARBURADAS' => ['tabla' => 'mantenimiento_preventivo_carburadas', 'p' => 'MPC'],
-                    'MTTO PREVENTIVOS INYECTADAS' => ['tabla' => 'mantenimiento_preventivo_inyectadas', 'p' => 'MPI'],
-                    'ACTIVIDADES VARIADAS'        => ['tabla' => 'mantenimiento_actividad_variadas', 'p' => 'MAV'],
-                    'MTTO GARANTIA HERO'          => ['tabla' => 'mantenimiento_garantia_hero', 'p' => 'MGH'],
-                    'MTTO GARANTIA LIFAN'         => ['tabla' => 'mantenimiento_garantia_lifan', 'p' => 'MGL'],
-                };
+            $p = $ultimoMtto->Prefijo;
+            $raw = DB::table($ultimoMtto->Tabla)->where("{$p}_Id", $ultimoMtto->Id)->first();
 
-                $p = $mapa['p'];
-                $raw = DB::table($mapa['tabla'])->where("{$p}_Id", $ultimoMtto->Id)->first();
+            $resumen = [
+                'cabecera' => [
+                    'tipo'                   => $ultimoMtto->Tipo,
+                    'fecha'                  => $ultimoMtto->FechaCreacion,
+                    'placa'                  => $ultimoMtto->Placa,
+                    'unidad'                 => $ultimoMtto->Unidad,
+                    'km'                     => $ultimoMtto->KMEntrada,
+                    'proximo_servicio'       => $ultimoMtto->ProximoServicio,
+                    'proximo_cambio_aceite'  => $ultimoMtto->ProximoCambioAceite,
+                ],
+                // Metricas universales clave
+                'metricas' => [
+                    'aceite'         => $raw->{"{$p}_Det1"} ?? 'N/A',
+                    'filtro_aceite'  => $raw->{"{$p}_Det2"} ??  'N/A',
+                    'valvula_adm'    => $raw->{"{$p}_Det9Admision"} ?? $raw->{"{$p}_Det8Admision"} ?? $raw->{"{$p}_Det7Admision"} ?? null,
+                    'valvula_esc'    => $raw->{"{$p}_Det9Escape"} ?? $raw->{"{$p}_Det8Escape"} ?? $raw->{"{$p}_Det7Escape"} ?? null,
+                    'bujia_medida'   => $raw->{"{$p}_Det10Medida"} ?? $raw->{"{$p}_Det9Medida"} ?? $raw->{"{$p}_Det8Medida"} ?? null,
+                    'psi_delantero'  => $raw->{"MGI_Det18"} ?? $raw->{"{$p}_NeumaticoDelantero"} ?? null,
+                    'psi_trasero'    => $raw->{"MGI_Det19"} ?? $raw->{"{$p}_NeumaticoPosterior"} ?? null,
+                    'v_carga'        => $raw->{"{$p}_Det24Carga"} ?? $raw->{"{$p}_Det21Carga"} ?? $raw->{"{$p}_Det19Carga"} ?? $raw->{"{$p}_Det11Carga"} ?? null,
+                    'v_arranque'     => $raw->{"{$p}_Det24Arranque"} ?? $raw->{"{$p}_Det21Arranque"} ?? $raw->{"{$p}_Det19Arranque"} ?? $raw->{"{$p}_Det11Arranque"} ?? null,
+                ],
+                // Datos extra especificos si existen
+                'extras' => []
+            ];
 
-                // 2. Extraemos los puntos clave unificados (estándar para todas)
-                $resumen = [
-                    'cabecera' => [
-                        'id'          => $ultimoMtto->Id,
-                        'tipo'        => $ultimoMtto->Tipo,
-                        'url_pdf'     => $ultimoMtto->url,
-                        'fecha'       => $ultimoMtto->FechaCreacion,
-                        'placa'       => $ultimoMtto->Placa,
-                        'propietario' => $ultimoMtto->Propietario,
-                        'celular'     => $ultimoMtto->Celular,
-                        'unidad'      => $ultimoMtto->Unidad,
-                        'km'          => $ultimoMtto->KMEntrada,
-                        'mecanico'    => $ultimoMtto->personal,
-                    ],
-                    // Métricas universales clave
-                    'metricas' => [
-                        'aceite'         => $raw->{"{$p}_Det1"} ?? 'N/A',
-                        'filtro_aceite'  => $raw->{"{$p}_Det2"} ??  'N/A',
-                        'valvula_adm'    => $raw->{"{$p}_Det9Admision"} ?? $raw->{"{$p}_Det8Admision"} ?? $raw->{"{$p}_Det7Admision"} ?? null,
-                        'valvula_esc'    => $raw->{"{$p}_Det9Escape"} ?? $raw->{"{$p}_Det8Escape"} ?? $raw->{"{$p}_Det7Escape"} ?? null,
-                        'bujia_medida'   => $raw->{"{$p}_Det10Medida"} ?? $raw->{"{$p}_Det9Medida"} ?? $raw->{"{$p}_Det8Medida"} ?? null,
-                        'psi_delantero'  => $raw->{"MGI_Det18"} ?? $raw->{"{$p}_NeumaticoDelantero"} ?? null,
-                        'psi_trasero'    => $raw->{"MGI_Det19"} ?? $raw->{"{$p}_NeumaticoPosterior"} ?? null,
-                        'v_carga'        => $raw->{"{$p}_Det24Carga"} ?? $raw->{"{$p}_Det21Carga"} ?? $raw->{"{$p}_Det19Carga"} ?? $raw->{"{$p}_Det11Carga"} ?? null,
-                        'v_arranque'     => $raw->{"{$p}_Det24Arranque"} ?? $raw->{"{$p}_Det21Arranque"} ?? $raw->{"{$p}_Det19Arranque"} ?? $raw->{"{$p}_Det11Arranque"} ?? null,
-                    ],
-                    // Datos extra específicos si existen
-                    'extras' => []
-                ];
-
-                // 3. Agregamos solo lo adicional según la especialidad
-                if (str_contains($ultimoMtto->Tipo, 'INYECTADAS')) {
-                    $resumen['extras']['escaneo'] = $raw->{"{$p}_Escaneo"} ?? $raw->{"{$p}_PorcentajeVidaUtil"} ?? null;
-                    $resumen['extras']['porcentaje_humedad'] = $raw->{"{$p}_HumedadFrenos"} ?? $raw->{"{$p}_PorcentajeHumedad"} ?? null;
-                }
-
-                if ($ultimoMtto->Tipo === 'ACTIVIDADES VARIADAS') {
-                    $resumen['extras']['detalle_trabajo'] = $raw->{"{$p}_DetalleRealizado"} ?? $raw->{"{$p}_Detalle"} ?? null;
-                }
-
-                $data['resumen'] = $resumen;
+            if (str_contains($ultimoMtto->Tipo, 'INYECTADAS')) {
+                $resumen['extras']['escaneo'] = $raw->{"{$p}_Escaneo"} ?? $raw->{"{$p}_PorcentajeVidaUtil"} ?? null;
+                $resumen['extras']['porcentaje_humedad'] = $raw->{"{$p}_HumedadFrenos"} ?? $raw->{"{$p}_PorcentajeHumedad"} ?? null;
             }
+
+            if ($ultimoMtto->Tipo === 'ACTIVIDADES VARIADAS') {
+                $resumen['extras']['detalle_trabajo'] = $raw->{"{$p}_DetalleRealizado"} ?? $raw->{"{$p}_Detalle"} ?? null;
+            }
+
+            $data['resumen'] = $resumen;
         }
 
         $colorview = $empresa?->tipo_tema;
@@ -776,6 +762,77 @@ class HomeController extends Controller
         }
 
         return view("tenant_{$tiponegocio}.landing.page.historial", compact('tenantid', 'empresa', 'plan', 'tiponegocio', 'colorview', 'data'));
+    }
+
+    /** Placa en mayusculas y solo letras/numeros: "abc-123" y "ABC 123" son la misma. */
+    private function normalizarPlaca(string $placa): string
+    {
+        return strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $placa));
+    }
+
+    /**
+     * Ultimo mantenimiento de una placa CUYO celular registrado termina en
+     * $ultimos4. Solo se consideran los registros donde ese celular coincide:
+     * asi, si la moto cambio de dueno, quien consulta no ve el historial
+     * (ni los datos) del dueno anterior o del siguiente.
+     *
+     * El celular se compara en PHP (no en SQL) porque en la base viene con
+     * formatos muy distintos ("987654321", "9465623", "-", vacio), y se
+     * exigen al menos 7 digitos para que un valor basura no valide cualquier
+     * consulta.
+     */
+    private function ultimoMantenimientoPublico(string $placaNormalizada, string $ultimos4): ?object
+    {
+        $tablas = [
+            ['tabla' => 'mantenimiento_general_carburada', 'prefix' => 'MGC', 'tipo' => 'MTTO GENERAL CARBURADAS'],
+            ['tabla' => 'mantenimiento_general_inyectada', 'prefix' => 'MGI', 'tipo' => 'MTTO GENERAL INYECTADAS'],
+            ['tabla' => 'mantenimiento_preventivo_carburada', 'prefix' => 'MPC', 'tipo' => 'MTTO PREVENTIVOS CARBURADAS'],
+            ['tabla' => 'mantenimiento_preventivo_inyectada', 'prefix' => 'MPI', 'tipo' => 'MTTO PREVENTIVOS INYECTADAS'],
+            ['tabla' => 'mantenimiento_actividad_variadas', 'prefix' => 'MAV', 'tipo' => 'ACTIVIDADES VARIADAS'],
+        ];
+
+        // Garantia Hero / Lifan, solo si el taller tiene el modulo activo.
+        foreach (\App\Services\TenantTallerMotos\GestionProcesoService::opcionalesActivos() as $opcional) {
+            $tablas[] = ['tabla' => $opcional['tabla'], 'prefix' => $opcional['prefijo'], 'tipo' => $opcional['tipo']];
+        }
+
+        $queries = [];
+
+        foreach ($tablas as $t) {
+            $p = $t['prefix'];
+
+            $queries[] = DB::table($t['tabla'])
+                ->select(
+                    DB::raw("{$p}_Id as Id"),
+                    DB::raw("{$p}_Placa as Placa"),
+                    DB::raw("{$p}_celular as Celular"),
+                    DB::raw("{$p}_Unidad as Unidad"),
+                    DB::raw("{$p}_KMEntrada as KMEntrada"),
+                    DB::raw("{$p}_ProximoCambioAceite as ProximoCambioAceite"),
+                    DB::raw("{$p}_ProximoServicio as ProximoServicio"),
+                    DB::raw("{$p}_FechaCreacion as FechaCreacion"),
+                    DB::raw("'{$t['tipo']}' as Tipo"),
+                    DB::raw("'{$t['tabla']}' as Tabla"),
+                    DB::raw("'{$p}' as Prefijo")
+                )
+                ->whereRaw("UPPER(REPLACE(REPLACE({$p}_Placa, '-', ''), ' ', '')) = ?", [$placaNormalizada]);
+        }
+
+        $union = array_shift($queries);
+        foreach ($queries as $q) {
+            $union->unionAll($q);
+        }
+
+        return DB::query()
+            ->fromSub($union, 'u')
+            ->orderByDesc('FechaCreacion')
+            ->limit(200)
+            ->get()
+            ->first(function ($fila) use ($ultimos4) {
+                $digitos = preg_replace('/\D/', '', (string) $fila->Celular);
+
+                return strlen($digitos) >= 7 && substr($digitos, -4) === $ultimos4;
+            });
     }
 
     public function catalogo(Request $request)

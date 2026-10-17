@@ -1,0 +1,150 @@
+{
+  "voz": "es-PE-AlexNeural",
+  "velocidad": "+18%",
+  "tono": "+9Hz",
+  "escenas": [
+    {
+      "id": "gancho",
+      "visual": "gancho",
+      "fondo": "oscuro",
+      "texto": "¡Oye! ¿Tu taller de motos todavía funciona con cuadernos y hojas de Excel?",
+      "resaltar": [
+        "taller",
+        "cuadernos",
+        "Excel?"
+      ]
+    },
+    {
+      "id": "problema",
+      "visual": "caos",
+      "fondo": "claro",
+      "etiqueta": "EL CAOS DE SIEMPRE",
+      "texto": "Motos sin registro, stock que no cuadra, ¡y una caja que nunca sabes cuánto debería tener!",
+      "resaltar": [
+        "registro,",
+        "stock",
+        "caja"
+      ]
+    },
+    {
+      "id": "presenta",
+      "visual": "marca",
+      "fondo": "oscuro",
+      "texto": "¡Eso se acabó! Te presentamos el sistema para talleres de motos de Kael Tech.",
+      "resaltar": [
+        "acabó!",
+        "sistema",
+        "Kael",
+        "Tech."
+      ]
+    },
+    {
+      "id": "recepcion",
+      "visual": "recepcion",
+      "fondo": "claro",
+      "etiqueta": "RECEPCIÓN",
+      "texto": "¡Registra cada moto que entra con su checklist de recepción, fotos y kilometraje!",
+      "resaltar": [
+        "checklist",
+        "fotos",
+        "kilometraje!"
+      ]
+    },
+    {
+      "id": "proceso",
+      "visual": "tablero",
+      "fondo": "claro",
+      "etiqueta": "GESTIÓN DE PROCESO",
+      "texto": "¡Mira en un solo tablero qué moto está en cada bahía, qué mecánico la atiende y cómo va!",
+      "resaltar": [
+        "tablero",
+        "bahía,",
+        "mecánico"
+      ]
+    },
+    {
+      "id": "orden",
+      "visual": "orden",
+      "fondo": "claro",
+      "etiqueta": "ORDEN DE SERVICIO",
+      "texto": "¡Entrega a tu cliente una orden de servicio profesional en PDF, con repuestos y recomendaciones!",
+      "resaltar": [
+        "profesional",
+        "PDF,",
+        "recomendaciones!"
+      ]
+    },
+    {
+      "id": "reservas",
+      "visual": "reservas",
+      "fondo": "claro",
+      "etiqueta": "RESERVAS ONLINE",
+      "texto": "¡Tus clientes reservan su cita desde la web de tu taller, y tú se la recuerdas por WhatsApp!",
+      "resaltar": [
+        "reservan",
+        "web",
+        "WhatsApp!"
+      ]
+    },
+    {
+      "id": "ventas",
+      "visual": "ventas",
+      "fondo": "oscuro",
+      "etiqueta": "VENTAS Y SUNAT",
+      "texto": "¡Vende tus repuestos y emite boletas y facturas electrónicas a SUNAT en segundos!",
+      "resaltar": [
+        "boletas",
+        "facturas",
+        "SUNAT"
+      ]
+    },
+    {
+      "id": "inventario",
+      "visual": "inventario",
+      "fondo": "claro",
+      "etiqueta": "INVENTARIO",
+      "texto": "¡Controla tu stock en todas tus sedes, con compras, traslados y ajustes al día!",
+      "resaltar": [
+        "stock",
+        "sedes,",
+        "traslados"
+      ]
+    },
+    {
+      "id": "caja",
+      "visual": "caja",
+      "fondo": "claro",
+      "etiqueta": "CAJA Y REPORTES",
+      "texto": "¡Cierra tu caja sin descuadres y descubre cuánto ganas y cuánto rinde cada mecánico!",
+      "resaltar": [
+        "caja",
+        "descuadres",
+        "ganas",
+        "mecánico!"
+      ]
+    },
+    {
+      "id": "beneficio",
+      "visual": "beneficios",
+      "fondo": "claro",
+      "etiqueta": "TU TALLER, AL SIGUIENTE NIVEL",
+      "texto": "¡Más orden, más control y un taller con la imagen que tus clientes merecen!",
+      "resaltar": [
+        "orden,",
+        "control",
+        "imagen"
+      ]
+    },
+    {
+      "id": "cierre",
+      "visual": "cierre",
+      "fondo": "oscuro",
+      "texto": "¡Kael Tech, sistemas para negocios! ¡Síguenos y escríbenos en nuestras redes!",
+      "resaltar": [
+        "Kael",
+        "Tech,",
+        "redes!"
+      ]
+    }
+  ]
+}

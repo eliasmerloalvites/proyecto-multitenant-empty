@@ -1,0 +1,844 @@
+[
+  {
+    "id": "gancho",
+    "audio": "voz/gancho.mp3",
+    "duracion": 2.47,
+    "palabras": [
+      {
+        "texto": "Tienes",
+        "inicio": 0.0512909,
+        "fin": 0.4229989
+      },
+      {
+        "texto": "un",
+        "inicio": 0.435791,
+        "fin": 0.563957
+      },
+      {
+        "texto": "taller",
+        "inicio": 0.576791,
+        "fin": 0.910041
+      },
+      {
+        "texto": "de",
+        "inicio": 0.922875,
+        "fin": 1.012583
+      },
+      {
+        "texto": "motos",
+        "inicio": 1.025416,
+        "fin": 1.589416
+      }
+    ]
+  },
+  {
+    "id": "problema",
+    "audio": "voz/problema.mp3",
+    "duracion": 5.64,
+    "palabras": [
+      {
+        "texto": "Seguro",
+        "inicio": 0.0512909,
+        "fin": 0.5255409
+      },
+      {
+        "texto": "tus",
+        "inicio": 0.538333,
+        "fin": 0.730583
+      },
+      {
+        "texto": "clientes",
+        "inicio": 0.743416,
+        "fin": 1.230499
+      },
+      {
+        "texto": "te",
+        "inicio": 1.243333,
+        "fin": 1.333041
+      },
+      {
+        "texto": "llaman",
+        "inicio": 1.345875,
+        "fin": 1.704791
+      },
+      {
+        "texto": "a",
+        "inicio": 1.717583,
+        "fin": 1.781666
+      },
+      {
+        "texto": "cada",
+        "inicio": 1.7945,
+        "fin": 2.063666
+      },
+      {
+        "texto": "rato",
+        "inicio": 2.0765,
+        "fin": 2.396958
+      },
+      {
+        "texto": "para",
+        "inicio": 2.40975,
+        "fin": 2.614833
+      },
+      {
+        "texto": "preguntar",
+        "inicio": 2.627666,
+        "fin": 3.165999
+      },
+      {
+        "texto": "ya",
+        "inicio": 3.448,
+        "fin": 3.614625
+      },
+      {
+        "texto": "está",
+        "inicio": 3.627458,
+        "fin": 3.883833
+      },
+      {
+        "texto": "lista",
+        "inicio": 3.896625,
+        "fin": 4.217083
+      },
+      {
+        "texto": "mi",
+        "inicio": 4.229916,
+        "fin": 4.345291
+      },
+      {
+        "texto": "moto",
+        "inicio": 4.358083,
+        "fin": 4.755458
+      }
+    ]
+  },
+  {
+    "id": "presenta",
+    "audio": "voz/presenta.mp3",
+    "duracion": 4.9,
+    "palabras": [
+      {
+        "texto": "Por",
+        "inicio": 0.0512909,
+        "fin": 0.2179159
+      },
+      {
+        "texto": "eso",
+        "inicio": 0.230708,
+        "fin": 0.422958
+      },
+      {
+        "texto": "en",
+        "inicio": 0.435791,
+        "fin": 0.525499
+      },
+      {
+        "texto": "Kael",
+        "inicio": 0.538333,
+        "fin": 0.769041
+      },
+      {
+        "texto": "Tech",
+        "inicio": 0.781875,
+        "fin": 0.999791
+      },
+      {
+        "texto": "DataValle",
+        "inicio": 1.012625,
+        "fin": 1.550958
+      },
+      {
+        "texto": "creamos",
+        "inicio": 1.563791,
+        "fin": 2.063707
+      },
+      {
+        "texto": "la",
+        "inicio": 2.0765,
+        "fin": 2.2175
+      },
+      {
+        "texto": "app",
+        "inicio": 2.230291,
+        "fin": 2.384124
+      },
+      {
+        "texto": "para",
+        "inicio": 2.396958,
+        "fin": 2.614874
+      },
+      {
+        "texto": "los",
+        "inicio": 2.627666,
+        "fin": 2.807124
+      },
+      {
+        "texto": "clientes",
+        "inicio": 2.819916,
+        "fin": 3.294166
+      },
+      {
+        "texto": "de",
+        "inicio": 3.307,
+        "fin": 3.409541
+      },
+      {
+        "texto": "tu",
+        "inicio": 3.422375,
+        "fin": 3.53775
+      },
+      {
+        "texto": "taller",
+        "inicio": 3.550541,
+        "fin": 3.999166
+      }
+    ]
+  },
+  {
+    "id": "qr",
+    "audio": "voz/qr.mp3",
+    "duracion": 7.34,
+    "palabras": [
+      {
+        "texto": "Tu",
+        "inicio": 0.0512909,
+        "fin": 0.1794569
+      },
+      {
+        "texto": "cliente",
+        "inicio": 0.19225,
+        "fin": 0.589625
+      },
+      {
+        "texto": "escanea",
+        "inicio": 0.602458,
+        "fin": 1.063916
+      },
+      {
+        "texto": "el",
+        "inicio": 1.076708,
+        "fin": 1.179249
+      },
+      {
+        "texto": "código",
+        "inicio": 1.192083,
+        "fin": 1.615083
+      },
+      {
+        "texto": "QR",
+        "inicio": 1.627875,
+        "fin": 2.012416
+      },
+      {
+        "texto": "de",
+        "inicio": 2.025208,
+        "fin": 2.153374
+      },
+      {
+        "texto": "tu",
+        "inicio": 2.166208,
+        "fin": 2.294374
+      },
+      {
+        "texto": "taller",
+        "inicio": 2.307208,
+        "fin": 2.691749
+      },
+      {
+        "texto": "y",
+        "inicio": 2.704583,
+        "fin": 2.845583
+      },
+      {
+        "texto": "entra",
+        "inicio": 2.858375,
+        "fin": 3.127541
+      },
+      {
+        "texto": "solo",
+        "inicio": 3.140375,
+        "fin": 3.486458
+      },
+      {
+        "texto": "con",
+        "inicio": 3.499291,
+        "fin": 3.653124
+      },
+      {
+        "texto": "su",
+        "inicio": 3.665916,
+        "fin": 3.781291
+      },
+      {
+        "texto": "celular",
+        "inicio": 3.794083,
+        "fin": 4.370874
+      },
+      {
+        "texto": "Sin",
+        "inicio": 5.255333,
+        "fin": 5.537333
+      },
+      {
+        "texto": "contraseñas",
+        "inicio": 5.550125,
+        "fin": 6.460208
+      }
+    ]
+  },
+  {
+    "id": "garaje",
+    "audio": "voz/garaje.mp3",
+    "duracion": 5.69,
+    "palabras": [
+      {
+        "texto": "En",
+        "inicio": 0.0512909,
+        "fin": 0.2179159
+      },
+      {
+        "texto": "su",
+        "inicio": 0.230708,
+        "fin": 0.358874
+      },
+      {
+        "texto": "garaje",
+        "inicio": 0.371708,
+        "fin": 0.756249
+      },
+      {
+        "texto": "ve",
+        "inicio": 0.769083,
+        "fin": 0.897249
+      },
+      {
+        "texto": "sus",
+        "inicio": 0.910083,
+        "fin": 1.153624
+      },
+      {
+        "texto": "motos",
+        "inicio": 1.166416,
+        "fin": 1.602207
+      },
+      {
+        "texto": "todo",
+        "inicio": 1.871416,
+        "fin": 2.102124
+      },
+      {
+        "texto": "su",
+        "inicio": 2.114958,
+        "fin": 2.230333
+      },
+      {
+        "texto": "historial",
+        "inicio": 2.243125,
+        "fin": 2.743041
+      },
+      {
+        "texto": "y",
+        "inicio": 2.755833,
+        "fin": 2.819916
+      },
+      {
+        "texto": "cuándo",
+        "inicio": 2.83275,
+        "fin": 3.127541
+      },
+      {
+        "texto": "le",
+        "inicio": 3.140375,
+        "fin": 3.25575
+      },
+      {
+        "texto": "toca",
+        "inicio": 3.268541,
+        "fin": 3.563332
+      },
+      {
+        "texto": "el",
+        "inicio": 3.576208,
+        "fin": 3.678749
+      },
+      {
+        "texto": "próximo",
+        "inicio": 3.691541,
+        "fin": 4.152999
+      },
+      {
+        "texto": "servicio",
+        "inicio": 4.165791,
+        "fin": 4.793874
+      }
+    ]
+  },
+  {
+    "id": "avance",
+    "audio": "voz/avance.mp3",
+    "duracion": 6.79,
+    "palabras": [
+      {
+        "texto": "Y",
+        "inicio": 0.0512909,
+        "fin": 0.1794569
+      },
+      {
+        "texto": "sigue",
+        "inicio": 0.19225,
+        "fin": 0.512708
+      },
+      {
+        "texto": "el",
+        "inicio": 0.525541,
+        "fin": 0.640916
+      },
+      {
+        "texto": "avance",
+        "inicio": 0.653708,
+        "fin": 1.025416
+      },
+      {
+        "texto": "de",
+        "inicio": 1.03825,
+        "fin": 1.140791
+      },
+      {
+        "texto": "su",
+        "inicio": 1.153625,
+        "fin": 1.294625
+      },
+      {
+        "texto": "moto",
+        "inicio": 1.307416,
+        "fin": 1.627874
+      },
+      {
+        "texto": "paso",
+        "inicio": 1.640708,
+        "fin": 1.948333
+      },
+      {
+        "texto": "a",
+        "inicio": 1.961125,
+        "fin": 1.999583
+      },
+      {
+        "texto": "paso",
+        "inicio": 2.012416,
+        "fin": 2.422582
+      },
+      {
+        "texto": "ingresó",
+        "inicio": 2.666125,
+        "fin": 3.25575
+      },
+      {
+        "texto": "trabajo",
+        "inicio": 3.550541,
+        "fin": 3.999166
+      },
+      {
+        "texto": "terminado",
+        "inicio": 4.012,
+        "fin": 4.601625
+      },
+      {
+        "texto": "y",
+        "inicio": 4.614458,
+        "fin": 4.678541
+      },
+      {
+        "texto": "lista",
+        "inicio": 4.691333,
+        "fin": 5.075874
+      },
+      {
+        "texto": "para",
+        "inicio": 5.088708,
+        "fin": 5.280958
+      },
+      {
+        "texto": "entregar",
+        "inicio": 5.293791,
+        "fin": 5.896249
+      }
+    ]
+  },
+  {
+    "id": "detalle",
+    "audio": "voz/detalle.mp3",
+    "duracion": 6.53,
+    "palabras": [
+      {
+        "texto": "Ve",
+        "inicio": 0.0512909,
+        "fin": 0.2435409
+      },
+      {
+        "texto": "las",
+        "inicio": 0.256375,
+        "fin": 0.435833
+      },
+      {
+        "texto": "fotos",
+        "inicio": 0.448625,
+        "fin": 0.807541
+      },
+      {
+        "texto": "del",
+        "inicio": 0.820333,
+        "fin": 0.961333
+      },
+      {
+        "texto": "trabajo",
+        "inicio": 0.974166,
+        "fin": 1.448416
+      },
+      {
+        "texto": "los",
+        "inicio": 1.807333,
+        "fin": 1.948333
+      },
+      {
+        "texto": "repuestos",
+        "inicio": 1.961125,
+        "fin": 2.461041
+      },
+      {
+        "texto": "que",
+        "inicio": 2.473833,
+        "fin": 2.576374
+      },
+      {
+        "texto": "usaste",
+        "inicio": 2.589208,
+        "fin": 3.012208
+      },
+      {
+        "texto": "y",
+        "inicio": 3.025,
+        "fin": 3.0762909
+      },
+      {
+        "texto": "descarga",
+        "inicio": 3.089125,
+        "fin": 3.614666
+      },
+      {
+        "texto": "su",
+        "inicio": 3.627458,
+        "fin": 3.832541
+      },
+      {
+        "texto": "orden",
+        "inicio": 3.845375,
+        "fin": 4.153
+      },
+      {
+        "texto": "de",
+        "inicio": 4.165791,
+        "fin": 4.242707
+      },
+      {
+        "texto": "servicio",
+        "inicio": 4.255541,
+        "fin": 4.793874
+      },
+      {
+        "texto": "en",
+        "inicio": 4.806708,
+        "fin": 4.947708
+      },
+      {
+        "texto": "PDF",
+        "inicio": 4.960541,
+        "fin": 5.627082
+      }
+    ]
+  },
+  {
+    "id": "reservas",
+    "audio": "voz/reservas.mp3",
+    "duracion": 5.76,
+    "palabras": [
+      {
+        "texto": "Además",
+        "inicio": 0.0512909,
+        "fin": 0.6280819
+      },
+      {
+        "texto": "reserva",
+        "inicio": 0.910083,
+        "fin": 1.371541
+      },
+      {
+        "texto": "su",
+        "inicio": 1.384333,
+        "fin": 1.525333
+      },
+      {
+        "texto": "cita",
+        "inicio": 1.538166,
+        "fin": 1.845791
+      },
+      {
+        "texto": "en",
+        "inicio": 1.858583,
+        "fin": 1.922666
+      },
+      {
+        "texto": "segundos",
+        "inicio": 1.9355,
+        "fin": 2.486666
+      },
+      {
+        "texto": "solo",
+        "inicio": 2.768666,
+        "fin": 3.076291
+      },
+      {
+        "texto": "en",
+        "inicio": 3.089125,
+        "fin": 3.153208
+      },
+      {
+        "texto": "los",
+        "inicio": 3.166,
+        "fin": 3.319833
+      },
+      {
+        "texto": "horarios",
+        "inicio": 3.332666,
+        "fin": 3.781291
+      },
+      {
+        "texto": "que",
+        "inicio": 3.794083,
+        "fin": 3.922249
+      },
+      {
+        "texto": "tienes",
+        "inicio": 3.935083,
+        "fin": 4.319624
+      },
+      {
+        "texto": "libres",
+        "inicio": 4.332458,
+        "fin": 4.870791
+      }
+    ]
+  },
+  {
+    "id": "control",
+    "audio": "voz/control.mp3",
+    "duracion": 6.07,
+    "palabras": [
+      {
+        "texto": "Y",
+        "inicio": 0.0512909,
+        "fin": 0.1922909
+      },
+      {
+        "texto": "tú",
+        "inicio": 0.205083,
+        "fin": 0.320458
+      },
+      {
+        "texto": "lo",
+        "inicio": 0.33325,
+        "fin": 0.435791
+      },
+      {
+        "texto": "controlas",
+        "inicio": 0.448625,
+        "fin": 1.063875
+      },
+      {
+        "texto": "todo",
+        "inicio": 1.076708,
+        "fin": 1.345874
+      },
+      {
+        "texto": "desde",
+        "inicio": 1.358708,
+        "fin": 1.653499
+      },
+      {
+        "texto": "tu",
+        "inicio": 1.666333,
+        "fin": 1.768874
+      },
+      {
+        "texto": "sistema",
+        "inicio": 1.781666,
+        "fin": 2.230291
+      },
+      {
+        "texto": "DataValle",
+        "inicio": 2.243125,
+        "fin": 2.896833
+      },
+      {
+        "texto": "con",
+        "inicio": 3.127583,
+        "fin": 3.307041
+      },
+      {
+        "texto": "el",
+        "inicio": 3.319833,
+        "fin": 3.422374
+      },
+      {
+        "texto": "logo",
+        "inicio": 3.435208,
+        "fin": 3.729999
+      },
+      {
+        "texto": "y",
+        "inicio": 3.742833,
+        "fin": 3.7941239
+      },
+      {
+        "texto": "los",
+        "inicio": 3.806916,
+        "fin": 3.999166
+      },
+      {
+        "texto": "colores",
+        "inicio": 4.012,
+        "fin": 4.460625
+      },
+      {
+        "texto": "de",
+        "inicio": 4.473458,
+        "fin": 4.575999
+      },
+      {
+        "texto": "tu",
+        "inicio": 4.588791,
+        "fin": 4.704166
+      },
+      {
+        "texto": "taller",
+        "inicio": 4.717,
+        "fin": 5.178458
+      }
+    ]
+  },
+  {
+    "id": "beneficio",
+    "audio": "voz/beneficio.mp3",
+    "duracion": 4.56,
+    "palabras": [
+      {
+        "texto": "Menos",
+        "inicio": 0.0512909,
+        "fin": 0.4486659
+      },
+      {
+        "texto": "llamadas",
+        "inicio": 0.461458,
+        "fin": 0.961374
+      },
+      {
+        "texto": "más",
+        "inicio": 1.217708,
+        "fin": 1.435624
+      },
+      {
+        "texto": "confianza",
+        "inicio": 1.448416,
+        "fin": 1.999582
+      },
+      {
+        "texto": "y",
+        "inicio": 2.012416,
+        "fin": 2.076499
+      },
+      {
+        "texto": "clientes",
+        "inicio": 2.089333,
+        "fin": 2.614874
+      },
+      {
+        "texto": "que",
+        "inicio": 2.627666,
+        "fin": 2.743041
+      },
+      {
+        "texto": "siempre",
+        "inicio": 2.755833,
+        "fin": 3.178833
+      },
+      {
+        "texto": "vuelven",
+        "inicio": 3.191666,
+        "fin": 3.678749
+      }
+    ]
+  },
+  {
+    "id": "cierre",
+    "audio": "voz/cierre.mp3",
+    "duracion": 7.22,
+    "palabras": [
+      {
+        "texto": "Kael",
+        "inicio": 0.0512909,
+        "fin": 0.4229989
+      },
+      {
+        "texto": "Tech",
+        "inicio": 0.435791,
+        "fin": 0.666499
+      },
+      {
+        "texto": "DataValle",
+        "inicio": 0.679333,
+        "fin": 1.320208
+      },
+      {
+        "texto": "Tecnología",
+        "inicio": 2.2175,
+        "fin": 2.97375
+      },
+      {
+        "texto": "para",
+        "inicio": 2.986583,
+        "fin": 3.217291
+      },
+      {
+        "texto": "tu",
+        "inicio": 3.230125,
+        "fin": 3.358291
+      },
+      {
+        "texto": "taller",
+        "inicio": 3.371083,
+        "fin": 3.819708
+      },
+      {
+        "texto": "Síguenos",
+        "inicio": 4.704166,
+        "fin": 5.293791
+      },
+      {
+        "texto": "en",
+        "inicio": 5.306583,
+        "fin": 5.396291
+      },
+      {
+        "texto": "nuestras",
+        "inicio": 5.409166,
+        "fin": 5.806541
+      },
+      {
+        "texto": "redes",
+        "inicio": 5.819333,
+        "fin": 6.319249
+      }
+    ]
+  }
+]

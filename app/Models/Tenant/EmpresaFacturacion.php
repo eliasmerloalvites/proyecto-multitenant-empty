@@ -89,6 +89,24 @@ class EmpresaFacturacion extends Model
         // REINTENTO AUTOMATICO DE COMPROBANTES SUNAT (ver comando
         // sunat:reintentar-pendientes)
         'sunat_reintento_hora',
+
+        // App movil
+        'app_movil_mostrar_precios',
+    ];
+
+    /**
+     * Credenciales SUNAT y del certificado digital: nunca deben salir cuando
+     * el modelo se convierte a JSON/array (por ejemplo, al devolverlo en una
+     * respuesta). El acceso directo ($empresa->sol_password) no se afecta, asi
+     * que la facturacion sigue funcionando igual.
+     */
+    protected $hidden = [
+        'sol_usuario',
+        'sol_password',
+        'gre_client_id',
+        'gre_client_secret',
+        'certificado_ruta',
+        'certificado_password',
     ];
 
     protected $casts = [
@@ -102,6 +120,9 @@ class EmpresaFacturacion extends Model
         'decimales' => 'integer',
 
         'reserva_notif_activo' => 'boolean',
+
+        // App movil: ver el precio de los repuestos en el detalle de la orden.
+        'app_movil_mostrar_precios' => 'boolean',
     ];
 
     /**

@@ -416,6 +416,18 @@
                                 <span class="res-total">S/ {{ number_format($r['total'], 2) }}</span>
                             </div>
 
+                            {{-- Adelantos: lo que el cliente ya pago antes de cerrar la cuenta. --}}
+                            <div class="adelanto-resumen" style="{{ $r['adelantado'] > 0 ? '' : 'display:none;' }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small text-success"><i class="fa fa-hand-holding-usd"></i> Adelantado</span>
+                                    <span class="small text-success font-weight-bold res-adelantado">- S/ {{ number_format($r['adelantado'], 2) }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small font-weight-bold">Saldo por cobrar</span>
+                                    <span class="font-weight-bold res-saldo">S/ {{ number_format(max(0, $r['total'] - $r['adelantado']), 2) }}</span>
+                                </div>
+                            </div>
+
                             <div class="mt-2 acciones-container">
                                 @if ($estado === 'sin-iniciar')
                                     <button class="btn btn-primary btn-sm btn-block" onclick="abrirCuenta({{ $reserva->RES_Id }})">
@@ -431,11 +443,14 @@
                                     <button type="button" class="btn-agregar-item mb-2" onclick="abrirModalItem({{ $cuenta->BCT_Id }})">
                                         <i class="fa fa-plus"></i> Agregar producto / item rápido
                                     </button>
+                                    <button type="button" class="btn btn-outline-success btn-sm btn-block mb-2" onclick="abrirModalAdelanto({{ $cuenta->BCT_Id }})">
+                                        <i class="fa fa-hand-holding-usd"></i> Adelanto de pago
+                                    </button>
                                     <div class="d-flex" style="gap:6px">
                                         <button class="btn btn-light btn-sm flex-fill"
                                             onclick="cerrarSinCobrar({{ $cuenta->BCT_Id }})"
-                                            @disabled($r['items'] > 0)
-                                            title="{{ $r['items'] > 0 ? 'Solo disponible si la cuenta está vacía: quita los productos o cóbralos' : 'Libera esta bahía sin generar ninguna venta' }}">
+                                            @disabled($r['items'] > 0 || $r['adelantado'] > 0)
+                                            title="{{ $r['items'] > 0 || $r['adelantado'] > 0 ? 'Solo disponible si la cuenta está vacía y sin adelantos' : 'Libera esta bahía sin generar ninguna venta' }}">
                                             Cerrar sin cobrar
                                         </button>
                                         <a class="btn btn-success btn-sm flex-fill"
@@ -462,6 +477,58 @@
                     No hay bahías activas configuradas en esta sede.
                 </div>
             @endforelse
+        </div>
+    </div>
+
+    <!-- MODAL: adelanto de pago -->
+    <div class="modal fade" id="modalAdelantoBahia" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa fa-hand-holding-usd text-success"></i> Adelanto de pago</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">
+                        El adelanto entra hoy a la caja abierta, con la fecha y hora de este momento. Al cobrar la cuenta
+                        solo se pedirá el saldo.
+                    </p>
+                    <div class="d-flex justify-content-between mb-3 p-2 rounded" style="background:#f4f6fa;">
+                        <span>Total: <strong id="adelantoTotal">S/ 0.00</strong></span>
+                        <span>Adelantado: <strong id="adelantoAdelantado" class="text-success">S/ 0.00</strong></span>
+                        <span>Saldo: <strong id="adelantoSaldo">S/ 0.00</strong></span>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label class="small font-weight-bold">Monto</label>
+                            <input type="number" min="0.01" step="0.01" class="form-control" id="adelantoMonto" placeholder="0.00">
+                        </div>
+                        <div class="form-group col-6">
+                            <label class="small font-weight-bold">Método de pago</label>
+                            <select class="form-control" id="adelantoMetodo">
+                                @foreach ($metodosPago as $mp)
+                                    <option value="{{ $mp->MEP_Id }}">{{ $mp->MEP_Pago }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="small font-weight-bold">Observación (opcional)</label>
+                        <input type="text" maxlength="255" class="form-control" id="adelantoObservacion" placeholder="Ej. adelanto para repuestos">
+                    </div>
+                    <button type="button" class="btn btn-success btn-block" id="btnRegistrarAdelanto" onclick="registrarAdelanto()">
+                        <i class="fa fa-check"></i> Registrar adelanto
+                    </button>
+
+                    <div class="mt-3" id="adelantoListaWrap" style="display:none;">
+                        <div class="small font-weight-bold text-muted mb-1">ADELANTOS REGISTRADOS</div>
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Fecha</th><th>Método</th><th class="text-right">Monto</th><th></th></tr></thead>
+                            <tbody id="adelantoLista"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -660,10 +727,15 @@
             $card.find('.res-total').text('S/ ' + resumen.total.toFixed(2));
 
             let hayItems = resumen.items.length > 0;
+            let hayAdelantos = (resumen.adelantado || 0) > 0;
             let $cerrarBtn = $card.find('.acciones-container button:contains("Cerrar sin cobrar")');
-            $cerrarBtn.prop('disabled', hayItems).attr('title', hayItems
-                ? 'Solo disponible si la cuenta está vacía: quita los productos o cóbralos'
+            $cerrarBtn.prop('disabled', hayItems || hayAdelantos).attr('title', (hayItems || hayAdelantos)
+                ? 'Solo disponible si la cuenta está vacía y sin adelantos'
                 : 'Libera esta bahía sin generar ninguna venta');
+
+            $card.find('.adelanto-resumen').toggle(hayAdelantos);
+            $card.find('.res-adelantado').text('- S/ ' + (resumen.adelantado || 0).toFixed(2));
+            $card.find('.res-saldo').text('S/ ' + (resumen.saldo || 0).toFixed(2));
         }
 
         function guardarItem(cuentaId, itemId, cantidad, precio) {
@@ -803,6 +875,102 @@
                 actualizarTarjetaCuenta(resumen);
             });
         }
+
+        // ======================================================
+        // ADELANTOS DE PAGO
+        // ======================================================
+        let cuentaAdelanto = null;
+
+        function pintarAdelantos(resumen) {
+            $('#adelantoTotal').text('S/ ' + resumen.total.toFixed(2));
+            $('#adelantoAdelantado').text('S/ ' + (resumen.adelantado || 0).toFixed(2));
+            $('#adelantoSaldo').text('S/ ' + (resumen.saldo || 0).toFixed(2));
+
+            let filas = '';
+            (resumen.adelantos || []).forEach(function (a) {
+                filas += '<tr>' +
+                    '<td class="small">' + a.fecha + (a.observacion ? '<br><span class="text-muted">' + $('<div>').text(a.observacion).html() + '</span>' : '') + '</td>' +
+                    '<td class="small">' + a.metodo + '</td>' +
+                    '<td class="small text-right font-weight-bold">S/ ' + a.monto.toFixed(2) + '</td>' +
+                    '<td class="text-right"><button type="button" class="btn btn-link btn-sm text-danger p-0" title="Anular (devolver el dinero)" onclick="anularAdelanto(' + a.id + ')"><i class="fa fa-undo"></i></button></td>' +
+                '</tr>';
+            });
+            $('#adelantoLista').html(filas);
+            $('#adelantoListaWrap').toggle((resumen.adelantos || []).length > 0);
+        }
+
+        function abrirModalAdelanto(cuentaId) {
+            cuentaAdelanto = cuentaId;
+            $('#adelantoMonto').val('');
+            $('#adelantoObservacion').val('');
+            $.get('{{ tenant_url("tenant.ventas.bahias.resumen", ["cuenta" => ":id"]) }}'.replace(':id', cuentaId))
+                .done(function (resumen) {
+                    pintarAdelantos(resumen);
+                    $('#modalAdelantoBahia').modal('show');
+                })
+                .fail(function () {
+                    Swal.fire({ icon: 'error', title: 'No se pudo cargar la cuenta' });
+                });
+        }
+
+        function registrarAdelanto() {
+            let monto = parseFloat($('#adelantoMonto').val()) || 0;
+            if (monto <= 0) {
+                Toast.fire({ icon: 'warning', title: 'Indica un monto válido.' });
+                return;
+            }
+
+            $('#btnRegistrarAdelanto').prop('disabled', true);
+            $.ajax({
+                url: '{{ tenant_url("tenant.ventas.bahias.adelantos.store", ["cuenta" => ":id"]) }}'.replace(':id', cuentaAdelanto),
+                method: 'POST',
+                data: {
+                    monto: monto,
+                    metodo_pago: $('#adelantoMetodo').val(),
+                    observacion: $('#adelantoObservacion').val(),
+                    _token: '{{ csrf_token() }}'
+                }
+            }).done(function (resumen) {
+                pintarAdelantos(resumen);
+                actualizarTarjetaCuenta(resumen);
+                $('#adelantoMonto').val('');
+                $('#adelantoObservacion').val('');
+                Toast.fire({ icon: 'success', title: 'Adelanto registrado en caja.' });
+            }).fail(function (xhr) {
+                Swal.fire({ icon: 'error', title: 'No se pudo registrar', text: (xhr.responseJSON && xhr.responseJSON.message) || 'Error de conexión.' });
+            }).always(function () {
+                $('#btnRegistrarAdelanto').prop('disabled', false);
+            });
+        }
+
+        function anularAdelanto(adelantoId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Anular adelanto',
+                text: 'Se quitará de la caja: devuelve el dinero al cliente.',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, anular',
+                cancelButtonText: 'Cancelar'
+            }).then(function (res) {
+                if (!res.isConfirmed) return;
+
+                $.ajax({
+                    url: '{{ tenant_url("tenant.ventas.bahias.adelantos.destroy", ["cuenta" => ":cuenta", "adelanto" => ":adelanto"]) }}'
+                        .replace(':cuenta', cuentaAdelanto).replace(':adelanto', adelantoId),
+                    method: 'DELETE',
+                    data: { _token: '{{ csrf_token() }}' }
+                }).done(function (resumen) {
+                    pintarAdelantos(resumen);
+                    actualizarTarjetaCuenta(resumen);
+                }).fail(function (xhr) {
+                    Swal.fire({ icon: 'error', title: 'No se pudo anular', text: (xhr.responseJSON && xhr.responseJSON.message) || 'Error de conexión.' });
+                });
+            });
+        }
+
+        @if (session('error'))
+            Swal.fire({ icon: 'warning', title: 'No se puede cobrar todavía', text: @json(session('error')) });
+        @endif
 
         function cerrarSinCobrar(cuentaId) {
             Swal.fire({

@@ -142,11 +142,16 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap:8px;">
                         <h5 class="card-title mb-0">LISTA DE PRODUCTOS</h5>
-                        <select class="form-control form-control-sm" id="filtroEstadoProducto" style="width:auto;">
-                            <option value="ACT" selected>Activos</option>
-                            <option value="INA">Inactivos</option>
-                            <option value="TODOS">Todos</option>
-                        </select>
+                        <div class="d-flex align-items-center" style="gap:8px;">
+                            <select class="form-control form-control-sm" id="filtroEstadoProducto" style="width:auto;">
+                                <option value="ACT" selected>Activos</option>
+                                <option value="INA">Inactivos</option>
+                                <option value="TODOS">Todos</option>
+                            </select>
+                            <button type="button" class="btn btn-success btn-sm" id="btnExportarProductos" title="Descarga el listado en Excel con el estado elegido">
+                                <i class="fa fa-file-excel mr-1"></i> Exportar
+                            </button>
+                        </div>
                     </div>
                     <p class="card-text">
                     <div class="table-responsive" style="background:#FFF;">
@@ -440,6 +445,12 @@
 
             $('#filtroEstadoProducto').on('change', function() {
                 table.draw();
+            });
+
+            // EXPORTAR a Excel con el mismo filtro de Estado del listado.
+            $('#btnExportarProductos').on('click', function() {
+                window.location.href = "{{ tenant_url('tenant.inventario.producto.exportar') }}" +
+                    '?estado=' + encodeURIComponent($('#filtroEstadoProducto').val());
             });
 
             $('#productosave').click(function(e) {

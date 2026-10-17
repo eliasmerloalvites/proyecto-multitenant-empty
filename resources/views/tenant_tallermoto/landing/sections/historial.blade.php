@@ -57,12 +57,30 @@
                                         'bg-gray-50 border-gray-200 text-gray-900' => $colorview !== 'dark',
                                     ])>
                             </div>
+                            <!-- Ultimos 4 digitos del celular registrado en el taller (verifica que la placa es del cliente) -->
+                            <input type="text" name="Celular" value="{{ request('Celular') }}" inputmode="numeric"
+                                pattern="[0-9]{4}" maxlength="4" minlength="4" placeholder="Cel. ****" required
+                                aria-label="Últimos 4 dígitos del celular registrado" @class([
+                                    'w-24 border focus:border-brand-500/50 rounded-2xl px-3 py-3.5 text-sm font-mono font-bold text-center placeholder-gray-500 focus:outline-none focus:ring-0 transition-all shrink-0',
+                                    'bg-slate-900 border-white/5 text-white' => $colorview == 'dark',
+                                    'bg-gray-50 border-gray-200 text-gray-900' => $colorview !== 'dark',
+                                ])>
                             <button type="submit"
                                 class="bg-brand-500 hover:bg-brand-400 text-white px-5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-brand-500/20 flex items-center gap-1.5 shrink-0">
                                 Consultar <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                             </button>
                         </div>
+                        <p class="relative mt-3 text-center text-[11px] {{ $colorview == 'dark' ? 'text-gray-500' : 'text-gray-500' }}">
+                            Ingresa tu placa y los <strong>últimos 4 dígitos del celular</strong> que registraste en el taller.
+                        </p>
                     </form>
+
+                    @if (!isset($data['resumen']) && !empty($data['mensaje']))
+                        <p role="alert"
+                            class="mt-4 text-center text-xs font-semibold {{ $colorview == 'dark' ? 'text-amber-300' : 'text-amber-700' }}">
+                            {{ $data['mensaje'] }}
+                        </p>
+                    @endif
                 </div>
 
                 @if (isset($data['resumen']))
@@ -81,18 +99,9 @@
                                         {{ $res['cabecera']['tipo'] }}
                                     </span>
                                     <h3 class="text-xl font-bold text-white">Último Mantenimiento</h3>
-                                    <p class="text-xs text-gray-400">Atendido por: <span
-                                            class="text-gray-200 font-semibold">{{ $res['cabecera']['mecanico'] }}</span>
-                                        el {{ $res['cabecera']['fecha'] }}</p>
+                                    <p class="text-xs text-gray-400">Atendido el <span
+                                            class="text-gray-200 font-semibold">{{ $res['cabecera']['fecha'] }}</span></p>
                                 </div>
-
-                                <!-- Botón para descargar/ver PDF completo -->
-                                <a href="{{ $res['cabecera']['url_pdf'] }}/{{ $res['cabecera']['id'] }}/descargarpdf"
-                                    download
-                                    class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2">
-                                    <i data-lucide="file-text" class="w-4 h-4"></i>
-                                    Descargar Ficha PDF
-                                </a>
                             </div>
 
                             <!-- Grid de datos rápidos del vehículo -->
@@ -117,9 +126,9 @@
                                 </div>
                                 <div class="bg-slate-950/50 p-3 rounded-2xl border border-white/5">
                                     <span
-                                        class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">CLIENTE</span>
+                                        class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">PRÓXIMO SERVICIO</span>
                                     <span
-                                        class="text-sm font-bold text-white truncate block">{{ $res['cabecera']['propietario'] }}</span>
+                                        class="text-sm font-bold text-white truncate block">{{ $res['cabecera']['proximo_servicio'] ?: '—' }}</span>
                                 </div>
                             </div>
                         </div>

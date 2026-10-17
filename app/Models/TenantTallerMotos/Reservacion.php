@@ -38,6 +38,7 @@ class Reservacion extends Model
         'RES_Notificado' => 'boolean',
         'RES_NotificadoEn' => 'datetime',
         'RES_CheckIn' => 'datetime',
+        'RES_CanceladaEn' => 'datetime',
     ];
 
     /**

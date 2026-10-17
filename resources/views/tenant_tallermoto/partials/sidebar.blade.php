@@ -66,6 +66,18 @@
                 </li>
                 @endif
 
+                <!-- APP MÓVIL (clientes finales): solo si el taller la tiene contratada -->
+                @if(tenant_has_module('app_movil'))
+                @can('tenant.appmovil.index')
+                <li class="nav-item">
+                    <a href="{{ route('tenant.appmovil.index') }}" class="nav-link {{ request()->routeIs('tenant.appmovil*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-mobile-alt"></i>
+                        <p>APP MÓVIL</p>
+                    </a>
+                </li>
+                @endcan
+                @endif
+
                 <!-- RESERVAS (parte del flujo de Mantenimientos) -->
                 @if(tenant_has_module('mantenimientos') && auth()->user()->hasAnyPermission([
                     'tenant.reservaciones.administracion.index',
