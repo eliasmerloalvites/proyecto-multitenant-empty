@@ -113,6 +113,7 @@ class AppServiceProvider extends ServiceProvider
         ]);
         \Illuminate\Support\Facades\RateLimiter::for('app-movil-solicitud', fn ($request) => \Illuminate\Cache\RateLimiting\Limit::perHour(10)->by('sol|' . ($request->user('cliente')?->getAuthIdentifier() ?: $request->ip())));
         \Illuminate\Support\Facades\RateLimiter::for('app-movil-sincronizar', fn ($request) => \Illuminate\Cache\RateLimiting\Limit::perMinute(3)->by('sin|' . ($request->user('cliente')?->getAuthIdentifier() ?: $request->ip())));
+        \Illuminate\Support\Facades\RateLimiter::for('app-movil-pedido', fn ($request) => \Illuminate\Cache\RateLimiting\Limit::perHour(10)->by('ped|' . ($request->user('cliente')?->getAuthIdentifier() ?: $request->ip())));
         \Illuminate\Support\Facades\RateLimiter::for('app-movil-reserva', fn ($request) => \Illuminate\Cache\RateLimiting\Limit::perHour(10)->by('res|' . ($request->user('cliente')?->getAuthIdentifier() ?: $request->ip())));
         \Illuminate\Support\Facades\RateLimiter::for('app-movil-api',fn ($request) => \Illuminate\Cache\RateLimiting\Limit::perMinute(120)->by($request->user('cliente')?->getAuthIdentifier() ?: $request->ip()));
 

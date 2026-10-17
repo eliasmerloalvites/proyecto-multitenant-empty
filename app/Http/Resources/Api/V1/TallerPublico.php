@@ -36,6 +36,8 @@ class TallerPublico
                 'web' => $empresa?->web,
                 'direccion' => $empresa?->direccion,
             ],
+            // La tienda (catalogo y pedidos) solo existe si el plan incluye productos.
+            'tienda' => tenant() ? tenant_has_module('productos') : false,
             'sedes' => $sedes->map(fn ($s) => [
                 'id' => $s->ALM_Id,
                 'nombre' => $s->ALM_NombreAlmacen,

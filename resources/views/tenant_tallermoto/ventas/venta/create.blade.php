@@ -2034,6 +2034,24 @@
                 </a>
             </div>
         @endif
+        @if ($pedidoMovilInfo ?? null)
+            <div class="alert alert-info d-flex justify-content-between align-items-center mb-2 py-2">
+                <div>
+                    <i class="fa fa-mobile-alt mr-1"></i>
+                    Cobrando el pedido de la app <strong>{{ $pedidoMovilInfo['numero'] }}</strong>
+                    @if ($prefillCliente ?? null)
+                        — {{ $prefillCliente['nombre'] }}
+                    @endif
+                    @if ($pedidoMovilInfo['otra_sede'])
+                        <br><span class="text-danger"><i class="fa fa-exclamation-triangle"></i>
+                        El pedido es para recoger en <strong>{{ $pedidoMovilInfo['sede'] }}</strong>, pero la caja abierta es de otra sede: el stock se descontará de esta caja.</span>
+                    @endif
+                </div>
+                <a href="{{ tenant_url('tenant.appmovil.pedidos.index') }}" class="btn btn-sm btn-outline-dark">
+                    <i class="fa fa-arrow-left"></i> Volver a pedidos
+                </a>
+            </div>
+        @endif
         @if ($reemitirInfo ?? null)
             <div class="alert alert-warning d-flex justify-content-between align-items-center mb-2 py-2">
                 <div>
@@ -2670,6 +2688,7 @@
         // Si se viene del tablero de Ventas por Bahia, se precarga el carrito
         // con lo que ya se le habia cargado a la cuenta.
         window.CUENTA_BAHIA_ID = @json($cuentaBahiaId ?? null);
+        window.PEDIDO_MOVIL_ID = @json($pedidoMovilInfo['id'] ?? null);
         // Lo que el cliente ya adelanto en la bahia (entro a caja ese dia):
         // aqui solo se cobra el saldo.
         window.ADELANTO_BAHIA = @json((float) ($adelantoBahia ?? 0));
@@ -3765,6 +3784,7 @@
                 observacion: $('#observacion').val(),
                 productos: cart,
                 bahia_cuenta_id: window.CUENTA_BAHIA_ID || null,
+                pedido_movil_id: window.PEDIDO_MOVIL_ID || null,
                 es_credito: esCredito ? 1 : 0,
                 fecha_vencimiento: $('#fechaVencimientoCredito').val(),
                 reemitir_venta_id: window.REEMITIR_VENTA_ID || null,
