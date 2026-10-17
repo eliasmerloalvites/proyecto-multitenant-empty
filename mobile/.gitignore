@@ -43,3 +43,6 @@ yarn-error.*
 # Proyectos nativos generados por "expo prebuild" (no se editan a mano)
 /android
 /ios
+
+# APK/AAB generados localmente
+/builds
