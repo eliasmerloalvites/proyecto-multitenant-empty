@@ -36,6 +36,12 @@ return [
         // log y unicamente fuera de produccion). Los canales reales (WhatsApp,
         // SMS) se agregan despues implementando OtpChannel.
         'canal' => env('APP_MOVIL_OTP_CANAL', 'log'),
+
+        // SOLO PARA VALIDAR EN PRODUCCION mientras no haya un canal real:
+        // celulares (separados por coma) cuyo codigo se escribe en el log del
+        // servidor aunque el entorno sea produccion. Los demas celulares no
+        // reciben nada. Dejar vacio (o borrar la variable) al terminar.
+        'celulares_prueba' => array_values(array_filter(array_map('trim', explode(',', (string) env('APP_MOVIL_OTP_CELULARES_PRUEBA', ''))))),
     ],
 
     'sesion' => [
