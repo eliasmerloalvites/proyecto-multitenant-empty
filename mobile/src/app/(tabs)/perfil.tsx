@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Linking, View } from 'react-native';
 
@@ -88,6 +89,7 @@ export default function Perfil() {
           </View>
         </Tarjeta>
 
+        <Boton titulo="Mis pedidos" icono="receipt-outline" variante="suave" onPress={() => router.push('/pedidos')} />
         <Boton
           titulo="Cerrar sesión"
           icono="log-out-outline"

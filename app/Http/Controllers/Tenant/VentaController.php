@@ -711,6 +711,47 @@ class VentaController extends Controller
         // pantalla se recarga sin llegar a completar la venta.
         $cotizacionId = null;
 
+        // Cobrar un pedido de la app (Pedidos de la app > Cobrar): se precarga
+        // con los items y el precio con que el cliente lo pidio, y el cliente
+        // se busca por el celular de su cuenta.
+        $pedidoMovilInfo = null;
+        if ($request->filled('pedido_movil') && $prefillCarrito === [] && !$cuentaBahiaId && !$reemitirInfo
+            && \Illuminate\Support\Facades\Schema::hasTable('pedido_movil')) {
+            $pedidoMovil = \App\Models\TenantTallerMotos\PedidoMovil::with(['items', 'cuenta'])
+                ->whereIn('PED_Estado', [\App\Models\TenantTallerMotos\PedidoMovil::CONFIRMADO, \App\Models\TenantTallerMotos\PedidoMovil::LISTO])
+                ->find($request->input('pedido_movil'));
+
+            if ($pedidoMovil) {
+                $imagenes = DB::table('producto')->whereIn('PRO_Id', $pedidoMovil->items->pluck('PRO_Id'))->pluck('PRO_Imagen', 'PRO_Id');
+                $prefillCarrito = $pedidoMovil->items->map(fn ($i) => [
+                    'PRO_Id' => $i->PRO_Id,
+                    'PRO_Nombre' => $i->PDI_Nombre,
+                    'PRO_Imagen' => $imagenes[$i->PRO_Id] ?? null,
+                    'PRO_PrecioBaseVenta' => (float) $i->PDI_Precio,
+                    'quantity' => (float) $i->PDI_Cantidad,
+                    'nombrePersonalizado' => '',
+                ])->values();
+
+                $celular9 = substr((string) $pedidoMovil->cuenta?->CMV_Celular, -9);
+                $clienteMatch = $celular9 !== ''
+                    ? Cliente::whereRaw("REPLACE(REPLACE(CLI_Celular, ' ', ''), '-', '') LIKE ?", ['%' . $celular9])->first()
+                    : null;
+                $prefillCliente = [
+                    'nombre' => $clienteMatch->CLI_Nombre ?? ($pedidoMovil->cuenta->CMV_Nombre ?: 'Cliente de la app'),
+                    'celular' => $celular9,
+                ] + ($clienteMatch ? ['cliente_id' => $clienteMatch->CLI_Id, 'documento' => $clienteMatch->CLI_NumDocumento] : []);
+
+                $pedidoMovilInfo = [
+                    'id' => $pedidoMovil->PED_Id,
+                    'numero' => $pedidoMovil->numero(),
+                    // El POS descuenta stock de la sede de la caja abierta: si no
+                    // es la del pedido, se avisa (el stock apartado es de esa sede).
+                    'otra_sede' => (int) $pedidoMovil->ALM_Id !== (int) (tenant_caja_activa_almacen_id() ?? 0),
+                    'sede' => DB::table('almacen')->where('ALM_Id', $pedidoMovil->ALM_Id)->value('ALM_NombreAlmacen'),
+                ];
+            }
+        }
+
         if ($request->filled('cotizacion') && $prefillCarrito === [] && !$cuentaBahiaId && !$reemitirInfo) {
             $cotizacion = \App\Models\TenantTallerMotos\Cotizacion::with(['items.producto', 'cliente'])
                 ->find($request->input('cotizacion'));
@@ -763,6 +804,7 @@ class VentaController extends Controller
                 'facturacionEnPruebas',
                 'cuentaBahiaId',
                 'adelantoBahia',
+                'pedidoMovilInfo',
                 'prefillCarrito',
                 'prefillCliente',
                 'reemitirInfo',
@@ -1470,6 +1512,12 @@ class VentaController extends Controller
 
                     \App\Models\TenantTallerMotos\Reservacion::liberarSlot($cuentaBahia->RES_Id);
                 }
+            }
+
+            // Si esta venta cobra un pedido de la app, el pedido queda
+            // ENTREGADO y enlazado a la venta (el stock ya salio con la venta).
+            if ($request->filled('pedido_movil_id') && \Illuminate\Support\Facades\Schema::hasTable('pedido_movil')) {
+                app(\App\Services\AppMovil\PedidosMovilService::class)->marcarEntregado((int) $request->input('pedido_movil_id'), (int) $venta->VEN_Id);
             }
 
             // Si esta venta viene de aprobar una Cotizacion, se marca como

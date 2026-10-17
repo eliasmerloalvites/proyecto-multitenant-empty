@@ -22,6 +22,8 @@ export type Taller = {
   tema: Tema;
   contacto: { telefono: string | null; whatsapp: string | null; correo: string | null; web: string | null; direccion: string | null };
   sedes: Sede[];
+  /** El taller tiene tienda (catalogo y pedidos) en la app. */
+  tienda?: boolean;
 };
 
 export type TallerGuardado = { codigo: string; base_url: string; taller: Taller };
@@ -87,3 +89,45 @@ export type Reserva = {
 };
 
 export type SedeReserva = { id: number; nombre: string; direccion: string | null; distrito: string | null };
+
+// ---- Tienda
+export type Disponibilidad = 'DISPONIBLE' | 'ULTIMAS' | 'AGOTADO';
+
+export type Producto = {
+  id: number;
+  nombre: string;
+  marca: string | null;
+  precio: string;
+  imagen: string | null;
+  categoria: { id: number; nombre: string };
+  disponibilidad: Disponibilidad;
+};
+
+export type ProductoDetalle = Producto & { descripcion: string | null; fotos: string[]; maximo: number };
+
+export type CategoriaTienda = { id: number; nombre: string; productos: number };
+export type SedeTienda = { id: number; nombre: string; direccion: string | null };
+export type InicioTienda = { categorias: CategoriaTienda[]; sedes: SedeTienda[]; sede_por_defecto: number | null };
+
+export type EstadoPedido = 'PENDIENTE' | 'CONFIRMADO' | 'LISTO' | 'ENTREGADO' | 'CANCELADO';
+
+export type PedidoResumen = {
+  id: number;
+  numero: string;
+  estado: EstadoPedido;
+  estado_texto: string;
+  total: string;
+  productos: number;
+  fecha: string | null;
+  sede: string | null;
+};
+
+export type PedidoDetalle = PedidoResumen & {
+  sede_direccion: string | null;
+  nota: string | null;
+  motivo_cancelacion: string | null;
+  cancelado_por: 'CLIENTE' | 'TALLER' | null;
+  cancelable: boolean;
+  pasos: { pedido: string | null; confirmado: string | null; listo: string | null; entregado: string | null; cancelado: string | null };
+  items: { producto_id: number; nombre: string; precio: string; cantidad: number; subtotal: string; imagen: string | null }[];
+};

@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\Auth\SesionController;
+use App\Http\Controllers\Api\V1\CatalogoController;
 use App\Http\Controllers\Api\V1\MotoController;
 use App\Http\Controllers\Api\V1\OrdenController;
+use App\Http\Controllers\Api\V1\PedidoController;
 use App\Http\Controllers\Api\V1\PerfilController;
 use App\Http\Controllers\Api\V1\ReservaController;
 use App\Http\Controllers\Api\V1\TallerController;
@@ -59,4 +61,13 @@ Route::middleware(['auth:cliente', 'api.cuenta', 'throttle:app-movil-api'])->gro
     Route::post('reservas', [ReservaController::class, 'store'])->middleware('throttle:app-movil-reserva')->name('api.v1.reservas.store');
     Route::get('reservas/{id}', [ReservaController::class, 'show'])->whereNumber('id')->name('api.v1.reservas.show');
     Route::delete('reservas/{id}', [ReservaController::class, 'cancelar'])->whereNumber('id')->name('api.v1.reservas.cancelar');
+
+    // Tienda: catalogo de productos y pedidos (pago y recojo en el taller).
+    Route::get('catalogo/categorias', [CatalogoController::class, 'categorias'])->name('api.v1.catalogo.categorias');
+    Route::get('catalogo/productos', [CatalogoController::class, 'productos'])->name('api.v1.catalogo.productos');
+    Route::get('catalogo/productos/{producto}', [CatalogoController::class, 'show'])->whereNumber('producto')->name('api.v1.catalogo.show');
+    Route::get('pedidos', [PedidoController::class, 'index'])->name('api.v1.pedidos.index');
+    Route::post('pedidos', [PedidoController::class, 'store'])->middleware('throttle:app-movil-pedido')->name('api.v1.pedidos.store');
+    Route::get('pedidos/{id}', [PedidoController::class, 'show'])->whereNumber('id')->name('api.v1.pedidos.show');
+    Route::delete('pedidos/{id}', [PedidoController::class, 'cancelar'])->whereNumber('id')->name('api.v1.pedidos.cancelar');
 });

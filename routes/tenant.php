@@ -757,6 +757,17 @@ Route::middleware([
 
         // APP MOVIL (clientes finales): solicitudes de vinculo, invitaciones y accesos.
         // Solo para talleres con el modulo app_movil contratado.
+        // PEDIDOS DE LA APP (tienda): requiere la app movil y el modulo de productos.
+        Route::middleware(['tenant.module:app_movil', 'tenant.module:productos', 'can:tenant.appmovil.pedidos'])
+            ->prefix('tenant/appmovil/pedidos')->name('tenant.appmovil.pedidos.')->group(function () {
+                $c = \App\Http\Controllers\TenantTallerMotos\PedidoMovilController::class;
+                Route::get('/', [$c, 'index'])->name('index');
+                Route::post('/{id}/confirmar', [$c, 'confirmar'])->whereNumber('id')->name('confirmar');
+                Route::post('/{id}/listo', [$c, 'listo'])->whereNumber('id')->name('listo');
+                Route::post('/{id}/cancelar', [$c, 'cancelar'])->whereNumber('id')->name('cancelar');
+                Route::get('/{id}/cobrar', [$c, 'cobrar'])->whereNumber('id')->name('cobrar');
+            });
+
         Route::middleware(['tenant.module:app_movil'])->group(function () {
             Route::get('/tenant/appmovil', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'index'])
                 ->middleware('can:tenant.appmovil.index')->name('tenant.appmovil.index');

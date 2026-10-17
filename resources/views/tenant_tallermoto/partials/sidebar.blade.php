@@ -70,9 +70,31 @@
                 @if(tenant_has_module('app_movil'))
                 @can('tenant.appmovil.index')
                 <li class="nav-item">
-                    <a href="{{ route('tenant.appmovil.index') }}" class="nav-link {{ request()->routeIs('tenant.appmovil*') ? 'active' : '' }}">
+                    <a href="{{ route('tenant.appmovil.index') }}" class="nav-link {{ request()->routeIs('tenant.appmovil*') && ! request()->routeIs('tenant.appmovil.pedidos*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-mobile-alt"></i>
                         <p>APP MÓVIL</p>
+                    </a>
+                </li>
+                @endcan
+                @endif
+
+                <!-- PEDIDOS DE LA APP (tienda): app movil + productos -->
+                @if(tenant_has_module('app_movil') && tenant_has_module('productos'))
+                @can('tenant.appmovil.pedidos')
+                @php
+                    $pedidosAppPendientes = \Illuminate\Support\Facades\Schema::hasTable('pedido_movil')
+                        ? \App\Models\TenantTallerMotos\PedidoMovil::where('PED_Estado', 'PENDIENTE')->count()
+                        : 0;
+                @endphp
+                <li class="nav-item">
+                    <a href="{{ route('tenant.appmovil.pedidos.index') }}" class="nav-link {{ request()->routeIs('tenant.appmovil.pedidos*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-shopping-bag"></i>
+                        <p>
+                            PEDIDOS APP
+                            @if($pedidosAppPendientes > 0)
+                                <span class="badge badge-warning right">{{ $pedidosAppPendientes }}</span>
+                            @endif
+                        </p>
                     </a>
                 </li>
                 @endcan

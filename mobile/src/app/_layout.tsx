@@ -7,6 +7,7 @@ import { AppState, Platform } from 'react-native';
 
 import { ApiError } from '@/lib/api';
 import { AuthProvider, useAuth } from '@/lib/auth';
+import { CarritoProvider } from '@/lib/carrito';
 import { useTema } from '@/lib/tema';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -40,7 +41,7 @@ function Rutas() {
   if (!listo) return null;
 
   return (
-    <>
+    <CarritoProvider tallerCodigo={taller?.codigo ?? null}>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerStyle: { backgroundColor: t.tarjeta }, headerTintColor: t.texto, headerTitleStyle: { fontWeight: '700' } }}>
         <Stack.Protected guard={!taller}>
@@ -55,9 +56,13 @@ function Rutas() {
           <Stack.Screen name="vincular" options={{ title: 'Agregar una moto' }} />
           <Stack.Screen name="orden/[ref]" options={{ title: 'Orden de servicio' }} />
           <Stack.Screen name="reservar" options={{ title: 'Reservar cita' }} />
+          <Stack.Screen name="producto/[id]" options={{ title: 'Producto' }} />
+          <Stack.Screen name="carrito" options={{ title: 'Tu carrito' }} />
+          <Stack.Screen name="pedidos" options={{ title: 'Mis pedidos' }} />
+          <Stack.Screen name="pedido/[id]" options={{ title: 'Pedido' }} />
         </Stack.Protected>
       </Stack>
-    </>
+    </CarritoProvider>
   );
 }
 
