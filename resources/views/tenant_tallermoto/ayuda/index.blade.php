@@ -279,6 +279,8 @@
                 'tenant.mantenimientos.generalcarburada.index',
                 'tenant.mantenimientos.preventivoinyectada.index',
                 'tenant.mantenimientos.preventivocarburada.index',
+                'tenant.mantenimientos.garantiahero.index',
+                'tenant.mantenimientos.garantialifan.index',
             ]))
             <a href="#mod-mantenimientos"><i class="fas fa-tools"></i> Mantenimientos</a>
             @endif
@@ -555,6 +557,8 @@
                 'tenant.mantenimientos.generalcarburada.index',
                 'tenant.mantenimientos.preventivoinyectada.index',
                 'tenant.mantenimientos.preventivocarburada.index',
+                'tenant.mantenimientos.garantiahero.index',
+                'tenant.mantenimientos.garantialifan.index',
             ]))
             <section class="ayuda-modulo" id="mod-mantenimientos" data-buscar="mantenimientos general preventivo carburada inyectada checklist repuestos reemplazo fotos evidencias estado pendiente aprobado observado planes recomendaciones verificacion final estado de recepcion inventario visual inspeccion orden de servicio pdf">
                 <div class="ayuda-modulo-header">
@@ -572,6 +576,16 @@
                         el checklist de tareas típico de ese servicio. Se llega a un registro nuevo desde <a href="#mod-proceso">Gestión de Proceso</a>
                         (check-in de una reserva) o creándolo directo desde <span class="ayuda-ruta">Mantenimientos</span> en el menú.
                     </p>
+
+                    @if (tenant_has_module('garantia_hero') || tenant_has_module('garantia_lifan'))
+                    <p>
+                        Tu cuenta incluye además el módulo de <strong>Garantía</strong>
+                        ({{ collect([tenant_has_module('garantia_hero') ? 'Hero' : null, tenant_has_module('garantia_lifan') ? 'Lifan' : null])->filter()->implode(' y ') }}):
+                        sirve para registrar por separado los servicios en garantía de cada marca. Funciona igual que el Preventivo Carburada
+                        (mismo formulario, checklist, repuestos, fotos y documentos) y se encuentra en
+                        <span class="ayuda-ruta">Mantenimientos &gt; Garantía</span>. Así los reportes te dicen cuántas garantías son de cada marca.
+                    </p>
+                    @endif
 
                     <div class="ayuda-sub">
                         <h3><i class="fas fa-file-circle-plus"></i> Partes del formulario</h3>

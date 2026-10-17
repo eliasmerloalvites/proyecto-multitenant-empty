@@ -72,6 +72,16 @@ class ReportesController extends Controller
                     ]
                 ];
 
+                foreach (\App\Services\TenantTallerMotos\GestionProcesoService::opcionalesActivos() as $opcional) {
+                    $configuraciones[] = [
+                        'tabla' => $opcional['tabla'],
+                        'alias' => $opcional['alias'],
+                        'prefijo' => $opcional['prefijo'],
+                        'url' => $opcional['url'],
+                        'tipo' => $opcional['tipo'],
+                    ];
+                }
+
                 $datosmtto = collect();
                 
                 foreach ($configuraciones as $config) {
@@ -534,7 +544,9 @@ class ReportesController extends Controller
     public function rendimientoMecanicos(Request $request)
     {
         if (!$request->ajax()) {
-            return view('tenant_' . tenant('tipo_negocio') . '.reportes.rendimientomecanicos');
+            return view('tenant_' . tenant('tipo_negocio') . '.reportes.rendimientomecanicos', [
+                'opcionales' => \App\Services\TenantTallerMotos\GestionProcesoService::opcionalesActivos(),
+            ]);
         }
 
         [$fechaInicio, $fechaFin] = $this->resolverPeriodo($request);
@@ -546,6 +558,10 @@ class ReportesController extends Controller
             ['tabla' => 'mantenimiento_preventivo_inyectada', 'alias' => 'mpi', 'prefijo' => 'MPI', 'tipo' => 'MTTO PREVENTIVOS INYECTADAS'],
             ['tabla' => 'mantenimiento_actividad_variadas',   'alias' => 'mav', 'prefijo' => 'MAV', 'tipo' => 'ACTIVIDADES VARIADAS'],
         ];
+
+        foreach (\App\Services\TenantTallerMotos\GestionProcesoService::opcionalesActivos() as $opcional) {
+            $configuraciones[] = ['tabla' => $opcional['tabla'], 'alias' => $opcional['alias'], 'prefijo' => $opcional['prefijo'], 'tipo' => $opcional['tipo']];
+        }
 
         $filas = collect();
         foreach ($configuraciones as $config) {

@@ -43,6 +43,8 @@ use App\Http\Controllers\TenantTallerMotos\MantenimientoGeneralInyectadaControll
 use App\Http\Controllers\TenantTallerMotos\MantenimientoGeneralCarburadaController;
 use App\Http\Controllers\TenantTallerMotos\MantenimientoPreventivoInyectadaController;
 use App\Http\Controllers\TenantTallerMotos\MantenimientoPreventivoCarburadaController;
+use App\Http\Controllers\TenantTallerMotos\MantenimientoGarantiaHeroController;
+use App\Http\Controllers\TenantTallerMotos\MantenimientoGarantiaLifanController;
 use App\Http\Controllers\TenantTallerMotos\ReportesController;
 use App\Http\Controllers\TenantTallerMotos\BahiaVentaController;
 use App\Http\Controllers\TenantTallerMotos\MantenimientoPlanController;
@@ -156,6 +158,21 @@ Route::middleware([
     Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/descargarpdf',[MantenimientoPreventivoInyectadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.preventivoinyectada.descargarpdf');
     Route::get('/tenant/mantenimientos/preventivocarburada/{id}/descargarpdf',[MantenimientoPreventivoCarburadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.preventivocarburada.descargarpdf');
 
+    // GARANTIA HERO / GARANTIA LIFAN (modulos opcionales por cliente: solo
+    // responden si el tenant tiene activado el modulo correspondiente).
+    Route::middleware(['tenant.module:garantia_hero'])->group(function () {
+        Route::get('/tenant/mantenimientos/garantiahero/{id}/pdf',[MantenimientoGarantiaHeroController::class, 'pdf'])->name('tenant.mantenimientos.garantiahero.pdf');
+        Route::get('/tenant/mantenimientos/garantiahero/{id}/orden-servicio',[MantenimientoGarantiaHeroController::class, 'ordenServicio'])->name('tenant.mantenimientos.garantiahero.ordenservicio');
+        Route::get('/tenant/mantenimientos/garantiahero/{id}/estado-recepcion-pdf',[MantenimientoGarantiaHeroController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.garantiahero.estadorecepcionpdf');
+        Route::get('/tenant/mantenimientos/garantiahero/{id}/descargarpdf',[MantenimientoGarantiaHeroController::class, 'descargarpdf'])->name('tenant.mantenimientos.garantiahero.descargarpdf');
+    });
+    Route::middleware(['tenant.module:garantia_lifan'])->group(function () {
+        Route::get('/tenant/mantenimientos/garantialifan/{id}/pdf',[MantenimientoGarantiaLifanController::class, 'pdf'])->name('tenant.mantenimientos.garantialifan.pdf');
+        Route::get('/tenant/mantenimientos/garantialifan/{id}/orden-servicio',[MantenimientoGarantiaLifanController::class, 'ordenServicio'])->name('tenant.mantenimientos.garantialifan.ordenservicio');
+        Route::get('/tenant/mantenimientos/garantialifan/{id}/estado-recepcion-pdf',[MantenimientoGarantiaLifanController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.garantialifan.estadorecepcionpdf');
+        Route::get('/tenant/mantenimientos/garantialifan/{id}/descargarpdf',[MantenimientoGarantiaLifanController::class, 'descargarpdf'])->name('tenant.mantenimientos.garantialifan.descargarpdf');
+    });
+
 
 
     Route::middleware(['auth:tenant'])->group(function(){
@@ -242,6 +259,43 @@ Route::middleware([
         ])->parameters([
             'preventivocarburada' => 'preventivocarburada'
         ]);
+
+        // GARANTIA HERO y GARANTIA LIFAN: copia de Preventivo Carburada, cada
+        // una con su propio modulo para activarse solo en los clientes que lo
+        // contraten (ver config/saas.php y tenant_has_module()).
+        Route::middleware(['tenant.module:garantia_hero'])->group(function () {
+            Route::post('/tenant/mantenimientos/garantiahero/{garantiahero}/crop',[MantenimientoGarantiaHeroController::class, 'crop'])->name('tenant.mantenimientos.garantiahero.crop');
+            Route::delete('/tenant/mantenimientos/garantiahero/crop/{garantiahero}/{item}',[MantenimientoGarantiaHeroController::class, 'destroyimagen'])->name('tenant.mantenimientos.garantiahero.destroyimagen');
+            Route::put('/tenant/mantenimientos/garantiahero/{garantiahero}/actualizarestado', [MantenimientoGarantiaHeroController::class, 'actualizarestado'])->name('tenant.mantenimientos.garantiahero.actualizarestado');
+            Route::resource('/tenant/mantenimientos/garantiahero', MantenimientoGarantiaHeroController::class)->names([
+                'index' => 'tenant.mantenimientos.garantiahero.index',
+                'create' => 'tenant.mantenimientos.garantiahero.create',
+                'store' => 'tenant.mantenimientos.garantiahero.store',
+                'edit' => 'tenant.mantenimientos.garantiahero.edit',
+                'update' => 'tenant.mantenimientos.garantiahero.update',
+                'destroy' => 'tenant.mantenimientos.garantiahero.destroy',
+                'show' => 'tenant.mantenimientos.garantiahero.show'
+            ])->parameters([
+                'garantiahero' => 'garantiahero'
+            ]);
+        });
+
+        Route::middleware(['tenant.module:garantia_lifan'])->group(function () {
+            Route::post('/tenant/mantenimientos/garantialifan/{garantialifan}/crop',[MantenimientoGarantiaLifanController::class, 'crop'])->name('tenant.mantenimientos.garantialifan.crop');
+            Route::delete('/tenant/mantenimientos/garantialifan/crop/{garantialifan}/{item}',[MantenimientoGarantiaLifanController::class, 'destroyimagen'])->name('tenant.mantenimientos.garantialifan.destroyimagen');
+            Route::put('/tenant/mantenimientos/garantialifan/{garantialifan}/actualizarestado', [MantenimientoGarantiaLifanController::class, 'actualizarestado'])->name('tenant.mantenimientos.garantialifan.actualizarestado');
+            Route::resource('/tenant/mantenimientos/garantialifan', MantenimientoGarantiaLifanController::class)->names([
+                'index' => 'tenant.mantenimientos.garantialifan.index',
+                'create' => 'tenant.mantenimientos.garantialifan.create',
+                'store' => 'tenant.mantenimientos.garantialifan.store',
+                'edit' => 'tenant.mantenimientos.garantialifan.edit',
+                'update' => 'tenant.mantenimientos.garantialifan.update',
+                'destroy' => 'tenant.mantenimientos.garantialifan.destroy',
+                'show' => 'tenant.mantenimientos.garantialifan.show'
+            ])->parameters([
+                'garantialifan' => 'garantialifan'
+            ]);
+        });
 
         Route::post('/tenant/mantenimientos/preventivoinyectada/{preventivoinyectada}/crop',[MantenimientoPreventivoInyectadaController::class, 'crop'])->name('tenant.mantenimientos.preventivoinyectada.crop');
         Route::delete('/tenant/mantenimientos/preventivoinyectada/crop/{preventivoinyectada}/{item}',[MantenimientoPreventivoInyectadaController::class, 'destroyimagen'])->name('tenant.mantenimientos.preventivoinyectada.destroyimagen');

@@ -232,6 +232,10 @@ class HomeController extends Controller
                 ['tabla' => 'mantenimiento_actividad_variadas', 'prefix' => 'MAV', 'label' => 'Actividad Variada'],
             ];
 
+            foreach (\App\Services\TenantTallerMotos\GestionProcesoService::opcionalesActivos() as $opcional) {
+                $tiposMantenimiento[] = ['tabla' => $opcional['tabla'], 'prefix' => $opcional['prefijo'], 'label' => $opcional['etiqueta']];
+            }
+
             $data['reservasHoy'] = Reservacion::whereDate('RES_FechaProgramada', $hoy->toDateString())
                 ->where('RES_Estado', 'ACT')
                 ->where('RES_State', 'APROBADO')
@@ -653,6 +657,10 @@ class HomeController extends Controller
                 ],
             ];
 
+            foreach (\App\Services\TenantTallerMotos\GestionProcesoService::opcionalesActivos() as $opcional) {
+                $tablas[] = ['tabla' => $opcional['tabla'], 'prefix' => $opcional['prefijo'], 'tipo' => $opcional['tipo'], 'url' => $opcional['url']];
+            }
+
             $queries = [];
 
             foreach ($tablas as $item) {
@@ -709,6 +717,8 @@ class HomeController extends Controller
                     'MTTO PREVENTIVOS CARBURADAS' => ['tabla' => 'mantenimiento_preventivo_carburadas', 'p' => 'MPC'],
                     'MTTO PREVENTIVOS INYECTADAS' => ['tabla' => 'mantenimiento_preventivo_inyectadas', 'p' => 'MPI'],
                     'ACTIVIDADES VARIADAS'        => ['tabla' => 'mantenimiento_actividad_variadas', 'p' => 'MAV'],
+                    'MTTO GARANTIA HERO'          => ['tabla' => 'mantenimiento_garantia_hero', 'p' => 'MGH'],
+                    'MTTO GARANTIA LIFAN'         => ['tabla' => 'mantenimiento_garantia_lifan', 'p' => 'MGL'],
                 };
 
                 $p = $mapa['p'];

@@ -15,6 +15,8 @@ class RepuestosBahiaSync
         'MPC' => ['tabla' => 'mpc_detalle_reemplazo', 'idField' => 'MPC_Id', 'itemField' => 'MPCD_Item', 'descField' => 'MPCD_Descripcion', 'precioField' => 'MPC_Precio'],
         'MPI' => ['tabla' => 'mpi_detalle_reemplazo', 'idField' => 'MPI_Id', 'itemField' => 'MPID_Item', 'descField' => 'MPID_Descripcion', 'precioField' => 'MPI_Precio'],
         'MAV' => ['tabla' => 'mav_detalle_reemplazo', 'idField' => 'MAV_Id', 'itemField' => 'MAVD_Item', 'descField' => 'MAVD_Descripcion', 'precioField' => 'MAV_Precio'],
+        'MGH' => ['tabla' => 'mgh_detalle_reemplazo', 'idField' => 'MGH_Id', 'itemField' => 'MGHD_Item', 'descField' => 'MGHD_Descripcion', 'precioField' => 'MGH_Precio'],
+        'MGL' => ['tabla' => 'mgl_detalle_reemplazo', 'idField' => 'MGL_Id', 'itemField' => 'MGLD_Item', 'descField' => 'MGLD_Descripcion', 'precioField' => 'MGL_Precio'],
     ];
 
     /**

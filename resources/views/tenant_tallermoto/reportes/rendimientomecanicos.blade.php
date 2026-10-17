@@ -93,12 +93,15 @@
                                 <th>General Inyectada</th>
                                 <th>Preventivo Carburada</th>
                                 <th>Preventivo Inyectada</th>
+                                @foreach($opcionales as $o)
+                                <th>{{ $o['etiqueta'] }}</th>
+                                @endforeach
                                 <th>Tiempo Promedio</th>
                             </tr>
                         </thead>
                         <tbody id="tabla_rendimiento_body">
                             <tr>
-                                <td colspan="9" class="text-center text-muted">Cargando...</td>
+                                <td colspan="{{ 9 + count($opcionales) }}" class="text-center text-muted">Cargando...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -124,6 +127,9 @@
                 'MTTO GENERAL INYECTADAS',
                 'MTTO PREVENTIVOS CARBURADAS',
                 'MTTO PREVENTIVOS INYECTADAS'
+                @foreach($opcionales as $o)
+                , '{{ $o['tipo'] }}'
+                @endforeach
             ];
 
             function periodoActual() {
@@ -143,7 +149,7 @@
                 }
 
                 $('#tabla_rendimiento_body').html(
-                    '<tr><td colspan="9" class="text-center text-muted">Cargando...</td></tr>');
+                    '<tr><td colspan="{{ 9 + count($opcionales) }}" class="text-center text-muted">Cargando...</td></tr>');
 
                 $.get("{{ route('tenant.reportes.rendimientomecanicos') }}", params, function(data) {
                     pintarResumen(data);
@@ -151,7 +157,7 @@
                     pintarGrafico(data.mecanicos);
                 }).fail(function() {
                     $('#tabla_rendimiento_body').html(
-                        '<tr><td colspan="9" class="text-center text-danger">Error al cargar el reporte.</td></tr>');
+                        '<tr><td colspan="{{ 9 + count($opcionales) }}" class="text-center text-danger">Error al cargar el reporte.</td></tr>');
                 });
             }
 
@@ -170,7 +176,7 @@
             function pintarTabla(mecanicos) {
                 if (mecanicos.length === 0) {
                     $('#tabla_rendimiento_body').html(
-                        '<tr><td colspan="9" class="text-center text-muted">Sin mantenimientos completados en este periodo.</td></tr>');
+                        '<tr><td colspan="{{ 9 + count($opcionales) }}" class="text-center text-muted">Sin mantenimientos completados en este periodo.</td></tr>');
                     return;
                 }
 

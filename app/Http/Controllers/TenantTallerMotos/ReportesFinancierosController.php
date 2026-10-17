@@ -595,6 +595,10 @@ class ReportesFinancierosController extends Controller
             ['tabla' => 'mantenimiento_actividad_variadas', 'prefijo' => 'MAV'],
         ];
 
+        foreach (\App\Services\TenantTallerMotos\GestionProcesoService::opcionalesActivos() as $opcional) {
+            $tablasMtto[] = ['tabla' => $opcional['tabla'], 'prefijo' => $opcional['prefijo']];
+        }
+
         $mtto = ['PENDIENTE' => 0, 'APROBADO' => 0, 'OBSERVADO' => 0];
         foreach ($tablasMtto as $t) {
             $conteos = DB::table($t['tabla'])
