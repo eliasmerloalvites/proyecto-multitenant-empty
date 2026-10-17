@@ -1,0 +1,347 @@
+[
+  {
+    "id": "gancho",
+    "audio": "voz-corto/gancho.mp3",
+    "duracion": 4.61,
+    "palabras": [
+      {
+        "texto": "Tu",
+        "inicio": 0.0445409,
+        "fin": 0.1670409
+      },
+      {
+        "texto": "taller",
+        "inicio": 0.178208,
+        "fin": 0.478916
+      },
+      {
+        "texto": "de",
+        "inicio": 0.490041,
+        "fin": 0.567999
+      },
+      {
+        "texto": "motos",
+        "inicio": 0.579125,
+        "fin": 0.9355
+      },
+      {
+        "texto": "pierde",
+        "inicio": 0.946625,
+        "fin": 1.258458
+      },
+      {
+        "texto": "plata",
+        "inicio": 1.269583,
+        "fin": 1.570291
+      },
+      {
+        "texto": "y",
+        "inicio": 1.581416,
+        "fin": 1.6259569
+      },
+      {
+        "texto": "ni",
+        "inicio": 1.637125,
+        "fin": 1.737375
+      },
+      {
+        "texto": "lo",
+        "inicio": 1.7485,
+        "fin": 1.837583
+      },
+      {
+        "texto": "sabes",
+        "inicio": 1.848708,
+        "fin": 2.349874
+      },
+      {
+        "texto": "Mira",
+        "inicio": 3.118333,
+        "fin": 3.474708
+      },
+      {
+        "texto": "esto",
+        "inicio": 3.485833,
+        "fin": 3.819958
+      }
+    ]
+  },
+  {
+    "id": "senales",
+    "audio": "voz-corto/senales.mp3",
+    "duracion": 7.78,
+    "palabras": [
+      {
+        "texto": "Uno",
+        "inicio": 0.0445409,
+        "fin": 0.3674989
+      },
+      {
+        "texto": "motos",
+        "inicio": 0.623666,
+        "fin": 0.913207
+      },
+      {
+        "texto": "sin",
+        "inicio": 0.924375,
+        "fin": 1.069166
+      },
+      {
+        "texto": "registro",
+        "inicio": 1.080291,
+        "fin": 1.625999
+      },
+      {
+        "texto": "Dos",
+        "inicio": 2.394416,
+        "fin": 2.784207
+      },
+      {
+        "texto": "stock",
+        "inicio": 3.029208,
+        "fin": 3.385583
+      },
+      {
+        "texto": "que",
+        "inicio": 3.39675,
+        "fin": 3.497
+      },
+      {
+        "texto": "no",
+        "inicio": 3.508125,
+        "fin": 3.664041
+      },
+      {
+        "texto": "cuadra",
+        "inicio": 3.675166,
+        "fin": 4.087249
+      },
+      {
+        "texto": "Tres",
+        "inicio": 4.855666,
+        "fin": 5.189791
+      },
+      {
+        "texto": "una",
+        "inicio": 5.457041,
+        "fin": 5.601832
+      },
+      {
+        "texto": "caja",
+        "inicio": 5.612958,
+        "fin": 5.902499
+      },
+      {
+        "texto": "que",
+        "inicio": 5.913666,
+        "fin": 6.036166
+      },
+      {
+        "texto": "siempre",
+        "inicio": 6.047291,
+        "fin": 6.403666
+      },
+      {
+        "texto": "descuadra",
+        "inicio": 6.414833,
+        "fin": 6.982833
+      }
+    ]
+  },
+  {
+    "id": "solucion",
+    "audio": "voz-corto/solucion.mp3",
+    "duracion": 4.32,
+    "palabras": [
+      {
+        "texto": "Con",
+        "inicio": 0.0445409,
+        "fin": 0.2115819
+      },
+      {
+        "texto": "un",
+        "inicio": 0.22275,
+        "fin": 0.334125
+      },
+      {
+        "texto": "solo",
+        "inicio": 0.34525,
+        "fin": 0.556833
+      },
+      {
+        "texto": "sistema",
+        "inicio": 0.568,
+        "fin": 0.946666
+      },
+      {
+        "texto": "ves",
+        "inicio": 0.95775,
+        "fin": 1.147083
+      },
+      {
+        "texto": "cada",
+        "inicio": 1.15825,
+        "fin": 1.369833
+      },
+      {
+        "texto": "moto",
+        "inicio": 1.380958,
+        "fin": 1.715083
+      },
+      {
+        "texto": "cada",
+        "inicio": 1.960083,
+        "fin": 2.160541
+      },
+      {
+        "texto": "mecánico",
+        "inicio": 2.171666,
+        "fin": 2.672832
+      },
+      {
+        "texto": "y",
+        "inicio": 2.684,
+        "fin": 2.761958
+      },
+      {
+        "texto": "cada",
+        "inicio": 2.773083,
+        "fin": 3.018083
+      },
+      {
+        "texto": "repuesto",
+        "inicio": 3.029208,
+        "fin": 3.530374
+      }
+    ]
+  },
+  {
+    "id": "numeros",
+    "audio": "voz-corto/numeros.mp3",
+    "duracion": 3.86,
+    "palabras": [
+      {
+        "texto": "Cierra",
+        "inicio": 0.0445409,
+        "fin": 0.4343319
+      },
+      {
+        "texto": "tu",
+        "inicio": 0.445458,
+        "fin": 0.556833
+      },
+      {
+        "texto": "caja",
+        "inicio": 0.568,
+        "fin": 0.857541
+      },
+      {
+        "texto": "sin",
+        "inicio": 0.868666,
+        "fin": 1.046874
+      },
+      {
+        "texto": "descuadres",
+        "inicio": 1.058,
+        "fin": 1.559166
+      },
+      {
+        "texto": "y",
+        "inicio": 1.570291,
+        "fin": 1.6148319
+      },
+      {
+        "texto": "sabes",
+        "inicio": 1.626,
+        "fin": 1.97125
+      },
+      {
+        "texto": "cuánto",
+        "inicio": 1.982375,
+        "fin": 2.260791
+      },
+      {
+        "texto": "ganas",
+        "inicio": 2.271916,
+        "fin": 2.561457
+      },
+      {
+        "texto": "de",
+        "inicio": 2.572625,
+        "fin": 2.628291
+      },
+      {
+        "texto": "verdad",
+        "inicio": 2.639416,
+        "fin": 3.073749
+      }
+    ]
+  },
+  {
+    "id": "cierre",
+    "audio": "voz-corto/cierre.mp3",
+    "duracion": 5.62,
+    "palabras": [
+      {
+        "texto": "Síguenos",
+        "inicio": 0.0445409,
+        "fin": 0.5791239
+      },
+      {
+        "texto": "y",
+        "inicio": 0.59025,
+        "fin": 0.645916
+      },
+      {
+        "texto": "pide",
+        "inicio": 0.657083,
+        "fin": 0.924374
+      },
+      {
+        "texto": "tu",
+        "inicio": 0.9355,
+        "fin": 1.03575
+      },
+      {
+        "texto": "demo",
+        "inicio": 1.046875,
+        "fin": 1.269625
+      },
+      {
+        "texto": "por",
+        "inicio": 1.28075,
+        "fin": 1.436666
+      },
+      {
+        "texto": "mensaje",
+        "inicio": 1.447791,
+        "fin": 1.926666
+      },
+      {
+        "texto": "Kael",
+        "inicio": 2.695125,
+        "fin": 3.02925
+      },
+      {
+        "texto": "Tech",
+        "inicio": 3.040375,
+        "fin": 3.285375
+      },
+      {
+        "texto": "sistemas",
+        "inicio": 3.474708,
+        "fin": 4.020416
+      },
+      {
+        "texto": "para",
+        "inicio": 4.031541,
+        "fin": 4.220874
+      },
+      {
+        "texto": "negocios",
+        "inicio": 4.232,
+        "fin": 4.82225
+      }
+    ]
+  }
+]

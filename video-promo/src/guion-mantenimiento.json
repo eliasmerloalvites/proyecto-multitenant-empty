@@ -1,0 +1,108 @@
+{
+  "voz": "es-PE-AlexNeural",
+  "velocidad": "+18%",
+  "tono": "+9Hz",
+  "escenas": [
+    {
+      "id": "gancho",
+      "visual": "gancho",
+      "fondo": "oscuro",
+      "texto": "Cuando entregas una moto, ¿puedes demostrar todo lo que le hiciste?",
+      "resaltar": ["entregas", "demostrar", "hiciste?"]
+    },
+    {
+      "id": "problema",
+      "visual": "caos",
+      "fondo": "claro",
+      "etiqueta": "LO DE SIEMPRE",
+      "texto": "Clientes que reclaman un rayón que ya traían, trabajos que no se anotan ¡y nada que mostrar!",
+      "resaltar": ["rayón", "anotan", "mostrar!"]
+    },
+    {
+      "id": "presenta",
+      "visual": "marca",
+      "fondo": "oscuro",
+      "texto": "¡Con el módulo de mantenimientos de Kael Tech, cada servicio queda documentado!",
+      "resaltar": ["mantenimientos", "Kael", "Tech,", "documentado!"]
+    },
+    {
+      "id": "lista",
+      "visual": "lista",
+      "fondo": "claro",
+      "etiqueta": "TODOS TUS SERVICIOS",
+      "texto": "Registra mantenimientos preventivos y generales, para motos carburadas e inyectadas.",
+      "resaltar": ["preventivos", "generales,", "inyectadas."]
+    },
+    {
+      "id": "recepcion",
+      "visual": "recepcion",
+      "fondo": "claro",
+      "etiqueta": "ESTADO DE RECEPCIÓN",
+      "texto": "Al recibir la moto, llenas su estado de recepción: qué trae, cómo está cada parte y cuánto combustible tiene.",
+      "resaltar": ["recepción:", "parte", "combustible"]
+    },
+    {
+      "id": "servicio",
+      "visual": "servicio",
+      "fondo": "claro",
+      "etiqueta": "CHECKLIST DEL SERVICIO",
+      "texto": "¡Marca cada tarea del checklist con sus medidas y los productos que usaste!",
+      "resaltar": ["checklist", "medidas", "productos"]
+    },
+    {
+      "id": "fotos",
+      "visual": "fotos",
+      "fondo": "claro",
+      "etiqueta": "EVIDENCIAS",
+      "texto": "¡Sube fotos del trabajo como evidencia, para que tu cliente vea lo que se cambió!",
+      "resaltar": ["fotos", "evidencia,", "cambió!"]
+    },
+    {
+      "id": "repuestos",
+      "visual": "repuestos",
+      "fondo": "claro",
+      "etiqueta": "REPUESTOS",
+      "texto": "Los repuestos quedan registrados con su precio, incluso los que cargaste en la bahía.",
+      "resaltar": ["repuestos", "precio,", "bahía."]
+    },
+    {
+      "id": "verificacion",
+      "visual": "verificacion",
+      "fondo": "claro",
+      "etiqueta": "CONTROL DE CALIDAD",
+      "texto": "Antes de entregar, haces la verificación final y dejas tus recomendaciones para el próximo servicio.",
+      "resaltar": ["verificación", "recomendaciones", "próximo"]
+    },
+    {
+      "id": "orden",
+      "visual": "orden",
+      "fondo": "claro",
+      "etiqueta": "ORDEN DE SERVICIO",
+      "texto": "¡Y todo sale en una orden de servicio en PDF, lista para tu cliente!",
+      "resaltar": ["orden", "PDF,", "cliente!"]
+    },
+    {
+      "id": "medida",
+      "visual": "medida",
+      "fondo": "claro",
+      "etiqueta": "A TU MEDIDA",
+      "texto": "Además, tú decides qué se revisa: personaliza el checklist de recepción de tu taller.",
+      "resaltar": ["decides", "personaliza", "checklist"]
+    },
+    {
+      "id": "beneficio",
+      "visual": "beneficios",
+      "fondo": "claro",
+      "etiqueta": "RESULTADO",
+      "texto": "¡Más confianza, menos reclamos y clientes que vuelven por su próximo servicio!",
+      "resaltar": ["confianza,", "reclamos", "vuelven"]
+    },
+    {
+      "id": "cierre",
+      "visual": "cierre",
+      "fondo": "oscuro",
+      "texto": "¡Kael Tech, sistemas para negocios! ¡Síguenos y escríbenos en nuestras redes!",
+      "resaltar": ["Kael", "Tech,", "redes!"]
+    }
+  ]
+}

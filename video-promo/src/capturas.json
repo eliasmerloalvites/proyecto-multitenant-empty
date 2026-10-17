@@ -1,0 +1,70 @@
+{
+  "mto-lista": {
+    "w": 2160,
+    "h": 1350
+  },
+  "mto-unidad": {
+    "w": 2129,
+    "h": 635
+  },
+  "mto-recepcion": {
+    "w": 2106,
+    "h": 3998
+  },
+  "mto-servicio": {
+    "w": 2106,
+    "h": 3099
+  },
+  "mto-repuestos": {
+    "w": 2106,
+    "h": 527
+  },
+  "mto-fotos": {
+    "w": 2106,
+    "h": 849
+  },
+  "mto-verificacion": {
+    "w": 2106,
+    "h": 623
+  },
+  "mto-planes": {
+    "w": 2160,
+    "h": 1350
+  },
+  "mto-config-recepcion": {
+    "w": 2160,
+    "h": 1350
+  },
+  "inv-productos": {
+    "w": 2160,
+    "h": 1350
+  },
+  "inv-control": {
+    "w": 2160,
+    "h": 1350
+  },
+  "inv-lotes": {
+    "w": 2160,
+    "h": 1350
+  },
+  "inv-kardex": {
+    "w": 2052,
+    "h": 1485
+  },
+  "inv-ajuste": {
+    "w": 2160,
+    "h": 1350
+  },
+  "inv-traslado": {
+    "w": 2160,
+    "h": 1350
+  },
+  "inv-valorizado": {
+    "w": 2160,
+    "h": 1350
+  },
+  "inv-detalle": {
+    "w": 1200,
+    "h": 1011
+  }
+}

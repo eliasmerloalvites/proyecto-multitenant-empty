@@ -1,0 +1,864 @@
+[
+  {
+    "id": "gancho",
+    "audio": "voz-bahia/gancho.mp3",
+    "duracion": 4.58,
+    "palabras": [
+      {
+        "texto": "Todavía",
+        "inicio": 0.0460409,
+        "fin": 0.4490409
+      },
+      {
+        "texto": "anotas",
+        "inicio": 0.460583,
+        "fin": 0.852083
+      },
+      {
+        "texto": "en",
+        "inicio": 0.863583,
+        "fin": 0.944166
+      },
+      {
+        "texto": "un",
+        "inicio": 0.955708,
+        "fin": 1.059333
+      },
+      {
+        "texto": "papel",
+        "inicio": 1.070833,
+        "fin": 1.381708
+      },
+      {
+        "texto": "lo",
+        "inicio": 1.39325,
+        "fin": 1.485375
+      },
+      {
+        "texto": "que",
+        "inicio": 1.496875,
+        "fin": 1.6005
+      },
+      {
+        "texto": "usaste",
+        "inicio": 1.612,
+        "fin": 1.991958
+      },
+      {
+        "texto": "en",
+        "inicio": 2.0035,
+        "fin": 2.107125
+      },
+      {
+        "texto": "cada",
+        "inicio": 2.118625,
+        "fin": 2.360416
+      },
+      {
+        "texto": "moto",
+        "inicio": 2.371958,
+        "fin": 2.671333
+      },
+      {
+        "texto": "para",
+        "inicio": 2.682833,
+        "fin": 2.878583
+      },
+      {
+        "texto": "cobrarlo",
+        "inicio": 2.890125,
+        "fin": 3.304625
+      },
+      {
+        "texto": "al",
+        "inicio": 3.316125,
+        "fin": 3.385208
+      },
+      {
+        "texto": "final",
+        "inicio": 3.39675,
+        "fin": 3.776708
+      }
+    ]
+  },
+  {
+    "id": "problema",
+    "audio": "voz-bahia/problema.mp3",
+    "duracion": 5.47,
+    "palabras": [
+      {
+        "texto": "Repuestos",
+        "inicio": 0.0460409,
+        "fin": 0.5526659
+      },
+      {
+        "texto": "que",
+        "inicio": 0.564208,
+        "fin": 0.656333
+      },
+      {
+        "texto": "se",
+        "inicio": 0.667833,
+        "fin": 0.794499
+      },
+      {
+        "texto": "te",
+        "inicio": 0.806,
+        "fin": 0.875083
+      },
+      {
+        "texto": "olvida",
+        "inicio": 0.886625,
+        "fin": 1.1975
+      },
+      {
+        "texto": "cobrar",
+        "inicio": 1.209,
+        "fin": 1.6005
+      },
+      {
+        "texto": "cuentas",
+        "inicio": 1.876833,
+        "fin": 2.233791
+      },
+      {
+        "texto": "que",
+        "inicio": 2.245291,
+        "fin": 2.337416
+      },
+      {
+        "texto": "no",
+        "inicio": 2.348916,
+        "fin": 2.521624
+      },
+      {
+        "texto": "cuadran",
+        "inicio": 2.533166,
+        "fin": 2.924666
+      },
+      {
+        "texto": "y",
+        "inicio": 3.062833,
+        "fin": 3.131916
+      },
+      {
+        "texto": "clientes",
+        "inicio": 3.143416,
+        "fin": 3.615499
+      },
+      {
+        "texto": "esperando",
+        "inicio": 3.627041,
+        "fin": 4.076082
+      },
+      {
+        "texto": "su",
+        "inicio": 4.087583,
+        "fin": 4.214249
+      },
+      {
+        "texto": "boleta",
+        "inicio": 4.225791,
+        "fin": 4.674832
+      }
+    ]
+  },
+  {
+    "id": "presenta",
+    "audio": "voz-bahia/presenta.mp3",
+    "duracion": 4.08,
+    "palabras": [
+      {
+        "texto": "Con",
+        "inicio": 0.0460409,
+        "fin": 0.2302909
+      },
+      {
+        "texto": "Kael",
+        "inicio": 0.241791,
+        "fin": 0.449041
+      },
+      {
+        "texto": "Tech",
+        "inicio": 0.460583,
+        "fin": 0.736916
+      },
+      {
+        "texto": "cada",
+        "inicio": 0.99025,
+        "fin": 1.1975
+      },
+      {
+        "texto": "bahía",
+        "inicio": 1.209,
+        "fin": 1.496875
+      },
+      {
+        "texto": "de",
+        "inicio": 1.508375,
+        "fin": 1.635041
+      },
+      {
+        "texto": "tu",
+        "inicio": 1.646541,
+        "fin": 1.761666
+      },
+      {
+        "texto": "taller",
+        "inicio": 1.773208,
+        "fin": 2.107124
+      },
+      {
+        "texto": "tiene",
+        "inicio": 2.118625,
+        "fin": 2.360416
+      },
+      {
+        "texto": "su",
+        "inicio": 2.371958,
+        "fin": 2.510124
+      },
+      {
+        "texto": "propia",
+        "inicio": 2.521666,
+        "fin": 2.844082
+      },
+      {
+        "texto": "cuenta",
+        "inicio": 2.855583,
+        "fin": 3.270083
+      }
+    ]
+  },
+  {
+    "id": "tablero",
+    "audio": "voz-bahia/tablero.mp3",
+    "duracion": 5.54,
+    "palabras": [
+      {
+        "texto": "Abres",
+        "inicio": 0.0460409,
+        "fin": 0.3914569
+      },
+      {
+        "texto": "la",
+        "inicio": 0.403,
+        "fin": 0.472083
+      },
+      {
+        "texto": "cuenta",
+        "inicio": 0.483583,
+        "fin": 0.782958
+      },
+      {
+        "texto": "de",
+        "inicio": 0.7945,
+        "fin": 0.898125
+      },
+      {
+        "texto": "la",
+        "inicio": 0.909625,
+        "fin": 0.978708
+      },
+      {
+        "texto": "moto",
+        "inicio": 0.99025,
+        "fin": 1.232041
+      },
+      {
+        "texto": "en",
+        "inicio": 1.243541,
+        "fin": 1.312624
+      },
+      {
+        "texto": "su",
+        "inicio": 1.324166,
+        "fin": 1.439291
+      },
+      {
+        "texto": "bahía",
+        "inicio": 1.450791,
+        "fin": 1.807749
+      },
+      {
+        "texto": "y",
+        "inicio": 1.81925,
+        "fin": 1.899833
+      },
+      {
+        "texto": "vas",
+        "inicio": 1.911375,
+        "fin": 2.107125
+      },
+      {
+        "texto": "cargando",
+        "inicio": 2.118625,
+        "fin": 2.544666
+      },
+      {
+        "texto": "repuestos",
+        "inicio": 2.556208,
+        "fin": 3.051333
+      },
+      {
+        "texto": "y",
+        "inicio": 3.062833,
+        "fin": 3.1088739
+      },
+      {
+        "texto": "servicios",
+        "inicio": 3.120375,
+        "fin": 3.696083
+      },
+      {
+        "texto": "mientras",
+        "inicio": 3.707625,
+        "fin": 4.087583
+      },
+      {
+        "texto": "la",
+        "inicio": 4.099125,
+        "fin": 4.156708
+      },
+      {
+        "texto": "atiendes",
+        "inicio": 4.168208,
+        "fin": 4.732416
+      }
+    ]
+  },
+  {
+    "id": "vivo",
+    "audio": "voz-bahia/vivo.mp3",
+    "duracion": 3.58,
+    "palabras": [
+      {
+        "texto": "Todo",
+        "inicio": 0.0460409,
+        "fin": 0.2532909
+      },
+      {
+        "texto": "se",
+        "inicio": 0.264833,
+        "fin": 0.379958
+      },
+      {
+        "texto": "guarda",
+        "inicio": 0.3915,
+        "fin": 0.679375
+      },
+      {
+        "texto": "al",
+        "inicio": 0.690875,
+        "fin": 0.771458
+      },
+      {
+        "texto": "instante",
+        "inicio": 0.782958,
+        "fin": 1.243541
+      },
+      {
+        "texto": "y",
+        "inicio": 1.255083,
+        "fin": 1.347208
+      },
+      {
+        "texto": "el",
+        "inicio": 1.358708,
+        "fin": 1.462333
+      },
+      {
+        "texto": "total",
+        "inicio": 1.473833,
+        "fin": 1.807749
+      },
+      {
+        "texto": "se",
+        "inicio": 1.81925,
+        "fin": 1.911375
+      },
+      {
+        "texto": "actualiza",
+        "inicio": 1.922916,
+        "fin": 2.383499
+      },
+      {
+        "texto": "solo",
+        "inicio": 2.395,
+        "fin": 2.763458
+      }
+    ]
+  },
+  {
+    "id": "cobro",
+    "audio": "voz-bahia/cobro.mp3",
+    "duracion": 6.53,
+    "palabras": [
+      {
+        "texto": "Al",
+        "inicio": 0.0460409,
+        "fin": 0.2187489
+      },
+      {
+        "texto": "terminar",
+        "inicio": 0.230291,
+        "fin": 0.736916
+      },
+      {
+        "texto": "tocas",
+        "inicio": 0.99025,
+        "fin": 1.278125
+      },
+      {
+        "texto": "cobrar",
+        "inicio": 1.289625,
+        "fin": 1.623541
+      },
+      {
+        "texto": "y",
+        "inicio": 1.635041,
+        "fin": 1.6810819
+      },
+      {
+        "texto": "la",
+        "inicio": 1.692625,
+        "fin": 1.78475
+      },
+      {
+        "texto": "venta",
+        "inicio": 1.79625,
+        "fin": 2.095625
+      },
+      {
+        "texto": "se",
+        "inicio": 2.107125,
+        "fin": 2.268333
+      },
+      {
+        "texto": "abre",
+        "inicio": 2.279833,
+        "fin": 2.475583
+      },
+      {
+        "texto": "lista",
+        "inicio": 2.487083,
+        "fin": 2.855541
+      },
+      {
+        "texto": "con",
+        "inicio": 3.051291,
+        "fin": 3.212499
+      },
+      {
+        "texto": "el",
+        "inicio": 3.224041,
+        "fin": 3.327666
+      },
+      {
+        "texto": "cliente",
+        "inicio": 3.339166,
+        "fin": 3.776707
+      },
+      {
+        "texto": "la",
+        "inicio": 4.053041,
+        "fin": 4.145166
+      },
+      {
+        "texto": "moto",
+        "inicio": 4.156666,
+        "fin": 4.479082
+      },
+      {
+        "texto": "y",
+        "inicio": 4.490583,
+        "fin": 4.571166
+      },
+      {
+        "texto": "todos",
+        "inicio": 4.582708,
+        "fin": 4.939666
+      },
+      {
+        "texto": "los",
+        "inicio": 4.951166,
+        "fin": 5.077832
+      },
+      {
+        "texto": "productos",
+        "inicio": 5.089333,
+        "fin": 5.711124
+      }
+    ]
+  },
+  {
+    "id": "comprobante",
+    "audio": "voz-bahia/comprobante.mp3",
+    "duracion": 4.08,
+    "palabras": [
+      {
+        "texto": "Eliges",
+        "inicio": 0.0460409,
+        "fin": 0.5296239
+      },
+      {
+        "texto": "boleta",
+        "inicio": 0.541166,
+        "fin": 0.875082
+      },
+      {
+        "texto": "o",
+        "inicio": 0.886625,
+        "fin": 0.9326659
+      },
+      {
+        "texto": "factura",
+        "inicio": 0.944166,
+        "fin": 1.404749
+      },
+      {
+        "texto": "y",
+        "inicio": 1.658083,
+        "fin": 1.727166
+      },
+      {
+        "texto": "se",
+        "inicio": 1.738666,
+        "fin": 1.842291
+      },
+      {
+        "texto": "envía",
+        "inicio": 1.853833,
+        "fin": 2.164708
+      },
+      {
+        "texto": "a",
+        "inicio": 2.176208,
+        "fin": 2.2107489
+      },
+      {
+        "texto": "SUNAT",
+        "inicio": 2.222291,
+        "fin": 2.556207
+      },
+      {
+        "texto": "en",
+        "inicio": 2.567708,
+        "fin": 2.659833
+      },
+      {
+        "texto": "segundos",
+        "inicio": 2.671333,
+        "fin": 3.270083
+      }
+    ]
+  },
+  {
+    "id": "reintento",
+    "audio": "voz-bahia/reintento.mp3",
+    "duracion": 7.1,
+    "palabras": [
+      {
+        "texto": "Y",
+        "inicio": 0.0460409,
+        "fin": 0.1496659
+      },
+      {
+        "texto": "si",
+        "inicio": 0.161208,
+        "fin": 0.299374
+      },
+      {
+        "texto": "SUNAT",
+        "inicio": 0.310875,
+        "fin": 0.656291
+      },
+      {
+        "texto": "no",
+        "inicio": 0.667833,
+        "fin": 0.840541
+      },
+      {
+        "texto": "responde",
+        "inicio": 0.852083,
+        "fin": 1.404791
+      },
+      {
+        "texto": "El",
+        "inicio": 2.19925,
+        "fin": 2.3835
+      },
+      {
+        "texto": "sistema",
+        "inicio": 2.395,
+        "fin": 2.821041
+      },
+      {
+        "texto": "lo",
+        "inicio": 2.832541,
+        "fin": 2.947666
+      },
+      {
+        "texto": "reintenta",
+        "inicio": 2.959208,
+        "fin": 3.454333
+      },
+      {
+        "texto": "solo",
+        "inicio": 3.465833,
+        "fin": 3.834291
+      },
+      {
+        "texto": "No",
+        "inicio": 4.628791,
+        "fin": 4.824541
+      },
+      {
+        "texto": "pierdes",
+        "inicio": 4.836041,
+        "fin": 5.262082
+      },
+      {
+        "texto": "ningún",
+        "inicio": 5.273583,
+        "fin": 5.595999
+      },
+      {
+        "texto": "comprobante",
+        "inicio": 5.6075,
+        "fin": 6.286833
+      }
+    ]
+  },
+  {
+    "id": "conectado",
+    "audio": "voz-bahia/conectado.mp3",
+    "duracion": 6.05,
+    "palabras": [
+      {
+        "texto": "Además",
+        "inicio": 0.0460409,
+        "fin": 0.5642069
+      },
+      {
+        "texto": "el",
+        "inicio": 0.840541,
+        "fin": 0.978707
+      },
+      {
+        "texto": "stock",
+        "inicio": 0.99025,
+        "fin": 1.278125
+      },
+      {
+        "texto": "se",
+        "inicio": 1.289625,
+        "fin": 1.40475
+      },
+      {
+        "texto": "descuenta",
+        "inicio": 1.41625,
+        "fin": 1.853791
+      },
+      {
+        "texto": "y",
+        "inicio": 1.865333,
+        "fin": 1.8998739
+      },
+      {
+        "texto": "los",
+        "inicio": 1.911375,
+        "fin": 2.084083
+      },
+      {
+        "texto": "repuestos",
+        "inicio": 2.095625,
+        "fin": 2.556208
+      },
+      {
+        "texto": "quedan",
+        "inicio": 2.567708,
+        "fin": 2.855583
+      },
+      {
+        "texto": "registrados",
+        "inicio": 2.867083,
+        "fin": 3.511874
+      },
+      {
+        "texto": "en",
+        "inicio": 3.523416,
+        "fin": 3.638541
+      },
+      {
+        "texto": "la",
+        "inicio": 3.650041,
+        "fin": 3.765166
+      },
+      {
+        "texto": "orden",
+        "inicio": 3.776708,
+        "fin": 4.087583
+      },
+      {
+        "texto": "de",
+        "inicio": 4.099125,
+        "fin": 4.19125
+      },
+      {
+        "texto": "servicio",
+        "inicio": 4.20275,
+        "fin": 4.686333
+      },
+      {
+        "texto": "de",
+        "inicio": 4.697875,
+        "fin": 4.79
+      },
+      {
+        "texto": "la",
+        "inicio": 4.8015,
+        "fin": 4.882083
+      },
+      {
+        "texto": "moto",
+        "inicio": 4.893625,
+        "fin": 5.250583
+      }
+    ]
+  },
+  {
+    "id": "beneficio",
+    "audio": "voz-bahia/beneficio.mp3",
+    "duracion": 4.58,
+    "palabras": [
+      {
+        "texto": "Cobras",
+        "inicio": 0.0460409,
+        "fin": 0.4144989
+      },
+      {
+        "texto": "todo",
+        "inicio": 0.426041,
+        "fin": 0.656332
+      },
+      {
+        "texto": "lo",
+        "inicio": 0.667833,
+        "fin": 0.759958
+      },
+      {
+        "texto": "que",
+        "inicio": 0.771458,
+        "fin": 0.875083
+      },
+      {
+        "texto": "usas",
+        "inicio": 0.886625,
+        "fin": 1.243583
+      },
+      {
+        "texto": "sin",
+        "inicio": 1.450791,
+        "fin": 1.658041
+      },
+      {
+        "texto": "olvidos",
+        "inicio": 1.669583,
+        "fin": 2.164708
+      },
+      {
+        "texto": "y",
+        "inicio": 2.176208,
+        "fin": 2.245291
+      },
+      {
+        "texto": "con",
+        "inicio": 2.256833,
+        "fin": 2.418041
+      },
+      {
+        "texto": "tus",
+        "inicio": 2.429541,
+        "fin": 2.590749
+      },
+      {
+        "texto": "comprobantes",
+        "inicio": 2.60225,
+        "fin": 3.258583
+      },
+      {
+        "texto": "en",
+        "inicio": 3.270083,
+        "fin": 3.373708
+      },
+      {
+        "texto": "regla",
+        "inicio": 3.385208,
+        "fin": 3.765166
+      }
+    ]
+  },
+  {
+    "id": "cierre",
+    "audio": "voz-bahia/cierre.mp3",
+    "duracion": 5.74,
+    "palabras": [
+      {
+        "texto": "Kael",
+        "inicio": 0.0460409,
+        "fin": 0.2763319
+      },
+      {
+        "texto": "Tech",
+        "inicio": 0.287875,
+        "fin": 0.564208
+      },
+      {
+        "texto": "sistemas",
+        "inicio": 0.748416,
+        "fin": 1.243541
+      },
+      {
+        "texto": "para",
+        "inicio": 1.255083,
+        "fin": 1.427791
+      },
+      {
+        "texto": "negocios",
+        "inicio": 1.439291,
+        "fin": 2.049541
+      },
+      {
+        "texto": "Síguenos",
+        "inicio": 2.844041,
+        "fin": 3.385207
+      },
+      {
+        "texto": "y",
+        "inicio": 3.39675,
+        "fin": 3.4427909
+      },
+      {
+        "texto": "escríbenos",
+        "inicio": 3.454291,
+        "fin": 4.018499
+      },
+      {
+        "texto": "en",
+        "inicio": 4.030041,
+        "fin": 4.099124
+      },
+      {
+        "texto": "nuestras",
+        "inicio": 4.110625,
+        "fin": 4.479083
+      },
+      {
+        "texto": "redes",
+        "inicio": 4.490583,
+        "fin": 4.928124
+      }
+    ]
+  }
+]

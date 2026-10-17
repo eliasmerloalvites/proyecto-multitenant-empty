@@ -1,0 +1,75 @@
+{
+  "voz": "es-PE-AlexNeural",
+  "velocidad": "+15%",
+  "tono": "+0Hz",
+  "escenas": [
+    {
+      "id": "intro",
+      "fondo": "oscuro",
+      "icono": "🏍️",
+      "titulo": "Problemas en talleres de motos",
+      "detalle": "Lo que vemos todos los días",
+      "texto": "¡Hola! Soy Kael, el mecánico de Kael Tech. Te cuento los problemas que más vemos en los talleres de motos.",
+      "resaltar": ["Kael,", "problemas", "talleres"]
+    },
+    {
+      "id": "uno",
+      "fondo": "claro",
+      "etiqueta": "PROBLEMA 1",
+      "icono": "📋",
+      "titulo": "Motos sin registro",
+      "detalle": "Nadie anotó los daños ni el kilometraje",
+      "texto": "Uno: nadie anota con qué daños y cuántos kilómetros llegó la moto. Y después vienen los reclamos.",
+      "resaltar": ["daños", "kilómetros", "reclamos."]
+    },
+    {
+      "id": "dos",
+      "fondo": "claro",
+      "etiqueta": "PROBLEMA 2",
+      "icono": "📞",
+      "titulo": "¿En qué va mi moto?",
+      "detalle": "El cliente llama y nadie sabe responder",
+      "texto": "Dos: el cliente llama, y nadie sabe en qué va su moto ni quién la está atendiendo.",
+      "resaltar": ["llama,", "moto", "atendiendo."]
+    },
+    {
+      "id": "tres",
+      "fondo": "claro",
+      "etiqueta": "PROBLEMA 3",
+      "icono": "📦",
+      "titulo": "Stock que no cuadra",
+      "detalle": "El sistema dice 5, en el estante hay 2",
+      "texto": "Tres: repuestos que se acaban o se pierden, y un stock que nunca cuadra.",
+      "resaltar": ["repuestos", "pierden,", "stock"]
+    },
+    {
+      "id": "cuatro",
+      "fondo": "claro",
+      "etiqueta": "PROBLEMA 4",
+      "icono": "💵",
+      "titulo": "Caja descuadrada",
+      "detalle": "No sabes cuánto ganas de verdad",
+      "texto": "Cuatro: la caja no cuadra, y no sabes cuánto estás ganando de verdad.",
+      "resaltar": ["caja", "cuadra,", "ganando"]
+    },
+    {
+      "id": "cinco",
+      "fondo": "claro",
+      "etiqueta": "PROBLEMA 5",
+      "icono": "💬",
+      "titulo": "Citas que se olvidan",
+      "detalle": "Clientes que no vuelven",
+      "texto": "Cinco: citas que se olvidan y clientes que nunca regresan.",
+      "resaltar": ["citas", "olvidan", "regresan."]
+    },
+    {
+      "id": "cierre",
+      "fondo": "oscuro",
+      "icono": "✅",
+      "titulo": "Todo tiene solución",
+      "detalle": "Kael Tech · sistemas para negocios",
+      "texto": "¿Te pasa alguno? Escríbenos y te mostramos cómo resolverlo. ¡Y síguenos!",
+      "resaltar": ["alguno?", "Escríbenos", "síguenos!"]
+    }
+  ]
+}
