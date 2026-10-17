@@ -51,4 +51,10 @@ return [
         'executable_path' => env('PUPPETEER_EXECUTABLE_PATH'),
     ],
 
+    // Token del servicio de consulta DNI/RUC (migo.pe). Antes estaba escrito en
+    // ConsultaDocumentoController; definelo en el .env como MIGO_TOKEN.
+    'migo' => [
+        'token' => env('MIGO_TOKEN'),
+    ],
+
 ];

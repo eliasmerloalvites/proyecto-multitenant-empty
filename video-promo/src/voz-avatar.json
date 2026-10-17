@@ -1,0 +1,561 @@
+[
+  {
+    "id": "intro",
+    "audio": "voz-avatar/intro.mp3",
+    "duracion": 8.21,
+    "palabras": [
+      {
+        "texto": "Hola",
+        "inicio": 0.04725,
+        "fin": 0.448958
+      },
+      {
+        "texto": "Soy",
+        "inicio": 1.264166,
+        "fin": 1.583166
+      },
+      {
+        "texto": "Kael",
+        "inicio": 1.595,
+        "fin": 1.973083
+      },
+      {
+        "texto": "el",
+        "inicio": 2.256625,
+        "fin": 2.362958
+      },
+      {
+        "texto": "mecánico",
+        "inicio": 2.37475,
+        "fin": 2.882791
+      },
+      {
+        "texto": "de",
+        "inicio": 2.894625,
+        "fin": 2.989125
+      },
+      {
+        "texto": "Kael",
+        "inicio": 3.000958,
+        "fin": 3.213624
+      },
+      {
+        "texto": "Tech",
+        "inicio": 3.225416,
+        "fin": 3.532582
+      },
+      {
+        "texto": "Te",
+        "inicio": 4.359625,
+        "fin": 4.477791
+      },
+      {
+        "texto": "cuento",
+        "inicio": 4.489583,
+        "fin": 4.796749
+      },
+      {
+        "texto": "los",
+        "inicio": 4.808583,
+        "fin": 4.962166
+      },
+      {
+        "texto": "problemas",
+        "inicio": 4.974,
+        "fin": 5.446583
+      },
+      {
+        "texto": "que",
+        "inicio": 5.458416,
+        "fin": 5.576582
+      },
+      {
+        "texto": "más",
+        "inicio": 5.588375,
+        "fin": 5.8365
+      },
+      {
+        "texto": "vemos",
+        "inicio": 5.848291,
+        "fin": 6.155457
+      },
+      {
+        "texto": "en",
+        "inicio": 6.167291,
+        "fin": 6.238166
+      },
+      {
+        "texto": "los",
+        "inicio": 6.25,
+        "fin": 6.379958
+      },
+      {
+        "texto": "talleres",
+        "inicio": 6.391791,
+        "fin": 6.793499
+      },
+      {
+        "texto": "de",
+        "inicio": 6.805291,
+        "fin": 6.876166
+      },
+      {
+        "texto": "motos",
+        "inicio": 6.888,
+        "fin": 7.372416
+      }
+    ]
+  },
+  {
+    "id": "uno",
+    "audio": "voz-avatar/uno.mp3",
+    "duracion": 7.08,
+    "palabras": [
+      {
+        "texto": "Uno",
+        "inicio": 0.04725,
+        "fin": 0.36625
+      },
+      {
+        "texto": "nadie",
+        "inicio": 0.68525,
+        "fin": 0.921541
+      },
+      {
+        "texto": "anota",
+        "inicio": 0.933375,
+        "fin": 1.252375
+      },
+      {
+        "texto": "con",
+        "inicio": 1.264166,
+        "fin": 1.441374
+      },
+      {
+        "texto": "qué",
+        "inicio": 1.453208,
+        "fin": 1.571374
+      },
+      {
+        "texto": "daños",
+        "inicio": 1.583166,
+        "fin": 1.996666
+      },
+      {
+        "texto": "y",
+        "inicio": 2.0085,
+        "fin": 2.067583
+      },
+      {
+        "texto": "cuántos",
+        "inicio": 2.079375,
+        "fin": 2.46925
+      },
+      {
+        "texto": "kilómetros",
+        "inicio": 2.481083,
+        "fin": 3.071833
+      },
+      {
+        "texto": "llegó",
+        "inicio": 3.083666,
+        "fin": 3.319957
+      },
+      {
+        "texto": "la",
+        "inicio": 3.33175,
+        "fin": 3.414458
+      },
+      {
+        "texto": "moto",
+        "inicio": 3.426291,
+        "fin": 3.804374
+      },
+      {
+        "texto": "Y",
+        "inicio": 4.619583,
+        "fin": 4.737749
+      },
+      {
+        "texto": "después",
+        "inicio": 4.749541,
+        "fin": 5.174874
+      },
+      {
+        "texto": "vienen",
+        "inicio": 5.186666,
+        "fin": 5.482041
+      },
+      {
+        "texto": "los",
+        "inicio": 5.493875,
+        "fin": 5.647458
+      },
+      {
+        "texto": "reclamos",
+        "inicio": 5.65925,
+        "fin": 6.261791
+      }
+    ]
+  },
+  {
+    "id": "dos",
+    "audio": "voz-avatar/dos.mp3",
+    "duracion": 5.64,
+    "palabras": [
+      {
+        "texto": "Dos",
+        "inicio": 0.04725,
+        "fin": 0.437125
+      },
+      {
+        "texto": "el",
+        "inicio": 0.673458,
+        "fin": 0.827041
+      },
+      {
+        "texto": "cliente",
+        "inicio": 0.838833,
+        "fin": 1.228708
+      },
+      {
+        "texto": "llama",
+        "inicio": 1.240541,
+        "fin": 1.630416
+      },
+      {
+        "texto": "y",
+        "inicio": 1.890375,
+        "fin": 1.973083
+      },
+      {
+        "texto": "nadie",
+        "inicio": 1.984875,
+        "fin": 2.292041
+      },
+      {
+        "texto": "sabe",
+        "inicio": 2.303875,
+        "fin": 2.587416
+      },
+      {
+        "texto": "en",
+        "inicio": 2.59925,
+        "fin": 2.705583
+      },
+      {
+        "texto": "qué",
+        "inicio": 2.717375,
+        "fin": 2.835541
+      },
+      {
+        "texto": "va",
+        "inicio": 2.847333,
+        "fin": 2.965499
+      },
+      {
+        "texto": "su",
+        "inicio": 2.977333,
+        "fin": 3.119124
+      },
+      {
+        "texto": "moto",
+        "inicio": 3.130916,
+        "fin": 3.438082
+      },
+      {
+        "texto": "ni",
+        "inicio": 3.449916,
+        "fin": 3.603499
+      },
+      {
+        "texto": "quién",
+        "inicio": 3.615291,
+        "fin": 3.816124
+      },
+      {
+        "texto": "la",
+        "inicio": 3.827958,
+        "fin": 3.887041
+      },
+      {
+        "texto": "está",
+        "inicio": 3.898875,
+        "fin": 4.147
+      },
+      {
+        "texto": "atendiendo",
+        "inicio": 4.158791,
+        "fin": 4.808582
+      }
+    ]
+  },
+  {
+    "id": "tres",
+    "audio": "voz-avatar/tres.mp3",
+    "duracion": 4.94,
+    "palabras": [
+      {
+        "texto": "Tres",
+        "inicio": 0.04725,
+        "fin": 0.401708
+      },
+      {
+        "texto": "repuestos",
+        "inicio": 0.649791,
+        "fin": 1.145999
+      },
+      {
+        "texto": "que",
+        "inicio": 1.157833,
+        "fin": 1.252333
+      },
+      {
+        "texto": "se",
+        "inicio": 1.264166,
+        "fin": 1.358666
+      },
+      {
+        "texto": "acaban",
+        "inicio": 1.3705,
+        "fin": 1.713125
+      },
+      {
+        "texto": "o",
+        "inicio": 1.724958,
+        "fin": 1.760416
+      },
+      {
+        "texto": "se",
+        "inicio": 1.772208,
+        "fin": 1.902166
+      },
+      {
+        "texto": "pierden",
+        "inicio": 1.914,
+        "fin": 2.339333
+      },
+      {
+        "texto": "y",
+        "inicio": 2.611041,
+        "fin": 2.681916
+      },
+      {
+        "texto": "un",
+        "inicio": 2.69375,
+        "fin": 2.811916
+      },
+      {
+        "texto": "stock",
+        "inicio": 2.823708,
+        "fin": 3.166333
+      },
+      {
+        "texto": "que",
+        "inicio": 3.178166,
+        "fin": 3.296332
+      },
+      {
+        "texto": "nunca",
+        "inicio": 3.308125,
+        "fin": 3.662583
+      },
+      {
+        "texto": "cuadra",
+        "inicio": 3.674375,
+        "fin": 4.1115
+      }
+    ]
+  },
+  {
+    "id": "cuatro",
+    "audio": "voz-avatar/cuatro.mp3",
+    "duracion": 4.87,
+    "palabras": [
+      {
+        "texto": "Cuatro",
+        "inicio": 0.04725,
+        "fin": 0.4135
+      },
+      {
+        "texto": "la",
+        "inicio": 0.697083,
+        "fin": 0.791583
+      },
+      {
+        "texto": "caja",
+        "inicio": 0.803416,
+        "fin": 1.086957
+      },
+      {
+        "texto": "no",
+        "inicio": 1.098791,
+        "fin": 1.252374
+      },
+      {
+        "texto": "cuadra",
+        "inicio": 1.264166,
+        "fin": 1.642249
+      },
+      {
+        "texto": "y",
+        "inicio": 1.890375,
+        "fin": 1.973083
+      },
+      {
+        "texto": "no",
+        "inicio": 1.984875,
+        "fin": 2.138458
+      },
+      {
+        "texto": "sabes",
+        "inicio": 2.150291,
+        "fin": 2.504749
+      },
+      {
+        "texto": "cuánto",
+        "inicio": 2.516541,
+        "fin": 2.788291
+      },
+      {
+        "texto": "estás",
+        "inicio": 2.800083,
+        "fin": 3.083624
+      },
+      {
+        "texto": "ganando",
+        "inicio": 3.095458,
+        "fin": 3.461708
+      },
+      {
+        "texto": "de",
+        "inicio": 3.473541,
+        "fin": 3.556249
+      },
+      {
+        "texto": "verdad",
+        "inicio": 3.568041,
+        "fin": 4.040624
+      }
+    ]
+  },
+  {
+    "id": "cinco",
+    "audio": "voz-avatar/cinco.mp3",
+    "duracion": 4.27,
+    "palabras": [
+      {
+        "texto": "Cinco",
+        "inicio": 0.04725,
+        "fin": 0.543458
+      },
+      {
+        "texto": "citas",
+        "inicio": 0.827041,
+        "fin": 1.181499
+      },
+      {
+        "texto": "que",
+        "inicio": 1.193291,
+        "fin": 1.287791
+      },
+      {
+        "texto": "se",
+        "inicio": 1.299625,
+        "fin": 1.405958
+      },
+      {
+        "texto": "olvidan",
+        "inicio": 1.41775,
+        "fin": 1.772208
+      },
+      {
+        "texto": "y",
+        "inicio": 1.784041,
+        "fin": 1.843124
+      },
+      {
+        "texto": "clientes",
+        "inicio": 1.854916,
+        "fin": 2.339332
+      },
+      {
+        "texto": "que",
+        "inicio": 2.351125,
+        "fin": 2.469291
+      },
+      {
+        "texto": "nunca",
+        "inicio": 2.481083,
+        "fin": 2.835541
+      },
+      {
+        "texto": "regresan",
+        "inicio": 2.847333,
+        "fin": 3.449874
+      }
+    ]
+  },
+  {
+    "id": "cierre",
+    "audio": "voz-avatar/cierre.mp3",
+    "duracion": 6.43,
+    "palabras": [
+      {
+        "texto": "Te",
+        "inicio": 0.04725,
+        "fin": 0.165416
+      },
+      {
+        "texto": "pasa",
+        "inicio": 0.177208,
+        "fin": 0.460749
+      },
+      {
+        "texto": "alguno",
+        "inicio": 0.472583,
+        "fin": 0.897916
+      },
+      {
+        "texto": "Escríbenos",
+        "inicio": 1.713125,
+        "fin": 2.362916
+      },
+      {
+        "texto": "y",
+        "inicio": 2.37475,
+        "fin": 2.433833
+      },
+      {
+        "texto": "te",
+        "inicio": 2.445666,
+        "fin": 2.540166
+      },
+      {
+        "texto": "mostramos",
+        "inicio": 2.552,
+        "fin": 3.048208
+      },
+      {
+        "texto": "cómo",
+        "inicio": 3.06,
+        "fin": 3.2845
+      },
+      {
+        "texto": "resolverlo",
+        "inicio": 3.296333,
+        "fin": 3.946124
+      },
+      {
+        "texto": "Y",
+        "inicio": 4.761333,
+        "fin": 4.867666
+      },
+      {
+        "texto": "síguenos",
+        "inicio": 4.8795,
+        "fin": 5.576583
+      }
+    ]
+  }
+]

@@ -1,0 +1,92 @@
+{
+  "voz": "es-PE-AlexNeural",
+  "velocidad": "+18%",
+  "tono": "+9Hz",
+  "escenas": [
+    {
+      "id": "gancho",
+      "visual": "gancho",
+      "fondo": "oscuro",
+      "texto": "¿Todavía anotas en un papel lo que usaste en cada moto para cobrarlo al final?",
+      "resaltar": ["papel", "moto", "final?"]
+    },
+    {
+      "id": "problema",
+      "visual": "caos",
+      "fondo": "claro",
+      "etiqueta": "LO DE SIEMPRE",
+      "texto": "Repuestos que se te olvida cobrar, cuentas que no cuadran ¡y clientes esperando su boleta!",
+      "resaltar": ["olvida", "cuadran", "boleta!"]
+    },
+    {
+      "id": "presenta",
+      "visual": "marca",
+      "fondo": "oscuro",
+      "texto": "¡Con Kael Tech, cada bahía de tu taller tiene su propia cuenta!",
+      "resaltar": ["Kael", "Tech,", "bahía", "cuenta!"]
+    },
+    {
+      "id": "tablero",
+      "visual": "tablero",
+      "fondo": "claro",
+      "etiqueta": "VENTAS POR BAHÍA",
+      "texto": "Abres la cuenta de la moto en su bahía y vas cargando repuestos y servicios mientras la atiendes.",
+      "resaltar": ["cuenta", "bahía", "repuestos"]
+    },
+    {
+      "id": "vivo",
+      "visual": "vivo",
+      "fondo": "claro",
+      "etiqueta": "EN TIEMPO REAL",
+      "texto": "¡Todo se guarda al instante y el total se actualiza solo!",
+      "resaltar": ["instante", "total", "solo!"]
+    },
+    {
+      "id": "cobro",
+      "visual": "cobro",
+      "fondo": "claro",
+      "etiqueta": "UN SOLO CLIC",
+      "texto": "Al terminar, tocas cobrar y la venta se abre lista, con el cliente, la moto y todos los productos.",
+      "resaltar": ["cobrar", "lista,", "productos."]
+    },
+    {
+      "id": "comprobante",
+      "visual": "comprobante",
+      "fondo": "oscuro",
+      "etiqueta": "FACTURACIÓN ELECTRÓNICA",
+      "texto": "¡Eliges boleta o factura, y se envía a SUNAT en segundos!",
+      "resaltar": ["boleta", "factura,", "SUNAT"]
+    },
+    {
+      "id": "reintento",
+      "visual": "reintento",
+      "fondo": "claro",
+      "etiqueta": "REINTENTO AUTOMÁTICO",
+      "texto": "¿Y si SUNAT no responde? El sistema lo reintenta solo. ¡No pierdes ningún comprobante!",
+      "resaltar": ["reintenta", "solo.", "comprobante!"]
+    },
+    {
+      "id": "conectado",
+      "visual": "conectado",
+      "fondo": "claro",
+      "etiqueta": "TODO CONECTADO",
+      "texto": "Además, el stock se descuenta y los repuestos quedan registrados en la orden de servicio de la moto.",
+      "resaltar": ["stock", "orden", "servicio"]
+    },
+    {
+      "id": "beneficio",
+      "visual": "beneficios",
+      "fondo": "claro",
+      "etiqueta": "RESULTADO",
+      "texto": "¡Cobras todo lo que usas, sin olvidos y con tus comprobantes en regla!",
+      "resaltar": ["Cobras", "olvidos", "regla!"]
+    },
+    {
+      "id": "cierre",
+      "visual": "cierre",
+      "fondo": "oscuro",
+      "texto": "¡Kael Tech, sistemas para negocios! ¡Síguenos y escríbenos en nuestras redes!",
+      "resaltar": ["Kael", "Tech,", "redes!"]
+    }
+  ]
+}

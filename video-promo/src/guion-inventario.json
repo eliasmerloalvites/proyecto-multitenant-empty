@@ -1,0 +1,108 @@
+{
+  "voz": "es-PE-AlexNeural",
+  "velocidad": "+18%",
+  "tono": "+9Hz",
+  "escenas": [
+    {
+      "id": "gancho",
+      "visual": "gancho",
+      "fondo": "oscuro",
+      "texto": "¿Sabes cuántos repuestos tienes ahora mismo en tu taller?",
+      "resaltar": ["repuestos", "ahora", "mismo"]
+    },
+    {
+      "id": "problema",
+      "visual": "caos",
+      "fondo": "claro",
+      "etiqueta": "LO DE SIEMPRE",
+      "texto": "Stock que no cuadra, repuestos que se acaban sin avisar ¡y plata parada en el almacén!",
+      "resaltar": ["cuadra,", "acaban", "plata"]
+    },
+    {
+      "id": "presenta",
+      "visual": "marca",
+      "fondo": "oscuro",
+      "texto": "¡Con el inventario de Kael Tech, tu stock siempre está bajo control!",
+      "resaltar": ["inventario", "Kael", "Tech,", "control!"]
+    },
+    {
+      "id": "productos",
+      "visual": "productos",
+      "fondo": "claro",
+      "etiqueta": "TUS PRODUCTOS",
+      "texto": "Registra tus productos con su categoría, precios, código interno y código de fabricación.",
+      "resaltar": ["productos", "precios,", "código"]
+    },
+    {
+      "id": "importar",
+      "visual": "importar",
+      "fondo": "claro",
+      "etiqueta": "CARGA MASIVA",
+      "texto": "¿Tienes cientos de productos? Súbelos desde Excel, ¡y el sistema te avisa cuáles ya existen antes de importar!",
+      "resaltar": ["cientos", "Excel,", "existen"]
+    },
+    {
+      "id": "detalle",
+      "visual": "detalle",
+      "fondo": "claro",
+      "etiqueta": "FICHA DEL PRODUCTO",
+      "texto": "Mira la ficha de cada repuesto: foto, precios, margen y stock al instante.",
+      "resaltar": ["ficha", "margen", "stock"]
+    },
+    {
+      "id": "minimo",
+      "visual": "minimo",
+      "fondo": "claro",
+      "etiqueta": "ALERTAS",
+      "texto": "¡Y el sistema te avisa cuando un producto llega a su stock mínimo!",
+      "resaltar": ["avisa", "stock", "mínimo!"]
+    },
+    {
+      "id": "kardex",
+      "visual": "kardex",
+      "fondo": "claro",
+      "etiqueta": "KARDEX",
+      "texto": "Con el kardex ves cada entrada y salida, venta por venta y compra por compra.",
+      "resaltar": ["kardex", "entrada", "salida,"]
+    },
+    {
+      "id": "traslado",
+      "visual": "traslado",
+      "fondo": "claro",
+      "etiqueta": "VARIAS SEDES",
+      "texto": "¿Tienes varias sedes? ¡Traslada stock de un almacén a otro en segundos!",
+      "resaltar": ["sedes?", "Traslada", "segundos!"]
+    },
+    {
+      "id": "ajuste",
+      "visual": "ajuste",
+      "fondo": "claro",
+      "etiqueta": "AJUSTES",
+      "texto": "Registra mermas y ajustes con su motivo, para que el stock siempre cuadre.",
+      "resaltar": ["mermas", "motivo,", "cuadre."]
+    },
+    {
+      "id": "valorizado",
+      "visual": "valorizado",
+      "fondo": "claro",
+      "etiqueta": "INVENTARIO VALORIZADO",
+      "texto": "Y descubre cuánto dinero tienes invertido en tu almacén ¡y cuánto podrías ganar!",
+      "resaltar": ["dinero", "invertido", "ganar!"]
+    },
+    {
+      "id": "beneficio",
+      "visual": "beneficios",
+      "fondo": "claro",
+      "etiqueta": "RESULTADO",
+      "texto": "¡Menos pérdidas, compras más inteligentes y un almacén siempre ordenado!",
+      "resaltar": ["pérdidas,", "inteligentes", "ordenado!"]
+    },
+    {
+      "id": "cierre",
+      "visual": "cierre",
+      "fondo": "oscuro",
+      "texto": "¡Kael Tech, sistemas para negocios! ¡Síguenos y escríbenos en nuestras redes!",
+      "resaltar": ["Kael", "Tech,", "redes!"]
+    }
+  ]
+}

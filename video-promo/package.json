@@ -1,0 +1,41 @@
+{
+  "name": "video-promo-taller",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "voz": "node scripts/generar-voz.mjs",
+    "voz:web": "node scripts/generar-voz.mjs web",
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts PromoTaller out/promo-app-taller.mp4",
+    "render:web": "remotion render src/index.ts PromoWeb out/promo-sistema-web.mp4",
+    "voz:corto": "node scripts/generar-voz.mjs corto",
+    "render:corto": "remotion render src/index.ts PromoCorto out/promo-corto-tiktok.mp4",
+    "voz:avatar": "node scripts/generar-voz.mjs avatar",
+    "render:avatar": "remotion render src/index.ts PromoAvatar out/promo-avatar-problemas.mp4",
+    "musica": "node scripts/generar-musica.mjs 80",
+    "capturas": "node scripts/capturar.mjs",
+    "voz:bahia": "node scripts/generar-voz.mjs bahia",
+    "render:bahia": "remotion render src/index.ts PromoBahia out/promo-facturacion-bahia.mp4",
+    "capturas:bahia": "node scripts/capturar.mjs bahia",
+    "voz:mantenimiento": "node scripts/generar-voz.mjs mantenimiento",
+    "render:mantenimiento": "remotion render src/index.ts PromoMantenimiento out/promo-mantenimientos.mp4",
+    "capturas:mantenimiento": "node scripts/capturar.mjs mantenimiento",
+    "voz:inventario": "node scripts/generar-voz.mjs inventario",
+    "render:inventario": "remotion render src/index.ts PromoInventario out/promo-inventario.mp4",
+    "capturas:inventario": "node scripts/capturar.mjs inventario"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.535",
+    "@remotion/google-fonts": "^4.0.535",
+    "ffmpeg-static": "^5.3.0",
+    "msedge-tts": "^2.1.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.535"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "puppeteer-core": "^25.14.0",
+    "typescript": "^7.0.2"
+  }
+}

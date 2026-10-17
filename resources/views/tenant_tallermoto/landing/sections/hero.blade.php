@@ -208,7 +208,7 @@
             </div>
 
             <form action="/historial" method="GET" class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-12 gap-4 w-full">
-                <div class="sm:col-span-9 relative">
+                <div class="sm:col-span-6 relative">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
                         <i data-lucide="bike" class="w-4 h-4"></i>
                     </div>
@@ -219,6 +219,18 @@
                             'bg-slate-950/50 border-white/10 text-gray-300 placeholder-gray-600' =>
                                 $colorview == 'dark',
                             // ☀️ Estilos Input Modo Claro
+                            'bg-white border-gray-300 text-gray-800 placeholder-gray-400 shadow-sm' =>
+                                $colorview !== 'dark',
+                        ])>
+                </div>
+
+                <div class="sm:col-span-3 relative">
+                    <input type="text" name="Celular" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" minlength="4" required
+                        placeholder="4 últimos dígitos cel." aria-label="Últimos 4 dígitos del celular registrado en el taller"
+                        @class([
+                            'w-full px-4 py-3.5 border rounded-xl focus:outline-none focus:border-brand-500 transition font-mono tracking-wider text-xs text-center',
+                            'bg-slate-950/50 border-white/10 text-gray-300 placeholder-gray-600' =>
+                                $colorview == 'dark',
                             'bg-white border-gray-300 text-gray-800 placeholder-gray-400 shadow-sm' =>
                                 $colorview !== 'dark',
                         ])>

@@ -1,0 +1,91 @@
+{
+  "voz": "es-PE-AlexNeural",
+  "velocidad": "+6%",
+  "escenas": [
+    {
+      "id": "gancho",
+      "visual": "gancho",
+      "fondo": "oscuro",
+      "texto": "¿Tienes un taller de motos?",
+      "resaltar": ["taller", "motos"]
+    },
+    {
+      "id": "problema",
+      "visual": "llamadas",
+      "fondo": "claro",
+      "etiqueta": "EL DÍA A DÍA",
+      "texto": "Seguro tus clientes te llaman a cada rato para preguntar: ¿ya está lista mi moto?",
+      "resaltar": ["llaman", "lista"]
+    },
+    {
+      "id": "presenta",
+      "visual": "marca",
+      "fondo": "oscuro",
+      "texto": "Por eso en Kael Tech DataValle creamos la app para los clientes de tu taller.",
+      "resaltar": ["DataValle", "app"]
+    },
+    {
+      "id": "qr",
+      "visual": "qr",
+      "fondo": "claro",
+      "etiqueta": "ASÍ DE FÁCIL",
+      "texto": "Tu cliente escanea el código QR de tu taller y entra solo con su celular. Sin contraseñas.",
+      "resaltar": ["QR", "celular", "contraseñas."]
+    },
+    {
+      "id": "garaje",
+      "visual": "garaje",
+      "fondo": "claro",
+      "etiqueta": "MI GARAJE",
+      "texto": "En su garaje ve sus motos, todo su historial y cuándo le toca el próximo servicio.",
+      "resaltar": ["garaje", "historial", "próximo"]
+    },
+    {
+      "id": "avance",
+      "visual": "avance",
+      "fondo": "claro",
+      "etiqueta": "EN TIEMPO REAL",
+      "texto": "Y sigue el avance de su moto paso a paso: ingresó, trabajo terminado y lista para entregar.",
+      "resaltar": ["avance", "paso", "entregar."]
+    },
+    {
+      "id": "detalle",
+      "visual": "detalle",
+      "fondo": "claro",
+      "etiqueta": "TODO A LA VISTA",
+      "texto": "Ve las fotos del trabajo, los repuestos que usaste y descarga su orden de servicio en PDF.",
+      "resaltar": ["fotos", "repuestos", "PDF."]
+    },
+    {
+      "id": "reservas",
+      "visual": "reservas",
+      "fondo": "claro",
+      "etiqueta": "CITAS ONLINE",
+      "texto": "Además, reserva su cita en segundos, solo en los horarios que tienes libres.",
+      "resaltar": ["cita", "segundos,", "libres."]
+    },
+    {
+      "id": "control",
+      "visual": "panel",
+      "fondo": "oscuro",
+      "etiqueta": "TÚ TIENES EL CONTROL",
+      "texto": "Y tú lo controlas todo desde tu sistema DataValle, con el logo y los colores de tu taller.",
+      "resaltar": ["controlas", "DataValle,", "logo"]
+    },
+    {
+      "id": "beneficio",
+      "visual": "beneficios",
+      "fondo": "claro",
+      "etiqueta": "RESULTADO",
+      "texto": "Menos llamadas, más confianza y clientes que siempre vuelven.",
+      "resaltar": ["Menos", "confianza", "vuelven."]
+    },
+    {
+      "id": "cierre",
+      "visual": "cierre",
+      "fondo": "oscuro",
+      "texto": "Kael Tech DataValle. Tecnología para tu taller. Síguenos en nuestras redes.",
+      "resaltar": ["taller.", "redes."]
+    }
+  ]
+}

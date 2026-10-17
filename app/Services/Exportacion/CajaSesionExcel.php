@@ -27,12 +27,23 @@ class CajaSesionExcel
             'Estado: ' . ($abierta ? 'Abierto' : 'Cerrado'),
         ];
 
-        return ExcelExporter::descargar(ExcelExporter::nombreArchivo('caja_turno_' . $sesion->CS_Id), [
+        $hojas = [
             self::hojaResumen($sesion, $datos, $contexto, $abierta),
             self::hojaVentas($datos['ventas'] ?? [], $contexto),
-            self::hojaCompras($datos['compras'] ?? [], $contexto),
-            self::hojaGastos($datos['gastos'] ?? [], $contexto),
-        ]);
+        ];
+
+        // Abonos y adelantos solo existen en el vertical de talleres.
+        if (array_key_exists('abonos', $datos)) {
+            $hojas[] = self::hojaAbonos($datos['abonos'], $contexto);
+        }
+        if (array_key_exists('adelantos', $datos)) {
+            $hojas[] = self::hojaAdelantos($datos['adelantos'], $contexto);
+        }
+
+        $hojas[] = self::hojaCompras($datos['compras'] ?? [], $contexto);
+        $hojas[] = self::hojaGastos($datos['gastos'] ?? [], $contexto);
+
+        return ExcelExporter::descargar(ExcelExporter::nombreArchivo('caja_turno_' . $sesion->CS_Id), $hojas);
     }
 
     private static function hojaResumen(CajaSesion $sesion, array $datos, array $contexto, bool $abierta): array
@@ -62,6 +73,7 @@ class CajaSesionExcel
         $resumen = $datos['resumenPorMetodo'] ?? ['columnas' => []];
         $metodos = $resumen['columnas'] ?? [];
         $tieneAbonos = isset($metodos[0]) && array_key_exists('abonos', $metodos[0]);
+        $tieneAdelantos = isset($metodos[0]) && array_key_exists('adelantos', $metodos[0]);
 
         $columnas = [['titulo' => 'Movimiento', 'ancho' => 36]];
         foreach ($metodos as $m) {
@@ -82,6 +94,9 @@ class CajaSesionExcel
         $filas = [$linea('Ingreso por ventas', 'ventas', 'total_ventas')];
         if ($tieneAbonos) {
             $filas[] = $linea('Ingreso por abonos (cuentas por cobrar)', 'abonos', 'total_abonos');
+        }
+        if ($tieneAdelantos) {
+            $filas[] = $linea('Ingreso por adelantos (ventas por bahía)', 'adelantos', 'total_adelantos');
         }
         $filas[] = $linea('Egreso por compras', 'compras', 'total_compras');
         $filas[] = $linea('Egreso por gastos (afectan caja)', 'gastos', 'total_gastos');
@@ -148,6 +163,78 @@ class CajaSesionExcel
             'total_excluye' => [5, 'Anulada'],
             'total_etiqueta' => 'TOTAL (sin anuladas)',
             'mensaje_vacio' => 'No hubo ventas en este turno.',
+        ];
+    }
+
+    private static function hojaAbonos(array $abonos, array $contexto): array
+    {
+        $filas = [];
+        foreach ($abonos as $a) {
+            $a = (array) $a;
+            $filas[] = [
+                (string) $a['CPA_Id'],
+                substr((string) $a['created_at'], 0, 10),
+                substr((string) $a['created_at'], 11, 5),
+                $a['CLI_Nombre'] ?: 'Cliente Genérico',
+                '#' . $a['VEN_Id'],
+                $a['MEP_Pago'],
+                $a['usuario'] ?? '—',
+                (float) $a['CPA_Monto'],
+            ];
+        }
+
+        return [
+            'nombre' => 'Abonos',
+            'titulo' => 'Abonos de Cuentas por Cobrar del Turno',
+            'filtros' => $contexto,
+            'columnas' => [
+                ['titulo' => 'N° abono', 'ancho' => 11, 'centrar' => true],
+                ['titulo' => 'Fecha', 'tipo' => ExcelExporter::FECHA, 'ancho' => 12],
+                ['titulo' => 'Hora', 'ancho' => 8, 'centrar' => true],
+                ['titulo' => 'Cliente', 'ancho' => 34],
+                ['titulo' => 'Venta', 'ancho' => 10, 'centrar' => true],
+                ['titulo' => 'Método de pago', 'ancho' => 18],
+                ['titulo' => 'Usuario', 'ancho' => 22],
+                ['titulo' => 'Monto', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 15, 'total' => true],
+            ],
+            'filas' => $filas,
+            'mensaje_vacio' => 'No hubo abonos en este turno.',
+        ];
+    }
+
+    private static function hojaAdelantos(array $adelantos, array $contexto): array
+    {
+        $filas = [];
+        foreach ($adelantos as $a) {
+            $a = (array) $a;
+            $filas[] = [
+                (string) $a['BCA_Id'],
+                substr((string) $a['created_at'], 0, 10),
+                substr((string) $a['created_at'], 11, 5),
+                $a['RES_Cliente'] ?? '—',
+                $a['RES_Placa'] ?? '—',
+                $a['MEP_Pago'],
+                $a['VEN_Id'] ? 'Cobrada (venta #' . $a['VEN_Id'] . ')' : 'Abierta',
+                (float) $a['BCA_Monto'],
+            ];
+        }
+
+        return [
+            'nombre' => 'Adelantos',
+            'titulo' => 'Adelantos de Ventas por Bahía del Turno',
+            'filtros' => $contexto,
+            'columnas' => [
+                ['titulo' => 'N° adelanto', 'ancho' => 12, 'centrar' => true],
+                ['titulo' => 'Fecha', 'tipo' => ExcelExporter::FECHA, 'ancho' => 12],
+                ['titulo' => 'Hora', 'ancho' => 8, 'centrar' => true],
+                ['titulo' => 'Cliente', 'ancho' => 30],
+                ['titulo' => 'Placa', 'ancho' => 12, 'centrar' => true],
+                ['titulo' => 'Método de pago', 'ancho' => 18],
+                ['titulo' => 'Cuenta', 'ancho' => 22],
+                ['titulo' => 'Monto', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 15, 'total' => true],
+            ],
+            'filas' => $filas,
+            'mensaje_vacio' => 'No hubo adelantos en este turno.',
         ];
     }
 

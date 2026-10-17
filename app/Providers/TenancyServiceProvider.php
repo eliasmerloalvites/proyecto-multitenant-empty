@@ -156,6 +156,31 @@ class TenancyServiceProvider extends ServiceProvider
                 'no-tenant',
             ])->group(base_path('routes/tenant.php'));
 
+            /*
+             * API MOVIL DE CLIENTES (/api/v1). A proposito NO usa el grupo
+             * 'web' (sin sesion ni CSRF) ni 'no-tenant': el taller se
+             * identifica UNA sola vez, por el Host de la peticion, con
+             * InitializeTenancyByDomain, sin aceptar ningun tenant enviado por
+             * el cliente (cuerpo, header o parametro).
+             */
+
+            // Directorio publico de talleres: solo en el dominio central.
+            foreach ((array) config('tenancy.central_domains') as $dominioCentral) {
+                Route::middleware(['api', 'api.json'])
+                    ->prefix('api/v1')
+                    ->domain($dominioCentral)
+                    ->group(base_path('routes/api_central.php'));
+            }
+
+            // API del taller: el tenant se resuelve por dominio y se exige que
+            // el taller este activo y con el modulo app_movil.
+            Route::middleware([
+                'api',
+                'api.json',
+                InitializeTenancyByDomain::class,
+                PreventAccessFromCentralDomains::class,
+                'api.taller',
+            ])->prefix('api/v1')->group(base_path('routes/api_tenant.php'));
         });
     }
 

@@ -137,6 +137,10 @@
                     r.columnas.forEach(function(c) { html += '<td class="text-center text-primary">' + c.abonos.toFixed(2) + '</td>'; });
                     html += '<td class="text-center"><strong>' + r.total_abonos.toFixed(2) + '</strong></td></tr>';
 
+                    html += '<tr><td><strong>Ingreso x Adelantos (Bahía)</strong></td>';
+                    r.columnas.forEach(function(c) { html += '<td class="text-center text-primary">' + (c.adelantos || 0).toFixed(2) + '</td>'; });
+                    html += '<td class="text-center"><strong>' + (r.total_adelantos || 0).toFixed(2) + '</strong></td></tr>';
+
                     html += '<tr><td><strong>Egresos x Compras</strong></td>';
                     r.columnas.forEach(function(c) { html += '<td class="text-center">' + c.compras.toFixed(2) + '</td>'; });
                     html += '<td class="text-center"><strong>' + r.total_compras.toFixed(2) + '</strong></td></tr>';
@@ -166,6 +170,33 @@
                         html += '</tbody></table></div>';
                     } else {
                         html += '<p class="text-muted mb-3">Sin ventas en este turno.</p>';
+                    }
+
+                    var abonos = data.abonos || [];
+                    html += '<h6 class="font-weight-bold">Abonos de cuentas por cobrar (' + abonos.length + ')</h6>';
+                    if (abonos.length) {
+                        html += '<div class="table-responsive mb-3"><table class="table table-sm"><thead><tr><th>#</th><th>Cliente</th><th>Venta</th><th>Método</th><th>Monto</th><th>Fecha</th><th>Usuario</th></tr></thead><tbody>';
+                        abonos.forEach(function(a) {
+                            html += '<tr><td>' + a.CPA_Id + '</td><td>' + (a.CLI_Nombre || 'Cliente Genérico') + '</td><td>#' + a.VEN_Id + '</td><td>' + a.MEP_Pago + '</td><td>S/ ' + parseFloat(a.CPA_Monto).toFixed(2) + '</td><td>' + a.created_at + '</td><td>' + (a.usuario || '—') + '</td></tr>';
+                        });
+                        html += '</tbody></table></div>';
+                    } else {
+                        html += '<p class="text-muted mb-3">Sin abonos en este turno.</p>';
+                    }
+
+                    var adelantos = data.adelantos || [];
+                    html += '<h6 class="font-weight-bold">Adelantos de bahía (' + adelantos.length + ')</h6>';
+                    if (adelantos.length) {
+                        html += '<div class="table-responsive mb-3"><table class="table table-sm"><thead><tr><th>#</th><th>Cliente</th><th>Placa</th><th>Método</th><th>Monto</th><th>Fecha</th><th>Estado de la cuenta</th></tr></thead><tbody>';
+                        adelantos.forEach(function(a) {
+                            var estado = a.VEN_Id
+                                ? '<span class="badge badge-success">Cobrada · venta #' + a.VEN_Id + '</span>'
+                                : '<span class="badge badge-warning">Abierta (saldo pendiente)</span>';
+                            html += '<tr><td>' + a.BCA_Id + '</td><td>' + (a.RES_Cliente || '—') + '</td><td>' + (a.RES_Placa || '—') + '</td><td>' + a.MEP_Pago + '</td><td>S/ ' + parseFloat(a.BCA_Monto).toFixed(2) + '</td><td>' + a.created_at + '</td><td>' + estado + '</td></tr>';
+                        });
+                        html += '</tbody></table></div>';
+                    } else {
+                        html += '<p class="text-muted mb-3">Sin adelantos en este turno.</p>';
                     }
 
                     html += '<h6 class="font-weight-bold">Compras (' + data.compras.length + ')</h6>';

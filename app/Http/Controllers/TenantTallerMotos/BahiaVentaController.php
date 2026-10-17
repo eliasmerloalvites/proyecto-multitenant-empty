@@ -4,6 +4,7 @@ namespace App\Http\Controllers\TenantTallerMotos;
 
 use App\Http\Controllers\Controller;
 use App\Models\TenantTallerMotos\BahiaCuenta;
+use App\Models\TenantTallerMotos\BahiaCuentaAdelanto;
 use App\Models\TenantTallerMotos\BahiaCuentaItem;
 use App\Models\TenantTallerMotos\Reservacion;
 use App\Services\Ventas\ItemRapidoService;
@@ -63,7 +64,7 @@ class BahiaVentaController extends Controller
 
         // Cuenta mas reciente de cada reserva de hoy (si ya se abrio alguna).
         $resIds = $reservas->flatten(1)->pluck('RES_Id');
-        $cuentas = BahiaCuenta::with('items.producto')
+        $cuentas = BahiaCuenta::with(['items.producto', 'adelantos'])
             ->whereIn('RES_Id', $resIds)
             ->orderByDesc('BCT_Id')
             ->get()
@@ -79,6 +80,7 @@ class BahiaVentaController extends Controller
                     'cuenta' => $cuenta,
                     'total' => $cuenta ? $cuenta->total() : 0,
                     'items' => $cuenta ? $cuenta->items->count() : 0,
+                    'adelantado' => $cuenta ? round((float) $cuenta->adelantos->sum('BCA_Monto'), 2) : 0,
                 ];
             })->values();
 
@@ -88,8 +90,16 @@ class BahiaVentaController extends Controller
             ];
         });
 
+        // Metodos reales para registrar adelantos ("Credito" y "Pago Mixto" son
+        // etiquetas internas, no formas de pago).
+        $metodosPago = DB::table('metodo_pago')
+            ->whereNotIn('MEP_Pago', ['Credito', 'Pago Mixto'])
+            ->orderBy('MEP_Id')
+            ->get(['MEP_Id', 'MEP_Pago']);
+
         return view('tenant_tallermoto.ventas.bahias.index', [
             'tablero' => $tablero,
+            'metodosPago' => $metodosPago,
             'fechaHoy' => $fechaSeleccionada->translatedFormat('l d \d\e F'),
             'fechaSeleccionada' => $fechaSeleccionada->toDateString(),
             'esHoy' => $fechaSeleccionada->toDateString() === $hoy,
@@ -237,6 +247,15 @@ class BahiaVentaController extends Controller
             ], 422);
         }
 
+        // Un adelanto ya entro a la caja: cerrar sin cobrar lo dejaria sin
+        // venta que lo respalde. Hay que anularlo (devolverlo) primero.
+        if ($cuenta->adelantos()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Esta cuenta tiene adelantos registrados; anúlalos (devuelve el dinero) antes de cerrar sin cobrar.',
+            ], 422);
+        }
+
         $cuenta->update([
             'BCT_Estado' => BahiaCuenta::ESTADO_CERRADA_SIN_COBRO,
             'BCT_CerradoEn' => now(),
@@ -264,7 +283,73 @@ class BahiaVentaController extends Controller
             return back()->with('error', 'Esta cuenta no tiene items cargados. Agrega algo antes de cobrar, o ciérrala sin cobrar.');
         }
 
+        $cuenta->load('items');
+        if ($cuenta->totalAdelantado() > $cuenta->total() + 0.009) {
+            return back()->with('error', 'Lo adelantado (S/ ' . number_format($cuenta->totalAdelantado(), 2) . ') supera el total de la cuenta (S/ ' . number_format($cuenta->total(), 2) . '). Agrega los items que faltan o anula el adelanto.');
+        }
+
         return redirect()->route('tenant.ventas.venta.create', ['cuenta_bahia' => $cuenta->BCT_Id]);
+    }
+
+    /**
+     * Registra un pago adelantado sobre la cuenta (el cliente paga una parte
+     * antes de que termine el trabajo). Entra a la caja del turno abierto
+     * ahora, con la fecha y hora de este momento; al cobrar la cuenta, el
+     * punto de venta solo pide el saldo.
+     */
+    public function registrarAdelanto(Request $request, $cuentaId)
+    {
+        $cuenta = $this->cuentaAbiertaOFallar($cuentaId);
+
+        if (tenant_requiere_apertura_caja()) {
+            return response()->json(['success' => false, 'message' => 'No hay ninguna caja aperturada. Abre una caja antes de registrar el adelanto.'], 422);
+        }
+
+        $datos = $request->validate([
+            'monto' => 'required|numeric|min:0.01|max:999999',
+            'metodo_pago' => 'required|integer|exists:metodo_pago,MEP_Id',
+            'observacion' => 'nullable|string|max:255',
+        ]);
+
+        $metodoValido = DB::table('metodo_pago')
+            ->where('MEP_Id', $datos['metodo_pago'])
+            ->whereNotIn('MEP_Pago', ['Credito', 'Pago Mixto'])
+            ->exists();
+
+        if (!$metodoValido) {
+            return response()->json(['success' => false, 'message' => 'Elige un método de pago real (efectivo, Yape, tarjeta…).'], 422);
+        }
+
+        BahiaCuentaAdelanto::create([
+            'BCT_Id' => $cuenta->BCT_Id,
+            'MEP_Id' => $datos['metodo_pago'],
+            'USU_Id' => Auth::id(),
+            'CAJ_Id' => tenant_caja_activa_id(),
+            'CS_Id' => tenant_caja_sesion_activa_id(),
+            'BCA_Monto' => round((float) $datos['monto'], 2),
+            'BCA_Observacion' => $datos['observacion'] ?? null,
+        ]);
+
+        return response()->json($this->resumenJson($cuenta->fresh()));
+    }
+
+    /**
+     * Anula un adelanto (se devuelve el dinero). Solo dentro del mismo turno
+     * de caja en que se registro: si ese turno ya se cerro, su arqueo ya lo
+     * conto y anularlo lo descuadraria.
+     */
+    public function anularAdelanto(Request $request, $cuentaId, $adelantoId)
+    {
+        $cuenta = $this->cuentaAbiertaOFallar($cuentaId);
+        $adelanto = BahiaCuentaAdelanto::where('BCT_Id', $cuenta->BCT_Id)->findOrFail($adelantoId);
+
+        if ((string) $adelanto->CS_Id !== (string) tenant_caja_sesion_activa_id()) {
+            return response()->json(['success' => false, 'message' => 'Este adelanto se registró en otro turno de caja (ya cerrado o de otra caja); no se puede anular desde aquí.'], 422);
+        }
+
+        $adelanto->delete();
+
+        return response()->json($this->resumenJson($cuenta->fresh()));
     }
 
     /**
@@ -294,6 +379,13 @@ class BahiaVentaController extends Controller
             $q->orderBy('BCI_Id');
         }]);
 
+        $adelantos = DB::table('bahia_cuenta_adelanto as a')
+            ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'a.MEP_Id')
+            ->where('a.BCT_Id', $cuenta->BCT_Id)
+            ->orderBy('a.BCA_Id')
+            ->get(['a.BCA_Id', 'a.BCA_Monto', 'a.BCA_Observacion', 'a.created_at', 'mp.MEP_Pago']);
+        $totalAdelantado = round((float) $adelantos->sum('BCA_Monto'), 2);
+
         $productos = DB::table('producto')
             ->whereIn('PRO_Id', $cuenta->items->pluck('PRO_Id'))
             ->select('PRO_Id', 'PRO_Nombre', 'PRO_Imagen')
@@ -304,6 +396,15 @@ class BahiaVentaController extends Controller
             'cuenta_id' => $cuenta->BCT_Id,
             'estado' => $cuenta->BCT_Estado,
             'total' => $cuenta->total(),
+            'adelantado' => $totalAdelantado,
+            'saldo' => round(max(0, $cuenta->total() - $totalAdelantado), 2),
+            'adelantos' => $adelantos->map(fn ($a) => [
+                'id' => $a->BCA_Id,
+                'monto' => round((float) $a->BCA_Monto, 2),
+                'metodo' => $a->MEP_Pago,
+                'observacion' => $a->BCA_Observacion,
+                'fecha' => Carbon::parse($a->created_at)->format('d/m/Y H:i'),
+            ])->values(),
             'items' => $cuenta->items->map(function ($item) use ($productos) {
                 $producto = $productos[$item->PRO_Id] ?? null;
                 $nombreReal = $producto->PRO_Nombre ?? ('Producto #' . $item->PRO_Id);

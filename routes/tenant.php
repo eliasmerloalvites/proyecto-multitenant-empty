@@ -96,13 +96,13 @@ Route::middleware([
     
     Route::get('/servicios', [HomeController::class, 'servicios'])->name('web.servicios');
     Route::get('/reservar', [HomeController::class, 'reservar'])->name('web.reservar');
-    Route::post('/reservar/store', [HomeController::class, 'reservar_store'])->name('web.reservar.store');
-    Route::get('/historial', [HomeController::class, 'historial'])->name('web.historial');
+    Route::post('/reservar/store', [HomeController::class, 'reservar_store'])->middleware('throttle:6,10')->name('web.reservar.store');
+    Route::get('/historial', [HomeController::class, 'historial'])->middleware('throttle:30,10')->name('web.historial');
     Route::get('/catalogo', [HomeController::class, 'catalogo'])->name('web.catalogo');
     Route::get('/nosotros', [HomeController::class, 'nosotros'])->name('web.nosotros');
     Route::get('/contacto', [HomeController::class, 'contacto'])->name('web.contacto');
     Route::get('/tenant/login', [UserController::class, 'showlogin'])->name('tenant.login');
-    Route::post('/tenant/login', [UserController::class, 'login'])->name('tenant.login.post');
+    Route::post('/tenant/login', [UserController::class, 'login'])->middleware('throttle:10,5')->name('tenant.login.post');
 
     Route::middleware('throttle:5,10')->group(function () {
         Route::get('/tenant/password/olvide', [\App\Http\Controllers\Tenant\PasswordResetController::class, 'show'])->name('tenant.password.request');
@@ -123,42 +123,24 @@ Route::middleware([
     // Link corto/opaco para compartir el PDF de una cotizacion (WhatsApp).
     Route::get('/q/{codigo}', [CotizacionController::class, 'compartir'])->name('tenant.ventas.cotizacion.compartir');
 
-    Route::get('/consulta', [ConsultaDocumentoController::class,'index'])->name('consulta');
-    Route::get('/consultardni/{id}', [ConsultaDocumentoController::class,'buscarDni'] )->name('consultar.reniec');
-    Route::get('/consultasunat', [ConsultaDocumentoController::class,'indexsunsat'] )->name('consultarsunat');
-    Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'] )->name('consultar.sunat');
+    // Consulta de DNI/RUC (servicio de pago de un tercero): ahora solo personal autenticado.
 
-    // PDF
-    Route::get('/tenant/actividades/mantenimientoactividadvariada/{id}/pdf',[MantenimientoActividadVariadaController::class, 'pdf'])->name('tenant.actividades.mantenimientoactividadvariada.pdf');
-    Route::get('/tenant/mantenimientos/generalinyectada/{id}/pdf',[MantenimientoGeneralInyectadaController::class, 'pdf'])->name('tenant.mantenimientos.generalinyectada.pdf');
-    Route::get('/tenant/mantenimientos/generalcarburada/{id}/pdf',[MantenimientoGeneralCarburadaController::class, 'pdf'])->name('tenant.mantenimientos.generalcarburada.pdf');
-    Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/pdf',[MantenimientoPreventivoInyectadaController::class, 'pdf'])->name('tenant.mantenimientos.preventivoinyectada.pdf');
-    Route::get('/tenant/mantenimientos/preventivocarburada/{id}/pdf',[MantenimientoPreventivoCarburadaController::class, 'pdf'])->name('tenant.mantenimientos.preventivocarburada.pdf');
+    // Los PDF de mantenimientos (pdf, orden de servicio, estado de recepcion y descarga)
+    // ya NO son publicos: contienen datos personales, precios y fotos y se pedian por id
+    // numerico (enumerable). Ahora viven dentro de auth:tenant, en el grupo de mantenimientos.
 
-    // ORDEN DE SERVICIO (documento nuevo: agrega Inventario Visual +
-    // Inspeccion de la Unidad al pdf() de arriba, sin tocarlo).
-    Route::get('/tenant/actividades/mantenimientoactividadvariada/{id}/orden-servicio',[MantenimientoActividadVariadaController::class, 'ordenServicio'])->name('tenant.actividades.mantenimientoactividadvariada.ordenservicio');
-    Route::get('/tenant/mantenimientos/generalinyectada/{id}/orden-servicio',[MantenimientoGeneralInyectadaController::class, 'ordenServicio'])->name('tenant.mantenimientos.generalinyectada.ordenservicio');
-    Route::get('/tenant/mantenimientos/generalinyectada/{id}/estado-recepcion-pdf',[MantenimientoGeneralInyectadaController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.generalinyectada.estadorecepcionpdf');
-    Route::get('/tenant/mantenimientos/generalcarburada/{id}/orden-servicio',[MantenimientoGeneralCarburadaController::class, 'ordenServicio'])->name('tenant.mantenimientos.generalcarburada.ordenservicio');
-    Route::get('/tenant/mantenimientos/generalcarburada/{id}/estado-recepcion-pdf',[MantenimientoGeneralCarburadaController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.generalcarburada.estadorecepcionpdf');
-    Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/orden-servicio',[MantenimientoPreventivoInyectadaController::class, 'ordenServicio'])->name('tenant.mantenimientos.preventivoinyectada.ordenservicio');
-    Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/estado-recepcion-pdf',[MantenimientoPreventivoInyectadaController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.preventivoinyectada.estadorecepcionpdf');
-    Route::get('/tenant/mantenimientos/preventivocarburada/{id}/orden-servicio',[MantenimientoPreventivoCarburadaController::class, 'ordenServicio'])->name('tenant.mantenimientos.preventivocarburada.ordenservicio');
-    Route::get('/tenant/mantenimientos/preventivocarburada/{id}/estado-recepcion-pdf',[MantenimientoPreventivoCarburadaController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.preventivocarburada.estadorecepcionpdf');
-    Route::get('/tenant/actividades/mantenimientoactividadvariada/{id}/estado-recepcion-pdf',[MantenimientoActividadVariadaController::class, 'estadoRecepcionPdf'])->name('tenant.actividades.mantenimientoactividadvariada.estadorecepcionpdf');
-
-
-    // PDF
-    Route::get('/tenant/actividades/mantenimientoactividadvariada/{id}/descargarpdf',[MantenimientoActividadVariadaController::class, 'descargarpdf'])->name('tenant.actividades.mantenimientoactividadvariada.descargarpdf');
-    Route::get('/tenant/mantenimientos/generalinyectada/{id}/descargarpdf',[MantenimientoGeneralInyectadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.generalinyectada.descargarpdf');
-    Route::get('/tenant/mantenimientos/generalcarburada/{id}/descargarpdf',[MantenimientoGeneralCarburadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.generalcarburada.descargarpdf');
-    Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/descargarpdf',[MantenimientoPreventivoInyectadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.preventivoinyectada.descargarpdf');
-    Route::get('/tenant/mantenimientos/preventivocarburada/{id}/descargarpdf',[MantenimientoPreventivoCarburadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.preventivocarburada.descargarpdf');
 
 
 
     Route::middleware(['auth:tenant'])->group(function(){
+        // Consulta DNI/RUC: con limite de uso para no agotar la cuota del servicio.
+        Route::middleware('throttle:60,1')->group(function () {
+            Route::get('/consulta', [ConsultaDocumentoController::class,'index'])->name('consulta');
+            Route::get('/consultardni/{id}', [ConsultaDocumentoController::class,'buscarDni'] )->name('consultar.reniec');
+            Route::get('/consultasunat', [ConsultaDocumentoController::class,'indexsunsat'] )->name('consultarsunat');
+            Route::get('/consultarruc/{id}', [ConsultaDocumentoController::class,'buscarRuc'] )->name('consultar.sunat');
+        });
+
 
         // Fuera de tenant.pagado a propósito: si el ciclo está vencido, es
         // acá a donde se redirige — necesitan quedar siempre alcanzables.
@@ -211,6 +193,36 @@ Route::middleware([
         Route::get('/tenant/contabilidad/resumen-caja', [ContabilidadController::class, 'resumenCaja'])->name('tenant.contabilidad.caja');
 
     Route::middleware(['tenant.module:mantenimientos'])->group(function () {
+
+        // PDF de mantenimientos (solo personal autenticado del taller).
+        // PDF
+        Route::get('/tenant/actividades/mantenimientoactividadvariada/{id}/pdf',[MantenimientoActividadVariadaController::class, 'pdf'])->name('tenant.actividades.mantenimientoactividadvariada.pdf');
+        Route::get('/tenant/mantenimientos/generalinyectada/{id}/pdf',[MantenimientoGeneralInyectadaController::class, 'pdf'])->name('tenant.mantenimientos.generalinyectada.pdf');
+        Route::get('/tenant/mantenimientos/generalcarburada/{id}/pdf',[MantenimientoGeneralCarburadaController::class, 'pdf'])->name('tenant.mantenimientos.generalcarburada.pdf');
+        Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/pdf',[MantenimientoPreventivoInyectadaController::class, 'pdf'])->name('tenant.mantenimientos.preventivoinyectada.pdf');
+        Route::get('/tenant/mantenimientos/preventivocarburada/{id}/pdf',[MantenimientoPreventivoCarburadaController::class, 'pdf'])->name('tenant.mantenimientos.preventivocarburada.pdf');
+    
+        // ORDEN DE SERVICIO (documento nuevo: agrega Inventario Visual +
+        // Inspeccion de la Unidad al pdf() de arriba, sin tocarlo).
+        Route::get('/tenant/actividades/mantenimientoactividadvariada/{id}/orden-servicio',[MantenimientoActividadVariadaController::class, 'ordenServicio'])->name('tenant.actividades.mantenimientoactividadvariada.ordenservicio');
+        Route::get('/tenant/mantenimientos/generalinyectada/{id}/orden-servicio',[MantenimientoGeneralInyectadaController::class, 'ordenServicio'])->name('tenant.mantenimientos.generalinyectada.ordenservicio');
+        Route::get('/tenant/mantenimientos/generalinyectada/{id}/estado-recepcion-pdf',[MantenimientoGeneralInyectadaController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.generalinyectada.estadorecepcionpdf');
+        Route::get('/tenant/mantenimientos/generalcarburada/{id}/orden-servicio',[MantenimientoGeneralCarburadaController::class, 'ordenServicio'])->name('tenant.mantenimientos.generalcarburada.ordenservicio');
+        Route::get('/tenant/mantenimientos/generalcarburada/{id}/estado-recepcion-pdf',[MantenimientoGeneralCarburadaController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.generalcarburada.estadorecepcionpdf');
+        Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/orden-servicio',[MantenimientoPreventivoInyectadaController::class, 'ordenServicio'])->name('tenant.mantenimientos.preventivoinyectada.ordenservicio');
+        Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/estado-recepcion-pdf',[MantenimientoPreventivoInyectadaController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.preventivoinyectada.estadorecepcionpdf');
+        Route::get('/tenant/mantenimientos/preventivocarburada/{id}/orden-servicio',[MantenimientoPreventivoCarburadaController::class, 'ordenServicio'])->name('tenant.mantenimientos.preventivocarburada.ordenservicio');
+        Route::get('/tenant/mantenimientos/preventivocarburada/{id}/estado-recepcion-pdf',[MantenimientoPreventivoCarburadaController::class, 'estadoRecepcionPdf'])->name('tenant.mantenimientos.preventivocarburada.estadorecepcionpdf');
+        Route::get('/tenant/actividades/mantenimientoactividadvariada/{id}/estado-recepcion-pdf',[MantenimientoActividadVariadaController::class, 'estadoRecepcionPdf'])->name('tenant.actividades.mantenimientoactividadvariada.estadorecepcionpdf');
+    
+    
+        // PDF
+        Route::get('/tenant/actividades/mantenimientoactividadvariada/{id}/descargarpdf',[MantenimientoActividadVariadaController::class, 'descargarpdf'])->name('tenant.actividades.mantenimientoactividadvariada.descargarpdf');
+        Route::get('/tenant/mantenimientos/generalinyectada/{id}/descargarpdf',[MantenimientoGeneralInyectadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.generalinyectada.descargarpdf');
+        Route::get('/tenant/mantenimientos/generalcarburada/{id}/descargarpdf',[MantenimientoGeneralCarburadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.generalcarburada.descargarpdf');
+        Route::get('/tenant/mantenimientos/preventivoinyectada/{id}/descargarpdf',[MantenimientoPreventivoInyectadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.preventivoinyectada.descargarpdf');
+        Route::get('/tenant/mantenimientos/preventivocarburada/{id}/descargarpdf',[MantenimientoPreventivoCarburadaController::class, 'descargarpdf'])->name('tenant.mantenimientos.preventivocarburada.descargarpdf');
+
 
         // RESERVACIONES ADMINISTRACION (parte del flujo de Mantenimientos)
         Route::resource('/tenant/reservaciones/administracion', ReservacionController::class)->names([
@@ -442,6 +454,8 @@ Route::middleware([
                 Route::get('/cuenta/{cuenta}/resumen', [BahiaVentaController::class, 'resumen'])->name('resumen');
                 Route::post('/cuenta/{cuenta}/cerrar-sin-cobrar', [BahiaVentaController::class, 'cerrarSinCobrar'])->name('cerrarSinCobrar');
                 Route::get('/cuenta/{cuenta}/cobrar', [BahiaVentaController::class, 'cobrar'])->name('cobrar');
+                Route::post('/cuenta/{cuenta}/adelantos', [BahiaVentaController::class, 'registrarAdelanto'])->name('adelantos.store');
+                Route::delete('/cuenta/{cuenta}/adelantos/{adelanto}', [BahiaVentaController::class, 'anularAdelanto'])->name('adelantos.destroy');
             });
             Route::resource('/tenant/ventas/venta', VentaController::class)->except(['update'])->names([
                 'index' => 'tenant.ventas.venta.index',
@@ -686,6 +700,25 @@ Route::middleware([
             Route::post('/tenant/compras/compra/{compra}/anular', [CompraAnulacionController::class, 'store'])->name('tenant.compras.compra.anular');
         });
 
+        // APP MOVIL (clientes finales): solicitudes de vinculo, invitaciones y accesos.
+        // Solo para talleres con el modulo app_movil contratado.
+        Route::middleware(['tenant.module:app_movil'])->group(function () {
+            Route::get('/tenant/appmovil', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'index'])
+                ->middleware('can:tenant.appmovil.index')->name('tenant.appmovil.index');
+            Route::post('/tenant/appmovil/configuracion', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'configuracion'])
+                ->middleware('can:tenant.appmovil.config')->name('tenant.appmovil.configuracion');
+            Route::post('/tenant/appmovil/vinculos/{id}/aprobar', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'aprobar'])
+                ->whereNumber('id')->middleware('can:tenant.appmovil.vinculos')->name('tenant.appmovil.vinculos.aprobar');
+            Route::post('/tenant/appmovil/vinculos/{id}/rechazar', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'rechazar'])
+                ->whereNumber('id')->middleware('can:tenant.appmovil.vinculos')->name('tenant.appmovil.vinculos.rechazar');
+            Route::post('/tenant/appmovil/vinculos/{id}/revocar', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'revocar'])
+                ->whereNumber('id')->middleware('can:tenant.appmovil.vinculos')->name('tenant.appmovil.vinculos.revocar');
+            Route::post('/tenant/appmovil/invitaciones', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'crearInvitacion'])
+                ->middleware(['can:tenant.appmovil.invitaciones', 'throttle:30,1'])->name('tenant.appmovil.invitaciones.store');
+            Route::post('/tenant/appmovil/invitaciones/{id}/revocar', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'revocarInvitacion'])
+                ->whereNumber('id')->middleware('can:tenant.appmovil.invitaciones')->name('tenant.appmovil.invitaciones.revocar');
+        });
+
         Route::middleware(['tenant.module:productos'])->group(function () {
             // Exportar a Excel: va antes del resource para que "exportar" no se confunda con un {producto}.
             Route::get('/tenant/inventario/producto/exportar', [ProductoController::class, 'exportar'])->middleware('can:tenant.inventario.producto.index')->name('tenant.inventario.producto.exportar');
@@ -823,96 +856,10 @@ Route::middleware([
 
 });
 
-Route::get('/__debug', function () {
-    dd([
-        'host' => request()->getHost(),
-        'tenant' => tenant(),
-    ]);
-});
-Route::get('/__who', fn () => dd('TENANT', tenant()));
-
-Route::get('/test-greenter', function () {
-
-    return class_exists(\Greenter\See::class)
-        ? 'Greenter OK'
-        : 'Error';
-
-});
-
-Route::get('/test-see', function () {
-    $service = new GreenterService();
-    $see = $service->getSee();
-    return $see
-        ? 'SEE OK'
-        : 'ERROR';
-});
-
-Route::get('/test-company', function () {
-    $service = new GreenterService();
-    $company = $service->getCompany();
-
-    return response()->json([
-        'ruc' => $company->getRuc(),
-        'razon_social' => $company->getRazonSocial(),
-        'nombre_comercial' => $company->getNombreComercial(),
-    ]);
-
-});
-
-Route::get('/test-client', function () {
-
-    $service = new GreenterService();
-
-    $client = $service->getClient([
-        'tipo_doc' => '6',
-        'numero_doc' => '20111111111',
-        'razon_social' => 'CLIENTE DEMO SAC'
-    ]);
-
-    return response()->json([
-        'tipo_doc' => $client->getTipoDoc(),
-        'numero_doc' => $client->getNumDoc(),
-        'razon_social' => $client->getRznSocial()
-    ]);
-
-});
-
-Route::get('/test-invoice', function () {
-
-    $service = new GreenterService();
-
-    $invoice = $service->getInvoice();
-
-    return response()->json([
-        'serie' => $invoice->getSerie(),
-        'correlativo' => $invoice->getCorrelativo(),
-        'cliente' => $invoice->getClient()->getRznSocial(),
-        'total' => $invoice->getMtoImpVenta(),
-    ]);
-
-});
-
-Route::get('/test-xml', function () {
-
-    $service = new GreenterService();
-
-    return response()->json(
-        $service->generateXml()
-    );
-
-});
-
-Route::get('/test-send', function () {
-
-    $service = new GreenterService();
-
-    return response()->json(
-        $service->send()
-    );
-
-});
-
-Route::get('/test-facturacion', [TestFacturacionController::class, 'enviar']);
+// Se eliminaron las rutas publicas de prueba (/__debug, /test-greenter, /test-see,
+// /test-company, /test-client, /test-invoice, /test-xml, /test-send y /test-facturacion):
+// no tenian autenticacion y las ultimas ejecutaban facturacion con las credenciales
+// del taller. Para probar facturacion usar el panel (Mi Facturacion).
 
 
 

@@ -406,6 +406,25 @@
                                 </select>
                             </div>
 
+                            {{-- App móvil para los clientes del taller (solo Taller de Motos).
+                                 Módulo opcional por cliente: no depende del plan. --}}
+                            <div class="col-md-12 mb-3" id="wrap_app_movil" style="display:none;">
+                                <input type="hidden" name="modulos_app_form" value="1">
+                                <label>App móvil de clientes</label>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="edit_app_movil" name="app_movil" value="1">
+                                    <label class="custom-control-label" for="edit_app_movil">Activar la app móvil para este taller</label>
+                                </div>
+                                <small class="form-text text-muted" id="info_codigo_app">
+                                    Al activarla se genera el código público del taller (el del QR). Antes de activarla,
+                                    hay que correr las migraciones de la base de datos del taller.
+                                </small>
+                                <div id="bloque_codigo_app" style="display:none;" class="mt-2">
+                                    Código del taller: <strong id="texto_codigo_app"></strong>
+                                    &middot; <a href="#" target="_blank" id="enlace_qr_app">Ver QR para imprimir</a>
+                                </div>
+                            </div>
+
                         </div>
 
                     </div>
@@ -519,6 +538,20 @@
                                 <div class="col-md-3">
                                     <small class="text-muted d-block">Dominio Propio</small>
                                     <div class="fw-semibold" id="ver_custom_domain_enabled"></div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3" id="ver_bloque_app_movil" style="display:none;">
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">App móvil</small>
+                                    <div class="fw-semibold" id="ver_app_movil"></div>
+                                </div>
+                                <div class="col-md-6" id="ver_bloque_codigo_app" style="display:none;">
+                                    <small class="text-muted d-block">Código del taller</small>
+                                    <div class="fw-semibold">
+                                        <span id="ver_codigo_app"></span>
+                                        <a href="#" id="ver_enlace_qr_app" target="_blank" class="ms-2">Ver QR</a>
+                                    </div>
                                 </div>
                             </div>
 
@@ -718,6 +751,15 @@
                         $('#edit_next_payment_date').val(data.next_payment_date);
                         $('#edit_precio_personalizado').val(data.precio_personalizado);
                         $('#edit_status').val(data.status);
+                        $('#wrap_app_movil').toggle(data.tipo_negocio === 'tallermoto');
+                        $('#edit_app_movil').prop('checked', !!data.app_movil);
+                        if (data.codigo_app) {
+                            $('#texto_codigo_app').text(data.codigo_app);
+                            $('#enlace_qr_app').attr('href', '/admin/clients/' + data.id + '/qr');
+                            $('#bloque_codigo_app').show();
+                        } else {
+                            $('#bloque_codigo_app').hide();
+                        }
                         $('#modalEditarCliente').modal('show');
                     }
                 ).fail(function(xhr) {
@@ -786,6 +828,11 @@
                         $('#ver_max_images').text(data.max_images ?? '—');
                         $('#ver_storage_limit_mb').text(data.storage_limit_mb ?? '—');
                         $('#ver_custom_domain_enabled').text(data.custom_domain_enabled ? 'Sí' : 'No');
+                        $('#ver_bloque_app_movil').toggle(data.tipo_negocio === 'tallermoto');
+                        $('#ver_app_movil').text(data.app_movil ? 'Activada' : 'No contratada');
+                        $('#ver_bloque_codigo_app').toggle(!!data.codigo_app);
+                        $('#ver_codigo_app').text(data.codigo_app || '');
+                        $('#ver_enlace_qr_app').attr('href', data.codigo_app ? '/admin/clients/' + data.id + '/qr' : '#');
                         $('#ver_created_at').text(data.created_at ? moment(data.created_at).format(
                             'YYYY-MM-DD HH:mm') : '—');
                         $('#ver_updated_at').text(data.updated_at ? moment(data.updated_at).format(

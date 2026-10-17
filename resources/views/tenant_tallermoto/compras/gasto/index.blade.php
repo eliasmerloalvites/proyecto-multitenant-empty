@@ -37,7 +37,8 @@
                                         Fecha
                                     </span>
                                 </div>
-                                <input class="form-control" id="idGAS_Fecha" name="GAS_Fecha" required placeholder="Fecha" type="date">
+                                <input class="form-control" id="idGAS_Fecha" type="date" readonly value="{{ now('America/Lima')->toDateString() }}"
+                                    title="El gasto se registra con la fecha y hora actuales, dentro del turno de caja abierto">
                             </div>
                         </div>
     

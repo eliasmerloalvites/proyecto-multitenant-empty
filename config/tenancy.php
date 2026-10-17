@@ -18,6 +18,9 @@ return [
      */
     'central_domains' => [
         env('APP_CENTRAL_DOMAIN', 'saas.kael.pe'),
+        // Dominios centrales adicionales (separados por coma), p. ej. para probar
+        // la app movil desde un emulador en local.
+        ...array_filter(array_map('trim', explode(',', (string) env('APP_CENTRAL_DOMAINS_EXTRA', '')))),
     ],
 
     /**
