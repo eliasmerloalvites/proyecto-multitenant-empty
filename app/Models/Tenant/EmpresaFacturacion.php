@@ -89,6 +89,9 @@ class EmpresaFacturacion extends Model
         // REINTENTO AUTOMATICO DE COMPROBANTES SUNAT (ver comando
         // sunat:reintentar-pendientes)
         'sunat_reintento_hora',
+
+        // App movil
+        'app_movil_mostrar_precios',
     ];
 
     /**
@@ -117,6 +120,9 @@ class EmpresaFacturacion extends Model
         'decimales' => 'integer',
 
         'reserva_notif_activo' => 'boolean',
+
+        // App movil: ver el precio de los repuestos en el detalle de la orden.
+        'app_movil_mostrar_precios' => 'boolean',
     ];
 
     /**

@@ -273,6 +273,8 @@ class ClientController extends Controller
                 'storage_limit_mb'      => $tenant->storage_limit_mb ?? null,
                 'custom_domain_enabled' => (bool) ($tenant->custom_domain_enabled ?? false),
                 'custom_branding'       => (bool) ($tenant->custom_branding ?? false),
+                'app_movil'             => (bool) (($tenant->modules ?? [])['app_movil'] ?? false),
+                'codigo_app'            => $tenant->codigo_app ?? null,
             ],
         ]);
     }

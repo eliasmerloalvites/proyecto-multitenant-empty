@@ -454,6 +454,8 @@ Route::middleware([
                 Route::get('/cuenta/{cuenta}/resumen', [BahiaVentaController::class, 'resumen'])->name('resumen');
                 Route::post('/cuenta/{cuenta}/cerrar-sin-cobrar', [BahiaVentaController::class, 'cerrarSinCobrar'])->name('cerrarSinCobrar');
                 Route::get('/cuenta/{cuenta}/cobrar', [BahiaVentaController::class, 'cobrar'])->name('cobrar');
+                Route::post('/cuenta/{cuenta}/adelantos', [BahiaVentaController::class, 'registrarAdelanto'])->name('adelantos.store');
+                Route::delete('/cuenta/{cuenta}/adelantos/{adelanto}', [BahiaVentaController::class, 'anularAdelanto'])->name('adelantos.destroy');
             });
             Route::resource('/tenant/ventas/venta', VentaController::class)->except(['update'])->names([
                 'index' => 'tenant.ventas.venta.index',
@@ -696,6 +698,25 @@ Route::middleware([
             // CompraAnulacionController para el porque de anular en vez de
             // borrar de verdad.
             Route::post('/tenant/compras/compra/{compra}/anular', [CompraAnulacionController::class, 'store'])->name('tenant.compras.compra.anular');
+        });
+
+        // APP MOVIL (clientes finales): solicitudes de vinculo, invitaciones y accesos.
+        // Solo para talleres con el modulo app_movil contratado.
+        Route::middleware(['tenant.module:app_movil'])->group(function () {
+            Route::get('/tenant/appmovil', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'index'])
+                ->middleware('can:tenant.appmovil.index')->name('tenant.appmovil.index');
+            Route::post('/tenant/appmovil/configuracion', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'configuracion'])
+                ->middleware('can:tenant.appmovil.config')->name('tenant.appmovil.configuracion');
+            Route::post('/tenant/appmovil/vinculos/{id}/aprobar', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'aprobar'])
+                ->whereNumber('id')->middleware('can:tenant.appmovil.vinculos')->name('tenant.appmovil.vinculos.aprobar');
+            Route::post('/tenant/appmovil/vinculos/{id}/rechazar', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'rechazar'])
+                ->whereNumber('id')->middleware('can:tenant.appmovil.vinculos')->name('tenant.appmovil.vinculos.rechazar');
+            Route::post('/tenant/appmovil/vinculos/{id}/revocar', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'revocar'])
+                ->whereNumber('id')->middleware('can:tenant.appmovil.vinculos')->name('tenant.appmovil.vinculos.revocar');
+            Route::post('/tenant/appmovil/invitaciones', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'crearInvitacion'])
+                ->middleware(['can:tenant.appmovil.invitaciones', 'throttle:30,1'])->name('tenant.appmovil.invitaciones.store');
+            Route::post('/tenant/appmovil/invitaciones/{id}/revocar', [\App\Http\Controllers\TenantTallerMotos\AppMovilController::class, 'revocarInvitacion'])
+                ->whereNumber('id')->middleware('can:tenant.appmovil.invitaciones')->name('tenant.appmovil.invitaciones.revocar');
         });
 
         Route::middleware(['tenant.module:productos'])->group(function () {

@@ -106,7 +106,15 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Cache\RateLimiting\Limit::perMinute(10)->by($request->ip()),
             \Illuminate\Cache\RateLimiting\Limit::perHour(30)->by($request->ip() . '|' . $request->input('celular')),
         ]);
-        \Illuminate\Support\Facades\RateLimiter::for('app-movil-api', fn ($request) => \Illuminate\Cache\RateLimiting\Limit::perMinute(120)->by($request->user('cliente')?->getAuthIdentifier() ?: $request->ip()));
+        // Garaje: canjear invitaciones y pedir vinculos tienen limites propios (por cuenta).
+        \Illuminate\Support\Facades\RateLimiter::for('app-movil-invitacion', fn ($request) => [
+            \Illuminate\Cache\RateLimiting\Limit::perMinute(5)->by('inv|' . ($request->user('cliente')?->getAuthIdentifier() ?: $request->ip())),
+            \Illuminate\Cache\RateLimiting\Limit::perHour(20)->by('inv|' . ($request->user('cliente')?->getAuthIdentifier() ?: $request->ip())),
+        ]);
+        \Illuminate\Support\Facades\RateLimiter::for('app-movil-solicitud', fn ($request) => \Illuminate\Cache\RateLimiting\Limit::perHour(10)->by('sol|' . ($request->user('cliente')?->getAuthIdentifier() ?: $request->ip())));
+        \Illuminate\Support\Facades\RateLimiter::for('app-movil-sincronizar', fn ($request) => \Illuminate\Cache\RateLimiting\Limit::perMinute(3)->by('sin|' . ($request->user('cliente')?->getAuthIdentifier() ?: $request->ip())));
+        \Illuminate\Support\Facades\RateLimiter::for('app-movil-reserva', fn ($request) => \Illuminate\Cache\RateLimiting\Limit::perHour(10)->by('res|' . ($request->user('cliente')?->getAuthIdentifier() ?: $request->ip())));
+        \Illuminate\Support\Facades\RateLimiter::for('app-movil-api',fn ($request) => \Illuminate\Cache\RateLimiting\Limit::perMinute(120)->by($request->user('cliente')?->getAuthIdentifier() ?: $request->ip()));
 
         Mail::extend('brevo', function () {
             return (new BrevoTransportFactory())->create(

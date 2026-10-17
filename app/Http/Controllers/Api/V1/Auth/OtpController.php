@@ -24,6 +24,7 @@ class OtpController extends Controller
     public function __construct(
         private OtpService $otp,
         private SesionMovilService $sesiones,
+        private \App\Services\AppMovil\VinculacionMotoService $vinculacion,
     ) {
     }
 
@@ -82,6 +83,14 @@ class OtpController extends Controller
 
         if (! $cuenta->CMV_VerificadoEn) {
             $cuenta->forceFill(['CMV_VerificadoEn' => Carbon::now()])->save();
+        }
+
+        // Busca en el taller las motos registradas con este celular. Si falla,
+        // no debe impedir el inicio de sesion: se reintenta al abrir el garaje.
+        try {
+            $this->vinculacion->sincronizarPorTelefono($cuenta);
+        } catch (\Throwable $e) {
+            report($e);
         }
 
         $sesion = $this->sesiones->emitir($cuenta, $datos['dispositivo']);

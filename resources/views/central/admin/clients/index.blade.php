@@ -541,6 +541,20 @@
                                 </div>
                             </div>
 
+                            <div class="row mt-3" id="ver_bloque_app_movil" style="display:none;">
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">App móvil</small>
+                                    <div class="fw-semibold" id="ver_app_movil"></div>
+                                </div>
+                                <div class="col-md-6" id="ver_bloque_codigo_app" style="display:none;">
+                                    <small class="text-muted d-block">Código del taller</small>
+                                    <div class="fw-semibold">
+                                        <span id="ver_codigo_app"></span>
+                                        <a href="#" id="ver_enlace_qr_app" target="_blank" class="ms-2">Ver QR</a>
+                                    </div>
+                                </div>
+                            </div>
+
                             <hr class="my-4">
 
                             <div class="row">
@@ -814,6 +828,11 @@
                         $('#ver_max_images').text(data.max_images ?? '—');
                         $('#ver_storage_limit_mb').text(data.storage_limit_mb ?? '—');
                         $('#ver_custom_domain_enabled').text(data.custom_domain_enabled ? 'Sí' : 'No');
+                        $('#ver_bloque_app_movil').toggle(data.tipo_negocio === 'tallermoto');
+                        $('#ver_app_movil').text(data.app_movil ? 'Activada' : 'No contratada');
+                        $('#ver_bloque_codigo_app').toggle(!!data.codigo_app);
+                        $('#ver_codigo_app').text(data.codigo_app || '');
+                        $('#ver_enlace_qr_app').attr('href', data.codigo_app ? '/admin/clients/' + data.id + '/qr' : '#');
                         $('#ver_created_at').text(data.created_at ? moment(data.created_at).format(
                             'YYYY-MM-DD HH:mm') : '—');
                         $('#ver_updated_at').text(data.updated_at ? moment(data.updated_at).format(

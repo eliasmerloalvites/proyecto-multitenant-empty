@@ -32,7 +32,13 @@ class CuentaMovil extends Authenticatable
     protected $casts = [
         'CMV_VerificadoEn' => 'datetime',
         'CMV_UltimoAcceso' => 'datetime',
+        'CMV_SincronizadoEn' => 'datetime',
     ];
+
+    public function vinculos()
+    {
+        return $this->hasMany(CuentaMovilMoto::class, 'CMV_Id', 'CMV_Id');
+    }
 
     public function estaActiva(): bool
     {

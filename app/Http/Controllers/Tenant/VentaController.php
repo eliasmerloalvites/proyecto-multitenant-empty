@@ -576,6 +576,7 @@ class VentaController extends Controller
         // la URL), se precarga el carrito con lo que ya se le cargo a la
         // cuenta y el cliente/moto de la reserva, para no volver a escribirlo.
         $cuentaBahiaId = null;
+        $adelantoBahia = 0.0;
         $prefillCarrito = [];
         $prefillCliente = null;
 
@@ -585,6 +586,9 @@ class VentaController extends Controller
 
             if ($cuenta && $cuenta->estaAbierta()) {
                 $cuentaBahiaId = $cuenta->BCT_Id;
+                // Lo que el cliente ya adelanto sobre esta cuenta: ya entro a
+                // la caja en su momento, aqui solo se cobra el saldo.
+                $adelantoBahia = $cuenta->totalAdelantado();
 
                 $productos = DB::table('producto')->whereIn('PRO_Id', $cuenta->items->pluck('PRO_Id'))
                     ->select('PRO_Id', 'PRO_Nombre', 'PRO_Imagen')
@@ -758,6 +762,7 @@ class VentaController extends Controller
                 'problemasFacturacion',
                 'facturacionEnPruebas',
                 'cuentaBahiaId',
+                'adelantoBahia',
                 'prefillCarrito',
                 'prefillCliente',
                 'reemitirInfo',
@@ -1139,6 +1144,22 @@ class VentaController extends Controller
             $esCredito = $request->boolean('es_credito');
             $fechaVencimientoCredito = trim((string) $request->get('fecha_vencimiento'));
 
+            // Adelantos ya cobrados sobre la cuenta de bahia que se esta
+            // cobrando: entraron a la caja del dia en que se pagaron, asi que
+            // aqui solo se cobra el saldo. La caja de hoy cuenta la venta
+            // menos lo adelantado (CajaSesionController::ventasPorMetodoEnSesion).
+            $adelantoBahia = 0.0;
+            $mepAdelantoBahia = null;
+            if ($request->filled('bahia_cuenta_id')) {
+                $cuentaConAdelanto = \App\Models\TenantTallerMotos\BahiaCuenta::where('BCT_Id', $request->input('bahia_cuenta_id'))
+                    ->where('BCT_Estado', \App\Models\TenantTallerMotos\BahiaCuenta::ESTADO_ABIERTA)
+                    ->first();
+                if ($cuentaConAdelanto) {
+                    $adelantoBahia = $cuentaConAdelanto->totalAdelantado();
+                    $mepAdelantoBahia = $cuentaConAdelanto->adelantos()->orderBy('BCA_Id')->value('MEP_Id');
+                }
+            }
+
             // Si la nota que se reemite tenia un saldo pendiente en Cuentas
             // por Cobrar, ese saldo no puede evaporarse solo porque ahora se
             // emite como Boleta/Factura: se fuerza al credito para poder
@@ -1200,7 +1221,8 @@ class VentaController extends Controller
                     fn ($p) => !empty($p['metodo_pago']) && (float) ($p['monto'] ?? 0) > 0
                 ));
 
-                if (count($pagos) === 0) {
+                // Si el adelanto ya cubre todo, no queda nada por cobrar ahora.
+                if (count($pagos) === 0 && $adelantoBahia <= 0) {
                     throw new Exception('Debe indicar al menos un metodo de pago con un monto valido.');
                 }
 
@@ -1212,7 +1234,10 @@ class VentaController extends Controller
                 // referencia y el detalle real queda en venta_pago.
                 $mepIdVenta = count($metodosDistintos) === 1
                     ? $metodosDistintos[0]
-                    : $this->metodoPagoMixtoId();
+                    : (count($metodosDistintos) === 0 && $mepAdelantoBahia
+                        // Pagada entera con el adelanto: se etiqueta con el metodo del adelanto.
+                        ? (int) $mepAdelantoBahia
+                        : $this->metodoPagoMixtoId());
             }
 
             $venta = new Venta;
@@ -1320,6 +1345,16 @@ class VentaController extends Controller
                 $cont = $cont + 1;
             }
 
+            if ($adelantoBahia > 0) {
+                $totalVentaAdelanto = (float) DB::table('detalle_venta')
+                    ->where('VEN_Id', $venta->VEN_Id)
+                    ->sum(DB::raw('DEV_Cantidad * DEV_PrecioUnitario'));
+
+                if ($adelantoBahia > $totalVentaAdelanto + 0.009) {
+                    throw new Exception('Lo adelantado en la bahía (S/ ' . number_format($adelantoBahia, 2) . ') supera el total de la venta (S/ ' . number_format($totalVentaAdelanto, 2) . ').');
+                }
+            }
+
             // Venta al credito: recien aqui se sabe el total real (suma de
             // DEV_Cantidad*DEV_PrecioUnitario ya con descuento aplicado), asi
             // que la cuenta por cobrar se crea al final, no al momento de
@@ -1328,6 +1363,10 @@ class VentaController extends Controller
                 $montoTotal = (float) DB::table('detalle_venta')
                     ->where('VEN_Id', $venta->VEN_Id)
                     ->sum(DB::raw('DEV_Cantidad * DEV_PrecioUnitario'));
+
+                // El adelanto de bahia ya se cobro (en su propio turno de caja):
+                // no se inserta como abono nuevo, solo cuenta como ya abonado.
+                $yaAbonadoPrevioReemitir += $adelantoBahia;
 
                 if ($montoInicialCredito + $yaAbonadoPrevioReemitir > $montoTotal + 0.009) {
                     throw new Exception('El monto inicial mas lo ya cobrado antes (S/ ' . number_format($yaAbonadoPrevioReemitir, 2) . ') no puede superar el total de la venta (S/ ' . number_format($montoTotal, 2) . ').');

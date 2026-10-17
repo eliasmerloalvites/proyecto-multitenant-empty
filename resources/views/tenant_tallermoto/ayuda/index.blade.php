@@ -678,7 +678,7 @@
                 'tenant.ventas.cliente.index',
                 'tenant.ventas.metodopago.index',
             ]))
-            <section class="ayuda-modulo" id="mod-ventas" data-buscar="ventas vender cobrar punto de venta pos boleta factura nota de venta comprobante carrito item rapido cliente credito pago mixto vuelto ventas por bahia cotizaciones metodos de pago notas de credito guias de remision cuentas por cobrar abonar sunat">
+            <section class="ayuda-modulo" id="mod-ventas" data-buscar="ventas vender cobrar punto de venta pos boleta factura nota de venta comprobante carrito item rapido cliente credito pago mixto vuelto ventas por bahia cotizaciones metodos de pago notas de credito guias de remision cuentas por cobrar abonar sunat adelanto adelantar pago anticipo saldo por cobrar">
                 <div class="ayuda-modulo-header">
                     <div class="ayuda-modulo-icono" style="background:#16A34A;"><i class="fas fa-cash-register"></i></div>
                     <div>
@@ -732,6 +732,38 @@
                         </p>
                     </div>
 
+                    <div class="ayuda-sub" id="vta-bahia-adelanto">
+                        <h3><i class="fas fa-hand-holding-dollar"></i> Adelanto de pago en una bahía</h3>
+                        <p>
+                            Si el cliente paga una parte <strong>antes</strong> de que termine el trabajo (por ejemplo, deja un
+                            adelanto hoy y paga el resto mañana al recoger la moto), regístralo en la tarjeta de su cuenta con
+                            <strong>"Adelanto de pago"</strong>:
+                        </p>
+                        <ol>
+                            <li>Indica el <strong>monto</strong>, el <strong>método de pago</strong> (efectivo, Yape, tarjeta…) y, si quieres, una observación.</li>
+                            <li>Presiona <strong>"Registrar adelanto"</strong>. Queda guardado con la <strong>fecha y hora</strong> de ese momento y <strong>entra a la caja abierta hoy</strong>.</li>
+                            <li>La tarjeta muestra el <strong>Total</strong>, lo <strong>Adelantado</strong> y el <strong>Saldo por cobrar</strong>. Puedes registrar varios adelantos.</li>
+                            <li>Cuando el trabajo termina (ese día u otro), presiona <strong>"Cobrar"</strong>: el punto de venta muestra lo adelantado y <strong>solo te pide el saldo</strong>. El comprobante sale por el total del servicio.</li>
+                        </ol>
+                        <div class="ayuda-nota info">
+                            <i class="fas fa-circle-info"></i>
+                            <div>
+                                El dinero <strong>no se cuenta dos veces</strong>: el adelanto suma a la caja del día en que se pagó y,
+                                al cobrar, la caja de ese día solo suma el saldo. Si la venta se hace <strong>al crédito</strong>, lo
+                                adelantado aparece como ya abonado en Cuentas por Cobrar.
+                            </div>
+                        </div>
+                        <div class="ayuda-nota warn">
+                            <i class="fas fa-triangle-exclamation"></i>
+                            <div>
+                                Necesitas una <strong>caja abierta</strong> para registrar un adelanto. Una cuenta con adelantos
+                                <strong>no se puede "Cerrar sin cobrar"</strong>, y no se puede cobrar si lo adelantado supera el total
+                                de la cuenta. Para devolver un adelanto, usa el botón <i class="fas fa-undo"></i> en la lista de
+                                adelantos — solo se puede anular <strong>dentro del mismo turno de caja</strong> en que se registró.
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="ayuda-sub">
                         <h3><i class="fas fa-file-signature"></i> Cotizaciones</h3>
                         <p>
@@ -783,6 +815,10 @@
                             entra a la caja que tengas abierta en ese momento. Al llegar el saldo a cero, la cuenta pasa a
                             <span class="badge badge-success">Pagada</span> sola.
                         </p>
+                        <div class="ayuda-nota warn">
+                            <i class="fas fa-triangle-exclamation"></i>
+                            <div>Para registrar un abono necesitas una <strong>caja abierta</strong>: así el dinero queda en el turno correcto y aparece en su cuadre. Cada abono se ve después, uno por uno, en el detalle del turno en <a href="#mod-caja">Historial de Caja</a>.</div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -792,7 +828,7 @@
             {{-- CAJA --}}
             {{-- ========================================================= --}}
             @if (tenant_has_module('ventas') && auth()->user()->can('tenant.ventas.caja.index'))
-            <section class="ayuda-modulo" id="mod-caja" data-buscar="caja aperturar abrir cerrar turno sesion historial cuadre diferencia monto esperado monto real">
+            <section class="ayuda-modulo" id="mod-caja" data-buscar="caja aperturar abrir cerrar turno sesion historial cuadre diferencia monto esperado monto real abonos adelantos bahia excel">
                 <div class="ayuda-modulo-header">
                     <div class="ayuda-modulo-icono" style="background:#0D9488;"><i class="fas fa-vault"></i></div>
                     <div>
@@ -808,11 +844,17 @@
                     </div>
                     <div class="ayuda-sub">
                         <h3><i class="fas fa-lock"></i> Cerrar la caja</h3>
-                        <p>Al terminar el turno, presiona <strong>"Cerrar"</strong> e indica el <strong>monto real contado</strong> en la caja física. El sistema calcula solo el <strong>monto esperado</strong> (apertura + ventas en efectivo + abonos cobrados − compras y gastos en efectivo pagados en el turno) y te muestra la <strong>diferencia</strong>: si sobra o falta plata frente a lo que debería haber.</p>
+                        <p>Al terminar el turno, presiona <strong>"Cerrar"</strong> e indica el <strong>monto real contado</strong> en la caja física. El sistema calcula solo el <strong>monto esperado</strong> (apertura + ventas en efectivo + abonos de cuentas por cobrar + adelantos de bahía cobrados en efectivo − compras y gastos en efectivo pagados en el turno) y te muestra la <strong>diferencia</strong>: si sobra o falta plata frente a lo que debería haber.</p>
                     </div>
                     <div class="ayuda-sub">
                         <h3><i class="fas fa-clock-rotate-left"></i> Historial de Caja</h3>
                         <p><span class="ayuda-ruta">Caja → Historial de Caja</span> lista todos los turnos (abiertos y cerrados) de todas las cajas, con quién abrió y cerró cada uno y la diferencia de cada cierre. El botón de detalle desglosa, turno por turno, los totales por cada método de pago y el listado completo de ventas, compras y gastos de ese turno.</p>
+                        <p>El detalle también lista, uno por uno:</p>
+                        <ul>
+                            <li><strong>Abonos de cuentas por cobrar</strong>: cliente, venta, método, monto, hora y quién lo cobró.</li>
+                            <li><strong>Adelantos de bahía</strong>: cliente, placa, método, monto y si la cuenta ya se cobró (con su número de venta) o sigue abierta.</li>
+                        </ul>
+                        <p>El botón <i class="fas fa-file-excel text-success"></i> descarga todo en Excel, con una hoja para cada tipo de movimiento (incluidos abonos y adelantos).</p>
                     </div>
                 </div>
             </section>
@@ -905,10 +947,14 @@
                         <p>
                             Un Gasto es distinto de una Compra: es dinero que sale del negocio pero <strong>no es mercadería</strong>
                             (luz, alquiler, servicios, etc.) — por eso <strong>no mueve el stock</strong>. En
-                            <span class="ayuda-ruta">Compras → Gastos</span> registras fecha, tipo de documento, proveedor, tipo de
+                            <span class="ayuda-ruta">Compras → Gastos</span> registras tipo de documento, proveedor, tipo de
                             gasto, monto, una descripción y si ese gasto <strong>afecta o no la caja</strong> (es decir, si sale
                             del efectivo de hoy o no). Puedes adjuntar una foto del comprobante.
                         </p>
+                        <div class="ayuda-nota info">
+                            <i class="fas fa-circle-info"></i>
+                            <div>La <strong>fecha del gasto es automática</strong>: se guarda con la fecha y hora en que lo registras, porque se descuenta de la caja abierta en ese momento. Así el gasto siempre cae dentro del turno correcto y los reportes por fecha cuadran con el cierre de caja.</div>
+                        </div>
                     </div>
 
                     <div class="ayuda-sub">

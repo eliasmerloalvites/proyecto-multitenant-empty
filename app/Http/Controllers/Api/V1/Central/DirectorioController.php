@@ -43,13 +43,15 @@ class DirectorioController extends Controller
             return $noEncontrado();
         }
 
-        $dominio = $tenant->domains()->orderBy('id')->value('domain');
+        $dominios = $tenant->domains()->orderBy('id')->pluck('domain');
+        $sufijo = config('app_movil.sufijo_dominio');
+        $dominio = ($sufijo ? $dominios->first(fn ($d) => str_ends_with($d, $sufijo)) : null) ?? $dominios->first();
 
         if (! $dominio) {
             return $noEncontrado();
         }
 
-        $base = config('app_movil.esquema') . '://' . $dominio;
+        $base = config('app_movil.esquema') . '://' . $dominio . (config('app_movil.puerto') ? ':' . config('app_movil.puerto') : '');
 
         $taller = $tenant->run(function () use ($base) {
             $empresa = EmpresaFacturacion::where('tenant_id', tenant('id'))->first();

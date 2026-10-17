@@ -12,6 +12,13 @@ return [
     // produccion siempre https; en local se puede poner http en el .env.
     'esquema' => env('APP_MOVIL_ESQUEMA', 'https'),
 
+    // Puerto a agregar a las direcciones de taller (solo desarrollo local, ej. 8000).
+    'puerto' => env('APP_MOVIL_PUERTO'),
+
+    // Si se define, el directorio prefiere el dominio del taller que termine en
+    // este sufijo (solo desarrollo local, ej. .10.0.2.2.nip.io).
+    'sufijo_dominio' => env('APP_MOVIL_SUFIJO_DOMINIO'),
+
     'directorio' => [
         // Largo del codigo publico del taller que va en el QR.
         'longitud_codigo' => 8,

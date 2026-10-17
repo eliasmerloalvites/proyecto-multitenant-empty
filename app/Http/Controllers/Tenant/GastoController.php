@@ -79,16 +79,17 @@ class GastoController extends Controller
             DB::beginTransaction();
 
             $idusu = Auth::user()->id;
-            $fecha=$request->get('GAS_Fecha');
-            $mytime = Carbon::now('America/Lima');
-            $horaactual = $mytime->toTimeString();
+            // La fecha del gasto es siempre el momento en que se registra: el
+            // gasto se descuenta de la caja abierta ahora (CS_Id), asi que una
+            // fecha elegida a mano podia quedar fuera de la apertura y el
+            // cierre de ese turno y descuadrar los reportes por fecha.
             $request->merge([
                 'ALM_Id' => tenant_caja_activa_almacen_id() ?? 1,
                 'CAJ_Id' => tenant_caja_activa_id(),
                 'CS_Id' => tenant_caja_sesion_activa_id(),
                 'GAS_Status' => 1,
                 'USU_Id' => $idusu,
-                'GAS_Fecha' =>  $fecha.' '.$horaactual
+                'GAS_Fecha' => Carbon::now('America/Lima')->toDateTimeString(),
             ]);
 
             $gasto = Gasto::create($request->except('_token'));

@@ -34,6 +34,17 @@ class BahiaCuenta extends Model
         return $this->hasMany(BahiaCuentaItem::class, 'BCT_Id', 'BCT_Id');
     }
 
+    public function adelantos()
+    {
+        return $this->hasMany(BahiaCuentaAdelanto::class, 'BCT_Id', 'BCT_Id');
+    }
+
+    /** Lo que el cliente ya pago por adelantado sobre esta cuenta. */
+    public function totalAdelantado(): float
+    {
+        return round((float) $this->adelantos()->sum('BCA_Monto'), 2);
+    }
+
     public function reservacion()
     {
         return $this->belongsTo(Reservacion::class, 'RES_Id', 'RES_Id');
