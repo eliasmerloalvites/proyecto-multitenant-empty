@@ -216,6 +216,27 @@ class CajaSesionController extends Controller
     }
 
     /**
+     * Pagos a proveedores (abonos de cuentas por pagar, incluido el monto
+     * inicial de una compra al credito) hechos DURANTE este turno, por
+     * metodo: [MEP_Id => monto]. Es dinero que SALE de la caja; la compra al
+     * credito en si no sale de caja (va bajo el metodo "Credito").
+     */
+    private static function pagosProveedorPorMetodoEnSesion(string $csId): array
+    {
+        if (! Schema::hasTable('cuenta_por_pagar_abono')) {
+            return [];
+        }
+
+        return DB::table('cuenta_por_pagar_abono')
+            ->where('CS_Id', $csId)
+            ->select('MEP_Id', DB::raw('SUM(CPPA_Monto) as total'))
+            ->groupBy('MEP_Id')
+            ->pluck('total', 'MEP_Id')
+            ->map(fn ($v) => (float) $v)
+            ->toArray();
+    }
+
+    /**
      * Adelantos de pago sobre cuentas de bahia (todavia abiertas o ya
      * cobradas) recibidos DURANTE este turno, por metodo: [MEP_Id => monto].
      */
@@ -237,7 +258,8 @@ class CajaSesionController extends Controller
     /**
      * Monto que debería haber en la caja al cierre: lo que abrió + ventas
      * en efectivo - compras en efectivo - gastos en efectivo + abonos de
-     * cuentas por cobrar cobrados en efectivo, todo registrado dentro de
+     * cuentas por cobrar cobrados en efectivo - pagos a proveedores
+     * (cuentas por pagar) en efectivo, todo registrado dentro de
      * ese turno (CS_Id). Las ventas con pago mixto solo aportan la porcion
      * que realmente se pago en efectivo.
      */
@@ -268,7 +290,9 @@ class CajaSesionController extends Controller
             ->where('GAS_Afecta', 'SI')
             ->sum('GAS_Monto');
 
-        return round((float) $sesion->CS_MontoApertura + (float) $ventasEfectivo - (float) $comprasEfectivo - (float) $gastosEfectivo, 2);
+        $pagosProveedorEfectivo = self::pagosProveedorPorMetodoEnSesion((string) $sesion->CS_Id)[$mepEfectivoId] ?? 0;
+
+        return round((float) $sesion->CS_MontoApertura + (float) $ventasEfectivo - (float) $comprasEfectivo - (float) $gastosEfectivo - (float) $pagosProveedorEfectivo, 2);
     }
 
     /**
@@ -381,6 +405,19 @@ class CajaSesionController extends Controller
                 ->get(['a.CPA_Id', 'v.VEN_Id', 'c.CLI_Nombre', 'mp.MEP_Pago', 'a.CPA_Monto', 'a.created_at', 'u.name as usuario'])
             : collect();
 
+        // Pagos a proveedores (cuentas por pagar) hechos en este turno.
+        $pagosProveedor = Schema::hasTable('cuenta_por_pagar_abono')
+            ? DB::table('cuenta_por_pagar_abono as a')
+                ->join('cuenta_por_pagar as cpp', 'cpp.CPP_Id', '=', 'a.CPP_Id')
+                ->join('compra as co', 'co.COM_Id', '=', 'cpp.COM_Id')
+                ->leftJoin('proveedor as p', 'p.PROV_Id', '=', 'co.PROV_Id')
+                ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'a.MEP_Id')
+                ->leftJoin('users as u', 'u.id', '=', 'a.USU_Id')
+                ->where('a.CS_Id', $id)
+                ->orderByDesc('a.CPPA_Id')
+                ->get(['a.CPPA_Id', 'co.COM_Id', 'co.COM_TipoDocumento', 'co.COM_NumDocumento', 'p.PROV_RazonSocial', 'mp.MEP_Pago', 'a.CPPA_Monto', 'a.created_at', 'u.name as usuario'])
+            : collect();
+
         // Adelantos de bahia cobrados en este turno.
         $adelantos = Schema::hasTable('bahia_cuenta_adelanto')
             ? DB::table('bahia_cuenta_adelanto as a')
@@ -392,6 +429,12 @@ class CajaSesionController extends Controller
                 ->orderByDesc('a.BCA_Id')
                 ->get(['a.BCA_Id', 'b.BCT_Id', 'b.VEN_Id', 'b.BCT_Estado', 'r.RES_Cliente', 'r.RES_Placa', 'mp.MEP_Pago', 'a.BCA_Monto', 'a.created_at', 'u.name as usuario'])
             : collect();
+
+        // Placa de la moto cuando la venta salio de una cuenta de bahia (la
+        // venta en si no guarda placa; una venta de mostrador no tiene).
+        $placas = self::placasDeVentas($ventas->pluck('VEN_Id')->merge($abonos->pluck('VEN_Id'))->unique()->all());
+        $ventas->each(fn ($v) => $v->placa = $placas[$v->VEN_Id] ?? null);
+        $abonos->each(fn ($a) => $a->placa = $placas[$a->VEN_Id] ?? null);
 
         // Turno todavía abierto: CS_MontoEsperado aún no se calculó (eso
         // pasa recién al cerrar), así que se calcula al vuelo para que el
@@ -411,7 +454,25 @@ class CajaSesionController extends Controller
             'gastos' => $gastos,
             'abonos' => $abonos,
             'adelantos' => $adelantos,
+            'pagosProveedor' => $pagosProveedor,
         ]);
+    }
+
+    /** [VEN_Id => placa] de las ventas que cerraron una cuenta de bahia. */
+    private static function placasDeVentas(array $venIds): array
+    {
+        if (empty($venIds) || ! Schema::hasTable('bahia_cuenta')) {
+            return [];
+        }
+
+        return DB::table('bahia_cuenta as b')
+            ->join('reservacion as r', 'r.RES_Id', '=', 'b.RES_Id')
+            ->whereIn('b.VEN_Id', $venIds)
+            ->whereNotNull('r.RES_Placa')
+            ->where('r.RES_Placa', '<>', '')
+            ->pluck('r.RES_Placa', 'b.VEN_Id')
+            ->map(fn ($p) => strtoupper(trim($p)))
+            ->all();
     }
 
     /**
@@ -448,6 +509,7 @@ class CajaSesionController extends Controller
         $ventasPorMetodo = self::ventasPorMetodoEnSesion($csId);
         $abonosPorMetodo = self::abonosPorMetodoEnSesion($csId);
         $adelantosPorMetodo = self::adelantosPorMetodoEnSesion($csId);
+        $pagosProveedorPorMetodo = self::pagosProveedorPorMetodoEnSesion($csId);
 
         $comprasPorMetodo = DB::table('compra as co')
             ->join('detalle_compra as dc', 'dc.COM_Id', '=', 'co.COM_Id')
@@ -470,6 +532,7 @@ class CajaSesionController extends Controller
         $totalAbonos = 0;
         $totalAdelantos = 0;
         $totalCompras = 0;
+        $totalPagosProveedor = 0;
         $totalGastos = 0;
 
         foreach ($metodos as $mepId => $nombre) {
@@ -477,6 +540,7 @@ class CajaSesionController extends Controller
             $abonos = (float) ($abonosPorMetodo[$mepId] ?? 0);
             $adelantos = (float) ($adelantosPorMetodo[$mepId] ?? 0);
             $compras = (float) ($comprasPorMetodo[$mepId] ?? 0);
+            $pagosProveedor = (float) ($pagosProveedorPorMetodo[$mepId] ?? 0);
             $gastos = (float) ($gastosPorMetodo[$mepId] ?? 0);
 
             $columnas[] = [
@@ -485,14 +549,16 @@ class CajaSesionController extends Controller
                 'abonos' => round($abonos, 2),
                 'adelantos' => round($adelantos, 2),
                 'compras' => round($compras, 2),
+                'pagos_proveedor' => round($pagosProveedor, 2),
                 'gastos' => round($gastos, 2),
-                'neto' => round($ventas + $abonos + $adelantos - $compras - $gastos, 2),
+                'neto' => round($ventas + $abonos + $adelantos - $compras - $pagosProveedor - $gastos, 2),
             ];
 
             $totalVentas += $ventas;
             $totalAbonos += $abonos;
             $totalAdelantos += $adelantos;
             $totalCompras += $compras;
+            $totalPagosProveedor += $pagosProveedor;
             $totalGastos += $gastos;
         }
 
@@ -502,8 +568,9 @@ class CajaSesionController extends Controller
             'total_abonos' => round($totalAbonos, 2),
             'total_adelantos' => round($totalAdelantos, 2),
             'total_compras' => round($totalCompras, 2),
+            'total_pagos_proveedor' => round($totalPagosProveedor, 2),
             'total_gastos' => round($totalGastos, 2),
-            'total_neto' => round($totalVentas + $totalAbonos + $totalAdelantos - $totalCompras - $totalGastos, 2),
+            'total_neto' => round($totalVentas + $totalAbonos + $totalAdelantos - $totalCompras - $totalPagosProveedor - $totalGastos, 2),
         ];
     }
 }

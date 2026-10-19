@@ -494,6 +494,7 @@
                 request()->routeIs('tenant.inventario.producto*') ||
                 request()->routeIs('tenant.inventario.traslado*') ||
                 request()->routeIs('tenant.inventario.ajuste*') ||
+                request()->routeIs('tenant.inventario.desempaquetado*') ||
                 request()->routeIs('tenant.inventario.controlinventario*')
                     ? 'menu-open'
                     : '' }}">
@@ -505,6 +506,7 @@
                     request()->routeIs('tenant.inventario.producto*') ||
                     request()->routeIs('tenant.inventario.traslado*') ||
                     request()->routeIs('tenant.inventario.ajuste*') ||
+                request()->routeIs('tenant.inventario.desempaquetado*') ||
                     request()->routeIs('tenant.inventario.controlinventario*')
                         ? 'active'
                         : '' }}">
@@ -542,6 +544,13 @@
                                         class="nav-link {{ request()->routeIs('tenant.inventario.ajuste*') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Ajuste de Inventario</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ tenant_url('tenant.inventario.desempaquetado.index') }}"
+                                        class="nav-link {{ request()->routeIs('tenant.inventario.desempaquetado*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Desempaquetar Kits</p>
                                     </a>
                                 </li>
                             @endcan

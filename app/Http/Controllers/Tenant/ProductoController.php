@@ -903,16 +903,51 @@ class ProductoController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | CLONAR QUERIES
+        | DESEMPAQUETADO DE KITS (solo talleres de motos)
         |--------------------------------------------------------------------------
+        | Abrir un kit es una Salida del kit y una Entrada de cada componente,
+        | con el mismo numero DES-xxxxx. Si luego se anula, se registra el
+        | movimiento inverso en la fecha de la anulacion (la historia no se borra).
         */
 
-        $EntradasCompra = clone $EntradasCompraBase;
-        $EntradasTraslado = clone $EntradasTrasladoBase;
-        $EntradasAjuste = clone $EntradasAjusteBase;
-        $SalidasVenta = clone $SalidasVentaBase;
-        $SalidasTraslado = clone $SalidasTrasladoBase;
-        $SalidasAjuste = clone $SalidasAjusteBase;
+        // [query, columna de fecha, columna de cantidad]
+        $entradas = [
+            [$EntradasCompraBase, 'cp.created_at', 'lt.LOT_CantidadIngreso'],
+            [$EntradasTrasladoBase, 't.created_at', 'td.TRD_Cantidad'],
+            [$EntradasAjusteBase, 'a.created_at', 'ad.AJD_Cantidad'],
+        ];
+        $salidas = [
+            [$SalidasVentaBase, 'v.created_at', 'dv.DEV_Cantidad'],
+            [$SalidasTrasladoBase, 't.created_at', 'td.TRD_Cantidad'],
+            [$SalidasAjusteBase, 'a.created_at', 'ad.AJD_Cantidad'],
+        ];
+
+        if (Schema::hasTable('desempaquetado')) {
+            $numeroDes = "CONCAT('DES-', LPAD(de.DES_Id, 5, '0'))";
+
+            // Componente que entro al abrir un kit.
+            $entradas[] = [DB::table('desempaquetado_detalle as dd')
+                ->join('desempaquetado as de', 'de.DES_Id', '=', 'dd.DES_Id')
+                ->join('producto as pk', 'pk.PRO_Id', '=', 'de.PRO_Id')
+                ->select('de.DES_Id as id', DB::raw("CONCAT('Desempaquetado ', $numeroDes, ' de ', pk.PRO_Nombre) as documento"), 'de.created_at as fecha', 'dd.LOT_Id as lote_id', 'dd.DSD_Cantidad as entrada', DB::raw('0 as salida'), DB::raw('"Entrada" as tipo'))
+                ->where('dd.PRO_Id', $id), 'de.created_at', 'dd.DSD_Cantidad'];
+
+            // Kit abierto.
+            $salidas[] = [DB::table('desempaquetado as de')
+                ->select('de.DES_Id as id', DB::raw("CONCAT('Desempaquetado ', $numeroDes, ' (kit abierto)') as documento"), 'de.created_at as fecha', DB::raw('NULL as lote_id'), DB::raw('0 as entrada'), 'de.DES_Cantidad as salida', DB::raw('"Salida" as tipo'))
+                ->where('de.PRO_Id', $id), 'de.created_at', 'de.DES_Cantidad'];
+
+            // Anulacion: vuelve el kit...
+            $entradas[] = [DB::table('desempaquetado as de')
+                ->select('de.DES_Id as id', DB::raw("CONCAT('Anulación de ', $numeroDes, ' (kit devuelto)') as documento"), 'de.DES_AnuladoEn as fecha', 'de.LOT_IdDevolucion as lote_id', 'de.DES_Cantidad as entrada', DB::raw('0 as salida'), DB::raw('"Entrada" as tipo'))
+                ->where('de.PRO_Id', $id)->where('de.DES_Estado', 'ANULADO'), 'de.DES_AnuladoEn', 'de.DES_Cantidad'];
+
+            // ...y salen sus componentes.
+            $salidas[] = [DB::table('desempaquetado_detalle as dd')
+                ->join('desempaquetado as de', 'de.DES_Id', '=', 'dd.DES_Id')
+                ->select('de.DES_Id as id', DB::raw("CONCAT('Anulación de ', $numeroDes, ' (vuelve al kit)') as documento"), 'de.DES_AnuladoEn as fecha', 'dd.LOT_Id as lote_id', DB::raw('0 as entrada'), 'dd.DSD_Cantidad as salida', DB::raw('"Salida" as tipo'))
+                ->where('dd.PRO_Id', $id)->where('de.DES_Estado', 'ANULADO'), 'de.DES_AnuladoEn', 'dd.DSD_Cantidad'];
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -923,75 +958,43 @@ class ProductoController extends Controller
         $stock = 0;
 
         if ($fecha_inicio) {
-
-            // ENTRADAS PREVIAS
-            $entradasPrevias = (clone $EntradasCompraBase)
-                ->where('cp.created_at','<',$fecha_inicio . ' 00:00:00')
-                ->sum('lt.LOT_CantidadIngreso')
-                + (clone $EntradasTrasladoBase)
-                ->where('t.created_at','<',$fecha_inicio . ' 00:00:00')
-                ->sum('td.TRD_Cantidad')
-                + (clone $EntradasAjusteBase)
-                ->where('a.created_at','<',$fecha_inicio . ' 00:00:00')
-                ->sum('ad.AJD_Cantidad');
-
-            // SALIDAS PREVIAS
-            $salidasPrevias = (clone $SalidasVentaBase)
-                ->where('v.created_at','<',$fecha_inicio . ' 00:00:00')
-                ->sum('dv.DEV_Cantidad')
-                + (clone $SalidasTrasladoBase)
-                ->where('t.created_at','<',$fecha_inicio . ' 00:00:00')
-                ->sum('td.TRD_Cantidad')
-                + (clone $SalidasAjusteBase)
-                ->where('a.created_at','<',$fecha_inicio . ' 00:00:00')
-                ->sum('ad.AJD_Cantidad');
-
-            // STOCK INICIAL
+            $desde = $fecha_inicio . ' 00:00:00';
+            $entradasPrevias = collect($entradas)->sum(fn ($e) => (float) (clone $e[0])->where($e[1], '<', $desde)->sum($e[2]));
+            $salidasPrevias = collect($salidas)->sum(fn ($e) => (float) (clone $e[0])->where($e[1], '<', $desde)->sum($e[2]));
             $stock = $entradasPrevias - $salidasPrevias;
-
-            // FILTRO FECHA INICIO
-            $EntradasCompra->where('cp.created_at','>=',$fecha_inicio . ' 00:00:00');
-            $EntradasTraslado->where('t.created_at','>=',$fecha_inicio . ' 00:00:00');
-            $EntradasAjuste->where('a.created_at','>=',$fecha_inicio . ' 00:00:00');
-            $SalidasVenta->where('v.created_at','>=',$fecha_inicio . ' 00:00:00');
-            $SalidasTraslado->where('t.created_at','>=',$fecha_inicio . ' 00:00:00');
-            $SalidasAjuste->where('a.created_at','>=',$fecha_inicio . ' 00:00:00');
         }
 
         /*
         |--------------------------------------------------------------------------
-        | FILTRO FECHA FIN
+        | FILTROS DE FECHA Y TIPO
         |--------------------------------------------------------------------------
         */
 
-        if ($fecha_fin) {
-            $EntradasCompra->where('cp.created_at','<=',$fecha_fin . ' 23:59:59');
-            $EntradasTraslado->where('t.created_at','<=',$fecha_fin . ' 23:59:59');
-            $EntradasAjuste->where('a.created_at','<=',$fecha_fin . ' 23:59:59');
-            $SalidasVenta->where('v.created_at','<=',$fecha_fin . ' 23:59:59');
-            $SalidasTraslado->where('t.created_at','<=',$fecha_fin . ' 23:59:59');
-            $SalidasAjuste->where('a.created_at','<=',$fecha_fin . ' 23:59:59');
-        }
+        $filtrar = function (array $lista) use ($fecha_inicio, $fecha_fin) {
+            return array_map(function ($e) use ($fecha_inicio, $fecha_fin) {
+                $q = clone $e[0];
+                if ($fecha_inicio) {
+                    $q->where($e[1], '>=', $fecha_inicio . ' 00:00:00');
+                }
+                if ($fecha_fin) {
+                    $q->where($e[1], '<=', $fecha_fin . ' 23:59:59');
+                }
 
-        /*
-        |--------------------------------------------------------------------------
-        | FILTRO TIPO
-        |--------------------------------------------------------------------------
-        */
+                return $q;
+            }, $lista);
+        };
 
-        if ($tipo == 'Entrada') {
-            $kardex = $EntradasCompra->unionAll($EntradasTraslado)->unionAll($EntradasAjuste)->get();
-        } elseif ($tipo == 'Salida') {
-            $kardex = $SalidasVenta->unionAll($SalidasTraslado)->unionAll($SalidasAjuste)->get();
-        } else {
-            $kardex = $EntradasCompra
-                ->unionAll($EntradasTraslado)
-                ->unionAll($EntradasAjuste)
-                ->unionAll($SalidasVenta)
-                ->unionAll($SalidasTraslado)
-                ->unionAll($SalidasAjuste)
-                ->get();
+        $consultas = match ($tipo) {
+            'Entrada' => $filtrar($entradas),
+            'Salida' => $filtrar($salidas),
+            default => array_merge($filtrar($entradas), $filtrar($salidas)),
+        };
+
+        $kardex = array_shift($consultas);
+        foreach ($consultas as $q) {
+            $kardex->unionAll($q);
         }
+        $kardex = $kardex->get();
 
         /*
         |--------------------------------------------------------------------------

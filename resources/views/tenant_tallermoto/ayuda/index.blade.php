@@ -560,7 +560,7 @@
                 'tenant.mantenimientos.garantiahero.index',
                 'tenant.mantenimientos.garantialifan.index',
             ]))
-            <section class="ayuda-modulo" id="mod-mantenimientos" data-buscar="mantenimientos general preventivo carburada inyectada checklist repuestos reemplazo fotos evidencias estado pendiente aprobado observado planes recomendaciones verificacion final estado de recepcion inventario visual inspeccion orden de servicio pdf">
+            <section class="ayuda-modulo" id="mod-mantenimientos" data-buscar="mantenimientos general preventivo carburada inyectada checklist repuestos reemplazo fotos evidencias estado pendiente aprobado observado planes recomendaciones verificacion final estado de recepcion inventario visual inspeccion orden de servicio pdf firma firmas digitales cerrado reabrir">
                 <div class="ayuda-modulo-header">
                     <div class="ayuda-modulo-icono" style="background:#DC2626;"><i class="fas fa-tools"></i></div>
                     <div>
@@ -625,6 +625,24 @@
                         <div class="ayuda-nota info">
                             <i class="fas fa-circle-info"></i>
                             <div>El botón de <strong>Estado de Recepción</strong> solo aparece si ya se guardó al menos una respuesta de ese checklist — si nadie lo llenó todavía, el botón se oculta en vez de mostrar un documento vacío.</div>
+                        </div>
+                    </div>
+
+                    <div class="ayuda-sub" id="mant-firmas">
+                        <h3><i class="fas fa-signature"></i> Firmas digitales</h3>
+                        <p>
+                            En la ficha de edición de cada mantenimiento, la sección <strong>Firmas del documento</strong> permite firmar
+                            con el dedo (celular o tablet) o con el mouse. Las firmas salen impresas sobre su línea en la Orden de Servicio
+                            y en el PDF del mantenimiento, con nombre y fecha. Disponible en los planes Plus y Empresarial.
+                        </p>
+                        <ol>
+                            <li><strong>Técnico</strong>: solo el técnico asignado, con su propio usuario.</li>
+                            <li><strong>Representante</strong>: un usuario con rol Admin o Gerente.</li>
+                            <li><strong>Cliente</strong>: al final; se le pasa el equipo del taller, escribe su nombre (y DNI, opcional) y firma.</li>
+                        </ol>
+                        <div class="ayuda-nota info">
+                            <i class="fas fa-lock"></i>
+                            <div>Con la firma del cliente el mantenimiento queda <strong>cerrado</strong>: ya no se pueden cambiar checklist, repuestos, fotos, estado de recepción ni el estado. Si hace falta corregir algo, un <strong>Admin</strong> puede <strong>Reabrir</strong> (indicando el motivo): se borran las firmas y deben firmar de nuevo; la reapertura queda registrada.</div>
                         </div>
                     </div>
 
@@ -842,7 +860,7 @@
             {{-- CAJA --}}
             {{-- ========================================================= --}}
             @if (tenant_has_module('ventas') && auth()->user()->can('tenant.ventas.caja.index'))
-            <section class="ayuda-modulo" id="mod-caja" data-buscar="caja aperturar abrir cerrar turno sesion historial cuadre diferencia monto esperado monto real abonos adelantos bahia excel">
+            <section class="ayuda-modulo" id="mod-caja" data-buscar="caja aperturar abrir cerrar turno sesion historial cuadre diferencia monto esperado monto real abonos adelantos bahia pagos proveedores cuentas por pagar excel">
                 <div class="ayuda-modulo-header">
                     <div class="ayuda-modulo-icono" style="background:#0D9488;"><i class="fas fa-vault"></i></div>
                     <div>
@@ -858,7 +876,7 @@
                     </div>
                     <div class="ayuda-sub">
                         <h3><i class="fas fa-lock"></i> Cerrar la caja</h3>
-                        <p>Al terminar el turno, presiona <strong>"Cerrar"</strong> e indica el <strong>monto real contado</strong> en la caja física. El sistema calcula solo el <strong>monto esperado</strong> (apertura + ventas en efectivo + abonos de cuentas por cobrar + adelantos de bahía cobrados en efectivo − compras y gastos en efectivo pagados en el turno) y te muestra la <strong>diferencia</strong>: si sobra o falta plata frente a lo que debería haber.</p>
+                        <p>Al terminar el turno, presiona <strong>"Cerrar"</strong> e indica el <strong>monto real contado</strong> en la caja física. El sistema calcula solo el <strong>monto esperado</strong> (apertura + ventas en efectivo + abonos de cuentas por cobrar + adelantos de bahía cobrados en efectivo − compras, gastos y pagos a proveedores (cuentas por pagar) en efectivo hechos en el turno) y te muestra la <strong>diferencia</strong>: si sobra o falta plata frente a lo que debería haber.</p>
                     </div>
                     <div class="ayuda-sub">
                         <h3><i class="fas fa-clock-rotate-left"></i> Historial de Caja</h3>
@@ -867,8 +885,9 @@
                         <ul>
                             <li><strong>Abonos de cuentas por cobrar</strong>: cliente, venta, método, monto, hora y quién lo cobró.</li>
                             <li><strong>Adelantos de bahía</strong>: cliente, placa, método, monto y si la cuenta ya se cobró (con su número de venta) o sigue abierta.</li>
+                            <li><strong>Pagos a proveedores (cuentas por pagar)</strong>: proveedor, compra, método, monto, hora y quién lo pagó. Incluye el monto inicial que se paga al registrar una compra al crédito. Para registrar un pago necesitas una <strong>caja abierta</strong>.</li>
                         </ul>
-                        <p>El botón <i class="fas fa-file-excel text-success"></i> descarga todo en Excel, con una hoja para cada tipo de movimiento (incluidos abonos y adelantos).</p>
+                        <p>El botón <i class="fas fa-file-excel text-success"></i> descarga todo en Excel, con una hoja para cada tipo de movimiento (incluidos abonos, adelantos y pagos a proveedores).</p>
                     </div>
                 </div>
             </section>
@@ -988,7 +1007,7 @@
                 'tenant.inventario.almacen.index',
                 'tenant.inventario.producto.index',
             ]))
-            <section class="ayuda-modulo" id="mod-inventario" data-buscar="inventario productos control inventario kardex lotes traslado de stock ajuste categoria clase almacen sede stock minimo importar excel plantilla">
+            <section class="ayuda-modulo" id="mod-inventario" data-buscar="inventario productos control inventario kardex lotes traslado de stock ajuste desempaquetar kit receta categoria clase almacen sede stock minimo importar excel plantilla">
                 <div class="ayuda-modulo-header">
                     <div class="ayuda-modulo-icono" style="background:#CA8A04;"><i class="fas fa-boxes"></i></div>
                     <div>
@@ -1036,6 +1055,22 @@
                             obligatorio (Merma, Rotura, Vencimiento, Diferencia de conteo, Otro), y por cada producto indica si es
                             para <strong>Agregar (+)</strong> o <strong>Quitar (−)</strong> y la cantidad.
                         </p>
+                    </div>
+
+                    <div class="ayuda-sub">
+                        <h3><i class="fas fa-box-open"></i> Desempaquetar Kits</h3>
+                        <p>
+                            <span class="ayuda-ruta">Inventario → Desempaquetar Kits</span>. Para un producto que se vende como kit
+                            (por ejemplo un <em>Kit de herramientas</em>) pero cuyas piezas también quieres vender por separado.
+                            Eliges el almacén, el kit y cuántos kits abres; el sistema carga las piezas que trae (su
+                            <strong>receta</strong>) y puedes corregirlas si ese kit vino distinto. Al confirmar, los kits salen del
+                            stock y cada pieza entra con su propio stock y su costo de compra actual.
+                        </p>
+                        <ul>
+                            <li>La primera vez que abres un kit, agrega sus piezas y marca <strong>"Guardar como receta"</strong> para no volver a escribirlas.</li>
+                            <li>Cada desempaquetado queda con un número <strong>DES-00001</strong> y se ve en el <strong>kardex</strong>: salida en el kit y entrada en cada pieza.</li>
+                            <li>Puedes <strong>anularlo</strong> (con motivo) mientras ninguna pieza se haya vendido o movido: las piezas salen y el kit vuelve al stock. Si ya se usó alguna, corrige con un Ajuste de Inventario.</li>
+                        </ul>
                     </div>
 
                     <div class="ayuda-sub">

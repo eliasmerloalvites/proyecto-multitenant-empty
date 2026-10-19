@@ -682,29 +682,7 @@
         @if(tenant('plan') === 'plus' || tenant('plan') === 'empresarial')
             <div class="section no-break">
                 <div class="section-body">
-                    <table class="sign-table">
-                        <tr>
-                            <td>
-                                <div class="sign-line"></div>
-                                <div class="sign-title">FIRMA DEL CLIENTE</div>
-                                <div class="sign-sub">Conforme</div>
-                            </td>
-                            <td>
-                                <div class="sign-line"></div>
-                                <div class="sign-title">FIRMA DEL TÉCNICO</div>
-                                <div class="sign-sub">Responsable</div>
-                            </td>
-                            <td>
-                                <div class="sign-line"></div>
-                                <div class="sign-title">
-                                    FIRMA DEL REPRESENTANTE
-                                </div>
-                                <div class="sign-sub">
-                                    Kael Motorcycles S.A.C.
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
+                    @include('tenant_tallermoto.mantenimientos.partials.firmas-pdf', ['tabla' => 'mantenimiento_actividad_variadas', 'subCliente' => 'Conforme'])
                 </div>
             </div>
         @endif

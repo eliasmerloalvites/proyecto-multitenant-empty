@@ -60,6 +60,12 @@
 
 @section('script')
     <script>
+        // "Cliente · PLACA" cuando la venta vino de una cuenta de bahia.
+        function clienteConPlaca(nombre, placa) {
+            var n = $('<div>').text(nombre || '').html();
+            return placa ? n + ' <span class="badge badge-light border" style="font-weight:600;">' + $('<div>').text(placa).html() + '</span>' : n;
+        }
+
         $(document).ready(function() {
             $.ajaxSetup({
                 headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
@@ -145,6 +151,10 @@
                     r.columnas.forEach(function(c) { html += '<td class="text-center">' + c.compras.toFixed(2) + '</td>'; });
                     html += '<td class="text-center"><strong>' + r.total_compras.toFixed(2) + '</strong></td></tr>';
 
+                    html += '<tr><td><strong>Egresos x Pagos a proveedores (Cta. x Pagar)</strong></td>';
+                    r.columnas.forEach(function(c) { html += '<td class="text-center">' + (c.pagos_proveedor || 0).toFixed(2) + '</td>'; });
+                    html += '<td class="text-center"><strong>' + (r.total_pagos_proveedor || 0).toFixed(2) + '</strong></td></tr>';
+
                     html += '<tr><td><strong>Egresos x Gastos</strong></td>';
                     r.columnas.forEach(function(c) { html += '<td class="text-center">' + c.gastos.toFixed(2) + '</td>'; });
                     html += '<td class="text-center"><strong>' + r.total_gastos.toFixed(2) + '</strong></td></tr>';
@@ -165,7 +175,7 @@
                             var anulada = String(v.DOV_Anulado) === '1';
                             var estilo = anulada ? ' style="opacity:.6;text-decoration:line-through;"' : '';
                             var badge = anulada ? '<span class="badge badge-dark" style="text-decoration:none;display:inline-block;">ANULADA</span>' : '<span class="badge badge-success">Activa</span>';
-                            html += '<tr' + estilo + '><td>' + v.VEN_Id + '</td><td>' + v.CLI_Nombre + '</td><td>' + v.MEP_Pago + '</td><td>S/ ' + parseFloat(v.total).toFixed(2) + '</td><td>' + v.created_at + '</td><td style="text-decoration:none;">' + badge + '</td></tr>';
+                            html += '<tr' + estilo + '><td>' + v.VEN_Id + '</td><td>' + clienteConPlaca(v.CLI_Nombre, v.placa) + '</td><td>' + v.MEP_Pago + '</td><td>S/ ' + parseFloat(v.total).toFixed(2) + '</td><td>' + v.created_at + '</td><td style="text-decoration:none;">' + badge + '</td></tr>';
                         });
                         html += '</tbody></table></div>';
                     } else {
@@ -177,7 +187,7 @@
                     if (abonos.length) {
                         html += '<div class="table-responsive mb-3"><table class="table table-sm"><thead><tr><th>#</th><th>Cliente</th><th>Venta</th><th>Método</th><th>Monto</th><th>Fecha</th><th>Usuario</th></tr></thead><tbody>';
                         abonos.forEach(function(a) {
-                            html += '<tr><td>' + a.CPA_Id + '</td><td>' + (a.CLI_Nombre || 'Cliente Genérico') + '</td><td>#' + a.VEN_Id + '</td><td>' + a.MEP_Pago + '</td><td>S/ ' + parseFloat(a.CPA_Monto).toFixed(2) + '</td><td>' + a.created_at + '</td><td>' + (a.usuario || '—') + '</td></tr>';
+                            html += '<tr><td>' + a.CPA_Id + '</td><td>' + clienteConPlaca(a.CLI_Nombre || 'Cliente Genérico', a.placa) + '</td><td>#' + a.VEN_Id + '</td><td>' + a.MEP_Pago + '</td><td>S/ ' + parseFloat(a.CPA_Monto).toFixed(2) + '</td><td>' + a.created_at + '</td><td>' + (a.usuario || '—') + '</td></tr>';
                         });
                         html += '</tbody></table></div>';
                     } else {
@@ -208,6 +218,19 @@
                         html += '</tbody></table></div>';
                     } else {
                         html += '<p class="text-muted mb-3">Sin compras en este turno.</p>';
+                    }
+
+                    var pagosProveedor = data.pagosProveedor || [];
+                    html += '<h6 class="font-weight-bold">Pagos a proveedores · cuentas por pagar (' + pagosProveedor.length + ')</h6>';
+                    if (pagosProveedor.length) {
+                        html += '<div class="table-responsive mb-3"><table class="table table-sm"><thead><tr><th>#</th><th>Proveedor</th><th>Compra</th><th>Método</th><th>Monto</th><th>Fecha</th><th>Usuario</th></tr></thead><tbody>';
+                        pagosProveedor.forEach(function(p) {
+                            var doc = ((p.COM_TipoDocumento || '') + ' ' + (p.COM_NumDocumento || '')).trim() || ('#' + p.COM_Id);
+                            html += '<tr><td>' + p.CPPA_Id + '</td><td>' + (p.PROV_RazonSocial || '—') + '</td><td>' + doc + '</td><td>' + p.MEP_Pago + '</td><td>S/ ' + parseFloat(p.CPPA_Monto).toFixed(2) + '</td><td>' + p.created_at + '</td><td>' + (p.usuario || '—') + '</td></tr>';
+                        });
+                        html += '</tbody></table></div>';
+                    } else {
+                        html += '<p class="text-muted mb-3">Sin pagos a proveedores en este turno.</p>';
                     }
 
                     html += '<h6 class="font-weight-bold">Gastos (' + data.gastos.length + ')</h6>';

@@ -1721,4 +1721,10 @@
             document.location.href = "{{ route('tenant.mantenimientos.generalinyectada.index') }}"
         }
     </script>
+    @include('tenant_tallermoto.mantenimientos.partials.firmas', ['tipo' => 'generalinyectada'])
+    @include('tenant_tallermoto.mantenimientos.partials.foto-camara', [
+        'urlBase' => route('tenant.mantenimientos.generalinyectada.index'),
+        'prefijo' => 'MGII',
+    ])
+
 @endsection

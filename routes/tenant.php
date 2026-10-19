@@ -195,7 +195,13 @@ Route::middleware([
         Route::get('/tenant/contabilidad/gastos', [ContabilidadController::class, 'gastos'])->name('tenant.contabilidad.gastos');
         Route::get('/tenant/contabilidad/resumen-caja', [ContabilidadController::class, 'resumenCaja'])->name('tenant.contabilidad.caja');
 
-    Route::middleware(['tenant.module:mantenimientos'])->group(function () {
+    Route::middleware(['tenant.module:mantenimientos', 'mantenimiento.firmado'])->group(function () {
+        // Firmas digitales (tecnico -> representante -> cliente). {tipo} es
+        // el slug de la ruta del mantenimiento (generalcarburada, ...).
+        Route::get('/tenant/mantenimientos/firmas/{tipo}/{id}', [\App\Http\Controllers\TenantTallerMotos\FirmaMantenimientoController::class, 'estado'])->whereAlpha('tipo')->whereNumber('id')->name('tenant.mantenimientos.firmas.estado');
+        Route::post('/tenant/mantenimientos/firmas/{tipo}/{id}', [\App\Http\Controllers\TenantTallerMotos\FirmaMantenimientoController::class, 'firmar'])->whereAlpha('tipo')->whereNumber('id')->middleware('throttle:30,1')->name('tenant.mantenimientos.firmas.firmar');
+        Route::get('/tenant/mantenimientos/firmas/{tipo}/{id}/{rol}', [\App\Http\Controllers\TenantTallerMotos\FirmaMantenimientoController::class, 'imagen'])->whereAlpha('tipo')->whereNumber('id')->whereIn('rol', ['tecnico', 'representante', 'cliente'])->name('tenant.mantenimientos.firmas.imagen');
+        Route::post('/tenant/mantenimientos/firmas/{tipo}/{id}/reabrir', [\App\Http\Controllers\TenantTallerMotos\FirmaMantenimientoController::class, 'reabrir'])->whereAlpha('tipo')->whereNumber('id')->name('tenant.mantenimientos.firmas.reabrir');
 
         // PDF de mantenimientos (solo personal autenticado del taller).
         // PDF
@@ -862,6 +868,18 @@ Route::middleware([
             Route::get('/tenant/inventario/ajuste/productos', [AjusteController::class, 'productos'])->name('tenant.inventario.ajuste.productos');
             Route::post('/tenant/inventario/ajuste', [AjusteController::class, 'store'])->name('tenant.inventario.ajuste.store');
             Route::get('/tenant/inventario/ajuste/{ajuste}', [AjusteController::class, 'show'])->name('tenant.inventario.ajuste.show');
+
+            // Desempaquetar kits (solo talleres de motos).
+            Route::middleware('can:tenant.inventario.producto.index')->group(function () {
+                Route::get('/tenant/inventario/desempaquetado', [\App\Http\Controllers\TenantTallerMotos\DesempaquetadoController::class, 'index'])->name('tenant.inventario.desempaquetado.index');
+                Route::get('/tenant/inventario/desempaquetado/productos', [\App\Http\Controllers\TenantTallerMotos\DesempaquetadoController::class, 'productos'])->name('tenant.inventario.desempaquetado.productos');
+                Route::get('/tenant/inventario/desempaquetado/receta/{kit}', [\App\Http\Controllers\TenantTallerMotos\DesempaquetadoController::class, 'receta'])->whereNumber('kit')->name('tenant.inventario.desempaquetado.receta');
+                Route::get('/tenant/inventario/desempaquetado/{id}', [\App\Http\Controllers\TenantTallerMotos\DesempaquetadoController::class, 'show'])->whereNumber('id')->name('tenant.inventario.desempaquetado.show');
+            });
+            Route::middleware('can:tenant.inventario.producto.create')->group(function () {
+                Route::post('/tenant/inventario/desempaquetado', [\App\Http\Controllers\TenantTallerMotos\DesempaquetadoController::class, 'store'])->name('tenant.inventario.desempaquetado.store');
+                Route::post('/tenant/inventario/desempaquetado/{id}/anular', [\App\Http\Controllers\TenantTallerMotos\DesempaquetadoController::class, 'anular'])->whereNumber('id')->name('tenant.inventario.desempaquetado.anular');
+            });
         });
 
         Route::resource('/tenant/configuracion/empresa', EmpresaFacturacionController::class)->names([

@@ -136,6 +136,12 @@ class CuentaPorPagarController extends Controller
      */
     public function abonar(Request $request, string $id)
     {
+        // El pago es dinero que sale de la caja: sin un turno abierto quedaria
+        // sin CS_Id y no se descontaria en ningun arqueo (faltante sin explicacion).
+        if (tenant_requiere_apertura_caja()) {
+            return response()->json(['error' => 'No hay ninguna caja aperturada. Abre una caja antes de registrar el pago.'], 422);
+        }
+
         $request->validate([
             'monto'       => 'required|numeric|min:0.01',
             'metodo_pago' => 'required|integer|exists:metodo_pago,MEP_Id',
