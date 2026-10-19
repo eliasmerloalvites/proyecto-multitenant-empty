@@ -1489,4 +1489,9 @@
             document.location.href = "{{ route('tenant.mantenimientos.garantialifan.index') }}"
         }
     </script>
+    @include('tenant_tallermoto.mantenimientos.partials.foto-camara', [
+        'urlBase' => route('tenant.mantenimientos.garantialifan.index'),
+        'prefijo' => 'MGLI',
+    ])
+
 @endsection

@@ -1659,4 +1659,9 @@
             document.location.href = "{{ route('tenant.mantenimientos.preventivoinyectada.index') }}"
         }
     </script>
+    @include('tenant_tallermoto.mantenimientos.partials.foto-camara', [
+        'urlBase' => route('tenant.mantenimientos.preventivoinyectada.index'),
+        'prefijo' => 'MPII',
+    ])
+
 @endsection
