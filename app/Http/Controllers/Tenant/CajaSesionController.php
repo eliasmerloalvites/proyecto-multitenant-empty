@@ -430,6 +430,12 @@ class CajaSesionController extends Controller
                 ->get(['a.BCA_Id', 'b.BCT_Id', 'b.VEN_Id', 'b.BCT_Estado', 'r.RES_Cliente', 'r.RES_Placa', 'mp.MEP_Pago', 'a.BCA_Monto', 'a.created_at', 'u.name as usuario'])
             : collect();
 
+        // Placa de la moto cuando la venta salio de una cuenta de bahia (la
+        // venta en si no guarda placa; una venta de mostrador no tiene).
+        $placas = self::placasDeVentas($ventas->pluck('VEN_Id')->merge($abonos->pluck('VEN_Id'))->unique()->all());
+        $ventas->each(fn ($v) => $v->placa = $placas[$v->VEN_Id] ?? null);
+        $abonos->each(fn ($a) => $a->placa = $placas[$a->VEN_Id] ?? null);
+
         // Turno todavía abierto: CS_MontoEsperado aún no se calculó (eso
         // pasa recién al cerrar), así que se calcula al vuelo para que el
         // detalle siempre muestre lo esperado, no un guion.
@@ -450,6 +456,23 @@ class CajaSesionController extends Controller
             'adelantos' => $adelantos,
             'pagosProveedor' => $pagosProveedor,
         ]);
+    }
+
+    /** [VEN_Id => placa] de las ventas que cerraron una cuenta de bahia. */
+    private static function placasDeVentas(array $venIds): array
+    {
+        if (empty($venIds) || ! Schema::hasTable('bahia_cuenta')) {
+            return [];
+        }
+
+        return DB::table('bahia_cuenta as b')
+            ->join('reservacion as r', 'r.RES_Id', '=', 'b.RES_Id')
+            ->whereIn('b.VEN_Id', $venIds)
+            ->whereNotNull('r.RES_Placa')
+            ->where('r.RES_Placa', '<>', '')
+            ->pluck('r.RES_Placa', 'b.VEN_Id')
+            ->map(fn ($p) => strtoupper(trim($p)))
+            ->all();
     }
 
     /**

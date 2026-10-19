@@ -60,6 +60,12 @@
 
 @section('script')
     <script>
+        // "Cliente · PLACA" cuando la venta vino de una cuenta de bahia.
+        function clienteConPlaca(nombre, placa) {
+            var n = $('<div>').text(nombre || '').html();
+            return placa ? n + ' <span class="badge badge-light border" style="font-weight:600;">' + $('<div>').text(placa).html() + '</span>' : n;
+        }
+
         $(document).ready(function() {
             $.ajaxSetup({
                 headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
@@ -169,7 +175,7 @@
                             var anulada = String(v.DOV_Anulado) === '1';
                             var estilo = anulada ? ' style="opacity:.6;text-decoration:line-through;"' : '';
                             var badge = anulada ? '<span class="badge badge-dark" style="text-decoration:none;display:inline-block;">ANULADA</span>' : '<span class="badge badge-success">Activa</span>';
-                            html += '<tr' + estilo + '><td>' + v.VEN_Id + '</td><td>' + v.CLI_Nombre + '</td><td>' + v.MEP_Pago + '</td><td>S/ ' + parseFloat(v.total).toFixed(2) + '</td><td>' + v.created_at + '</td><td style="text-decoration:none;">' + badge + '</td></tr>';
+                            html += '<tr' + estilo + '><td>' + v.VEN_Id + '</td><td>' + clienteConPlaca(v.CLI_Nombre, v.placa) + '</td><td>' + v.MEP_Pago + '</td><td>S/ ' + parseFloat(v.total).toFixed(2) + '</td><td>' + v.created_at + '</td><td style="text-decoration:none;">' + badge + '</td></tr>';
                         });
                         html += '</tbody></table></div>';
                     } else {
@@ -181,7 +187,7 @@
                     if (abonos.length) {
                         html += '<div class="table-responsive mb-3"><table class="table table-sm"><thead><tr><th>#</th><th>Cliente</th><th>Venta</th><th>Método</th><th>Monto</th><th>Fecha</th><th>Usuario</th></tr></thead><tbody>';
                         abonos.forEach(function(a) {
-                            html += '<tr><td>' + a.CPA_Id + '</td><td>' + (a.CLI_Nombre || 'Cliente Genérico') + '</td><td>#' + a.VEN_Id + '</td><td>' + a.MEP_Pago + '</td><td>S/ ' + parseFloat(a.CPA_Monto).toFixed(2) + '</td><td>' + a.created_at + '</td><td>' + (a.usuario || '—') + '</td></tr>';
+                            html += '<tr><td>' + a.CPA_Id + '</td><td>' + clienteConPlaca(a.CLI_Nombre || 'Cliente Genérico', a.placa) + '</td><td>#' + a.VEN_Id + '</td><td>' + a.MEP_Pago + '</td><td>S/ ' + parseFloat(a.CPA_Monto).toFixed(2) + '</td><td>' + a.created_at + '</td><td>' + (a.usuario || '—') + '</td></tr>';
                         });
                         html += '</tbody></table></div>';
                     } else {

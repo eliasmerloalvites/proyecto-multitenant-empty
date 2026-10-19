@@ -122,6 +122,11 @@ class CajaSesionExcel
         ];
     }
 
+    private static function clienteConPlaca(?string $nombre, ?string $placa): string
+    {
+        return trim((string) $nombre) . ($placa ? ' · ' . $placa : '');
+    }
+
     private static function hojaVentas(array $ventas, array $contexto): array
     {
         $ids = collect($ventas)->pluck('VEN_Id')->all();
@@ -146,7 +151,7 @@ class CajaSesionExcel
                 (string) $v['VEN_Id'],
                 substr((string) $v['created_at'], 0, 10),
                 substr((string) $v['created_at'], 11, 5),
-                $v['CLI_Nombre'],
+                self::clienteConPlaca($v['CLI_Nombre'], $v['placa'] ?? null),
                 $v['MEP_Pago'],
                 $anulada ? 'Anulada' : 'Vigente',
                 (float) $v['total'],
@@ -182,7 +187,7 @@ class CajaSesionExcel
                 (string) $a['CPA_Id'],
                 substr((string) $a['created_at'], 0, 10),
                 substr((string) $a['created_at'], 11, 5),
-                $a['CLI_Nombre'] ?: 'Cliente Genérico',
+                self::clienteConPlaca($a['CLI_Nombre'] ?: 'Cliente Genérico', $a['placa'] ?? null),
                 '#' . $a['VEN_Id'],
                 $a['MEP_Pago'],
                 $a['usuario'] ?? '—',
