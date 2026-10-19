@@ -41,6 +41,9 @@ class CajaSesionExcel
         }
 
         $hojas[] = self::hojaCompras($datos['compras'] ?? [], $contexto);
+        if (array_key_exists('pagosProveedor', $datos)) {
+            $hojas[] = self::hojaPagosProveedor($datos['pagosProveedor'], $contexto);
+        }
         $hojas[] = self::hojaGastos($datos['gastos'] ?? [], $contexto);
 
         return ExcelExporter::descargar(ExcelExporter::nombreArchivo('caja_turno_' . $sesion->CS_Id), $hojas);
@@ -74,6 +77,7 @@ class CajaSesionExcel
         $metodos = $resumen['columnas'] ?? [];
         $tieneAbonos = isset($metodos[0]) && array_key_exists('abonos', $metodos[0]);
         $tieneAdelantos = isset($metodos[0]) && array_key_exists('adelantos', $metodos[0]);
+        $tienePagosProveedor = isset($metodos[0]) && array_key_exists('pagos_proveedor', $metodos[0]);
 
         $columnas = [['titulo' => 'Movimiento', 'ancho' => 36]];
         foreach ($metodos as $m) {
@@ -99,6 +103,9 @@ class CajaSesionExcel
             $filas[] = $linea('Ingreso por adelantos (ventas por bahía)', 'adelantos', 'total_adelantos');
         }
         $filas[] = $linea('Egreso por compras', 'compras', 'total_compras');
+        if ($tienePagosProveedor) {
+            $filas[] = $linea('Egreso por pagos a proveedores (cuentas por pagar)', 'pagos_proveedor', 'total_pagos_proveedor');
+        }
         $filas[] = $linea('Egreso por gastos (afectan caja)', 'gastos', 'total_gastos');
         $filas[] = $linea('NETO', 'neto', 'total_neto');
 
@@ -199,6 +206,43 @@ class CajaSesionExcel
             ],
             'filas' => $filas,
             'mensaje_vacio' => 'No hubo abonos en este turno.',
+        ];
+    }
+
+    private static function hojaPagosProveedor(array $pagos, array $contexto): array
+    {
+        $filas = [];
+        foreach ($pagos as $p) {
+            $p = (array) $p;
+            $documento = trim(($p['COM_TipoDocumento'] ?? '') . ' ' . ($p['COM_NumDocumento'] ?? ''));
+            $filas[] = [
+                (string) $p['CPPA_Id'],
+                substr((string) $p['created_at'], 0, 10),
+                substr((string) $p['created_at'], 11, 5),
+                $p['PROV_RazonSocial'] ?: '—',
+                $documento !== '' ? $documento : '#' . $p['COM_Id'],
+                $p['MEP_Pago'],
+                $p['usuario'] ?? '—',
+                (float) $p['CPPA_Monto'],
+            ];
+        }
+
+        return [
+            'nombre' => 'Pagos a proveedores',
+            'titulo' => 'Pagos de Cuentas por Pagar del Turno',
+            'filtros' => $contexto,
+            'columnas' => [
+                ['titulo' => 'N° pago', 'ancho' => 10, 'centrar' => true],
+                ['titulo' => 'Fecha', 'tipo' => ExcelExporter::FECHA, 'ancho' => 12],
+                ['titulo' => 'Hora', 'ancho' => 8, 'centrar' => true],
+                ['titulo' => 'Proveedor', 'ancho' => 34],
+                ['titulo' => 'Compra', 'ancho' => 18],
+                ['titulo' => 'Método de pago', 'ancho' => 18],
+                ['titulo' => 'Usuario', 'ancho' => 22],
+                ['titulo' => 'Monto', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 15, 'total' => true],
+            ],
+            'filas' => $filas,
+            'mensaje_vacio' => 'No hubo pagos a proveedores en este turno.',
         ];
     }
 

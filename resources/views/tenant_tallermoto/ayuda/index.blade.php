@@ -842,7 +842,7 @@
             {{-- CAJA --}}
             {{-- ========================================================= --}}
             @if (tenant_has_module('ventas') && auth()->user()->can('tenant.ventas.caja.index'))
-            <section class="ayuda-modulo" id="mod-caja" data-buscar="caja aperturar abrir cerrar turno sesion historial cuadre diferencia monto esperado monto real abonos adelantos bahia excel">
+            <section class="ayuda-modulo" id="mod-caja" data-buscar="caja aperturar abrir cerrar turno sesion historial cuadre diferencia monto esperado monto real abonos adelantos bahia pagos proveedores cuentas por pagar excel">
                 <div class="ayuda-modulo-header">
                     <div class="ayuda-modulo-icono" style="background:#0D9488;"><i class="fas fa-vault"></i></div>
                     <div>
@@ -858,7 +858,7 @@
                     </div>
                     <div class="ayuda-sub">
                         <h3><i class="fas fa-lock"></i> Cerrar la caja</h3>
-                        <p>Al terminar el turno, presiona <strong>"Cerrar"</strong> e indica el <strong>monto real contado</strong> en la caja física. El sistema calcula solo el <strong>monto esperado</strong> (apertura + ventas en efectivo + abonos de cuentas por cobrar + adelantos de bahía cobrados en efectivo − compras y gastos en efectivo pagados en el turno) y te muestra la <strong>diferencia</strong>: si sobra o falta plata frente a lo que debería haber.</p>
+                        <p>Al terminar el turno, presiona <strong>"Cerrar"</strong> e indica el <strong>monto real contado</strong> en la caja física. El sistema calcula solo el <strong>monto esperado</strong> (apertura + ventas en efectivo + abonos de cuentas por cobrar + adelantos de bahía cobrados en efectivo − compras, gastos y pagos a proveedores (cuentas por pagar) en efectivo hechos en el turno) y te muestra la <strong>diferencia</strong>: si sobra o falta plata frente a lo que debería haber.</p>
                     </div>
                     <div class="ayuda-sub">
                         <h3><i class="fas fa-clock-rotate-left"></i> Historial de Caja</h3>
@@ -867,8 +867,9 @@
                         <ul>
                             <li><strong>Abonos de cuentas por cobrar</strong>: cliente, venta, método, monto, hora y quién lo cobró.</li>
                             <li><strong>Adelantos de bahía</strong>: cliente, placa, método, monto y si la cuenta ya se cobró (con su número de venta) o sigue abierta.</li>
+                            <li><strong>Pagos a proveedores (cuentas por pagar)</strong>: proveedor, compra, método, monto, hora y quién lo pagó. Incluye el monto inicial que se paga al registrar una compra al crédito. Para registrar un pago necesitas una <strong>caja abierta</strong>.</li>
                         </ul>
-                        <p>El botón <i class="fas fa-file-excel text-success"></i> descarga todo en Excel, con una hoja para cada tipo de movimiento (incluidos abonos y adelantos).</p>
+                        <p>El botón <i class="fas fa-file-excel text-success"></i> descarga todo en Excel, con una hoja para cada tipo de movimiento (incluidos abonos, adelantos y pagos a proveedores).</p>
                     </div>
                 </div>
             </section>
