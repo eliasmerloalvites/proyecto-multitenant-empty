@@ -31,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant.active' => EnsureTenantIsActive::class,
             'tenant.module' => EnsureTenantHasModule::class,
             'tenant.pagado' => EnsureClientHasPaidCycle::class,
+            'mantenimiento.firmado' => \App\Http\Middleware\BloquearMantenimientoFirmado::class,
 
             // API movil de clientes (ver routes/api_*.php).
             'api.json' => \App\Http\Middleware\Api\ForzarJson::class,

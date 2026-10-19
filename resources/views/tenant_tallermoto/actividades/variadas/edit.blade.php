@@ -1198,6 +1198,7 @@
             document.location.href = "{{ route('tenant.actividades.mantenimientoactividadvariada.index') }}"
         }
     </script>
+    @include('tenant_tallermoto.mantenimientos.partials.firmas', ['tipo' => 'mantenimientoactividadvariada'])
     @include('tenant_tallermoto.mantenimientos.partials.foto-camara', [
         'urlBase' => route('tenant.actividades.mantenimientoactividadvariada.index'),
         'prefijo' => 'MAVI',

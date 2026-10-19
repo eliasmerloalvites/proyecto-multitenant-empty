@@ -560,7 +560,7 @@
                 'tenant.mantenimientos.garantiahero.index',
                 'tenant.mantenimientos.garantialifan.index',
             ]))
-            <section class="ayuda-modulo" id="mod-mantenimientos" data-buscar="mantenimientos general preventivo carburada inyectada checklist repuestos reemplazo fotos evidencias estado pendiente aprobado observado planes recomendaciones verificacion final estado de recepcion inventario visual inspeccion orden de servicio pdf">
+            <section class="ayuda-modulo" id="mod-mantenimientos" data-buscar="mantenimientos general preventivo carburada inyectada checklist repuestos reemplazo fotos evidencias estado pendiente aprobado observado planes recomendaciones verificacion final estado de recepcion inventario visual inspeccion orden de servicio pdf firma firmas digitales cerrado reabrir">
                 <div class="ayuda-modulo-header">
                     <div class="ayuda-modulo-icono" style="background:#DC2626;"><i class="fas fa-tools"></i></div>
                     <div>
@@ -625,6 +625,24 @@
                         <div class="ayuda-nota info">
                             <i class="fas fa-circle-info"></i>
                             <div>El botón de <strong>Estado de Recepción</strong> solo aparece si ya se guardó al menos una respuesta de ese checklist — si nadie lo llenó todavía, el botón se oculta en vez de mostrar un documento vacío.</div>
+                        </div>
+                    </div>
+
+                    <div class="ayuda-sub" id="mant-firmas">
+                        <h3><i class="fas fa-signature"></i> Firmas digitales</h3>
+                        <p>
+                            En la ficha de edición de cada mantenimiento, la sección <strong>Firmas del documento</strong> permite firmar
+                            con el dedo (celular o tablet) o con el mouse. Las firmas salen impresas sobre su línea en la Orden de Servicio
+                            y en el PDF del mantenimiento, con nombre y fecha. Disponible en los planes Plus y Empresarial.
+                        </p>
+                        <ol>
+                            <li><strong>Técnico</strong>: solo el técnico asignado, con su propio usuario.</li>
+                            <li><strong>Representante</strong>: un usuario con rol Admin o Gerente.</li>
+                            <li><strong>Cliente</strong>: al final; se le pasa el equipo del taller, escribe su nombre (y DNI, opcional) y firma.</li>
+                        </ol>
+                        <div class="ayuda-nota info">
+                            <i class="fas fa-lock"></i>
+                            <div>Con la firma del cliente el mantenimiento queda <strong>cerrado</strong>: ya no se pueden cambiar checklist, repuestos, fotos, estado de recepción ni el estado. Si hace falta corregir algo, un <strong>Admin</strong> puede <strong>Reabrir</strong> (indicando el motivo): se borran las firmas y deben firmar de nuevo; la reapertura queda registrada.</div>
                         </div>
                     </div>
 

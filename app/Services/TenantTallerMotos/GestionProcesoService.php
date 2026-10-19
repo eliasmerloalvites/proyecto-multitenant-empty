@@ -185,6 +185,9 @@ class GestionProcesoService
             $yaEstabaAsignado = $registro->PER_Id !== null && !$eraPrimerCheckIn;
             $cambioDetalle = $detalleAnterior !== trim($detalleIngreso);
 
+            // Firmado por el cliente: el documento ya no se toca.
+            FirmasMantenimientoService::asegurarEditable($meta['tabla'], (int) $registro->{$idColumna});
+
             DB::table($meta['tabla'])->where($idColumna, $registro->{$idColumna})->update([
                 $prefijo . '_DetalleIngreso' => $detalleIngreso,
                 $prefijo . '_FechaEdicion' => now(),
@@ -495,6 +498,7 @@ class GestionProcesoService
     public static function guardarEstadoRecepcion(string $tabla, int $id, array $respuestas, array $observaciones): void
     {
         self::validarMantenimiento($tabla, $id);
+        FirmasMantenimientoService::asegurarEditable($tabla, $id);
 
         $itemsActivos = RecepcionItem::activos()->pluck('RIT_Id')->flip();
         $categoriasActivas = RecepcionCategoria::activas()->pluck('RCT_Id')->flip();

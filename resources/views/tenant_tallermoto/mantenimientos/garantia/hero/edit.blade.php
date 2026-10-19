@@ -1489,6 +1489,7 @@
             document.location.href = "{{ route('tenant.mantenimientos.garantiahero.index') }}"
         }
     </script>
+    @include('tenant_tallermoto.mantenimientos.partials.firmas', ['tipo' => 'garantiahero'])
     @include('tenant_tallermoto.mantenimientos.partials.foto-camara', [
         'urlBase' => route('tenant.mantenimientos.garantiahero.index'),
         'prefijo' => 'MGHI',

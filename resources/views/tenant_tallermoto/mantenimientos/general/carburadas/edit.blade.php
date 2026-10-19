@@ -1682,6 +1682,7 @@
             document.location.href = "{{ route('tenant.mantenimientos.generalcarburada.index') }}"
         }
     </script>
+    @include('tenant_tallermoto.mantenimientos.partials.firmas', ['tipo' => 'generalcarburada'])
     @include('tenant_tallermoto.mantenimientos.partials.foto-camara', [
         'urlBase' => route('tenant.mantenimientos.generalcarburada.index'),
         'prefijo' => 'MGCI',

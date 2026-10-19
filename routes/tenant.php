@@ -195,7 +195,13 @@ Route::middleware([
         Route::get('/tenant/contabilidad/gastos', [ContabilidadController::class, 'gastos'])->name('tenant.contabilidad.gastos');
         Route::get('/tenant/contabilidad/resumen-caja', [ContabilidadController::class, 'resumenCaja'])->name('tenant.contabilidad.caja');
 
-    Route::middleware(['tenant.module:mantenimientos'])->group(function () {
+    Route::middleware(['tenant.module:mantenimientos', 'mantenimiento.firmado'])->group(function () {
+        // Firmas digitales (tecnico -> representante -> cliente). {tipo} es
+        // el slug de la ruta del mantenimiento (generalcarburada, ...).
+        Route::get('/tenant/mantenimientos/firmas/{tipo}/{id}', [\App\Http\Controllers\TenantTallerMotos\FirmaMantenimientoController::class, 'estado'])->whereAlpha('tipo')->whereNumber('id')->name('tenant.mantenimientos.firmas.estado');
+        Route::post('/tenant/mantenimientos/firmas/{tipo}/{id}', [\App\Http\Controllers\TenantTallerMotos\FirmaMantenimientoController::class, 'firmar'])->whereAlpha('tipo')->whereNumber('id')->middleware('throttle:30,1')->name('tenant.mantenimientos.firmas.firmar');
+        Route::get('/tenant/mantenimientos/firmas/{tipo}/{id}/{rol}', [\App\Http\Controllers\TenantTallerMotos\FirmaMantenimientoController::class, 'imagen'])->whereAlpha('tipo')->whereNumber('id')->whereIn('rol', ['tecnico', 'representante', 'cliente'])->name('tenant.mantenimientos.firmas.imagen');
+        Route::post('/tenant/mantenimientos/firmas/{tipo}/{id}/reabrir', [\App\Http\Controllers\TenantTallerMotos\FirmaMantenimientoController::class, 'reabrir'])->whereAlpha('tipo')->whereNumber('id')->name('tenant.mantenimientos.firmas.reabrir');
 
         // PDF de mantenimientos (solo personal autenticado del taller).
         // PDF
