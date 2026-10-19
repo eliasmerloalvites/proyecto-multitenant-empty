@@ -989,7 +989,7 @@
                 'tenant.inventario.almacen.index',
                 'tenant.inventario.producto.index',
             ]))
-            <section class="ayuda-modulo" id="mod-inventario" data-buscar="inventario productos control inventario kardex lotes traslado de stock ajuste categoria clase almacen sede stock minimo importar excel plantilla">
+            <section class="ayuda-modulo" id="mod-inventario" data-buscar="inventario productos control inventario kardex lotes traslado de stock ajuste desempaquetar kit receta categoria clase almacen sede stock minimo importar excel plantilla">
                 <div class="ayuda-modulo-header">
                     <div class="ayuda-modulo-icono" style="background:#CA8A04;"><i class="fas fa-boxes"></i></div>
                     <div>
@@ -1037,6 +1037,22 @@
                             obligatorio (Merma, Rotura, Vencimiento, Diferencia de conteo, Otro), y por cada producto indica si es
                             para <strong>Agregar (+)</strong> o <strong>Quitar (−)</strong> y la cantidad.
                         </p>
+                    </div>
+
+                    <div class="ayuda-sub">
+                        <h3><i class="fas fa-box-open"></i> Desempaquetar Kits</h3>
+                        <p>
+                            <span class="ayuda-ruta">Inventario → Desempaquetar Kits</span>. Para un producto que se vende como kit
+                            (por ejemplo un <em>Kit de herramientas</em>) pero cuyas piezas también quieres vender por separado.
+                            Eliges el almacén, el kit y cuántos kits abres; el sistema carga las piezas que trae (su
+                            <strong>receta</strong>) y puedes corregirlas si ese kit vino distinto. Al confirmar, los kits salen del
+                            stock y cada pieza entra con su propio stock y su costo de compra actual.
+                        </p>
+                        <ul>
+                            <li>La primera vez que abres un kit, agrega sus piezas y marca <strong>"Guardar como receta"</strong> para no volver a escribirlas.</li>
+                            <li>Cada desempaquetado queda con un número <strong>DES-00001</strong> y se ve en el <strong>kardex</strong>: salida en el kit y entrada en cada pieza.</li>
+                            <li>Puedes <strong>anularlo</strong> (con motivo) mientras ninguna pieza se haya vendido o movido: las piezas salen y el kit vuelve al stock. Si ya se usó alguna, corrige con un Ajuste de Inventario.</li>
+                        </ul>
                     </div>
 
                     <div class="ayuda-sub">
