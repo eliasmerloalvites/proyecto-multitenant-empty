@@ -486,17 +486,19 @@
                         + '</div>';
                 }
 
-                function totalCompraActual() {
+                // Globales: GenerarCompra() (fuera de este ready) tambien las usa
+                // para validar el pago mixto antes de guardar.
+                window.totalCompraActual = function() {
                     var t = 0;
                     for (var i = 0; i < ListPedido.length; i++) t += parseFloat(ListPedido[i][5]) || 0;
                     return Math.round(t * 100) / 100;
-                }
+                };
 
-                function sumaPagosMixtos() {
+                window.sumaPagosMixtos = function() {
                     var s = 0;
                     $('.pm-monto').each(function() { s += parseFloat($(this).val()) || 0; });
                     return Math.round(s * 100) / 100;
-                }
+                };
 
                 function pintarResumenMixto() {
                     var total = totalCompraActual();
