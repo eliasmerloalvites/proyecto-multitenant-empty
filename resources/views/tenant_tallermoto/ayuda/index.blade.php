@@ -935,7 +935,7 @@
                 'tenant.compras.gasto.index',
                 'tenant.compras.tipogasto.index',
             ]))
-            <section class="ayuda-modulo" id="mod-compras" data-buscar="compras proveedores gastos tipo de gasto mercaderia lote stock ingreso">
+            <section class="ayuda-modulo" id="mod-compras" data-buscar="compras pago mixto varios metodos proveedores gastos tipo de gasto mercaderia lote stock ingreso">
                 <div class="ayuda-modulo-header">
                     <div class="ayuda-modulo-icono" style="background:#EA580C;"><i class="fas fa-shopping-cart"></i></div>
                     <div>
@@ -958,6 +958,13 @@
                             tipo/método de pago y el proveedor (puedes crear uno nuevo al vuelo con el botón +). Luego, por cada
                             producto: elige producto y almacén de destino, ajusta precio de compra/venta si hace falta, indica la
                             cantidad y agrégalo al carrito. Cuando termines, presiona <strong>"Generar Compra"</strong>.
+                        </p>
+                        <p>
+                            Si pagaste con más de un método (por ejemplo S/ 50 en efectivo y el resto por Yape), elige
+                            <strong>Tipo pago → Pago mixto</strong> y agrega una fila por cada método con su monto; deben sumar el
+                            total de la compra (abajo ves cuánto falta o sobra). En la caja, cada parte se descuenta de su propio
+                            método: del efectivo esperado solo sale lo pagado en efectivo. La forma de pago de una compra mixta no se
+                            puede cambiar después desde Editar.
                         </p>
                         <div class="ayuda-nota info">
                             <i class="fas fa-circle-info"></i>

@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CompraController extends Controller
 {
@@ -52,6 +53,61 @@ class CompraController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * Id del metodo "Pago Mixto" (etiqueta de referencia, igual que en
+     * ventas): la compra queda con este MEP_Id y el detalle real vive en
+     * compra_pago. Se crea una sola vez por tenant.
+     */
+    private function metodoPagoMixtoId(): int
+    {
+        $existente = DB::table('metodo_pago')->where('MEP_Pago', 'Pago Mixto')->first();
+
+        if ($existente) {
+            return $existente->MEP_Id;
+        }
+
+        return DB::table('metodo_pago')->insertGetId([
+            'MEP_Pago' => 'Pago Mixto',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Pagos de una compra mixta ya validados: [[MEP_Id, monto], ...] con
+     * metodos reales (no "Credito"/"Pago Mixto"), sin repetir y al menos 2.
+     * La suma contra el total se valida despues, con el total ya guardado.
+     */
+    private function pagosMixtosValidados(Request $request): array
+    {
+        $agrupados = [];
+        foreach ((array) $request->input('pagos', []) as $p) {
+            $mep = (int) ($p['MEP_Id'] ?? 0);
+            $monto = round((float) ($p['monto'] ?? 0), 2);
+            if ($mep <= 0 && $monto <= 0) {
+                continue;
+            }
+            if ($mep <= 0 || $monto <= 0) {
+                throw new \Exception('Cada pago del pago mixto necesita un método y un monto mayor a 0.');
+            }
+            $agrupados[$mep] = round(($agrupados[$mep] ?? 0) + $monto, 2);
+        }
+
+        if (count($agrupados) < 2) {
+            throw new \Exception('Un pago mixto necesita al menos 2 métodos de pago distintos.');
+        }
+
+        $validos = DB::table('metodo_pago')
+            ->whereIn('MEP_Id', array_keys($agrupados))
+            ->whereNotIn('MEP_Pago', ['Credito', 'Pago Mixto'])
+            ->count();
+        if ($validos !== count($agrupados)) {
+            throw new \Exception('Algún método del pago mixto no es válido.');
+        }
+
+        return $agrupados;
     }
 
     /**
@@ -285,12 +341,19 @@ class CompraController extends Controller
             // vez de depender de que el formulario mande el MEP_Id correcto.
             $esCredito = $request->input('COM_TipoPago') === 'Credito';
 
+            // Pago mixto (solo donde existe compra_pago): se paga al contado
+            // con varios metodos; la compra se etiqueta "Pago Mixto".
+            $esMixto = $request->input('COM_TipoPago') === 'Mixto' && Schema::hasTable('compra_pago');
+            $pagosMixtos = $esMixto ? $this->pagosMixtosValidados($request) : [];
+
             // Registrar la compra
             $compra = new Compra();
             $compra->COM_TipoDocumento = $request->COM_TipoDocumento;
             $compra->COM_NumDocumento = $request->COM_NumDocumento;
-            $compra->COM_TipoPago = $request->COM_TipoPago;
-            $compra->MEP_Id = $esCredito ? $this->metodoPagoCreditoId() : $request->MEP_Id;
+            $compra->COM_TipoPago = $esMixto ? 'Contado' : $request->COM_TipoPago;
+            $compra->MEP_Id = $esCredito
+                ? $this->metodoPagoCreditoId()
+                : ($esMixto ? $this->metodoPagoMixtoId() : $request->MEP_Id);
             $compra->PROV_Id = $request->PROV_Id;
             $compra->CAJ_Id = tenant_caja_activa_id();
             $compra->CS_Id = tenant_caja_sesion_activa_id();
@@ -358,6 +421,27 @@ class CompraController extends Controller
                 $this->registrarCreditoCompra($request, $compra);
             }
 
+            if ($esMixto) {
+                $totalCompra = round((float) DB::table('detalle_compra')
+                    ->where('COM_Id', $compra->COM_Id)
+                    ->sum(DB::raw('DCOM_Cantidad * DCOM_PrecioCompra')), 2);
+                $totalPagos = round(array_sum($pagosMixtos), 2);
+
+                if (abs($totalPagos - $totalCompra) > 0.05) {
+                    throw new \Exception('Los pagos (S/ ' . number_format($totalPagos, 2) . ') deben sumar el total de la compra (S/ ' . number_format($totalCompra, 2) . ').');
+                }
+
+                foreach ($pagosMixtos as $mep => $monto) {
+                    DB::table('compra_pago')->insert([
+                        'COM_Id' => $compra->COM_Id,
+                        'MEP_Id' => $mep,
+                        'CPG_Monto' => $monto,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
             DB::commit(); // Confirmar la transacción
 
             return response()->json(['success' => 'Compra y detalles registrados exitosamente!', 'compra_id' => $compra->COM_Id]);
@@ -379,7 +463,15 @@ class CompraController extends Controller
             'detalle_compra.almacen',
             'detalle_compra.producto.categoria'
         ])->where('compra.COM_Id',$id)->first();
-        return response()->json(['compra'=>$data]);
+
+        $pagos = Schema::hasTable('compra_pago')
+            ? DB::table('compra_pago as cp')
+                ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'cp.MEP_Id')
+                ->where('cp.COM_Id', $id)
+                ->get(['mp.MEP_Pago as metodo', 'cp.CPG_Monto as monto'])
+            : collect();
+
+        return response()->json(['compra' => $data, 'pagos' => $pagos]);
     }
 
     public function edit(string $id)
@@ -397,7 +489,14 @@ class CompraController extends Controller
             'detalle_compra.producto.categoria'
         ])->where('compra.COM_Id', $id)->firstOrFail();
 
-        return view('tenant_' . tenant('tipo_negocio') . '.compras.compra.edit', compact('data', 'proveedor', 'metodo_pago'));
+        $pagosMixtos = Schema::hasTable('compra_pago')
+            ? DB::table('compra_pago as cp')
+                ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'cp.MEP_Id')
+                ->where('cp.COM_Id', $id)
+                ->get(['mp.MEP_Pago as metodo', 'cp.CPG_Monto as monto'])
+            : collect();
+
+        return view('tenant_' . tenant('tipo_negocio') . '.compras.compra.edit', compact('data', 'proveedor', 'metodo_pago', 'pagosMixtos'));
     }
 
     /**
@@ -411,6 +510,12 @@ class CompraController extends Controller
     public function update(Request $request, string $id)
     {
         $compra = Compra::findOrFail($id);
+
+        // Pago mixto: la forma de pago no se cambia desde aqui (cambiarla
+        // dejaria compra_pago desalineado con lo que salio de la caja).
+        if (Schema::hasTable('compra_pago') && DB::table('compra_pago')->where('COM_Id', $id)->exists()) {
+            $request->merge(['COM_TipoPago' => $compra->COM_TipoPago, 'MEP_Id' => $compra->MEP_Id]);
+        }
 
         $validated = $request->validate([
             'COM_TipoDocumento' => 'required|string|max:50',

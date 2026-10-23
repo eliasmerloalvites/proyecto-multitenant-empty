@@ -216,6 +216,46 @@ class CajaSesionController extends Controller
     }
 
     /**
+     * Compras activas del turno por metodo real: [MEP_Id => monto]. Una
+     * compra con pago mixto (compra_pago) se reparte en sus metodos en vez
+     * de quedar entera bajo "Pago Mixto"; las demas van a su MEP_Id.
+     */
+    private static function comprasPorMetodoEnSesion(string $csId): array
+    {
+        $totales = DB::table('compra as co')
+            ->join('detalle_compra as dc', 'dc.COM_Id', '=', 'co.COM_Id')
+            ->where('co.CS_Id', $csId)
+            ->where('co.COM_Status', 1)
+            ->select('co.COM_Id', 'co.MEP_Id', DB::raw('SUM(dc.DCOM_Cantidad * dc.DCOM_PrecioCompra) as total'))
+            ->groupBy('co.COM_Id', 'co.MEP_Id')
+            ->get();
+
+        $pagosPorCompra = Schema::hasTable('compra_pago')
+            ? DB::table('compra_pago')->whereIn('COM_Id', $totales->pluck('COM_Id'))->get()->groupBy('COM_Id')
+            : collect();
+
+        $porMetodo = [];
+        foreach ($totales as $compra) {
+            $pagos = $pagosPorCompra->get($compra->COM_Id);
+
+            if (! $pagos || $pagos->isEmpty()) {
+                $porMetodo[$compra->MEP_Id] = ($porMetodo[$compra->MEP_Id] ?? 0) + (float) $compra->total;
+                continue;
+            }
+
+            // Proporcional a lo pagado con cada metodo (cuadra con el total
+            // aunque haya un centimo de redondeo entre pagos y detalle).
+            $pagado = (float) $pagos->sum('CPG_Monto');
+            foreach ($pagos as $pago) {
+                $porcion = $pagado > 0 ? (float) $compra->total * ((float) $pago->CPG_Monto / $pagado) : 0;
+                $porMetodo[$pago->MEP_Id] = ($porMetodo[$pago->MEP_Id] ?? 0) + $porcion;
+            }
+        }
+
+        return $porMetodo;
+    }
+
+    /**
      * Pagos a proveedores (abonos de cuentas por pagar, incluido el monto
      * inicial de una compra al credito) hechos DURANTE este turno, por
      * metodo: [MEP_Id => monto]. Es dinero que SALE de la caja; la compra al
@@ -276,12 +316,7 @@ class CajaSesionController extends Controller
         $adelantosEfectivo = self::adelantosPorMetodoEnSesion((string) $sesion->CS_Id)[$mepEfectivoId] ?? 0;
         $ventasEfectivo += $abonosEfectivo + $adelantosEfectivo;
 
-        $comprasEfectivo = DB::table('compra as co')
-            ->join('detalle_compra as dc', 'dc.COM_Id', '=', 'co.COM_Id')
-            ->where('co.CS_Id', $sesion->CS_Id)
-            ->where('co.MEP_Id', $mepEfectivoId)
-            ->where('co.COM_Status', 1)
-            ->sum(DB::raw('dc.DCOM_Cantidad * dc.DCOM_PrecioCompra'));
+        $comprasEfectivo = self::comprasPorMetodoEnSesion((string) $sesion->CS_Id)[$mepEfectivoId] ?? 0;
 
         $gastosEfectivo = DB::table('gasto')
             ->where('CS_Id', $sesion->CS_Id)
@@ -383,6 +418,21 @@ class CajaSesionController extends Controller
             ->groupBy('co.COM_Id', 'p.PROV_RazonSocial', 'mp.MEP_Pago', 'co.created_at')
             ->orderByDesc('co.COM_Id')
             ->get();
+
+        if (Schema::hasTable('compra_pago') && $compras->isNotEmpty()) {
+            $desglose = DB::table('compra_pago as cp')
+                ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'cp.MEP_Id')
+                ->whereIn('cp.COM_Id', $compras->pluck('COM_Id'))
+                ->orderBy('cp.CPG_Id')
+                ->get(['cp.COM_Id', 'mp.MEP_Pago', 'cp.CPG_Monto'])
+                ->groupBy('COM_Id');
+            $compras->each(function ($c) use ($desglose) {
+                $pagos = $desglose->get($c->COM_Id);
+                if ($pagos) {
+                    $c->MEP_Pago = 'Mixto: ' . $pagos->map(fn ($p) => $p->MEP_Pago . ' S/ ' . number_format((float) $p->CPG_Monto, 2))->implode(' + ');
+                }
+            });
+        }
 
         $gastos = DB::table('gasto as g')
             ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'g.MEP_Id')
@@ -511,13 +561,7 @@ class CajaSesionController extends Controller
         $adelantosPorMetodo = self::adelantosPorMetodoEnSesion($csId);
         $pagosProveedorPorMetodo = self::pagosProveedorPorMetodoEnSesion($csId);
 
-        $comprasPorMetodo = DB::table('compra as co')
-            ->join('detalle_compra as dc', 'dc.COM_Id', '=', 'co.COM_Id')
-            ->where('co.CS_Id', $csId)
-            ->where('co.COM_Status', 1)
-            ->select('co.MEP_Id', DB::raw('SUM(dc.DCOM_Cantidad * dc.DCOM_PrecioCompra) as total'))
-            ->groupBy('co.MEP_Id')
-            ->pluck('total', 'MEP_Id');
+        $comprasPorMetodo = self::comprasPorMetodoEnSesion($csId);
 
         $gastosPorMetodo = DB::table('gasto')
             ->where('CS_Id', $csId)
