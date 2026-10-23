@@ -331,6 +331,12 @@ class CompraController extends Controller
             return response()->json(['error' => 'No hay ninguna caja aperturada. Abre una caja antes de registrar la compra.'], 422);
         }
 
+        // Antes no se validaba: un numero mas largo que la columna salia
+        // como error de base de datos en vez de un mensaje claro.
+        if (mb_strlen(trim((string) $request->input('COM_NumDocumento'))) > 30) {
+            return response()->json(['error' => 'El N° de comprobante no puede tener más de 30 caracteres.'], 422);
+        }
+
         DB::beginTransaction(); // Inicia una transacción para asegurar que ambos registros se completen
 
         try {
@@ -519,7 +525,7 @@ class CompraController extends Controller
 
         $validated = $request->validate([
             'COM_TipoDocumento' => 'required|string|max:50',
-            'COM_NumDocumento' => 'required|string|max:12',
+            'COM_NumDocumento' => 'required|string|max:30',
             'COM_TipoPago' => 'required|string|max:50',
             'MEP_Id' => 'required|integer|exists:metodo_pago,MEP_Id',
             'PROV_Id' => 'required|integer|exists:proveedor,PROV_Id',
