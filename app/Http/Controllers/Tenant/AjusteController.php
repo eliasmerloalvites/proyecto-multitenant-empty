@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
  */
 class AjusteController extends Controller
 {
-    const MOTIVOS = ['MERMA', 'ROTURA', 'VENCIMIENTO', 'CONTEO_FISICO', 'OTRO'];
+    const MOTIVOS = ['MERMA', 'CONSUMIBLES', 'ROTURA', 'VENCIMIENTO', 'CONTEO_FISICO', 'OTRO'];
 
     /**
      * Guarda de servidor para store(): la base no rechaza nada;

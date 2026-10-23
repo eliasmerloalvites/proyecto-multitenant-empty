@@ -1059,7 +1059,7 @@
                         <p>
                             Para corregir el stock cuando <strong>no</strong> viene de una compra, venta o traslado: mermas, roturas,
                             vencimientos o diferencias encontradas en un conteo físico. Elige almacén y un <strong>motivo</strong>
-                            obligatorio (Merma, Rotura, Vencimiento, Diferencia de conteo, Otro), y por cada producto indica si es
+                            obligatorio (Merma, Consumibles —insumos del taller que se gastan en el trabajo, como trapos o lija—, Rotura, Vencimiento, Diferencia de conteo, Otro), y por cada producto indica si es
                             para <strong>Agregar (+)</strong> o <strong>Quitar (−)</strong> y la cantidad.
                         </p>
                     </div>
