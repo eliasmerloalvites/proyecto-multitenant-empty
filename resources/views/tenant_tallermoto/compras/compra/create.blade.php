@@ -50,6 +50,7 @@
                             </option>
                             <option value="Contado">Contado</option>
                             <option value="Credito">Crédito</option>
+                            <option value="Mixto">Pago mixto (varios métodos)</option>
                         </select>
                     </div>
                 </div>
@@ -67,6 +68,18 @@
                             @endforeach
                         </select>
                     </div>
+                </div>
+
+                {{-- Pago mixto: solo con Tipo pago = Mixto. Cada fila es un metodo
+                     y su monto; deben sumar el total de la compra (el backend
+                     lo vuelve a validar contra el detalle guardado). --}}
+                <div class="col-12 mt-3" id="bloqueMixtoCompra" style="display:none;">
+                    <label class="mb-1" style="font-size: 12px; color: #6c757d;">¿Cómo se pagó? (S/)</label>
+                    <div id="filasPagoMixto"></div>
+                    <button type="button" class="btn btn-sm btn-outline-primary mt-1" id="btnAgregarPagoMixto">
+                        <i class="fas fa-plus mr-1"></i> Agregar método
+                    </button>
+                    <div id="resumenPagoMixto" class="mt-2" style="font-size: 13px;"></div>
                 </div>
 
                 {{-- Credito a proveedor: solo aparece con Tipo pago = Credito.
@@ -457,6 +470,81 @@
                     }
                 });
 
+                // ---- Pago mixto ----
+                var OPCIONES_METODO = @json($metodo_pago->map(fn ($m) => ['id' => $m->MEP_Id, 'nombre' => $m->MEP_Pago])->values());
+                var refrescoMixto = null;
+
+                function filaPagoMixto() {
+                    var opciones = '<option value="">Método</option>' + OPCIONES_METODO.map(function(m) {
+                        return '<option value="' + m.id + '">' + $('<div>').text(m.nombre).html() + '</option>';
+                    }).join('');
+                    var i = Date.now() + Math.floor(Math.random() * 1000);
+                    return '<div class="input-group mb-2 fila-pago-mixto">'
+                        + '<select class="form-control pm-metodo" name="pagos[' + i + '][MEP_Id]" aria-label="Método de pago">' + opciones + '</select>'
+                        + '<input type="number" step="0.01" min="0" class="form-control pm-monto" name="pagos[' + i + '][monto]" placeholder="0.00" aria-label="Monto">'
+                        + '<div class="input-group-append"><button type="button" class="btn btn-outline-danger pm-quitar" title="Quitar"><i class="fa fa-times"></i></button></div>'
+                        + '</div>';
+                }
+
+                function totalCompraActual() {
+                    var t = 0;
+                    for (var i = 0; i < ListPedido.length; i++) t += parseFloat(ListPedido[i][5]) || 0;
+                    return Math.round(t * 100) / 100;
+                }
+
+                function sumaPagosMixtos() {
+                    var s = 0;
+                    $('.pm-monto').each(function() { s += parseFloat($(this).val()) || 0; });
+                    return Math.round(s * 100) / 100;
+                }
+
+                function pintarResumenMixto() {
+                    var total = totalCompraActual();
+                    var pagado = sumaPagosMixtos();
+                    var dif = Math.round((total - pagado) * 100) / 100;
+                    var html = 'Total compra: <strong>S/ ' + total.toFixed(2) + '</strong> · Pagado: <strong>S/ ' + pagado.toFixed(2) + '</strong> · ';
+                    if (Math.abs(dif) < 0.01) {
+                        html += '<span class="text-success"><i class="fas fa-check-circle"></i> Cuadra</span>';
+                    } else if (dif > 0) {
+                        html += '<span class="text-danger">Falta S/ ' + dif.toFixed(2) + '</span>';
+                    } else {
+                        html += '<span class="text-danger">Sobra S/ ' + (-dif).toFixed(2) + '</span>';
+                    }
+                    $('#resumenPagoMixto').html(html);
+                }
+
+                $('#btnAgregarPagoMixto').on('click', function() {
+                    $('#filasPagoMixto').append(filaPagoMixto());
+                    // La nueva fila sugiere lo que falta.
+                    var falta = Math.round((totalCompraActual() - sumaPagosMixtos()) * 100) / 100;
+                    if (falta > 0) $('#filasPagoMixto .pm-monto').last().val(falta.toFixed(2));
+                    pintarResumenMixto();
+                });
+                $('body').on('input change', '.pm-monto, .pm-metodo', pintarResumenMixto);
+                $('body').on('click', '.pm-quitar', function() {
+                    $(this).closest('.fila-pago-mixto').remove();
+                    pintarResumenMixto();
+                });
+
+                $('#idCOM_TipoPago').on('change', function() {
+                    var esMixto = $(this).val() === 'Mixto';
+                    $('#bloqueMixtoCompra').toggle(esMixto);
+                    if (esMixto) {
+                        $('#wrapMetodoPagoCompra').hide();
+                        $('#idMEP_Id').prop('required', false).val('');
+                        if (!$('.fila-pago-mixto').length) {
+                            $('#filasPagoMixto').append(filaPagoMixto()).append(filaPagoMixto());
+                        }
+                        pintarResumenMixto();
+                        // El total cambia al agregar/quitar productos.
+                        refrescoMixto = refrescoMixto || setInterval(pintarResumenMixto, 700);
+                    } else {
+                        $('#filasPagoMixto').empty();
+                        clearInterval(refrescoMixto);
+                        refrescoMixto = null;
+                    }
+                });
+
                 $('#monto_inicial').on('input', function() {
                     var conAdelanto = parseFloat($(this).val()) > 0;
                     $('#wrapMetodoInicial').toggle(conAdelanto);
@@ -815,12 +903,13 @@
                 $proveedor = $('#PROV_Id').val();
                 $metodoPago = $('#idMEP_Id').val();
                 var esCredito = $tipoPago === 'Credito';
+                var esMixto = $tipoPago === 'Mixto';
                 console.log("numDocumento", $numDocumento);
                 console.log("tipoDocumento", $tipoDocumento);
                 console.log("tipoPago", $tipoPago);
                 console.log("proveedor", $proveedor);
                 console.log("metodoPago", $metodoPago);
-                if($numDocumento == "" || $tipoDocumento == "" || $tipoPago == "" || $proveedor == "" || (!esCredito && $metodoPago == "") ){
+                if($numDocumento == "" || $tipoDocumento == "" || $tipoPago == "" || $proveedor == "" || (!esCredito && !esMixto && $metodoPago == "") ){
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
@@ -837,6 +926,27 @@
                     var adelanto = parseFloat($('#monto_inicial').val()) || 0;
                     if (adelanto > 0 && !$('#metodo_pago_inicial').val()) {
                         Swal.fire({ icon: 'error', title: 'Error', text: 'Indica el metodo de pago del adelanto.' });
+                        return;
+                    }
+                }
+
+                if (esMixto && ListPedido.length > 0) {
+                    var metodos = {};
+                    var errorMixto = null;
+                    $('.fila-pago-mixto').each(function() {
+                        var mep = $(this).find('.pm-metodo').val();
+                        var monto = parseFloat($(this).find('.pm-monto').val()) || 0;
+                        if (!mep && monto <= 0) return;
+                        if (!mep || monto <= 0) errorMixto = 'Cada pago necesita un método y un monto mayor a 0.';
+                        if (mep) metodos[mep] = true;
+                    });
+                    if (!errorMixto && Object.keys(metodos).length < 2) errorMixto = 'Un pago mixto necesita al menos 2 métodos distintos.';
+                    var difMixto = Math.round((totalCompraActual() - sumaPagosMixtos()) * 100) / 100;
+                    if (!errorMixto && Math.abs(difMixto) >= 0.01) {
+                        errorMixto = 'Los pagos (S/ ' + sumaPagosMixtos().toFixed(2) + ') deben sumar el total de la compra (S/ ' + totalCompraActual().toFixed(2) + ').';
+                    }
+                    if (errorMixto) {
+                        Swal.fire({ icon: 'error', title: 'Pago mixto', text: errorMixto });
                         return;
                     }
                 }
@@ -877,7 +987,7 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: data.responseJSON.message || 'Ocurrió un error al generar la compra.'
+                            text: (data.responseJSON && (data.responseJSON.error || data.responseJSON.message)) || 'Ocurrió un error al generar la compra.'
                         });
                     }
                 });

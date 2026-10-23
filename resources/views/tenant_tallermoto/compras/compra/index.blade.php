@@ -367,7 +367,10 @@
                         $('#ver_VEN_Id').text(data.compra.COM_Id);
                         $('#ver_VEN_FechaEmision').text(fecha + " " + hora);
                         $('#ver_VEN_TipoPago').text(data.compra.COM_TipoPago);
-                        $('#ver_MEP_Pago').text(data.compra.metodo_pago.MEP_Pago);
+                        var pagosMixtos = data.pagos || [];
+                        $('#ver_MEP_Pago').text(pagosMixtos.length
+                            ? 'Mixto: ' + pagosMixtos.map(function(p) { return p.metodo + ' S/ ' + parseFloat(p.monto).toFixed(2); }).join(' + ')
+                            : data.compra.metodo_pago.MEP_Pago);
                         $('#ver_DOV_TipoComprobante').text(data.compra.COM_TipoDocumento);
                         $('#ver_NumComprobante').text(data.compra.COM_NumDocumento);
                         $('#ver_Proveedor').text(data.compra.proveedor.PROV_RazonSocial);

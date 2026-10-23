@@ -28,11 +28,18 @@
                         </div>
                     </div>
 
-                    <div class="row">
+                    @if ($pagosMixtos->isNotEmpty())
+                    <div class="alert alert-light border mb-3">
+                        <strong>Pago mixto:</strong>
+                        {{ $pagosMixtos->map(fn ($p) => $p->metodo . ' S/ ' . number_format((float) $p->monto, 2))->implode(' + ') }}
+                        <br><small class="text-muted">La forma de pago de una compra mixta no se puede cambiar (ya se descontó así de la caja).</small>
+                    </div>
+                    @endif
+                    <div class="row" @if ($pagosMixtos->isNotEmpty()) style="display: none;" @endif>
                         <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label>Tipo de pago:</label>
-                                <select id="COM_TipoPago" name="COM_TipoPago" class="form-control" required>
+                                <select id="COM_TipoPago" name="COM_TipoPago" class="form-control" @if ($pagosMixtos->isEmpty()) required @endif>
                                     <option value="Contado" {{ $data->COM_TipoPago === 'Contado' ? 'selected' : '' }}>Contado</option>
                                     <option value="Credito" {{ $data->COM_TipoPago === 'Credito' ? 'selected' : '' }}>Crédito</option>
                                 </select>
@@ -41,7 +48,7 @@
                         <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label>Método de pago:</label>
-                                <select id="MEP_Id" name="MEP_Id" class="form-control select2" required>
+                                <select id="MEP_Id" name="MEP_Id" class="form-control select2" @if ($pagosMixtos->isEmpty()) required @endif>
                                     <option value="">Seleccione método</option>
                                     @foreach ($metodo_pago as $mep)
                                         <option value="{{ $mep->MEP_Id }}" {{ (int) $data->MEP_Id === $mep->MEP_Id ? 'selected' : '' }}>{{ $mep->MEP_Pago }}</option>

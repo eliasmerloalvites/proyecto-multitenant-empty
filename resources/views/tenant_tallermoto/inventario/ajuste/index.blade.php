@@ -48,6 +48,7 @@
                                 <select class="form-control select2" id="AJU_Motivo" name="AJU_Motivo" style="width: 100%;" required>
                                     <option value="">Seleccionar ...</option>
                                     <option value="MERMA">Merma</option>
+                                    <option value="CONSUMIBLES">Consumibles</option>
                                     <option value="ROTURA">Rotura</option>
                                     <option value="VENCIMIENTO">Vencimiento</option>
                                     <option value="CONTEO_FISICO">Diferencia de conteo físico</option>
