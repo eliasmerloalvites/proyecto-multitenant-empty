@@ -717,12 +717,22 @@ class ProductoController extends Controller
             // Un producto desactivado (ver destroy()) ya no se repone ni se
             // vende, asi que no tiene caso seguir contandolo aqui: ni en la
             // tabla ni en el badge de stock bajo mas abajo.
+            // Codigo interno y de fabricacion (como en la vista de Productos):
+            // solo existen en las bases que tienen esas columnas.
+            $columnas = ['pd.PRO_Id', 'pd.PRO_Nombre', 'pd.PRO_PrecioVenta', 'pd.PRO_PrecioCompra', 'pd.PRO_StockMinimo', 'ct.CAT_Nombre'];
+            if (Schema::hasColumn('producto', 'PRO_CodigoInterno')) {
+                $columnas[] = 'pd.PRO_CodigoInterno';
+            }
+            if (Schema::hasColumn('producto', 'PRO_CodigoFabricacion')) {
+                $columnas[] = 'pd.PRO_CodigoFabricacion';
+            }
+
             $data = DB::table('producto as pd')
                 ->join('categoria as ct', 'pd.CAT_Id', '=', 'ct.CAT_Id')
                 ->join('lote as lt','pd.PRO_Id','=','lt.PRO_Id')
                 ->where('pd.PRO_Status', 1)
-                ->select('pd.PRO_Id', 'pd.PRO_Nombre', 'pd.PRO_PrecioVenta', 'pd.PRO_PrecioCompra', 'pd.PRO_StockMinimo', 'ct.CAT_Nombre', DB::raw('SUM(lt.LOT_CantidadReal) as cantidad_total'))
-                ->groupBy('pd.PRO_Id', 'pd.PRO_Nombre', 'pd.PRO_PrecioVenta', 'pd.PRO_PrecioCompra', 'pd.PRO_StockMinimo', 'ct.CAT_Nombre')
+                ->select(array_merge($columnas, [DB::raw('SUM(lt.LOT_CantidadReal) as cantidad_total')]))
+                ->groupBy($columnas)
                 ->get();
 
             return datatables()::of($data)
