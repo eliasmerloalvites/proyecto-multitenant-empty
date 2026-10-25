@@ -390,6 +390,8 @@
                             <tr>
                                 <th scope="col">Id</th>
                                 <th scope="col">Nombre</th>
+                                <th scope="col">Cód. Interno</th>
+                                <th scope="col">Cód. Fabricación</th>
                                 <th scope="col">Categoria</th>
                                 <th scope="col">Stock</th>
                                 <th scope="col">Stock Mínimo</th>
@@ -781,6 +783,20 @@
                         data: 'PRO_Nombre',
                         name: 'PRO_Nombre',
                         className: 'text-start'
+                    },
+                    {
+                        data: 'PRO_CodigoInterno',
+                        name: 'PRO_CodigoInterno',
+                        className: 'text-start',
+                        defaultContent: '-',
+                        render: function(v) { return v ? $('<div>').text(v).html() : '-'; }
+                    },
+                    {
+                        data: 'PRO_CodigoFabricacion',
+                        name: 'PRO_CodigoFabricacion',
+                        className: 'text-start',
+                        defaultContent: '-',
+                        render: function(v) { return v ? $('<div>').text(v).html() : '-'; }
                     },
                     {
                         data: 'CAT_Nombre',
