@@ -402,7 +402,7 @@
             <div class="kpi-header">
 
                 <div>
-                    <div class="kpi-title">Gastos del Mes</div>
+                    <div class="kpi-title">Egresos del Mes</div>
                 </div>
 
                 <div class="kpi-icon bg-warning-gradient">
@@ -411,11 +411,17 @@
 
             </div>
 
-            <div class="kpi-value">S/ {{ number_format($gastosMes, 2) }}</div>
+            <div class="kpi-value">S/ {{ number_format($egresosMes, 2) }}</div>
 
-            <div class="kpi-growth {{ $crecimientoGastos > 0 ? 'kpi-growth-negative' : '' }}">
-                <i class="fas {{ $crecimientoGastos > 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i>
-                {{ $crecimientoGastos >= 0 ? '+' : '' }}{{ $crecimientoGastos }}% vs mes anterior
+            <div class="kpi-growth {{ $crecimientoEgresos > 0 ? 'kpi-growth-negative' : '' }}">
+                <i class="fas {{ $crecimientoEgresos > 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i>
+                {{ $crecimientoEgresos >= 0 ? '+' : '' }}{{ $crecimientoEgresos }}% vs mes anterior
+            </div>
+
+            {{-- Mismo total que "Egresos totales" en Reportes > Compras y Gastos. --}}
+            <div class="mt-2" style="font-size: 12px; line-height: 1.5; opacity: .9;">
+                <div><i class="fas fa-file-invoice-dollar mr-1"></i>Gastos: <strong>S/ {{ number_format($gastosMes, 2) }}</strong></div>
+                <div title="Compras registradas en el mes, incluidas las al crédito"><i class="fas fa-dolly mr-1"></i>Compras: <strong>S/ {{ number_format($comprasMes, 2) }}</strong></div>
             </div>
 
         </div>

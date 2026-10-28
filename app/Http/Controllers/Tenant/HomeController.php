@@ -131,6 +131,22 @@ class HomeController extends Controller
             $crecimientoIngresos = $this->crecimientoPorcentual($ingresosMes, $ingresosMesAnterior);
             $crecimientoGastos = $this->crecimientoPorcentual($gastosMes, $gastosMesAnterior);
 
+            // Egresos del mes = gastos + compras registradas en el mes (lo
+            // comprado, aunque sea al credito). Misma definicion que "Egresos
+            // totales" en Reportes > Compras y Gastos. Los pagos a proveedores
+            // no se suman aparte: esa compra ya conto el dia que se registro.
+            $comprasDelMes = fn (Carbon $mes) => (float) DB::table('detalle_compra as dc')
+                ->join('compra as c', 'c.COM_Id', '=', 'dc.COM_Id')
+                ->where('c.COM_Status', 1)
+                ->whereYear('c.created_at', $mes->year)
+                ->whereMonth('c.created_at', $mes->month)
+                ->sum(DB::raw('dc.DCOM_Cantidad * dc.DCOM_PrecioCompra'));
+
+            $comprasMes = round($comprasDelMes($hoy), 2);
+            $egresosMes = round($gastosMes + $comprasMes, 2);
+            $egresosMesAnterior = round($gastosMesAnterior + $comprasDelMes($mesAnterior), 2);
+            $crecimientoEgresos = $this->crecimientoPorcentual($egresosMes, $egresosMesAnterior);
+
             // ================= CHART: VENTAS VS GASTOS (últimos 6 meses) =================
 
             $mesesEs = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -246,6 +262,9 @@ class HomeController extends Controller
                 'crecimientoIngresos',
                 'gastosMes',
                 'crecimientoGastos',
+                'comprasMes',
+                'egresosMes',
+                'crecimientoEgresos',
                 'stockBajo',
                 'labelsMeses',
                 'serieVentasMensual',
