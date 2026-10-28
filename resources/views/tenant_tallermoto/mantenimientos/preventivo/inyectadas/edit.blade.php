@@ -1138,13 +1138,23 @@
             });
 
 
-            $('body').on('click', '.cargarImagenCrop', function() {
-                if (!isImgProcessing) {
-                    isImgProcessing = true;
-                    var id = $(this).data("id");
-                    var cont = $(this).data("cont");
-                    AñadirImagen(id)
+            $('body').on('click', '.cargarImagenCrop', function(e) {
+
+                if (images.length >= MAX_IMAGES) {
+
+                    e.preventDefault();
+
+                    Swal.fire({ icon: 'warning', title: 'Límite alcanzado', text: 'Tu plan permite máximo ' + MAX_IMAGES + ' imágenes.' });
+
+                    return;
+
                 }
+
+                // Limpia la seleccion anterior: si se cancelo el recorte, volver a
+
+                // elegir la misma foto debe abrirlo otra vez.
+
+                this.value = '';
 
             });
 
@@ -1232,6 +1242,10 @@
             wrapper.appendChild(inputFile);
 
             container.appendChild(wrapper);
+
+            // El recorte se prepara al crear el input, no al hacer clic: asi
+            // cancelar el recorte o cerrar el selector no deja la carga trabada.
+            AñadirImagen(id_mpi);
 
         }
 
@@ -1437,16 +1451,6 @@
 
         function AñadirImagen($id) {
 
-            if (images.length >= MAX_IMAGES) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Límite alcanzado',
-                    text: 'Tu plan permite máximo ' + MAX_IMAGES + ' imágenes.'
-                });
-
-                return;
-            }
-
             const Toast2 = Swal.mixin({
                 toast: true,
                 position: 'top-end',
@@ -1485,6 +1489,10 @@
                     cargarImagenes()
                     isImgProcessing = false;
 
+                    // Nuevo input con el recorte listo para la siguiente foto.
+
+                    cargarFileForImagen();
+
                 },
                 onError: function(message, element, status) {
                     isImgProcessing = false;
@@ -1492,9 +1500,6 @@
                     alert(message);
                 }
             });
-
-            contador++
-            cargarFileForImagen()
 
         }
 
