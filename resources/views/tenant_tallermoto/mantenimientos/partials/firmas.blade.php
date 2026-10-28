@@ -145,7 +145,7 @@
                 if (f.firmado) {
                     cuerpo = '<div class="firma-img"><img alt="Firma de ' + esc(f.nombre) + '" src="' + url(URL_IMAGEN, p.rol) + '?v=' + encodeURIComponent(f.fecha) + '"></div>'
                         + '<div><strong>' + esc(f.nombre) + '</strong>' + (f.documento ? ' · DNI ' + esc(f.documento) : '') + '</div>'
-                        + '<div class="firma-quien">' + esc(f.fecha) + (p.rol === 'CLIENTE' && f.usuario ? ' · registró ' + esc(f.usuario) : '') + '</div>';
+                        + '<div class="firma-quien">' + esc(f.fecha) + (p.rol === 'CLIENTE' ? (f.origen === 'APP' ? ' · <i class="fas fa-mobile-alt"></i> firmó desde la app' : (f.usuario ? ' · registró ' + esc(f.usuario) : '')) : '') + '</div>';
                 } else {
                     const quien = p.rol === 'TECNICO' && estado.tecnico_asignado ? 'Asignado: ' + esc(estado.tecnico_asignado) : esc(p.sub);
                     cuerpo = '<div class="firma-img text-muted"><i class="fas fa-pen-nib"></i></div>'

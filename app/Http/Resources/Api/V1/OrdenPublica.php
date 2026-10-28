@@ -48,6 +48,17 @@ class OrdenPublica
                 'miniatura' => url("/api/v1/ordenes/{$ref}/fotos/{$f->item}?miniatura=1"),
             ])->values()->all(),
             'pdf_disponible' => $pdf,
+            'firmas' => self::firmas($r->prefijo, (int) $r->id),
         ];
+    }
+
+    private static function firmas(string $prefijo, int $id): ?array
+    {
+        if (! \App\Services\TenantTallerMotos\FirmasMantenimientoService::disponible()) {
+            return null;
+        }
+        $meta = \App\Services\TenantTallerMotos\FirmasMantenimientoService::tipoPorPrefijo($prefijo);
+
+        return $meta ? app(\App\Services\TenantTallerMotos\FirmasMantenimientoService::class)->estadoParaApp($meta['tabla'], $id) : null;
     }
 }

@@ -15,8 +15,9 @@ use RuntimeException;
  * - Orden fijo: TECNICO -> REPRESENTANTE -> CLIENTE.
  * - TECNICO: solo el usuario asignado al mantenimiento (PER_Id).
  * - REPRESENTANTE: un usuario con rol Admin o Gerente.
- * - CLIENTE: firma en el equipo del taller; queda como testigo el usuario
- *   con la sesion abierta. Con su firma el mantenimiento queda cerrado.
+ * - CLIENTE: firma en el equipo del taller (queda como testigo el usuario
+ *   con la sesion abierta) o desde la app movil con su cuenta
+ *   (firmarClienteDesdeApp). Con su firma el mantenimiento queda cerrado.
  * - Reabrir: solo Admin, con motivo; borra las firmas y deja registro.
  *
  * Igual que la tabla de firmas de los PDF, solo esta en planes Plus y
@@ -41,6 +42,17 @@ class FirmasMantenimientoService
     {
         foreach (GestionProcesoService::tipos() as $meta) {
             if ($meta['ruta_param'] === $slug) {
+                return $meta;
+            }
+        }
+
+        return null;
+    }
+
+    public static function tipoPorPrefijo(string $prefijo): ?array
+    {
+        foreach (GestionProcesoService::tipos() as $meta) {
+            if ($meta['prefijo'] === strtoupper($prefijo)) {
                 return $meta;
             }
         }
@@ -108,6 +120,7 @@ class FirmasMantenimientoService
                 'documento' => $f->FIR_Documento ?? null,
                 'fecha' => $f ? (string) $f->created_at : null,
                 'usuario' => $f->usuario ?? null,
+                'origen' => $f->FIR_Origen ?? null,
                 'puede_firmar' => ! $f && $motivo === null,
                 'motivo' => $motivo,
             ];
@@ -154,8 +167,7 @@ class FirmasMantenimientoService
                 $nombre = $usuario->name;
             }
 
-            $ruta = 'firmas/' . tenant('id') . '/' . $meta['tabla'] . '/' . $id . '/' . strtolower($rol) . '-' . Str::uuid() . '.png';
-            Storage::disk(self::DISCO)->put($ruta, $png);
+            $ruta = $this->guardarImagen($meta['tabla'], $id, $rol, $png);
 
             DB::table('mantenimiento_firma')->insert([
                 'FIR_Tabla' => $meta['tabla'],
@@ -170,6 +182,146 @@ class FirmasMantenimientoService
                 'updated_at' => now(),
             ]);
         });
+    }
+
+    /**
+     * Estado de las firmas para la app del cliente: solo lo necesario y si
+     * ya le toca firmar (tecnico y representante ya firmaron).
+     */
+    public function estadoParaApp(string $tabla, int $id): array
+    {
+        $firmas = self::firmas($tabla, $id);
+        $roles = [];
+        foreach (self::ROLES as $rol) {
+            $f = $firmas->get($rol);
+            $roles[] = [
+                'rol' => $rol,
+                'firmado' => (bool) $f,
+                'nombre' => $f->FIR_Nombre ?? null,
+                'fecha' => $f ? (string) $f->created_at : null,
+                'desde_app' => $f ? ($f->FIR_Origen ?? null) === 'APP' : false,
+            ];
+        }
+
+        $cerrado = $firmas->has('CLIENTE');
+        $listo = $firmas->has('TECNICO') && $firmas->has('REPRESENTANTE');
+
+        return [
+            'roles' => $roles,
+            'cerrado' => $cerrado,
+            'puede_firmar' => ! $cerrado && $listo,
+            'mensaje' => $cerrado
+                ? 'Firmaste la conformidad de este trabajo.'
+                : ($listo
+                    ? 'El taller ya firmó. Revisa el trabajo y firma tu conformidad.'
+                    : 'Podrás firmar cuando el técnico y el taller hayan firmado.'),
+        ];
+    }
+
+    /**
+     * Firma del cliente desde la app movil. $trazos son los trazos del dedo
+     * normalizados de 0 a 1 ([[[x, y], ...], ...]); el PNG se dibuja aqui
+     * para que la app no necesite librerias nativas y quede igual que las
+     * firmas del panel.
+     */
+    public function firmarClienteDesdeApp(array $meta, int $id, array $trazos, $cuenta, ?string $ip): void
+    {
+        $png = $this->dibujarTrazos($trazos);
+
+        DB::transaction(function () use ($meta, $id, $png, $cuenta, $ip) {
+            $registro = DB::table($meta['tabla'])->where($meta['prefijo'] . '_Id', $id)->lockForUpdate()->first();
+            if (! $registro) {
+                throw new RuntimeException('Orden no encontrada.');
+            }
+
+            $firmas = self::firmas($meta['tabla'], $id);
+            if ($firmas->has('CLIENTE')) {
+                throw new RuntimeException('Esta orden ya tiene la firma del cliente.');
+            }
+            if (! $firmas->has('TECNICO') || ! $firmas->has('REPRESENTANTE')) {
+                throw new RuntimeException('Todavía no puedes firmar: falta que el técnico y el taller firmen la orden.');
+            }
+
+            $nombre = trim((string) ($cuenta->CMV_Nombre ?? '')) ?: 'Cliente (app)';
+            $ruta = $this->guardarImagen($meta['tabla'], $id, 'CLIENTE', $png);
+
+            DB::table('mantenimiento_firma')->insert([
+                'FIR_Tabla' => $meta['tabla'],
+                'FIR_RegistroId' => $id,
+                'FIR_Rol' => 'CLIENTE',
+                'FIR_Nombre' => mb_substr($nombre, 0, 150),
+                'FIR_Documento' => null,
+                'FIR_Imagen' => $ruta,
+                'USU_Id' => null,
+                'CMV_Id' => $cuenta->CMV_Id,
+                'FIR_Origen' => 'APP',
+                'FIR_Ip' => $ip,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+    }
+
+    private function guardarImagen(string $tabla, int $id, string $rol, string $png): string
+    {
+        $ruta = 'firmas/' . tenant('id') . '/' . $tabla . '/' . $id . '/' . strtolower($rol) . '-' . Str::uuid() . '.png';
+        Storage::disk(self::DISCO)->put($ruta, $png);
+
+        return $ruta;
+    }
+
+    /** PNG 600x220 (fondo blanco, tinta azul) a partir de los trazos normalizados. */
+    private function dibujarTrazos(array $trazos): string
+    {
+        $limpios = [];
+        $puntos = 0;
+        foreach (array_slice($trazos, 0, 80) as $trazo) {
+            if (! is_array($trazo)) {
+                continue;
+            }
+            $linea = [];
+            foreach (array_slice($trazo, 0, 1500) as $p) {
+                if (! is_array($p) || count($p) < 2 || ! is_numeric($p[0]) || ! is_numeric($p[1])) {
+                    continue;
+                }
+                $linea[] = [max(0, min(1, (float) $p[0])), max(0, min(1, (float) $p[1]))];
+            }
+            if ($linea) {
+                $limpios[] = $linea;
+                $puntos += count($linea);
+            }
+        }
+
+        if ($puntos < 5 || $puntos > 8000) {
+            throw new RuntimeException('Firma dentro del recuadro antes de enviar.');
+        }
+
+        $ancho = 600;
+        $alto = 220;
+        $img = imagecreatetruecolor($ancho, $alto);
+        imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
+        $tinta = imagecolorallocate($img, 11, 42, 107);
+        imagesetthickness($img, 3);
+
+        foreach ($limpios as $linea) {
+            $previo = null;
+            foreach ($linea as [$x, $y]) {
+                $px = (int) round($x * ($ancho - 1));
+                $py = (int) round($y * ($alto - 1));
+                if ($previo) {
+                    imageline($img, $previo[0], $previo[1], $px, $py, $tinta);
+                } else {
+                    imagefilledellipse($img, $px, $py, 3, 3, $tinta);
+                }
+                $previo = [$px, $py];
+            }
+        }
+
+        ob_start();
+        imagepng($img);
+        imagedestroy($img);
+
+        return (string) ob_get_clean();
     }
 
     public function reabrir(array $meta, int $id, string $motivo, $usuario): void
@@ -191,7 +343,8 @@ class FirmasMantenimientoService
                 'FRA_Motivo' => mb_substr($motivo, 0, 255),
                 'FRA_Firmas' => json_encode($firmas->map(fn ($f) => [
                     'rol' => $f->FIR_Rol, 'nombre' => $f->FIR_Nombre, 'documento' => $f->FIR_Documento,
-                    'usuario_id' => $f->USU_Id, 'fecha' => (string) $f->created_at,
+                    'usuario_id' => $f->USU_Id, 'cuenta_app_id' => $f->CMV_Id ?? null,
+                    'origen' => $f->FIR_Origen ?? 'TALLER', 'fecha' => (string) $f->created_at,
                 ])->values()->all(), JSON_UNESCAPED_UNICODE),
                 'created_at' => now(),
                 'updated_at' => now(),

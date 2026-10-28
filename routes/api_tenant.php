@@ -51,6 +51,7 @@ Route::middleware(['auth:cliente', 'api.cuenta', 'throttle:app-movil-api'])->gro
     // Ordenes de servicio (historial y estado).
     Route::get('ordenes', [OrdenController::class, 'index'])->name('api.v1.ordenes.index');
     Route::get('ordenes/{ref}', [OrdenController::class, 'show'])->where('ref', '[a-z]{3}-[0-9]+')->name('api.v1.ordenes.show');
+    Route::post('ordenes/{ref}/firmar', [OrdenController::class, 'firmar'])->where('ref', '[a-z]{3}-[0-9]+')->middleware('throttle:10,1')->name('api.v1.ordenes.firmar');
     Route::get('ordenes/{ref}/pdf', [OrdenController::class, 'pdf'])->where('ref', '[a-z]{3}-[0-9]+')->name('api.v1.ordenes.pdf');
     Route::get('ordenes/{ref}/fotos/{item}', [OrdenController::class, 'foto'])->where('ref', '[a-z]{3}-[0-9]+')->whereNumber('item')->name('api.v1.ordenes.foto');
 

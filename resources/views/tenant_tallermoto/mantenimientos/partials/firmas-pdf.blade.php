@@ -3,11 +3,13 @@
     Si ya firmaron en el sistema, la firma sale sobre su linea con el nombre
     y la fecha; si no, queda la linea en blanco para firmar en papel.
 
-    Parametros: $tabla (tabla del mantenimiento) y $subCliente (texto bajo
-    "FIRMA DEL CLIENTE"). El id sale de la ruta ({id}) del PDF.
+    Parametros: $tabla (tabla del mantenimiento), $registroId (id del
+    mantenimiento) y $subCliente (texto bajo "FIRMA DEL CLIENTE"). El id se
+    pasa explicito porque el mismo PDF lo genera la API de la app movil,
+    cuya ruta no tiene {id} (usa {ref}, ej. mgc-7).
 --}}
 @php
-    $firmasPdf = \App\Services\TenantTallerMotos\FirmasMantenimientoService::firmas($tabla, (int) request()->route('id'));
+    $firmasPdf = \App\Services\TenantTallerMotos\FirmasMantenimientoService::firmas($tabla, (int) ($registroId ?? request()->route('id')));
     $empresaFirma = $empresa ?? \App\Models\Tenant\EmpresaFacturacion::where('tenant_id', tenant('id'))->first();
     $nombreEmpresaFirma = $empresaFirma ? ($empresaFirma->nombre_comercial ?: $empresaFirma->razon_social) : '';
     $columnasFirma = [
@@ -33,7 +35,7 @@
                 <div class="sign-title">{{ $col['titulo'] }}</div>
                 @if ($f)
                     <div class="sign-sub">
-                        {{ $f->FIR_Nombre }}@if ($f->FIR_Documento) · DNI {{ $f->FIR_Documento }}@endif
+                        {{ $f->FIR_Nombre }}@if ($f->FIR_Documento) · DNI {{ $f->FIR_Documento }}@endif @if (($f->FIR_Origen ?? null) === 'APP') · desde la app @endif
                         <br>{{ \Carbon\Carbon::parse($f->created_at)->format('d/m/Y H:i') }}
                     </div>
                 @else

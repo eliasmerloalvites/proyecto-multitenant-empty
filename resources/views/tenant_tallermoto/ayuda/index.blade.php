@@ -638,7 +638,7 @@
                         <ol>
                             <li><strong>Técnico</strong>: solo el técnico asignado, con su propio usuario.</li>
                             <li><strong>Representante</strong>: un usuario con rol Admin o Gerente.</li>
-                            <li><strong>Cliente</strong>: al final; se le pasa el equipo del taller, escribe su nombre (y DNI, opcional) y firma.</li>
+                            <li><strong>Cliente</strong>: al final; se le pasa el equipo del taller, escribe su nombre (y DNI, opcional) y firma. O, si usa la app KaelTech Moto, puede firmar su conformidad desde su celular en el detalle de la orden (le aparece apenas firmaron el técnico y el representante); en el panel se ve como <em>firmó desde la app</em>.</li>
                         </ol>
                         <div class="ayuda-nota info">
                             <i class="fas fa-lock"></i>

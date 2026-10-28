@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { File, Paths } from 'expo-file-system';
 import { useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
@@ -6,13 +6,14 @@ import { useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, View } from 'react-native';
 
 import { EstadoChip, PasosOrden } from '@/components/estado';
+import { FirmaPad, puntosDe, type Trazos } from '@/components/firma-pad';
 import { FotoSegura } from '@/components/foto-segura';
 import { Boton, Cargando, Chip, ErrorCarga, Icono, Pantalla, Placa, Tarjeta, Texto } from '@/components/ui';
-import { api, cabeceras } from '@/lib/api';
-import { soles } from '@/lib/formato';
+import { api, ApiError, cabeceras } from '@/lib/api';
+import { fecha, soles } from '@/lib/formato';
 import { sesion } from '@/lib/session';
 import { useTema } from '@/lib/tema';
-import type { OrdenDetalle } from '@/lib/types';
+import type { FirmaRol, FirmasOrden, OrdenDetalle } from '@/lib/types';
 
 export default function DetalleOrden() {
   const t = useTema();
@@ -21,6 +22,39 @@ export default function DetalleOrden() {
   const [foto, setFoto] = useState<{ url: string; clave: string } | null>(null);
   const [fallaFoto, setFallaFoto] = useState(false);
   const [descargando, setDescargando] = useState(false);
+  const cache = useQueryClient();
+  const [firmando, setFirmando] = useState(false);
+  const [trazos, setTrazos] = useState<Trazos>([]);
+  const [intento, setIntento] = useState(0);
+  const [enviando, setEnviando] = useState(false);
+  const [errorFirma, setErrorFirma] = useState<string | null>(null);
+
+  function abrirFirma() {
+    setTrazos([]);
+    setIntento((n) => n + 1);
+    setErrorFirma(null);
+    setFirmando(true);
+  }
+
+  async function enviarFirma() {
+    if (puntosDe(trazos) < 5) {
+      setErrorFirma('Firma dentro del recuadro antes de enviar.');
+      return;
+    }
+    setEnviando(true);
+    setErrorFirma(null);
+    try {
+      const actualizada = await api.post<OrdenDetalle>(`ordenes/${ref}/firmar`, { trazos });
+      cache.setQueryData(['orden', ref], actualizada);
+      void cache.invalidateQueries({ queryKey: ['ordenes'] });
+      setFirmando(false);
+      Alert.alert('¡Gracias!', 'Tu firma de conformidad quedó registrada.');
+    } catch (e) {
+      setErrorFirma(e instanceof ApiError ? e.message : 'No se pudo enviar la firma. Inténtalo de nuevo.');
+    } finally {
+      setEnviando(false);
+    }
+  }
 
   async function descargarPdf(o: OrdenDetalle) {
     setDescargando(true);
@@ -115,7 +149,33 @@ export default function DetalleOrden() {
         </Tarjeta>
       ) : null}
 
+      {o.firmas ? <SeccionFirmas firmas={o.firmas} alFirmar={abrirFirma} /> : null}
+
       {o.pdf_disponible ? <Boton titulo="Descargar orden en PDF" icono="document-text-outline" variante="suave" onPress={() => void descargarPdf(o)} cargando={descargando} /> : null}
+
+      <Modal visible={firmando} animationType="slide" onRequestClose={() => setFirmando(false)}>
+        <View style={{ flex: 1, backgroundColor: t.fondo, padding: 20, paddingTop: 48, gap: 14 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Texto tipo="titulo">Firma de conformidad</Texto>
+            <Pressable onPress={() => setFirmando(false)} accessibilityRole="button" accessibilityLabel="Cerrar" hitSlop={12}>
+              <Icono nombre="close" tam={26} color={t.texto} />
+            </Pressable>
+          </View>
+          <Texto tipo="pequeno">
+            Con tu firma confirmas que revisaste el trabajo de la orden {o.numero} ({o.placa}) y estás conforme. Después de firmar, el taller ya no podrá modificar la orden.
+          </Texto>
+          <FirmaPad key={intento} trazos={trazos} onCambio={setTrazos} />
+          {errorFirma ? <Texto color={t.error}>{errorFirma}</Texto> : null}
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flex: 1 }}>
+              <Boton titulo="Borrar" icono="refresh" variante="secundario" onPress={() => { setTrazos([]); setIntento((n) => n + 1); setErrorFirma(null); }} deshabilitado={enviando} />
+            </View>
+            <View style={{ flex: 1.4 }}>
+              <Boton titulo="Enviar firma" icono="checkmark-circle" onPress={() => void enviarFirma()} cargando={enviando} />
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={!!foto} transparent animationType="fade" onRequestClose={() => setFoto(null)}>
         <Pressable onPress={() => setFoto(null)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.94)', justifyContent: 'center' }} accessibilityLabel="Cerrar foto">
@@ -123,6 +183,33 @@ export default function DetalleOrden() {
         </Pressable>
       </Modal>
     </Pantalla>
+  );
+}
+
+const NOMBRE_ROL: Record<FirmaRol, string> = { TECNICO: 'Técnico', REPRESENTANTE: 'Taller', CLIENTE: 'Tú (cliente)' };
+
+function SeccionFirmas({ firmas, alFirmar }: { firmas: FirmasOrden; alFirmar: () => void }) {
+  const t = useTema();
+  return (
+    <Tarjeta style={{ gap: 12, borderWidth: firmas.puede_firmar ? 1.5 : 0, borderColor: t.primario }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <Icono nombre={firmas.cerrado ? 'shield-checkmark' : 'create-outline'} tam={18} color={firmas.cerrado ? t.ok : t.primario} />
+        <Texto tipo="etiqueta">Firmas de la orden</Texto>
+      </View>
+      {firmas.roles.map((r) => (
+        <View key={r.rol} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Icono nombre={r.firmado ? 'checkmark-circle' : 'ellipse-outline'} tam={20} color={r.firmado ? t.ok : t.suave} />
+          <View style={{ flex: 1 }}>
+            <Texto style={{ fontWeight: '600' }}>{NOMBRE_ROL[r.rol]}</Texto>
+            <Texto tipo="pequeno">
+              {r.firmado ? `${r.nombre ?? ''} · ${fecha(r.fecha)}${r.desde_app ? ' · desde la app' : ''}` : 'Pendiente'}
+            </Texto>
+          </View>
+        </View>
+      ))}
+      <Texto tipo="pequeno">{firmas.mensaje}</Texto>
+      {firmas.puede_firmar ? <Boton titulo="Firmar conformidad" icono="create-outline" onPress={alFirmar} /> : null}
+    </Tarjeta>
   );
 }
 
