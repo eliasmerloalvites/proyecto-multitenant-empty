@@ -88,6 +88,30 @@
                     </div>
                 </div>
 
+                <!-- CUENTAS POR COBRAR -->
+                <div class="row">
+                    <div class="col-md-6 col-12">
+                        <div class="info-box shadow-sm">
+                            <span class="info-box-icon bg-success"><i class="fas fa-hand-holding-usd"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Cobrado por abonos en el periodo</span>
+                                <span class="info-box-number" id="kpi_abonos">S/ 0.00</span>
+                                <span class="small text-muted">Pagos de ventas al crédito (de este u otro periodo)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-12">
+                        <div class="info-box shadow-sm">
+                            <span class="info-box-icon bg-danger"><i class="fas fa-file-invoice"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Por cobrar a hoy</span>
+                                <span class="info-box-number" id="kpi_por_cobrar">S/ 0.00</span>
+                                <span class="small text-muted">Saldo pendiente de cuentas por cobrar</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- GRAFICO -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
@@ -111,10 +135,11 @@
                                         <th class="text-center">Compras</th>
                                         <th class="text-end">Monto total</th>
                                         <th class="text-end">Ticket prom.</th>
+                                        <th class="text-end" title="Saldo pendiente de sus ventas al crédito, a hoy">Debe hoy</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabla_top_body">
-                                    <tr><td colspan="5" class="text-center text-muted">Cargando...</td></tr>
+                                    <tr><td colspan="6" class="text-center text-muted">Cargando...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -169,7 +194,7 @@
                     params.fecha_fin = $('#fecha_fin').val();
                 }
 
-                $('#tabla_top_body').html('<tr><td colspan="5" class="text-center text-muted">Cargando...</td></tr>');
+                $('#tabla_top_body').html('<tr><td colspan="6" class="text-center text-muted">Cargando...</td></tr>');
                 $('#tabla_nuevos_body').html('<tr><td colspan="3" class="text-center text-muted">Cargando...</td></tr>');
 
                 $.get("{{ route('tenant.reportes.clientes') }}", params, function (data) {
@@ -178,7 +203,7 @@
                     pintarNuevos(data.clientesNuevos);
                     pintarGrafico(data.topClientes);
                 }).fail(function () {
-                    $('#tabla_top_body').html('<tr><td colspan="5" class="text-center text-danger">Error al cargar el reporte.</td></tr>');
+                    $('#tabla_top_body').html('<tr><td colspan="6" class="text-center text-danger">Error al cargar el reporte.</td></tr>');
                 });
             }
 
@@ -187,11 +212,13 @@
                 $('#kpi_nuevos').text(t.clientesNuevos);
                 $('#kpi_activos').text(t.clientesActivos);
                 $('#kpi_ticket').text(fmt(t.ticketPromedioGeneral));
+                $('#kpi_por_cobrar').text(fmt(t.porCobrar));
+                $('#kpi_abonos').text(fmt(t.abonosPeriodo));
             }
 
             function pintarTop(filas) {
                 if (!filas.length) {
-                    $('#tabla_top_body').html('<tr><td colspan="5" class="text-center text-muted">Sin ventas en este periodo.</td></tr>');
+                    $('#tabla_top_body').html('<tr><td colspan="6" class="text-center text-muted">Sin ventas en este periodo.</td></tr>');
                     return;
                 }
                 var html = '';
@@ -202,6 +229,7 @@
                     html += '<td class="text-center">' + f.compras + '</td>';
                     html += '<td class="text-end"><strong>' + fmt(f.monto) + '</strong></td>';
                     html += '<td class="text-end">' + fmt(f.ticket_promedio) + '</td>';
+                    html += '<td class="text-end">' + (f.debe > 0 ? '<span class="text-danger">' + fmt(f.debe) + '</span>' : '<span class="text-muted">—</span>') + '</td>';
                     html += '</tr>';
                 });
                 $('#tabla_top_body').html(html);

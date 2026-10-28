@@ -71,6 +71,17 @@ export type OrdenDetalle = OrdenResumen & {
   repuestos: { descripcion: string; precio?: string }[];
   fotos: { item: number; url: string; miniatura: string }[];
   pdf_disponible: boolean;
+  /** null si el taller no usa firmas digitales (plan sin firmas). */
+  firmas?: FirmasOrden | null;
+};
+
+export type FirmaRol = 'TECNICO' | 'REPRESENTANTE' | 'CLIENTE';
+
+export type FirmasOrden = {
+  roles: { rol: FirmaRol; firmado: boolean; nombre: string | null; fecha: string | null; desde_app: boolean }[];
+  cerrado: boolean;
+  puede_firmar: boolean;
+  mensaje: string;
 };
 
 export type Turno = { id: number; nombre: string; hora: string | null; libres: number };

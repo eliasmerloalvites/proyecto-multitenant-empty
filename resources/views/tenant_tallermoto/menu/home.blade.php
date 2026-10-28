@@ -45,6 +45,21 @@
         height:100%;
     }
 
+    /* Resumen del mes (utilidad y flujo de caja) */
+    .resumen-card{ background:#fff; border-radius:20px; padding:22px; box-shadow:0 10px 30px rgba(15,23,42,.06); height:100%; display:flex; flex-direction:column; gap:6px; }
+    .resumen-head{ display:flex; justify-content:space-between; gap:12px; margin-bottom:8px; }
+    .resumen-titulo{ font-weight:700; font-size:16px; color:#0F172A; }
+    .resumen-ayuda{ font-size:12px; color:#64748B; margin-top:2px; max-width:42ch; }
+    .resumen-icono{ width:42px; height:42px; border-radius:12px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .resumen-linea{ display:flex; justify-content:space-between; font-size:14px; color:#334155; font-variant-numeric:tabular-nums; }
+    .resumen-resta{ color:#64748B; }
+    .resumen-sub{ font-weight:600; color:#0F172A; border-top:1px dashed #E2E8F0; padding-top:6px; }
+    .resumen-detalle{ font-size:11.5px; color:#94A3B8; margin:-2px 0 2px 10px; }
+    .resumen-total{ display:flex; justify-content:space-between; align-items:baseline; margin-top:6px; padding:10px 12px; border-radius:12px; background:#F0FDF4; color:#166534; font-weight:700; font-size:18px; font-variant-numeric:tabular-nums; }
+    .resumen-total.resumen-negativo{ background:#FEF2F2; color:#B91C1C; }
+    .resumen-pie{ display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12px; color:#64748B; margin-top:auto; padding-top:8px; }
+    .resumen-pie a{ margin-left:auto; font-weight:600; }
+
     .kpi-card:hover{
         transform:translateY(-4px);
         box-shadow:0 20px 40px rgba(15,23,42,.10);
@@ -362,6 +377,20 @@
                 {{ $crecimientoIngresos >= 0 ? '+' : '' }}{{ $crecimientoIngresos }}% vs mes anterior
             </div>
 
+            {{-- Vendido (arriba) no es lo mismo que cobrado: una venta al
+                 credito se cobra despues, como abono. --}}
+            <div class="mt-2" style="font-size: 12px; line-height: 1.5; opacity: .9;">
+                <div title="Ventas al contado + abonos de cuentas por cobrar + adelantos de bahía del mes">
+                    <i class="fas fa-hand-holding-usd mr-1"></i>Cobrado: <strong>S/ {{ number_format($cobradoMes, 2) }}</strong>
+                    @if ($abonosMes > 0)
+                        <span class="text-muted">(incl. S/ {{ number_format($abonosMes, 2) }} de abonos)</span>
+                    @endif
+                </div>
+                @if ($porCobrar > 0)
+                    <div><i class="fas fa-file-invoice mr-1"></i>Por cobrar: <strong>S/ {{ number_format($porCobrar, 2) }}</strong></div>
+                @endif
+            </div>
+
         </div>
 
     </div>
@@ -418,6 +447,91 @@
 
         </div>
 
+    </div>
+
+</div>
+
+{{-- RESUMEN DEL MES: utilidad (devengado) y flujo de caja, lado a lado --}}
+<div class="section-subtitle">
+    <i class="fas fa-chart-pie mr-1"></i>
+    Resumen de {{ $nombreMes }}
+</div>
+
+<div class="row mb-4">
+
+    {{-- UTILIDAD --}}
+    <div class="col-lg-6 mb-3">
+        <div class="resumen-card">
+            <div class="resumen-head">
+                <div>
+                    <div class="resumen-titulo">Utilidad del mes</div>
+                    <div class="resumen-ayuda">¿Gané con lo que vendí? Cuenta cada venta en su fecha, aunque sea al crédito.</div>
+                </div>
+                <span class="resumen-icono" style="background:#EEF2FF;color:#4338CA;"><i class="fas fa-chart-line"></i></span>
+            </div>
+
+            <div class="resumen-linea"><span>Vendido</span><span>S/ {{ number_format($utilidadMes['ingresos'], 2) }}</span></div>
+            <div class="resumen-linea resumen-resta"><span>− Costo de lo vendido</span><span>S/ {{ number_format($utilidadMes['costo'], 2) }}</span></div>
+            <div class="resumen-linea resumen-sub"><span>= Utilidad bruta</span><span>S/ {{ number_format($utilidadMes['utilidadBruta'], 2) }}</span></div>
+            <div class="resumen-linea resumen-resta"><span>− Gastos</span><span>S/ {{ number_format($utilidadMes['gastos'], 2) }}</span></div>
+
+            <div class="resumen-total {{ $utilidadMes['utilidadNeta'] < 0 ? 'resumen-negativo' : '' }}">
+                <span>Utilidad neta</span>
+                <span>S/ {{ number_format($utilidadMes['utilidadNeta'], 2) }}</span>
+            </div>
+
+            <div class="resumen-pie">
+                <span>Margen <strong>{{ number_format($utilidadMes['margen'], 1) }}%</strong></span>
+                @if (!is_null($utilidadMes['variacion']))
+                    <span class="{{ $utilidadMes['variacion'] < 0 ? 'text-danger' : 'text-success' }}">
+                        <i class="fas {{ $utilidadMes['variacion'] < 0 ? 'fa-arrow-down' : 'fa-arrow-up' }}"></i>
+                        {{ $utilidadMes['variacion'] >= 0 ? '+' : '' }}{{ $utilidadMes['variacion'] }}% vs mes anterior
+                    </span>
+                @endif
+                @can('tenant.reportes.rentabilidad')
+                    <a href="{{ route('tenant.reportes.rentabilidad') }}">Ver rentabilidad <i class="fas fa-angle-right"></i></a>
+                @endcan
+            </div>
+        </div>
+    </div>
+
+    {{-- FLUJO DE CAJA --}}
+    <div class="col-lg-6 mb-3">
+        <div class="resumen-card">
+            <div class="resumen-head">
+                <div>
+                    <div class="resumen-titulo">Flujo de caja del mes</div>
+                    <div class="resumen-ayuda">¿Cuánta plata entró y salió de verdad? Lo al crédito cuenta cuando se cobra o se paga.</div>
+                </div>
+                <span class="resumen-icono" style="background:#ECFDF5;color:#047857;"><i class="fas fa-cash-register"></i></span>
+            </div>
+
+            <div class="resumen-linea"><span>Cobrado</span><span>S/ {{ number_format($flujoCajaMes['cobrado'], 2) }}</span></div>
+            <div class="resumen-detalle">
+                Ventas S/ {{ number_format($flujoCajaMes['ventas'], 2) }}
+                · Abonos S/ {{ number_format($flujoCajaMes['abonos'], 2) }}
+                @if ($flujoCajaMes['adelantos'] > 0) · Adelantos S/ {{ number_format($flujoCajaMes['adelantos'], 2) }} @endif
+            </div>
+            <div class="resumen-linea resumen-resta"><span>− Pagado</span><span>S/ {{ number_format($flujoCajaMes['pagado'], 2) }}</span></div>
+            <div class="resumen-detalle">
+                Compras S/ {{ number_format($flujoCajaMes['compras'], 2) }}
+                · Proveedores S/ {{ number_format($flujoCajaMes['pagosProveedor'], 2) }}
+                · Gastos S/ {{ number_format($flujoCajaMes['gastos'], 2) }}
+            </div>
+
+            <div class="resumen-total {{ $flujoCajaMes['neto'] < 0 ? 'resumen-negativo' : '' }}">
+                <span>Neto en caja</span>
+                <span>S/ {{ number_format($flujoCajaMes['neto'], 2) }}</span>
+            </div>
+
+            <div class="resumen-pie">
+                <span title="Saldo pendiente de cuentas por cobrar">Te deben <strong>S/ {{ number_format($flujoCajaMes['porCobrar'], 2) }}</strong></span>
+                <span title="Saldo pendiente de cuentas por pagar">Debes a proveedores <strong>S/ {{ number_format($flujoCajaMes['debesProveedores'], 2) }}</strong></span>
+                @can('tenant.reportes.caja')
+                    <a href="{{ route('tenant.reportes.caja') }}">Ver por método <i class="fas fa-angle-right"></i></a>
+                @endcan
+            </div>
+        </div>
     </div>
 
 </div>
@@ -642,13 +756,13 @@
         <div class="dashboard-card">
 
             <div class="dashboard-card-title">
-                Métodos de Pago (mes actual)
+                Cobros por Método (mes actual)
             </div>
 
             @if($metodosPagoLabels->isEmpty())
                 <div class="empty-state">
                     <i class="fas fa-chart-pie fa-2x mb-2"></i>
-                    <p class="mb-0">Aún no hay ventas este mes.</p>
+                    <p class="mb-0">Aún no hay cobros este mes.</p>
                 </div>
             @else
                 <div class="donut-container">

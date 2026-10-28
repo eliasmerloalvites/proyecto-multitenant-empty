@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\OrdenPublica;
 use App\Services\AppMovil\OrdenesMotoService;
 use App\Services\AppMovil\VinculacionMotoService;
+use App\Services\TenantTallerMotos\FirmasMantenimientoService;
 use App\Support\ApiRespuesta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -68,6 +69,39 @@ class OrdenController extends Controller
         }
 
         return $this->ordenes->pdf($orden['registro']->prefijo, (int) $orden['registro']->id);
+    }
+
+    /**
+     * Firma de conformidad del cliente desde la app. Solo cuando el tecnico y
+     * el taller ya firmaron (reglas en FirmasMantenimientoService). Devuelve
+     * la orden actualizada.
+     */
+    public function firmar(Request $request, string $ref)
+    {
+        $datos = $request->validate([
+            'trazos' => 'required|array|min:1|max:80',
+            'trazos.*' => 'array|max:1500',
+        ]);
+
+        $cuenta = $request->user('cliente');
+        $orden = $this->ordenes->localizar($cuenta, $ref);
+        $meta = $orden && FirmasMantenimientoService::disponible()
+            ? FirmasMantenimientoService::tipoPorPrefijo($orden['registro']->prefijo)
+            : null;
+
+        if (! $meta) {
+            return $this->noEncontrada();
+        }
+
+        try {
+            app(FirmasMantenimientoService::class)->firmarClienteDesdeApp($meta, (int) $orden['registro']->id, $datos['trazos'], $cuenta, $request->ip());
+        } catch (\RuntimeException $e) {
+            return ApiRespuesta::error('FIRMA_NO_PERMITIDA', $e->getMessage(), 422);
+        }
+
+        $orden = $this->ordenes->localizar($cuenta, $ref);
+
+        return ApiRespuesta::ok(OrdenPublica::detalle($orden, $this->ordenes, $this->ordenes->puedeDescargarPdf($orden, $cuenta)));
     }
 
     public function foto(Request $request, string $ref, int $item)

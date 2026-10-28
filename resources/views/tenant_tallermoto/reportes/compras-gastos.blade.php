@@ -89,6 +89,40 @@
                     </div>
                 </div>
 
+                <!-- CREDITO CON PROVEEDORES -->
+                <div class="row">
+                    <div class="col-md-4 col-6">
+                        <div class="info-box shadow-sm">
+                            <span class="info-box-icon bg-info"><i class="fas fa-file-signature"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Comprado al crédito</span>
+                                <span class="info-box-number" id="kpi_compras_credito">S/ 0.00</span>
+                                <span class="small text-muted">Parte de las compras del periodo</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-6">
+                        <div class="info-box shadow-sm">
+                            <span class="info-box-icon bg-success"><i class="fas fa-hand-holding-usd"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Pagado a proveedores</span>
+                                <span class="info-box-number" id="kpi_pagado_proveedores">S/ 0.00</span>
+                                <span class="small text-muted">Abonos de cuentas por pagar del periodo</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-12">
+                        <div class="info-box shadow-sm">
+                            <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Deuda pendiente con proveedores</span>
+                                <span class="info-box-number" id="kpi_deuda_proveedores">S/ 0.00</span>
+                                <span class="small text-muted">Saldo de cuentas por pagar a hoy</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- GRAFICO -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
@@ -208,6 +242,9 @@
                 $('#kpi_compras').text(fmt(data.actual.compras));
                 $('#kpi_gastos').text(fmt(data.actual.gastos));
                 $('#kpi_egresos').text(fmt(data.actual.egresos));
+                $('#kpi_compras_credito').text(fmt(data.actual.compras_credito));
+                $('#kpi_pagado_proveedores').text(fmt(data.actual.pagado_proveedores));
+                $('#kpi_deuda_proveedores').text(fmt(data.actual.deuda_proveedores));
 
                 var v = data.variacion.egresos;
                 if (v > 0) {

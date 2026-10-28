@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant\Caja;
 use App\Models\Tenant\CajaSesion;
+use App\Services\Caja\FlujoPorMetodoService;
 use App\Services\Exportacion\CajaSesionExcel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -130,65 +131,7 @@ class CajaSesionController extends Controller
      */
     private static function ventasPorMetodoEnSesion(string $csId): array
     {
-        $revenuePorVenta = DB::table('venta as v')
-            ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
-            ->where('v.CS_Id', $csId)
-            ->where('v.VEN_Status', 1)
-            // DEV_PrecioUnitario ya es el precio final con el descuento
-            // aplicado (ver VentaController::store): restar DEV_Descuento
-            // aqui lo volveria a descontar, dejando el ingreso por debajo
-            // de lo realmente cobrado.
-            ->select('v.VEN_Id', 'v.MEP_Id', DB::raw('SUM(dv.DEV_Cantidad * dv.DEV_PrecioUnitario) as revenue'))
-            ->groupBy('v.VEN_Id', 'v.MEP_Id')
-            ->get();
-
-        // venta_pago solo existe para tenants tipo tallermoto; este
-        // controller tambien lo usan los genericos, que no tienen esa
-        // tabla. Sin ella, cae al criterio viejo (linea 157) para todas.
-        $pagosPorVenta = Schema::hasTable('venta_pago')
-            ? DB::table('venta_pago as vp')
-                ->join('venta as v', 'v.VEN_Id', '=', 'vp.VEN_Id')
-                ->where('v.CS_Id', $csId)
-                ->where('v.VEN_Status', 1)
-                ->select('vp.VEN_Id', 'vp.MEP_Id', 'vp.VNP_Monto')
-                ->get()
-                ->groupBy('VEN_Id')
-            : collect();
-
-        // Ventas que cerraron una cuenta de bahia con adelantos: esa parte ya
-        // entro a la caja el dia del adelanto (ver adelantosPorMetodoEnSesion),
-        // asi que aqui solo cuenta el saldo cobrado al cerrar la cuenta.
-        $adelantosPorVenta = Schema::hasTable('bahia_cuenta_adelanto')
-            ? DB::table('bahia_cuenta_adelanto as a')
-                ->join('bahia_cuenta as b', 'b.BCT_Id', '=', 'a.BCT_Id')
-                ->whereIn('b.VEN_Id', $revenuePorVenta->pluck('VEN_Id'))
-                ->select('b.VEN_Id', DB::raw('SUM(a.BCA_Monto) as total'))
-                ->groupBy('b.VEN_Id')
-                ->pluck('total', 'VEN_Id')
-            : collect();
-
-        $porMetodo = [];
-
-        foreach ($revenuePorVenta as $venta) {
-            $revenue = max(0, (float) $venta->revenue - (float) ($adelantosPorVenta[$venta->VEN_Id] ?? 0));
-            $pagos = $pagosPorVenta->get($venta->VEN_Id);
-
-            if (! $pagos || $pagos->isEmpty()) {
-                // Sin detalle de pagos (venta anterior a venta_pago): todo
-                // el ingreso va a su unico metodo, como antes.
-                $porMetodo[$venta->MEP_Id] = ($porMetodo[$venta->MEP_Id] ?? 0) + $revenue;
-                continue;
-            }
-
-            $totalTendido = (float) $pagos->sum('VNP_Monto');
-
-            foreach ($pagos as $pago) {
-                $porcion = $totalTendido > 0 ? $revenue * ((float) $pago->VNP_Monto / $totalTendido) : 0;
-                $porMetodo[$pago->MEP_Id] = ($porMetodo[$pago->MEP_Id] ?? 0) + $porcion;
-            }
-        }
-
-        return $porMetodo;
+        return FlujoPorMetodoService::porSesion($csId)->ventas();
     }
 
     /**
@@ -200,19 +143,7 @@ class CajaSesionController extends Controller
      */
     private static function abonosPorMetodoEnSesion(string $csId): array
     {
-        // Cuentas por cobrar (y por lo tanto sus abonos) solo existe para
-        // tenants tipo tallermoto; los genericos no tienen esta tabla.
-        if (! Schema::hasTable('cuenta_por_cobrar_abono')) {
-            return [];
-        }
-
-        return DB::table('cuenta_por_cobrar_abono')
-            ->where('CS_Id', $csId)
-            ->select('MEP_Id', DB::raw('SUM(CPA_Monto) as total'))
-            ->groupBy('MEP_Id')
-            ->pluck('total', 'MEP_Id')
-            ->map(fn ($v) => (float) $v)
-            ->toArray();
+        return FlujoPorMetodoService::porSesion($csId)->abonos();
     }
 
     /**
@@ -222,37 +153,7 @@ class CajaSesionController extends Controller
      */
     private static function comprasPorMetodoEnSesion(string $csId): array
     {
-        $totales = DB::table('compra as co')
-            ->join('detalle_compra as dc', 'dc.COM_Id', '=', 'co.COM_Id')
-            ->where('co.CS_Id', $csId)
-            ->where('co.COM_Status', 1)
-            ->select('co.COM_Id', 'co.MEP_Id', DB::raw('SUM(dc.DCOM_Cantidad * dc.DCOM_PrecioCompra) as total'))
-            ->groupBy('co.COM_Id', 'co.MEP_Id')
-            ->get();
-
-        $pagosPorCompra = Schema::hasTable('compra_pago')
-            ? DB::table('compra_pago')->whereIn('COM_Id', $totales->pluck('COM_Id'))->get()->groupBy('COM_Id')
-            : collect();
-
-        $porMetodo = [];
-        foreach ($totales as $compra) {
-            $pagos = $pagosPorCompra->get($compra->COM_Id);
-
-            if (! $pagos || $pagos->isEmpty()) {
-                $porMetodo[$compra->MEP_Id] = ($porMetodo[$compra->MEP_Id] ?? 0) + (float) $compra->total;
-                continue;
-            }
-
-            // Proporcional a lo pagado con cada metodo (cuadra con el total
-            // aunque haya un centimo de redondeo entre pagos y detalle).
-            $pagado = (float) $pagos->sum('CPG_Monto');
-            foreach ($pagos as $pago) {
-                $porcion = $pagado > 0 ? (float) $compra->total * ((float) $pago->CPG_Monto / $pagado) : 0;
-                $porMetodo[$pago->MEP_Id] = ($porMetodo[$pago->MEP_Id] ?? 0) + $porcion;
-            }
-        }
-
-        return $porMetodo;
+        return FlujoPorMetodoService::porSesion($csId)->compras();
     }
 
     /**
@@ -263,17 +164,7 @@ class CajaSesionController extends Controller
      */
     private static function pagosProveedorPorMetodoEnSesion(string $csId): array
     {
-        if (! Schema::hasTable('cuenta_por_pagar_abono')) {
-            return [];
-        }
-
-        return DB::table('cuenta_por_pagar_abono')
-            ->where('CS_Id', $csId)
-            ->select('MEP_Id', DB::raw('SUM(CPPA_Monto) as total'))
-            ->groupBy('MEP_Id')
-            ->pluck('total', 'MEP_Id')
-            ->map(fn ($v) => (float) $v)
-            ->toArray();
+        return FlujoPorMetodoService::porSesion($csId)->pagosProveedor();
     }
 
     /**
@@ -282,17 +173,7 @@ class CajaSesionController extends Controller
      */
     private static function adelantosPorMetodoEnSesion(string $csId): array
     {
-        if (! Schema::hasTable('bahia_cuenta_adelanto')) {
-            return [];
-        }
-
-        return DB::table('bahia_cuenta_adelanto')
-            ->where('CS_Id', $csId)
-            ->select('MEP_Id', DB::raw('SUM(BCA_Monto) as total'))
-            ->groupBy('MEP_Id')
-            ->pluck('total', 'MEP_Id')
-            ->map(fn ($v) => (float) $v)
-            ->toArray();
+        return FlujoPorMetodoService::porSesion($csId)->adelantos();
     }
 
     /**
@@ -318,12 +199,7 @@ class CajaSesionController extends Controller
 
         $comprasEfectivo = self::comprasPorMetodoEnSesion((string) $sesion->CS_Id)[$mepEfectivoId] ?? 0;
 
-        $gastosEfectivo = DB::table('gasto')
-            ->where('CS_Id', $sesion->CS_Id)
-            ->where('MEP_Id', $mepEfectivoId)
-            ->where('GAS_Status', 1)
-            ->where('GAS_Afecta', 'SI')
-            ->sum('GAS_Monto');
+        $gastosEfectivo = FlujoPorMetodoService::porSesion((string) $sesion->CS_Id)->gastos()[$mepEfectivoId] ?? 0;
 
         $pagosProveedorEfectivo = self::pagosProveedorPorMetodoEnSesion((string) $sesion->CS_Id)[$mepEfectivoId] ?? 0;
 
@@ -563,13 +439,7 @@ class CajaSesionController extends Controller
 
         $comprasPorMetodo = self::comprasPorMetodoEnSesion($csId);
 
-        $gastosPorMetodo = DB::table('gasto')
-            ->where('CS_Id', $csId)
-            ->where('GAS_Status', 1)
-            ->where('GAS_Afecta', 'SI')
-            ->select('MEP_Id', DB::raw('SUM(GAS_Monto) as total'))
-            ->groupBy('MEP_Id')
-            ->pluck('total', 'MEP_Id');
+        $gastosPorMetodo = FlujoPorMetodoService::porSesion($csId)->gastos();
 
         $columnas = [];
         $totalVentas = 0;

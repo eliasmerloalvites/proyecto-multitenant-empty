@@ -638,7 +638,7 @@
                         <ol>
                             <li><strong>Técnico</strong>: solo el técnico asignado, con su propio usuario.</li>
                             <li><strong>Representante</strong>: un usuario con rol Admin o Gerente.</li>
-                            <li><strong>Cliente</strong>: al final; se le pasa el equipo del taller, escribe su nombre (y DNI, opcional) y firma.</li>
+                            <li><strong>Cliente</strong>: al final; se le pasa el equipo del taller, escribe su nombre (y DNI, opcional) y firma. O, si usa la app KaelTech Moto, puede firmar su conformidad desde su celular en el detalle de la orden (le aparece apenas firmaron el técnico y el representante); en el panel se ve como <em>firmó desde la app</em>.</li>
                         </ol>
                         <div class="ayuda-nota info">
                             <i class="fas fa-lock"></i>
@@ -1120,9 +1120,9 @@
                                 <tr><td><strong>Rendimiento de Mecánicos</strong></td><td>Cuántos trabajos terminó cada mecánico en el periodo, desglosado por tipo, y el tiempo promedio de atención — para evaluar carga de trabajo.</td></tr>
                                 <tr><td><strong>Rentabilidad</strong></td><td>Ingresos menos el costo real de lo vendido menos gastos del periodo = utilidad neta. Incluye el top de productos más rentables y una gráfica de la evolución día a día.</td></tr>
                                 <tr><td><strong>Inventario Valorizado</strong></td><td>Cuánto capital tienes inmovilizado en stock ahora mismo, y qué productos con stock <strong>no se vendieron ni una vez</strong> en el periodo (posible stock muerto).</td></tr>
-                                <tr><td><strong>Compras y Gastos</strong></td><td>A dónde se va la plata: compras y gastos del periodo, desglosados por proveedor y por tipo de gasto.</td></tr>
-                                <tr><td><strong>Clientes</strong></td><td>Quiénes compran más (para fidelizar) y cuántos clientes nuevos se registraron — para medir si la cartera de clientes está creciendo.</td></tr>
-                                <tr><td><strong>Caja</strong></td><td>Cuadre acumulado: cuántas sesiones de caja cerraron con diferencia (sobrante o faltante) y de qué cajero, para detectar patrones.</td></tr>
+                                <tr><td><strong>Compras y Gastos</strong></td><td>A dónde se va la plata: compras y gastos del periodo, desglosados por proveedor y por tipo de gasto. También cuánto se compró al crédito, cuánto se pagó a proveedores en el periodo (cuentas por pagar) y cuánto se les sigue debiendo.</td></tr>
+                                <tr><td><strong>Clientes</strong></td><td>Quiénes compran más (para fidelizar) y cuántos clientes nuevos se registraron — para medir si la cartera de clientes está creciendo. Muestra además lo cobrado por abonos en el periodo y cuánto debe hoy cada cliente (cuentas por cobrar).</td></tr>
+                                <tr><td><strong>Caja</strong></td><td>Cuadre acumulado: cuántas sesiones de caja cerraron con diferencia (sobrante o faltante) y de qué cajero, para detectar patrones. Incluye el cuadro de <strong>ingresos y egresos por método de pago</strong> del periodo: ventas (las de pago mixto repartidas en sus métodos), abonos de cuentas por cobrar, adelantos de bahía, compras, pagos a proveedores y gastos — la misma cuenta que el arqueo de caja.</td></tr>
                                 <tr><td><strong>Operación del Taller</strong></td><td>Cuántas reservas se cumplen frente a las que se rechazan o quedan pendientes, y cómo se reparte la ocupación entre bahías y turnos.</td></tr>
                             </tbody>
                         </table>

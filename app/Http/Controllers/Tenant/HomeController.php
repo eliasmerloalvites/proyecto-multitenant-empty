@@ -11,7 +11,10 @@ use App\Models\TenantTallerMotos\Bahia;
 use App\Models\TenantTallerMotos\Reservacion;
 use App\Models\TenantTallerMotos\Turno;
 use Carbon\Carbon;
+use App\Services\Caja\FlujoPorMetodoService;
+use App\Services\Reportes\UtilidadService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\RateLimiter;
 use ReflectionFunction;
@@ -153,21 +156,57 @@ class HomeController extends Controller
                     ->sum('GAS_Monto'), 2);
             }
 
-            // ================= CHART: MÉTODOS DE PAGO (mes actual) =================
+            // ================= CHART: COBROS POR MÉTODO (mes actual) =================
+            // Dinero que realmente entró en el mes por cada método, con la
+            // misma cuenta que la caja (FlujoPorMetodoService): ventas con
+            // pago mixto repartidas, abonos de cuentas por cobrar y adelantos
+            // de bahía incluidos, y sin "Crédito" (eso aún no se cobró).
 
-            $metodosPago = DB::table('venta as v')
-                ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'v.MEP_Id')
-                ->join('detalle_venta as dv', 'dv.VEN_Id', '=', 'v.VEN_Id')
-                ->where('v.VEN_Status', 1)
-                ->whereYear('v.created_at', $hoy->year)
-                ->whereMonth('v.created_at', $hoy->month)
-                ->select('mp.MEP_Pago', DB::raw("SUM($totalVentaExpr) as total"))
-                ->groupBy('mp.MEP_Id', 'mp.MEP_Pago')
-                ->orderByDesc('total')
-                ->get();
+            $flujoMes = FlujoPorMetodoService::entreFechas($hoy->copy()->startOfMonth(), $hoy->copy()->endOfMonth())->resumen(true);
+            $cobrosMes = collect($flujoMes['columnas'])
+                ->filter(fn ($c) => $c['ingresos'] > 0)
+                ->sortByDesc('ingresos')
+                ->values();
 
-            $metodosPagoLabels = $metodosPago->pluck('MEP_Pago')->values();
-            $metodosPagoData = $metodosPago->pluck('total')->map(fn ($v) => round((float) $v, 2))->values();
+            $metodosPagoLabels = $cobrosMes->pluck('nombre')->values();
+            $metodosPagoData = $cobrosMes->pluck('ingresos')->values();
+
+            // Cobrado en el mes (ventas al contado + abonos + adelantos) y
+            // lo que los clientes aún deben (cuentas por cobrar pendientes).
+            $cobradoMes = (float) $flujoMes['total_ingresos'];
+            $abonosMes = (float) $flujoMes['total_abonos'];
+            $porCobrar = Schema::hasTable('cuenta_por_cobrar')
+                ? (float) DB::table('cuenta_por_cobrar')->where('CPC_Estado', 'PENDIENTE')->sum('CPC_MontoFaltante')
+                : 0.0;
+
+            // ================= RESUMEN DEL MES (para el gerente) =================
+            // Dos miradas del mismo mes:
+            // - Utilidad (devengado): vendido - costo de lo vendido - gastos.
+            //   Misma cuenta que Reportes > Rentabilidad (UtilidadService).
+            // - Flujo de caja: lo que de verdad entro y salio (cobrado -
+            //   pagado). Misma cuenta que el arqueo (FlujoPorMetodoService).
+            $utilidadMes = UtilidadService::entre($hoy->copy()->startOfMonth(), $hoy->copy()->endOfMonth());
+            $utilidadMesAnterior = UtilidadService::entre($mesAnterior->copy()->startOfMonth(), $mesAnterior->copy()->endOfMonth());
+            $utilidadMes['variacion'] = $utilidadMesAnterior['utilidadNeta'] != 0.0
+                ? round(($utilidadMes['utilidadNeta'] - $utilidadMesAnterior['utilidadNeta']) / abs($utilidadMesAnterior['utilidadNeta']) * 100, 1)
+                : null;
+
+            $flujoCajaMes = [
+                'cobrado' => (float) $flujoMes['total_ingresos'],
+                'ventas' => (float) $flujoMes['total_ventas'],
+                'abonos' => (float) $flujoMes['total_abonos'],
+                'adelantos' => (float) $flujoMes['total_adelantos'],
+                'pagado' => (float) $flujoMes['total_egresos'],
+                'compras' => (float) $flujoMes['total_compras'],
+                'pagosProveedor' => (float) $flujoMes['total_pagos_proveedor'],
+                'gastos' => (float) $flujoMes['total_gastos'],
+                'neto' => (float) $flujoMes['total_neto'],
+                'porCobrar' => $porCobrar,
+                'debesProveedores' => Schema::hasTable('cuenta_por_pagar')
+                    ? (float) DB::table('cuenta_por_pagar')->where('CPP_Estado', 'PENDIENTE')->sum('CPP_MontoFaltante')
+                    : 0.0,
+            ];
+            $nombreMes = ucfirst($hoy->locale('es')->translatedFormat('F Y'));
 
             // ================= ÚLTIMOS MOVIMIENTOS (últimas ventas) =================
 
@@ -213,6 +252,12 @@ class HomeController extends Controller
                 'serieGastosMensual',
                 'metodosPagoLabels',
                 'metodosPagoData',
+                'cobradoMes',
+                'abonosMes',
+                'porCobrar',
+                'utilidadMes',
+                'flujoCajaMes',
+                'nombreMes',
                 'ultimasVentas',
                 'topProductos',
                 'maxUnidadesTop'

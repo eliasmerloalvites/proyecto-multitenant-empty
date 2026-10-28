@@ -1224,7 +1224,7 @@
         @if(tenant('plan') === 'plus' || tenant('plan') === 'empresarial')
             <div class="section no-break">
                 <div class="section-body">
-                    @include('tenant_tallermoto.mantenimientos.partials.firmas-pdf', ['tabla' => 'mantenimiento_preventivo_carburada', 'subCliente' => 'Conforme / entrega del vehículo'])
+                    @include('tenant_tallermoto.mantenimientos.partials.firmas-pdf', ['tabla' => 'mantenimiento_preventivo_carburada', 'registroId' => $mttoPreventivo->MPC_Id, 'subCliente' => 'Conforme / entrega del vehículo'])
                 </div>
             </div>
         @endif
