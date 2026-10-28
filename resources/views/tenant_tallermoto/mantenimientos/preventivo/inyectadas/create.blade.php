@@ -85,7 +85,7 @@
                                 <div class="form-group">
                                     <label>PLACA</label>
                                     <div class="input-group">
-                                        <input type="text" class="form-control" id="MPC_Placa" name="MPC_Placa"
+                                        <input type="text" class="form-control" id="MPI_Placa" name="MPI_Placa"
                                             placeholder="78C5-59" maxlength="18" required
                                             onkeyup="this.value=this.value.toUpperCase();">
 
@@ -107,13 +107,13 @@
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
                                         <label>PROPIETARIO</label>
-                                        <input type="text" class="form-control" id="MPC_Propietario"
-                                            name="MPC_Propietario" maxlength="50" placeholder="Ingrese Propietario" required
+                                        <input type="text" class="form-control" id="MPI_Propietario"
+                                            name="MPI_Propietario" maxlength="50" placeholder="Ingrese Propietario" required
                                             onkeyup="this.value=this.value.toUpperCase();">
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label>CELULAR</label>
-                                        <input type="number" class="form-control" id="MPC_celular" name="MPC_celular"
+                                        <input type="number" class="form-control" id="MPI_celular" name="MPI_celular"
                                             maxlength="12" placeholder="999999999">
                                     </div>
                                 </div>
@@ -122,15 +122,17 @@
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
                                         <label>UNIDAD</label>
-                                        <input type="text" class="form-control" id="MPC_Unidad" name="MPC_Unidad"
+                                        <input type="text" class="form-control" id="MPI_Unidad" name="MPI_Unidad"
                                             maxlength="40" placeholder="Ingrese Unidad"
                                             onkeyup="this.value=this.value.toUpperCase();">
                                     </div>
                                     <div class="form-group col-md-3">
                                         <label>KM</label>
-                                        <input type="text" class="form-control" id="MPC_KMEntrada" name="MPC_KMEntrada"
+                                        <input type="text" class="form-control" id="MPI_KMEntrada" name="MPI_KMEntrada"
                                             maxlength="20" placeholder="KM" required>
                                     </div>
+
+                                    @include('tenant_tallermoto.mantenimientos.partials.marca-garantia', ['prefijo' => 'MPI', 'registro' => null])
 
                                     <div class="form-group col-md-12">
                                         <label>RESPONSABLE</label>
@@ -590,7 +592,7 @@
                                 </div>
                                 <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12" align="left">
                                     <label for="Descripcion de averia">CORRECION DE OBSERVACIONES</label><br>
-                                    <textarea onKeyUp="handleText(this);" name="MPC_CorrecionObservacion" id="MPC_CorrecionObservacion"
+                                    <textarea onKeyUp="handleText(this);" name="MPI_CorrecionObservacion" id="MPI_CorrecionObservacion"
                                         class="form-control" rows="6" onKeyUp="this.value=this.value.toUpperCase();"></textarea>
                                 </div>
 
@@ -599,15 +601,15 @@
                                     <div class="form-group col-lg-6 col-md-6 col-sm-12 col-12">
                                         <label for="name" class=" control-label">PROXIMO CAMBIO DE ACEITE</label>
                                         <input type="text" class="form-control"
-                                            onKeyUp="this.value=this.value.toUpperCase();" id="MPC_ProximoCambioAceite"
-                                            name="MPC_ProximoCambioAceite" placeholder="#### KM" value=""
+                                            onKeyUp="this.value=this.value.toUpperCase();" id="MPI_ProximoCambioAceite"
+                                            name="MPI_ProximoCambioAceite" placeholder="#### KM" value=""
                                             maxlength="50" required="">
                                     </div>
                                     <div class="form-group col-lg-6 col-md-6 col-sm-12 col-12">
                                         <label for="name" class=" control-label">PROXIMO SERVICIO</label>
                                         <input type="text" class="form-control"
-                                            onKeyUp="this.value=this.value.toUpperCase();" id="MPC_ProximoServicio"
-                                            name="MPC_ProximoServicio" placeholder="#### KM" value=""
+                                            onKeyUp="this.value=this.value.toUpperCase();" id="MPI_ProximoServicio"
+                                            name="MPI_ProximoServicio" placeholder="#### KM" value=""
                                             maxlength="50" required="">
                                     </div>
                                 </div>
@@ -881,15 +883,15 @@
 
         function BuscarCliente() {
             ocultar()
-            var url = "/busquedaplaca/responsable/" + $('#MPC_Placa').val() + '?';
+            var url = "/busquedaplaca/responsable/" + $('#MPI_Placa').val() + '?';
             $.ajax({
                 type: "GET",
                 url: url,
                 success: function(data) {
                     if (data.success.validacion == "true") {
-                        $('#MPC_Propietario').val(data.success.mtto[0].Propietario);
-                        $('#MPC_celular').val(data.success.mtto[0].celular);
-                        $('#MPC_Unidad').val(data.success.mtto[0].Unidad);
+                        $('#MPI_Propietario').val(data.success.mtto[0].Propietario);
+                        $('#MPI_celular').val(data.success.mtto[0].celular);
+                        $('#MPI_Unidad').val(data.success.mtto[0].Unidad);
                     }
                     mostrar()
                 },

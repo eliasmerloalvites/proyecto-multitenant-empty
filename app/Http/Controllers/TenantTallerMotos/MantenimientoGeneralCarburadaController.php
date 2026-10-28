@@ -42,7 +42,7 @@ class MantenimientoGeneralCarburadaController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_general_carburada as mgi')
                     ->leftJoin('users as p', 'p.id', '=', 'mgi.PER_Id')
-                    ->select('mgi.MGC_Id', 'mgi.MGC_Placa', 'mgi.MGC_Propietario', 'mgi.MGC_celular', 'mgi.notificar', 'mgi.MGC_Unidad', 'mgi.MGC_KMEntrada', 'mgi.MGC_FechaCreacion', 'mgi.MGC_FechaTermino', 'mgi.MGC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_general_carburada' AND MTO_Id = mgi.MGC_Id) as tiene_recepcion"));
+                    ->select('mgi.MGC_Id', 'mgi.MGC_Placa', 'mgi.MGC_EsGarantia', DB::raw('(SELECT MAR_Nombre FROM marca_vehiculo WHERE MAR_Id = mgi.MAR_Id) as marca'), 'mgi.MGC_Propietario', 'mgi.MGC_celular', 'mgi.notificar', 'mgi.MGC_Unidad', 'mgi.MGC_KMEntrada', 'mgi.MGC_FechaCreacion', 'mgi.MGC_FechaTermino', 'mgi.MGC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_general_carburada' AND MTO_Id = mgi.MGC_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MGC_FechaCreacion', '>=', $request->fecha_inicio);
@@ -118,7 +118,7 @@ class MantenimientoGeneralCarburadaController extends Controller
             } else {
                 $data = DB::table('mantenimiento_general_carburada as mgi')
                     ->leftJoin('users as p', 'p.id', '=', 'mgi.PER_Id')
-                    ->select('mgi.MGC_Id', 'mgi.MGC_Placa', 'mgi.MGC_Propietario', 'mgi.MGC_celular', 'mgi.notificar', 'mgi.MGC_Unidad', 'mgi.MGC_KMEntrada', 'mgi.MGC_FechaCreacion', 'mgi.MGC_FechaTermino', 'mgi.MGC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_general_carburada' AND MTO_Id = mgi.MGC_Id) as tiene_recepcion"))
+                    ->select('mgi.MGC_Id', 'mgi.MGC_Placa', 'mgi.MGC_EsGarantia', DB::raw('(SELECT MAR_Nombre FROM marca_vehiculo WHERE MAR_Id = mgi.MAR_Id) as marca'), 'mgi.MGC_Propietario', 'mgi.MGC_celular', 'mgi.notificar', 'mgi.MGC_Unidad', 'mgi.MGC_KMEntrada', 'mgi.MGC_FechaCreacion', 'mgi.MGC_FechaTermino', 'mgi.MGC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_general_carburada' AND MTO_Id = mgi.MGC_Id) as tiene_recepcion"))
                     ->where('mgi.PER_Id', '=', $idpersonal);
 
                 if ($request->filled('fecha_inicio')) {
@@ -267,6 +267,7 @@ class MantenimientoGeneralCarburadaController extends Controller
             $mtto_general_carburadas->MGC_UsuarioEditado = $idusu;
             $mtto_general_carburadas->PER_Id = $request->get('USU_Id');
             $mtto_general_carburadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
+            \App\Services\TenantTallerMotos\MarcaVehiculoService::aplicarAMantenimiento($mtto_general_carburadas, 'MGC', $request);
             $mtto_general_carburadas->save();
 
             RepuestosBahiaSync::reemplazarManuales(
@@ -684,6 +685,7 @@ class MantenimientoGeneralCarburadaController extends Controller
             if ($request->notificar) {
                 $mtto_general_carburadas->notificar = 1;
             }
+            \App\Services\TenantTallerMotos\MarcaVehiculoService::aplicarAMantenimiento($mtto_general_carburadas, 'MGC', $request);
             $mtto_general_carburadas->update();
 
             RepuestosBahiaSync::reemplazarManuales(

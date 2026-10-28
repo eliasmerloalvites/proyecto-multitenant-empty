@@ -60,7 +60,7 @@ class ReservasMotoService
     }
 
     /** @return array{0:string, 1:?Reservacion} */
-    public function crear(CuentaMovil $cuenta, Moto $moto, int $sedeId, int $turnoId, string $fecha, ?string $detalle): array
+    public function crear(CuentaMovil $cuenta, Moto $moto, int $sedeId, int $turnoId, string $fecha, ?string $detalle, ?int $marcaId = null): array
     {
         $enHorario = DB::table('horario')->where('ALM_Id', $sedeId)->where('TUR_Id', $turnoId)
             ->where('HOR_Dia', $this->diaDe($fecha))->where('HOR_Estado', 'ACT')->exists();
@@ -89,6 +89,7 @@ class ReservasMotoService
                     'ALM_Id' => $sedeId, 'TUR_Id' => $turnoId, 'BAH_Id' => $bahiaId,
                     'RES_Placa' => $moto->MOT_Placa,
                     'RES_Moto' => $moto->MOT_Descripcion ?: 'MOTO',
+                    'MAR_Id' => \App\Services\TenantTallerMotos\MarcaVehiculoService::marcaValida($marcaId),
                     'RES_Cliente' => mb_strtoupper($cuenta->CMV_Nombre ?: 'CLIENTE APP'),
                     'RES_Celular' => substr($cuenta->CMV_Celular, -9),
                     'RES_Detalle' => $detalle,

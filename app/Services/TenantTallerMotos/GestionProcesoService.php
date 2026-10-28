@@ -187,6 +187,7 @@ class GestionProcesoService
 
             // Firmado por el cliente: el documento ya no se toca.
             FirmasMantenimientoService::asegurarEditable($meta['tabla'], (int) $registro->{$idColumna});
+            self::copiarMarcaDeReserva($tipoMantenimiento, $reserva);
 
             DB::table($meta['tabla'])->where($idColumna, $registro->{$idColumna})->update([
                 $prefijo . '_DetalleIngreso' => $detalleIngreso,
@@ -234,6 +235,23 @@ class GestionProcesoService
      * que hacer" (lo escribe recepcion al check-in, o el resumen armado al
      * reservar con anticipacion si se eligio tipo desde ahi).
      */
+    /**
+     * La marca elegida al reservar pasa al mantenimiento de esa reserva (solo
+     * si el mantenimiento aun no tiene marca: no pisa una corregida a mano).
+     */
+    private static function copiarMarcaDeReserva(string $tipoMantenimiento, Reservacion $reserva): void
+    {
+        $meta = self::tipos()[$tipoMantenimiento] ?? null;
+        if (! $meta || empty($reserva->MAR_Id) || ! \Illuminate\Support\Facades\Schema::hasColumn($meta['tabla'], 'MAR_Id')) {
+            return;
+        }
+
+        DB::table($meta['tabla'])
+            ->where('RES_Id', $reserva->RES_Id)
+            ->whereNull('MAR_Id')
+            ->update(['MAR_Id' => $reserva->MAR_Id]);
+    }
+
     public static function crearDesdeReserva(string $tipoMantenimiento, Reservacion $reserva, string $detalleIngreso, ?int $mecanicoId = null): void
     {
         $mytime = Carbon::now('America/Lima');
@@ -433,6 +451,8 @@ class GestionProcesoService
             $mtto->RES_Id = $reserva->RES_Id;
             $mtto->save();
         }
+    
+        self::copiarMarcaDeReserva($tipoMantenimiento, $reserva);
     }
 
     /**

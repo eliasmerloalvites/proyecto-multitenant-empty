@@ -58,6 +58,7 @@ Route::middleware(['auth:cliente', 'api.cuenta', 'throttle:app-movil-api'])->gro
     // Reservas. Las rutas fijas van antes que {id}.
     Route::get('reservas/sedes', [ReservaController::class, 'sedes'])->name('api.v1.reservas.sedes');
     Route::get('reservas/disponibilidad', [ReservaController::class, 'disponibilidad'])->name('api.v1.reservas.disponibilidad');
+    Route::get('reservas/marcas', [ReservaController::class, 'marcas'])->name('api.v1.reservas.marcas');
     Route::get('reservas', [ReservaController::class, 'index'])->name('api.v1.reservas.index');
     Route::post('reservas', [ReservaController::class, 'store'])->middleware('throttle:app-movil-reserva')->name('api.v1.reservas.store');
     Route::get('reservas/{id}', [ReservaController::class, 'show'])->whereNumber('id')->name('api.v1.reservas.show');

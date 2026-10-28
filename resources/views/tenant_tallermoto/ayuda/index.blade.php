@@ -560,7 +560,7 @@
                 'tenant.mantenimientos.garantiahero.index',
                 'tenant.mantenimientos.garantialifan.index',
             ]))
-            <section class="ayuda-modulo" id="mod-mantenimientos" data-buscar="mantenimientos general preventivo carburada inyectada checklist repuestos reemplazo fotos evidencias estado pendiente aprobado observado planes recomendaciones verificacion final estado de recepcion inventario visual inspeccion orden de servicio pdf firma firmas digitales cerrado reabrir">
+            <section class="ayuda-modulo" id="mod-mantenimientos" data-buscar="mantenimientos general preventivo carburada inyectada checklist repuestos reemplazo fotos evidencias estado pendiente aprobado observado planes recomendaciones verificacion final estado de recepcion inventario visual inspeccion orden de servicio pdf firma firmas digitales cerrado reabrir marca marcas de vehiculo garantia">
                 <div class="ayuda-modulo-header">
                     <div class="ayuda-modulo-icono" style="background:#DC2626;"><i class="fas fa-tools"></i></div>
                     <div>
@@ -644,6 +644,20 @@
                             <i class="fas fa-lock"></i>
                             <div>Con la firma del cliente el mantenimiento queda <strong>cerrado</strong>: ya no se pueden cambiar checklist, repuestos, fotos, estado de recepción ni el estado. Si hace falta corregir algo, un <strong>Admin</strong> puede <strong>Reabrir</strong> (indicando el motivo): se borran las firmas y deben firmar de nuevo; la reapertura queda registrada.</div>
                         </div>
+                    </div>
+
+                    <div class="ayuda-sub" id="mant-marcas">
+                        <h3><i class="fas fa-tags"></i> Marca del vehículo y mantenimientos por garantía</h3>
+                        <p>
+                            En <span class="ayuda-ruta">Mantenimientos → Marcas de Vehículo</span> está la lista de marcas de motos
+                            (viene precargada con las más comunes). Puedes agregar las que falten, renombrarlas o desactivar las que no uses;
+                            una marca que ya se usó no se borra, solo se desactiva.
+                        </p>
+                        <ul>
+                            <li><strong>Al reservar</strong> (página web, app y panel), el cliente puede indicar la marca de su moto. Es <strong>opcional</strong>: si no está en la lista, puede dejarla en blanco.</li>
+                            <li>Al pasar la reserva a mantenimiento, la marca se copia sola. En cada mantenimiento también se puede elegir o corregir, junto a la Unidad y el KM.</li>
+                            <li>La casilla <strong>"Mantenimiento por garantía"</strong> marca ese servicio como de garantía: se ve la etiqueta <span class="badge badge-primary">GARANTÍA</span> en los listados, sale <strong>"POR GARANTÍA"</strong> en la Orden de Servicio y en el PDF, y en <span class="ayuda-ruta">Reportes → Lista General</span> se puede filtrar por garantía y por marca. Los de Garantía Hero / Lifan vienen marcados por defecto.</li>
+                        </ul>
                     </div>
 
                     <div class="ayuda-sub" id="mant-planes">

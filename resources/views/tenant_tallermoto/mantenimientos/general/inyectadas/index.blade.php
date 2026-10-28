@@ -165,7 +165,8 @@
                     },
                     {
                         data: 'MGI_Placa',
-                        name: 'MGI_Placa'
+                        name: 'MGI_Placa',
+                        render: function(v, t, row) { var p = $('<div>').text(v || '').html(); return row.MGI_EsGarantia == 1 ? p + ' <span class="badge badge-primary" title="Mantenimiento por garantía"><i class="fas fa-shield-alt"></i> GARANTÍA</span>' : p; }
                     },
                     {
                         data: 'MGI_Propietario',
@@ -177,7 +178,8 @@
                     },
                     {
                         data: 'MGI_Unidad',
-                        name: 'MGI_Unidad'
+                        name: 'MGI_Unidad',
+                        render: function(v, t, row) { var u = $('<div>').text(v || '').html(); return row.marca ? '<span class="text-muted small d-block">' + $('<div>').text(row.marca).html() + '</span>' + u : u; }
                     },
                     {
                         data: 'MGI_KMEntrada',

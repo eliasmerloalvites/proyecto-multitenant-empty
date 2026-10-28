@@ -723,6 +723,9 @@
                         <div class="subtitle">
                             Mantenimiento Garantía Hero
                         </div>
+                        @if (!empty($mttoPreventivo->MGH_EsGarantia))
+                            <div style="display:inline-block;margin-top:4px;padding:2px 10px;border:1.5px solid #1d4ed8;border-radius:10px;color:#1d4ed8;font-weight:bold;font-size:10px;letter-spacing:.5px;">POR GARANTÍA</div>
+                        @endif
                     </td>
 
                     <td width="25%">
@@ -785,7 +788,7 @@
                                         </td>
                                         <td>
                                             <div class="client-label">UNIDAD</div>
-                                            <div class="client-value">{{ $mttoPreventivo->MGH_Unidad }}</div>
+                                            <div class="client-value">{{ $mttoPreventivo->MGH_Unidad }}@if (!empty($mttoPreventivo->MAR_Id)) <span style="color:#64748b;">· {{ \App\Services\TenantTallerMotos\MarcaVehiculoService::nombre($mttoPreventivo->MAR_Id) }}</span>@endif</div>
                                         </td>
                                     </tr>
                                     <tr>

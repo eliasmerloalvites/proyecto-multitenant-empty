@@ -388,6 +388,26 @@
                 </div>
             </div>
 
+            <!-- Marca de la moto (opcional) -->
+            @php($marcasReserva = \App\Services\TenantTallerMotos\MarcaVehiculoService::activas())
+            @if ($marcasReserva->isNotEmpty())
+            <div>
+                <label for="reserva_marca" class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                    Marca de la moto <span class="normal-case font-normal text-gray-500">(opcional)</span>
+                </label>
+                <div class="relative">
+                    <i data-lucide="tag" class="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <select id="reserva_marca" name="MAR_Id"
+                        class="w-full bg-slate-950/50 border border-white/10 rounded-xl py-2.5 pl-9 pr-3 text-xs text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                        <option value="" class="bg-slate-900">No está en la lista / prefiero no indicarla</option>
+                        @foreach ($marcasReserva as $marca)
+                            <option value="{{ $marca->MAR_Id }}" class="bg-slate-900">{{ $marca->MAR_Nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            @endif
+
             <!-- Fila 3: Descripción de la Moto -->
             <div>
                 <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">

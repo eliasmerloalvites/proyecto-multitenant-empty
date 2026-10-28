@@ -565,10 +565,19 @@ class ReportesFinancierosController extends Controller
     }
 
     /**
-     * Cuantas reservas se cumplen vs se rechazan/quedan pendientes, y como
-     * se reparte la ocupacion entre bahias y turnos. Complementa a
-     * rendimientoMecanicos (que mide mantenimientos ya en curso/terminados)
-     * mirando el embudo de reservas antes de que lleguen a atenderse.
+     * Embudo de reservas del periodo y como se reparten entre bahias y
+     * turnos. Cada reserva cae en un solo estado:
+     * - APROBADA: el taller la aprobo.
+     * - RECHAZADA: el taller la rechazo.
+     * - CANCELADA: la cancelo el cliente desde la app (se guarda como
+     *   RECHAZADO + RES_CanceladaEn; no es un rechazo del taller).
+     * - PENDIENTE: aun no se gestiona y su fecha todavia no llega.
+     * - SIN_GESTIONAR: sigue pendiente pero su fecha ya paso (nadie la
+     *   aprobo ni rechazo).
+     *
+     * Tasa de aprobacion = aprobadas / (aprobadas + rechazadas).
+     * Tasa de cumplimiento = aprobadas que llegaron al taller (tienen un
+     * mantenimiento o check-in) / aprobadas cuya fecha ya llego.
      */
     public function operacionTaller(Request $request)
     {
@@ -581,56 +590,124 @@ class ReportesFinancierosController extends Controller
         [$inicio, $fin] = $this->resolverPeriodo($request);
         $almacenId = $request->input('almacen_id');
         $rango = [$inicio->toDateString(), $fin->toDateString()];
+        $hoy = Carbon::now('America/Lima')->toDateString();
 
         $base = DB::table('reservacion as r')
             ->where('r.RES_Estado', 'ACT')
             ->whereBetween('r.RES_FechaProgramada', $rango)
             ->when($almacenId, fn ($q) => $q->where('r.ALM_Id', $almacenId));
 
-        $porEstado = (clone $base)
-            ->groupBy('r.RES_State')
-            ->select('r.RES_State', DB::raw('COUNT(*) as cantidad'))
-            ->pluck('cantidad', 'RES_State');
+        $estado = "CASE
+            WHEN r.RES_State = 'APROBADO' THEN 'APROBADA'
+            WHEN r.RES_State = 'RECHAZADO' AND r.RES_CanceladaEn IS NOT NULL THEN 'CANCELADA'
+            WHEN r.RES_State = 'RECHAZADO' THEN 'RECHAZADA'
+            WHEN r.RES_State = 'PENDIENTE' AND r.RES_FechaProgramada < ? THEN 'SIN_GESTIONAR'
+            WHEN r.RES_State = 'PENDIENTE' THEN 'PENDIENTE'
+            ELSE 'OTRO' END";
+        $conteo = fn (string $valor, string $alias) => DB::raw(
+            "SUM(CASE WHEN ($estado) = '$valor' THEN 1 ELSE 0 END) as $alias"
+        );
+        // Columnas de conteo por estado (una binding de $hoy por cada CASE).
+        $columnasEstado = fn ($q) => $q
+            ->addSelect($conteo('APROBADA', 'aprobadas'))
+            ->addSelect($conteo('RECHAZADA', 'rechazadas'))
+            ->addSelect($conteo('CANCELADA', 'canceladas'))
+            ->addSelect($conteo('PENDIENTE', 'pendientes'))
+            ->addSelect($conteo('SIN_GESTIONAR', 'sin_gestionar'))
+            ->addBinding(array_fill(0, 5, $hoy), 'select');
 
-        $aprobadas = (int) ($porEstado['APROBADO'] ?? 0);
-        $rechazadas = (int) ($porEstado['RECHAZADO'] ?? 0);
-        $pendientes = (int) ($porEstado['PENDIENTE'] ?? 0);
-        $totalReservas = $aprobadas + $rechazadas + $pendientes;
-        $resueltas = $aprobadas + $rechazadas;
+        $totales = $columnasEstado((clone $base)->selectRaw('COUNT(*) as total'))->first();
+        $num = fn ($v) => (int) ($v ?? 0);
 
-        $porBahia = (clone $base)
+        $aprobadas = $num($totales->aprobadas);
+        $rechazadas = $num($totales->rechazadas);
+
+        // Reservas que llegaron al taller: tienen un mantenimiento ligado
+        // (RES_Id) o se les hizo check-in.
+        $tablasMtto = $this->tablasMantenimiento();
+        $conMantenimiento = function ($q) use ($tablasMtto) {
+            $q->whereNotNull('r.RES_CheckIn');
+            foreach ($tablasMtto as $t) {
+                $q->orWhereIn('r.RES_Id', fn ($sub) => $sub->select('RES_Id')->from($t['tabla'])->whereNotNull('RES_Id'));
+            }
+        };
+
+        $aprobadasVencidas = (clone $base)->where('r.RES_State', 'APROBADO')->where('r.RES_FechaProgramada', '<=', $hoy);
+        $aprobadasYaLlegaron = (clone $aprobadasVencidas)->count();
+        $atendidas = (clone $aprobadasVencidas)->where($conMantenimiento)->count();
+
+        $porBahia = $columnasEstado((clone $base)
             ->join('bahia as b', 'b.BAH_Id', '=', 'r.BAH_Id')
             ->groupBy('b.BAH_Id', 'b.BAH_Nombre')
-            ->select(
-                'b.BAH_Nombre',
-                DB::raw('COUNT(*) as total'),
-                DB::raw("SUM(CASE WHEN r.RES_State = 'APROBADO' THEN 1 ELSE 0 END) as aprobadas"),
-                DB::raw("SUM(CASE WHEN r.RES_State = 'RECHAZADO' THEN 1 ELSE 0 END) as rechazadas")
-            )
+            ->select('b.BAH_Nombre', DB::raw('COUNT(*) as total')))
             ->orderByDesc('total')
-            ->get();
+            ->get()
+            ->map(fn ($r) => $this->enteros($r, ['total', 'aprobadas', 'rechazadas', 'canceladas', 'pendientes', 'sin_gestionar']));
 
         $porTurno = (clone $base)
             ->join('turno as t', 't.TUR_Id', '=', 'r.TUR_Id')
-            ->groupBy('t.TUR_Id', 't.TUR_Descripcion')
-            ->select('t.TUR_Descripcion', DB::raw('COUNT(*) as total'))
+            ->groupBy('t.TUR_Id', 't.TUR_Nombre', 't.TUR_Descripcion')
+            ->select('t.TUR_Nombre', 't.TUR_Descripcion', DB::raw('COUNT(*) as total'))
             ->orderBy('t.TUR_Id')
-            ->get();
+            ->get()
+            ->map(function ($r) {
+                $r->turno = trim(implode(' · ', array_filter([$r->TUR_Nombre, $r->TUR_Descripcion])));
+                $r->total = (int) $r->total;
 
-        $serie = (clone $base)
-            ->selectRaw("
-                RES_FechaProgramada as fecha,
-                SUM(CASE WHEN RES_State = 'APROBADO' THEN 1 ELSE 0 END) as aprobadas,
-                SUM(CASE WHEN RES_State = 'RECHAZADO' THEN 1 ELSE 0 END) as rechazadas,
-                SUM(CASE WHEN RES_State = 'PENDIENTE' THEN 1 ELSE 0 END) as pendientes
-            ")
-            ->groupBy('RES_FechaProgramada')
-            ->orderBy('RES_FechaProgramada')
-            ->get();
+                return $r;
+            });
 
-        // Mantenimientos creados en el periodo, por estado (para completar
-        // el embudo: reserva aprobada -> mantenimiento realmente hecho).
-        $tablasMtto = [
+        $serie = $columnasEstado((clone $base)
+            ->select('r.RES_FechaProgramada as fecha')
+            ->groupBy('r.RES_FechaProgramada'))
+            ->orderBy('r.RES_FechaProgramada')
+            ->get()
+            ->map(fn ($r) => $this->enteros($r, ['aprobadas', 'rechazadas', 'canceladas', 'pendientes', 'sin_gestionar']));
+
+        // Mantenimientos creados en el periodo, por estado. Con sede elegida
+        // se cuentan solo los ligados a una reserva de esa sede (el
+        // mantenimiento no guarda sede propia).
+        $mtto = ['PENDIENTE' => 0, 'APROBADO' => 0, 'OBSERVADO' => 0];
+        foreach ($tablasMtto as $t) {
+            $conteos = DB::table($t['tabla'] . ' as m')
+                ->whereBetween("m.{$t['prefijo']}_FechaCreacion", [$inicio, $fin])
+                ->when($almacenId, fn ($q) => $q->whereIn('m.RES_Id', fn ($sub) => $sub->select('RES_Id')->from('reservacion')->where('ALM_Id', $almacenId)))
+                ->groupBy("m.{$t['prefijo']}_Estado")
+                ->select("m.{$t['prefijo']}_Estado as estado", DB::raw('COUNT(*) as cantidad'))
+                ->pluck('cantidad', 'estado');
+
+            foreach ($conteos as $estadoMtto => $cantidad) {
+                if (isset($mtto[$estadoMtto])) {
+                    $mtto[$estadoMtto] += (int) $cantidad;
+                }
+            }
+        }
+
+        return response()->json([
+            'periodo' => ['inicio' => $inicio->toDateString(), 'fin' => $fin->toDateString()],
+            'totales' => [
+                'totalReservas' => $num($totales->total),
+                'aprobadas' => $aprobadas,
+                'rechazadas' => $rechazadas,
+                'canceladas' => $num($totales->canceladas),
+                'pendientes' => $num($totales->pendientes),
+                'sinGestionar' => $num($totales->sin_gestionar),
+                'atendidas' => $atendidas,
+                'aprobadasYaLlegaron' => $aprobadasYaLlegaron,
+                'tasaAprobacion' => ($aprobadas + $rechazadas) > 0 ? round($aprobadas / ($aprobadas + $rechazadas) * 100, 1) : null,
+                'tasaCumplimiento' => $aprobadasYaLlegaron > 0 ? round($atendidas / $aprobadasYaLlegaron * 100, 1) : null,
+            ],
+            'porBahia' => $porBahia,
+            'porTurno' => $porTurno,
+            'serie' => $serie,
+            'mantenimientos' => $mtto,
+        ]);
+    }
+
+    /** Tablas de mantenimiento del taller (base + opcionales activos). */
+    private function tablasMantenimiento(): array
+    {
+        $tablas = [
             ['tabla' => 'mantenimiento_general_carburada', 'prefijo' => 'MGC'],
             ['tabla' => 'mantenimiento_general_inyectada', 'prefijo' => 'MGI'],
             ['tabla' => 'mantenimiento_preventivo_carburada', 'prefijo' => 'MPC'],
@@ -639,37 +716,18 @@ class ReportesFinancierosController extends Controller
         ];
 
         foreach (\App\Services\TenantTallerMotos\GestionProcesoService::opcionalesActivos() as $opcional) {
-            $tablasMtto[] = ['tabla' => $opcional['tabla'], 'prefijo' => $opcional['prefijo']];
+            $tablas[] = ['tabla' => $opcional['tabla'], 'prefijo' => $opcional['prefijo']];
         }
 
-        $mtto = ['PENDIENTE' => 0, 'APROBADO' => 0, 'OBSERVADO' => 0];
-        foreach ($tablasMtto as $t) {
-            $conteos = DB::table($t['tabla'])
-                ->whereBetween("{$t['prefijo']}_FechaCreacion", [$inicio, $fin])
-                ->groupBy("{$t['prefijo']}_Estado")
-                ->select("{$t['prefijo']}_Estado as estado", DB::raw('COUNT(*) as cantidad'))
-                ->pluck('cantidad', 'estado');
+        return $tablas;
+    }
 
-            foreach ($conteos as $estado => $cantidad) {
-                if (isset($mtto[$estado])) {
-                    $mtto[$estado] += (int) $cantidad;
-                }
-            }
+    private function enteros(object $fila, array $campos): object
+    {
+        foreach ($campos as $c) {
+            $fila->$c = (int) ($fila->$c ?? 0);
         }
 
-        return response()->json([
-            'periodo' => ['inicio' => $inicio->toDateString(), 'fin' => $fin->toDateString()],
-            'totales' => [
-                'totalReservas' => $totalReservas,
-                'aprobadas' => $aprobadas,
-                'rechazadas' => $rechazadas,
-                'pendientes' => $pendientes,
-                'tasaCumplimiento' => $resueltas > 0 ? round(($aprobadas / $resueltas) * 100, 1) : 0,
-            ],
-            'porBahia' => $porBahia,
-            'porTurno' => $porTurno,
-            'serie' => $serie,
-            'mantenimientos' => $mtto,
-        ]);
+        return $fila;
     }
 }

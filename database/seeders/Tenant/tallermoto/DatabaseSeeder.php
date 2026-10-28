@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             MetodoPagoTableSeeder::class,
             ClienteTableSeeder::class,
             RecepcionCategoriaSeeder::class,
+            MarcaVehiculoSeeder::class,
         ]);
     }
 }

@@ -985,6 +985,19 @@
 
                             </div>
 
+                            {{-- MARCA (opcional) --}}
+                            <div class="form-group" style="margin-bottom:2px">
+                                <label for="crearMAR_Id" style="font-size:13px;">
+                                    Marca <span class="text-muted font-weight-normal">(opcional)</span>
+                                </label>
+                                <select id="crearMAR_Id" name="MAR_Id" class="form-control reservation-input">
+                                    <option value="">Sin marca / no está en la lista</option>
+                                    @foreach (\App\Services\TenantTallerMotos\MarcaVehiculoService::activas() as $marca)
+                                        <option value="{{ $marca->MAR_Id }}">{{ $marca->MAR_Nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             {{-- CLIENTE --}}
                             <div class="form-group" style="margin-bottom:2px">
 
@@ -1271,6 +1284,19 @@
 
                             </div>
 
+                            {{-- MARCA (opcional) --}}
+                            <div class="form-group" style="margin-bottom:2px">
+                                <label for="idMAR_Id" style="font-size:13px;">
+                                    Marca <span class="text-muted font-weight-normal">(opcional)</span>
+                                </label>
+                                <select id="idMAR_Id" name="MAR_Id" class="form-control reservation-input">
+                                    <option value="">Sin marca / no está en la lista</option>
+                                    @foreach (\App\Services\TenantTallerMotos\MarcaVehiculoService::activas() as $marca)
+                                        <option value="{{ $marca->MAR_Id }}">{{ $marca->MAR_Nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             {{-- CLIENTE --}}
                             <div class="form-group" style="margin-bottom:2px">
 
@@ -1528,6 +1554,11 @@
                         function(data) {
                             $('#idRES_Placa').val(data.RES_Placa);
                             $('#idRES_Moto').val(data.RES_Moto);
+                            // Marca guardada; si ya no esta activa se agrega para no perderla.
+                            if (data.MAR_Id && !$('#idMAR_Id option[value="' + data.MAR_Id + '"]').length) {
+                                $('#idMAR_Id').append(new Option(data.marca_nombre || 'Marca desactivada', data.MAR_Id));
+                            }
+                            $('#idMAR_Id').val(data.MAR_Id || '');
                             $('#idRES_Cliente').val(data.RES_Cliente);
                             $('#idRES_Celular').val(data.RES_Celular);
                             document.getElementById('idRES_Detalle').value = data.RES_Detalle;

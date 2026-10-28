@@ -321,6 +321,8 @@
                                             maxlength="20" placeholder="KM" required>
                                     </div>
 
+                                    @include('tenant_tallermoto.mantenimientos.partials.marca-garantia', ['prefijo' => 'MAV', 'registro' => $datos])
+
                                     <div class="form-group col-md-12">
                                         <label>RESPONSABLE</label>
                                         <select class="form-control select2 select2-danger" id="USU_Id" name="USU_Id"

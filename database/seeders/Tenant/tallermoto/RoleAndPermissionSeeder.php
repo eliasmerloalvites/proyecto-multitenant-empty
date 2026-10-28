@@ -231,6 +231,7 @@ class RoleAndPermissionSeeder extends Seeder
             
             // Planes de Mantenimiento (checklist configurable)
             ['tenant.mantenimientos.planes.index', 'Mantenimientos', 'Gestionar Planes de Mantenimiento', 'Crear/editar paquetes de checklist por tipo de mantenimiento'],
+            ['tenant.mantenimientos.marcas.index', 'Mantenimientos', 'Gestionar Marcas de Vehículo', 'Agregar, editar y desactivar las marcas de vehículo que se eligen en reservas y mantenimientos'],
 
             // Reportes
             ['tenant.reportes.listageneral',   'Reportes', 'Ver Lista de General', 'Lista General de Mantenimientos'],
@@ -479,6 +480,7 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.mantenimientos.generalinyectada.notificar',
 
             'tenant.mantenimientos.planes.index',
+            'tenant.mantenimientos.marcas.index',
             'tenant.configuracion.recepcion.index',
 
             'tenant.reportes.listageneral',
@@ -675,6 +677,7 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.mantenimientos.generalinyectada.notificar',
 
             'tenant.mantenimientos.planes.index',
+            'tenant.mantenimientos.marcas.index',
             'tenant.configuracion.recepcion.index',
 
             'tenant.reportes.listageneral',

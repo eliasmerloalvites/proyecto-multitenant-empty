@@ -42,7 +42,7 @@ class MantenimientoGarantiaHeroController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_garantia_hero as mgh')
                     ->leftJoin('users as p', 'p.id', '=', 'mgh.PER_Id')
-                    ->select('mgh.MGH_Id', 'mgh.MGH_Placa', 'mgh.MGH_Propietario', 'mgh.MGH_celular', 'mgh.notificar', 'mgh.MGH_Unidad', 'mgh.MGH_KMEntrada', 'mgh.MGH_FechaCreacion', 'mgh.MGH_FechaTermino', 'mgh.MGH_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_garantia_hero' AND MTO_Id = mgh.MGH_Id) as tiene_recepcion"));
+                    ->select('mgh.MGH_Id', 'mgh.MGH_Placa', 'mgh.MGH_EsGarantia', DB::raw('(SELECT MAR_Nombre FROM marca_vehiculo WHERE MAR_Id = mgh.MAR_Id) as marca'), 'mgh.MGH_Propietario', 'mgh.MGH_celular', 'mgh.notificar', 'mgh.MGH_Unidad', 'mgh.MGH_KMEntrada', 'mgh.MGH_FechaCreacion', 'mgh.MGH_FechaTermino', 'mgh.MGH_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_garantia_hero' AND MTO_Id = mgh.MGH_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MGH_FechaCreacion', '>=', $request->fecha_inicio);
@@ -118,7 +118,7 @@ class MantenimientoGarantiaHeroController extends Controller
             } else {
                 $data = DB::table('mantenimiento_garantia_hero as mgh')
                     ->leftJoin('users as p', 'p.id', '=', 'mgh.PER_Id')
-                    ->select('mgh.MGH_Id', 'mgh.MGH_Placa', 'mgh.MGH_Propietario', 'mgh.MGH_celular', 'mgh.notificar', 'mgh.MGH_Unidad', 'mgh.MGH_KMEntrada', 'mgh.MGH_FechaCreacion', 'mgh.MGH_FechaTermino', 'mgh.MGH_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_garantia_hero' AND MTO_Id = mgh.MGH_Id) as tiene_recepcion"))
+                    ->select('mgh.MGH_Id', 'mgh.MGH_Placa', 'mgh.MGH_EsGarantia', DB::raw('(SELECT MAR_Nombre FROM marca_vehiculo WHERE MAR_Id = mgh.MAR_Id) as marca'), 'mgh.MGH_Propietario', 'mgh.MGH_celular', 'mgh.notificar', 'mgh.MGH_Unidad', 'mgh.MGH_KMEntrada', 'mgh.MGH_FechaCreacion', 'mgh.MGH_FechaTermino', 'mgh.MGH_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_garantia_hero' AND MTO_Id = mgh.MGH_Id) as tiene_recepcion"))
                     ->where('mgh.PER_Id', '=', $idpersonal);
 
                 if ($request->filled('fecha_inicio')) {
@@ -256,6 +256,7 @@ class MantenimientoGarantiaHeroController extends Controller
             $mtto_garantia_hero->MGH_UsuarioEditado = $idusu;
             $mtto_garantia_hero->PER_Id = $request->get('USU_Id');
             $mtto_garantia_hero->PLAN_Id = $request->get('PLAN_Id') ?: null;
+            \App\Services\TenantTallerMotos\MarcaVehiculoService::aplicarAMantenimiento($mtto_garantia_hero, 'MGH', $request);
             $mtto_garantia_hero->save();
 
             RepuestosBahiaSync::reemplazarManuales(
@@ -661,6 +662,7 @@ class MantenimientoGarantiaHeroController extends Controller
             if ($request->notificar) {
                 $mtto_garantia_hero->notificar = 1;
             }
+            \App\Services\TenantTallerMotos\MarcaVehiculoService::aplicarAMantenimiento($mtto_garantia_hero, 'MGH', $request);
             $mtto_garantia_hero->update();
 
             RepuestosBahiaSync::reemplazarManuales(

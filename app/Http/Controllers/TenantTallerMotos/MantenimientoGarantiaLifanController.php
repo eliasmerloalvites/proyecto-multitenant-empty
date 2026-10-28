@@ -42,7 +42,7 @@ class MantenimientoGarantiaLifanController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_garantia_lifan as mgl')
                     ->leftJoin('users as p', 'p.id', '=', 'mgl.PER_Id')
-                    ->select('mgl.MGL_Id', 'mgl.MGL_Placa', 'mgl.MGL_Propietario', 'mgl.MGL_celular', 'mgl.notificar', 'mgl.MGL_Unidad', 'mgl.MGL_KMEntrada', 'mgl.MGL_FechaCreacion', 'mgl.MGL_FechaTermino', 'mgl.MGL_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_garantia_lifan' AND MTO_Id = mgl.MGL_Id) as tiene_recepcion"));
+                    ->select('mgl.MGL_Id', 'mgl.MGL_Placa', 'mgl.MGL_EsGarantia', DB::raw('(SELECT MAR_Nombre FROM marca_vehiculo WHERE MAR_Id = mgl.MAR_Id) as marca'), 'mgl.MGL_Propietario', 'mgl.MGL_celular', 'mgl.notificar', 'mgl.MGL_Unidad', 'mgl.MGL_KMEntrada', 'mgl.MGL_FechaCreacion', 'mgl.MGL_FechaTermino', 'mgl.MGL_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_garantia_lifan' AND MTO_Id = mgl.MGL_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MGL_FechaCreacion', '>=', $request->fecha_inicio);
@@ -118,7 +118,7 @@ class MantenimientoGarantiaLifanController extends Controller
             } else {
                 $data = DB::table('mantenimiento_garantia_lifan as mgl')
                     ->leftJoin('users as p', 'p.id', '=', 'mgl.PER_Id')
-                    ->select('mgl.MGL_Id', 'mgl.MGL_Placa', 'mgl.MGL_Propietario', 'mgl.MGL_celular', 'mgl.notificar', 'mgl.MGL_Unidad', 'mgl.MGL_KMEntrada', 'mgl.MGL_FechaCreacion', 'mgl.MGL_FechaTermino', 'mgl.MGL_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_garantia_lifan' AND MTO_Id = mgl.MGL_Id) as tiene_recepcion"))
+                    ->select('mgl.MGL_Id', 'mgl.MGL_Placa', 'mgl.MGL_EsGarantia', DB::raw('(SELECT MAR_Nombre FROM marca_vehiculo WHERE MAR_Id = mgl.MAR_Id) as marca'), 'mgl.MGL_Propietario', 'mgl.MGL_celular', 'mgl.notificar', 'mgl.MGL_Unidad', 'mgl.MGL_KMEntrada', 'mgl.MGL_FechaCreacion', 'mgl.MGL_FechaTermino', 'mgl.MGL_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_garantia_lifan' AND MTO_Id = mgl.MGL_Id) as tiene_recepcion"))
                     ->where('mgl.PER_Id', '=', $idpersonal);
 
                 if ($request->filled('fecha_inicio')) {
@@ -256,6 +256,7 @@ class MantenimientoGarantiaLifanController extends Controller
             $mtto_garantia_lifan->MGL_UsuarioEditado = $idusu;
             $mtto_garantia_lifan->PER_Id = $request->get('USU_Id');
             $mtto_garantia_lifan->PLAN_Id = $request->get('PLAN_Id') ?: null;
+            \App\Services\TenantTallerMotos\MarcaVehiculoService::aplicarAMantenimiento($mtto_garantia_lifan, 'MGL', $request);
             $mtto_garantia_lifan->save();
 
             RepuestosBahiaSync::reemplazarManuales(
@@ -661,6 +662,7 @@ class MantenimientoGarantiaLifanController extends Controller
             if ($request->notificar) {
                 $mtto_garantia_lifan->notificar = 1;
             }
+            \App\Services\TenantTallerMotos\MarcaVehiculoService::aplicarAMantenimiento($mtto_garantia_lifan, 'MGL', $request);
             $mtto_garantia_lifan->update();
 
             RepuestosBahiaSync::reemplazarManuales(
