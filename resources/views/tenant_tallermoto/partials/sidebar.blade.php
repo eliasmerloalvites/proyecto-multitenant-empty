@@ -437,6 +437,16 @@
                         </li>
                         @endcan
 
+                        @can('tenant.mantenimientos.marcas.index')
+                        <li class="nav-item">
+                            <a href="{{ tenant_url('tenant.mantenimientos.marcas.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.mantenimientos.marcas*') ? 'active' : '' }}">
+                                <i class="fas fa-tags nav-icon text-info"></i>
+                                <p>Marcas de Vehículo</p>
+                            </a>
+                        </li>
+                        @endcan
+
                     </ul>
                 </li>
                 @endcanany

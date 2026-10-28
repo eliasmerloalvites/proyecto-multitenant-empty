@@ -345,6 +345,8 @@ class ReservacionController extends Controller
             'RES_FechaProgramada' => 'required|string',
             'RES_Placa' => 'required|string|max:20',
             'RES_Moto' => 'required|string|max:150',
+            // Opcional: la moto puede ser de una marca que no esta en la lista.
+            'MAR_Id' => ['nullable', 'integer', \Illuminate\Validation\Rule::exists('marca_vehiculo', 'MAR_Id')->where('MAR_Estado', 1)],
             'RES_Cliente' => 'required|string|max:120',
             'RES_Celular' => 'required|string|max:12',
             'RES_Detalle' => 'nullable|string|max:250',
@@ -434,6 +436,7 @@ class ReservacionController extends Controller
 		return array_merge($reservacion->toArray(), [
 			'tiene_mantenimiento' => (bool) $mantenimiento,
 			'tipo_mantenimiento_asignado' => $mantenimiento['etiqueta'] ?? null,
+			'marca_nombre' => \App\Services\TenantTallerMotos\MarcaVehiculoService::nombre($reservacion->MAR_Id),
 		]);
 	}
 
@@ -449,6 +452,11 @@ class ReservacionController extends Controller
 
 		if (Reservacion::slotEstaOcupado($BAH_Id, $TUR_Id, $RES_FechaProgramada, $Reservacion->RES_Id)) {
 			return response()->json(['success' => false, 'message' => 'Esa bahía y turno ya están reservados para esa fecha. Elige otro horario.'], 409);
+		}
+
+		// Marca opcional: solo una activa (o la que ya tenia aunque se haya desactivado).
+		if ($request->has('MAR_Id')) {
+			$request->merge(['MAR_Id' => \App\Services\TenantTallerMotos\MarcaVehiculoService::marcaValida($request->input('MAR_Id'), $Reservacion->MAR_Id)]);
 		}
 
 		try {

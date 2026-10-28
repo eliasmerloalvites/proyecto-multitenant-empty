@@ -1,13 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState, type ReactNode } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { FlatList, Modal, Pressable, ScrollView, TextInput, View } from 'react-native';
 
 import { Boton, Campo, Cargando, ErrorCarga, Icono, Pantalla, Placa, Tarjeta, Texto, sombra } from '@/components/ui';
 import { api, ApiError } from '@/lib/api';
 import { hoyMas } from '@/lib/formato';
 import { useTema } from '@/lib/tema';
-import type { Garaje, Reserva, SedeReserva, Turno } from '@/lib/types';
+import type { Garaje, MarcaVehiculo, Reserva, SedeReserva, Turno } from '@/lib/types';
 
 const DIAS = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -23,11 +23,16 @@ export default function Reservar() {
   const [dia, setDia] = useState<string>(hoyMas(1));
   const [turno, setTurno] = useState<number | null>(null);
   const [detalle, setDetalle] = useState('');
+  // undefined = no eligio (el taller usa la ultima marca de esa placa);
+  // null = "no esta en la lista"; numero = marca elegida.
+  const [marca, setMarca] = useState<MarcaVehiculo | null | undefined>(undefined);
+  const [eligiendoMarca, setEligiendoMarca] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const garaje = useQuery({ queryKey: ['garaje'], queryFn: () => api.get<Garaje>('motos') });
   const sedes = useQuery({ queryKey: ['reservas-sedes'], queryFn: () => api.get<SedeReserva[]>('reservas/sedes') });
+  const marcas = useQuery({ queryKey: ['reservas-marcas'], queryFn: () => api.get<MarcaVehiculo[]>('reservas/marcas'), staleTime: 60 * 60_000 });
 
   useEffect(() => {
     if (sedeId === null && sedes.data?.length === 1) setSedeId(sedes.data[0].id);
@@ -50,7 +55,10 @@ export default function Reservar() {
     setEnviando(true);
     setError(null);
     try {
-      await api.post<Reserva>('reservas', { moto_id: motoId, sede: sedeId, turno, fecha: dia, detalle: detalle.trim() || undefined });
+      await api.post<Reserva>('reservas', {
+        moto_id: motoId, sede: sedeId, turno, fecha: dia, detalle: detalle.trim() || undefined,
+        ...(marca === undefined ? {} : { marca: marca?.id ?? null }),
+      });
       await cache.invalidateQueries({ queryKey: ['reservas'] });
       router.back();
     } catch (e) {
@@ -107,6 +115,23 @@ export default function Reservar() {
           </Opcion>
         ))}
       </Paso>
+
+      {(marcas.data?.length ?? 0) > 0 ? (
+        <View style={{ gap: 8 }}>
+          <Texto tipo="etiqueta">Marca de la moto (opcional)</Texto>
+          <Pressable
+            onPress={() => setEligiendoMarca(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Elegir la marca de la moto"
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 16, borderWidth: 1.5, borderColor: marca ? t.primario : t.borde, backgroundColor: marca ? t.primarioClaro : '#fff' }}>
+            <Icono nombre="pricetag-outline" tam={18} color={marca ? t.primario : t.suave} />
+            <Texto style={{ flex: 1, fontWeight: marca ? '700' : '400' }} color={marca ? t.texto : t.suave}>
+              {marca ? marca.nombre : marca === null ? 'No está en la lista' : 'Elegir marca'}
+            </Texto>
+            <Icono nombre="chevron-down" tam={18} color={t.suave} />
+          </Pressable>
+        </View>
+      ) : null}
 
       {(sedes.data?.length ?? 0) > 1 ? (
         <Paso n={2} titulo="¿En qué sede?">
@@ -168,7 +193,69 @@ export default function Reservar() {
       </Paso>
 
       <Campo etiqueta="¿Qué necesita tu moto? (opcional)" value={detalle} onChangeText={setDetalle} maxLength={250} multiline placeholder="Ej. cambio de aceite, ruido en el motor" />
+
+      <SelectorMarca
+        visible={eligiendoMarca}
+        marcas={marcas.data ?? []}
+        onCerrar={() => setEligiendoMarca(false)}
+        onElegir={(m) => { setMarca(m); setEligiendoMarca(false); }}
+      />
     </Pantalla>
+  );
+}
+
+/** Lista de marcas con buscador. Elegir "No está en la lista" guarda la reserva sin marca. */
+function SelectorMarca({ visible, marcas, onCerrar, onElegir }: {
+  visible: boolean;
+  marcas: MarcaVehiculo[];
+  onCerrar: () => void;
+  onElegir: (m: MarcaVehiculo | null) => void;
+}) {
+  const t = useTema();
+  const [buscar, setBuscar] = useState('');
+  const q = buscar.trim().toLowerCase();
+  const filtradas = q ? marcas.filter((m) => m.nombre.toLowerCase().includes(q)) : marcas;
+
+  return (
+    <Modal visible={visible} animationType="slide" onRequestClose={onCerrar}>
+      <View style={{ flex: 1, backgroundColor: t.fondo, paddingTop: 48 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginBottom: 12 }}>
+          <Texto tipo="titulo" style={{ flex: 1 }}>Marca de la moto</Texto>
+          <Pressable onPress={onCerrar} accessibilityRole="button" accessibilityLabel="Cerrar" hitSlop={12}>
+            <Icono nombre="close" tam={26} color={t.texto} />
+          </Pressable>
+        </View>
+        <View style={{ marginHorizontal: 20, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, borderRadius: 14, borderWidth: 1, borderColor: t.borde, backgroundColor: '#fff' }}>
+          <Icono nombre="search" tam={18} color={t.suave} />
+          <TextInput
+            value={buscar}
+            onChangeText={setBuscar}
+            placeholder="Buscar marca"
+            placeholderTextColor={t.suave}
+            autoCorrect={false}
+            style={{ flex: 1, paddingVertical: 12, fontSize: 16, color: t.texto }}
+            accessibilityLabel="Buscar marca"
+          />
+        </View>
+        <FlatList
+          data={filtradas}
+          keyExtractor={(m) => String(m.id)}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+          ListHeaderComponent={
+            <Pressable onPress={() => onElegir(null)} accessibilityRole="button" style={{ paddingVertical: 14, borderBottomWidth: 1, borderColor: t.borde }}>
+              <Texto color={t.suave}>No está en la lista / prefiero no indicarla</Texto>
+            </Pressable>
+          }
+          ListEmptyComponent={<Texto tipo="pequeno" style={{ paddingVertical: 14 }}>No encontramos esa marca. Puedes elegir "No está en la lista".</Texto>}
+          renderItem={({ item }) => (
+            <Pressable onPress={() => onElegir(item)} accessibilityRole="button" style={{ paddingVertical: 14, borderBottomWidth: 1, borderColor: t.borde }}>
+              <Texto style={{ fontWeight: '600' }}>{item.nombre}</Texto>
+            </Pressable>
+          )}
+        />
+      </View>
+    </Modal>
   );
 }
 

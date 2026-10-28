@@ -494,6 +494,8 @@ class ReportesController extends Controller
                 "$alias.observacion",
                 "$alias.respuesta",
                 "$alias.{$prefijo}_Unidad as Unidad",
+                DB::raw("COALESCE($alias.{$prefijo}_EsGarantia, 0) as EsGarantia"),
+                DB::raw("(SELECT MAR_Nombre FROM marca_vehiculo WHERE MAR_Id = $alias.MAR_Id) as Marca"),
                 "$alias.{$prefijo}_KMEntrada as KMEntrada",
                 "$alias.{$prefijo}_Estado as estado",
                 "$alias.{$prefijo}_ProximoCambioAceite as ProximoCambioAceite",
@@ -525,6 +527,15 @@ class ReportesController extends Controller
                 "$alias.{$prefijo}_Estado",
                 $request->estado
             );
+        }
+
+        // Por garantia: "SI" solo los marcados, "NO" solo los que no.
+        if (in_array($request->input('garantia'), ['SI', 'NO'], true)) {
+            $query->where("$alias.{$prefijo}_EsGarantia", $request->input('garantia') === 'SI' ? 1 : 0);
+        }
+
+        if ($request->filled('marca')) {
+            $query->where("$alias.MAR_Id", (int) $request->input('marca'));
         }
 
         return $query->get()->map(function ($item) use ($url, $tipo) {

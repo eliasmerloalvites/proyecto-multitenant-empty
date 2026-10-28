@@ -22,6 +22,13 @@ class ReservaController extends Controller
         return ApiRespuesta::ok($this->reservas->sedes()->all());
     }
 
+    /** Marcas activas para elegir (opcional) al reservar. */
+    public function marcas()
+    {
+        return ApiRespuesta::ok(\App\Services\TenantTallerMotos\MarcaVehiculoService::activas()
+            ->map(fn ($m) => ['id' => (int) $m->MAR_Id, 'nombre' => $m->MAR_Nombre])->values()->all());
+    }
+
     public function disponibilidad(Request $request)
     {
         $d = $request->validate(['sede' => 'required|integer|min:1', 'fecha' => 'required|date_format:Y-m-d']);
@@ -56,6 +63,9 @@ class ReservaController extends Controller
             'turno' => 'required|integer|min:1',
             'fecha' => 'required|date_format:Y-m-d',
             'detalle' => 'nullable|string|max:250',
+            // Opcional: null = "no esta en la lista". Si una app vieja no lo
+            // envia, se usa la ultima marca registrada para esa placa.
+            'marca' => 'nullable|integer|min:1',
         ]);
 
         $cuenta = $request->user('cliente');
@@ -71,7 +81,11 @@ class ReservaController extends Controller
             return ApiRespuesta::error('FECHA_INVALIDA', 'Elige una fecha desde hoy y hasta dentro de 60 días.', 422);
         }
 
-        [$resultado, $reserva] = $this->reservas->crear($cuenta, $vinculo->moto, $d['sede'], $d['turno'], $d['fecha'], $d['detalle'] ?? null);
+        $marcaId = $request->exists('marca')
+            ? ($d['marca'] ?? null)
+            : Reservacion::where('RES_Placa', $vinculo->moto->MOT_Placa)->whereNotNull('MAR_Id')->orderByDesc('RES_Id')->value('MAR_Id');
+
+        [$resultado, $reserva] = $this->reservas->crear($cuenta, $vinculo->moto, $d['sede'], $d['turno'], $d['fecha'], $d['detalle'] ?? null, $marcaId ? (int) $marcaId : null);
 
         return match ($resultado) {
             Svc::CREADA => ApiRespuesta::ok($this->presentar($reserva), 201),
@@ -111,6 +125,7 @@ class ReservaController extends Controller
             'sede' => $sede,
             'placa' => $r->RES_Placa,
             'moto' => $r->RES_Moto,
+            'marca' => \App\Services\TenantTallerMotos\MarcaVehiculoService::nombre($r->MAR_Id),
             'detalle' => $r->RES_Detalle,
             'cancelable' => $r->RES_State !== 'RECHAZADO' && $r->RES_CheckIn === null && $r->RES_Estado === 'ACT',
         ];

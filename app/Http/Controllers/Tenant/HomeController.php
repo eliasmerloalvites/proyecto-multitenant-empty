@@ -624,6 +624,8 @@ class HomeController extends Controller
             'RES_FechaProgramada' => 'required|date_format:Y-m-d|after_or_equal:today|before_or_equal:+60 days',
             'RES_Placa' => 'required|string|max:20',
             'RES_Moto' => 'required|string|max:150',
+            // Opcional: la moto puede ser de una marca que no esta en la lista.
+            'MAR_Id' => ['nullable', 'integer', \Illuminate\Validation\Rule::exists('marca_vehiculo', 'MAR_Id')->where('MAR_Estado', 1)],
             'RES_Cliente' => 'required|string|max:120',
             'RES_Celular' => ['required', 'string', 'max:12', 'regex:/^\+?[0-9 \-]{7,12}$/'],
             'RES_Detalle' => 'nullable|string|max:250',

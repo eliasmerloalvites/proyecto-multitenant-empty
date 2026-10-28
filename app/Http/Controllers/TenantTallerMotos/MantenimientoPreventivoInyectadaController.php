@@ -42,7 +42,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_preventivo_inyectada as mpi')
                     ->leftJoin('users as p', 'p.id', '=', 'mpi.PER_Id')
-                    ->select('mpi.MPI_Id', 'mpi.MPI_Placa', 'mpi.MPI_Propietario', 'mpi.MPI_celular', 'mpi.notificar', 'mpi.MPI_Unidad', 'mpi.MPI_KMEntrada', 'mpi.MPI_FechaCreacion', 'mpi.MPI_FechaTermino', 'mpi.MPI_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_inyectada' AND MTO_Id = mpi.MPI_Id) as tiene_recepcion"));
+                    ->select('mpi.MPI_Id', 'mpi.MPI_Placa', 'mpi.MPI_EsGarantia', DB::raw('(SELECT MAR_Nombre FROM marca_vehiculo WHERE MAR_Id = mpi.MAR_Id) as marca'), 'mpi.MPI_Propietario', 'mpi.MPI_celular', 'mpi.notificar', 'mpi.MPI_Unidad', 'mpi.MPI_KMEntrada', 'mpi.MPI_FechaCreacion', 'mpi.MPI_FechaTermino', 'mpi.MPI_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_inyectada' AND MTO_Id = mpi.MPI_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MPI_FechaCreacion', '>=', $request->fecha_inicio);
@@ -118,7 +118,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
             } else {
                 $data = DB::table('mantenimiento_preventivo_inyectada as mpi')
                     ->leftJoin('users as p', 'p.id', '=', 'mpi.PER_Id')
-                    ->select('mpi.MPI_Id', 'mpi.MPI_Placa', 'mpi.MPI_Propietario', 'mpi.MPI_celular', 'mpi.notificar', 'mpi.MPI_Unidad', 'mpi.MPI_KMEntrada', 'mpi.MPI_FechaCreacion', 'mpi.MPI_FechaTermino', 'mpi.MPI_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_inyectada' AND MTO_Id = mpi.MPI_Id) as tiene_recepcion"))
+                    ->select('mpi.MPI_Id', 'mpi.MPI_Placa', 'mpi.MPI_EsGarantia', DB::raw('(SELECT MAR_Nombre FROM marca_vehiculo WHERE MAR_Id = mpi.MAR_Id) as marca'), 'mpi.MPI_Propietario', 'mpi.MPI_celular', 'mpi.notificar', 'mpi.MPI_Unidad', 'mpi.MPI_KMEntrada', 'mpi.MPI_FechaCreacion', 'mpi.MPI_FechaTermino', 'mpi.MPI_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_inyectada' AND MTO_Id = mpi.MPI_Id) as tiene_recepcion"))
                     ->where('mpi.PER_Id', '=', $idpersonal);
 
                 if ($request->filled('fecha_inicio')) {
@@ -266,6 +266,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
             $mtto_preventivo_inyectadas->MPI_UsuarioEditado = $idusu;
             $mtto_preventivo_inyectadas->PER_Id = $request->get('USU_Id');
             $mtto_preventivo_inyectadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
+            \App\Services\TenantTallerMotos\MarcaVehiculoService::aplicarAMantenimiento($mtto_preventivo_inyectadas, 'MPI', $request);
             $mtto_preventivo_inyectadas->save();
 
             RepuestosBahiaSync::reemplazarManuales(
@@ -681,6 +682,7 @@ class MantenimientoPreventivoInyectadaController extends Controller
             if ($request->notificar) {
                 $mtto_preventivo_inyectadas->notificar = 1;
             }
+            \App\Services\TenantTallerMotos\MarcaVehiculoService::aplicarAMantenimiento($mtto_preventivo_inyectadas, 'MPI', $request);
             $mtto_preventivo_inyectadas->update();
 
             RepuestosBahiaSync::reemplazarManuales(

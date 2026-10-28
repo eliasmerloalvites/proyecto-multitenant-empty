@@ -53,7 +53,7 @@ class MantenimientoActividadVariadaController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_actividad_variadas as mav')
                     ->leftJoin('users as p', 'p.id', '=', 'mav.PER_Id')
-                    ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_FechaTermino', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_actividad_variadas' AND MTO_Id = mav.MAV_Id) as tiene_recepcion"));
+                    ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_EsGarantia', DB::raw('(SELECT MAR_Nombre FROM marca_vehiculo WHERE MAR_Id = mav.MAR_Id) as marca'), 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_FechaTermino', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_actividad_variadas' AND MTO_Id = mav.MAV_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MAV_FechaCreacion', '>=', $request->fecha_inicio);
@@ -129,7 +129,7 @@ class MantenimientoActividadVariadaController extends Controller
             } else {
                 $data = DB::table('mantenimiento_actividad_variadas as mav')
                     ->leftJoin('users as p', 'p.id', '=', 'mav.PER_Id')
-                    ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_FechaTermino', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_actividad_variadas' AND MTO_Id = mav.MAV_Id) as tiene_recepcion"))
+                    ->select('mav.MAV_Id', 'mav.MAV_Placa', 'mav.MAV_EsGarantia', DB::raw('(SELECT MAR_Nombre FROM marca_vehiculo WHERE MAR_Id = mav.MAR_Id) as marca'), 'mav.MAV_Propietario', 'mav.MAV_celular', 'mav.notificar', 'mav.MAV_Unidad', 'mav.MAV_KMEntrada', 'mav.MAV_FechaCreacion', 'mav.MAV_FechaTermino', 'mav.MAV_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_actividad_variadas' AND MTO_Id = mav.MAV_Id) as tiene_recepcion"))
                     ->where('mav.PER_Id', '=', $idpersonal);
 
                 if ($request->filled('fecha_inicio')) {
@@ -246,6 +246,7 @@ class MantenimientoActividadVariadaController extends Controller
             $mtto_act_variadas->MAV_UsuarioCreacion = $idusu;
             $mtto_act_variadas->MAV_UsuarioEditado = $idusu;
             $mtto_act_variadas->PER_Id = $request->get('USU_Id');
+            \App\Services\TenantTallerMotos\MarcaVehiculoService::aplicarAMantenimiento($mtto_act_variadas, 'MAV', $request);
             $mtto_act_variadas->save();
 
             RepuestosBahiaSync::reemplazarManuales(
@@ -627,6 +628,7 @@ class MantenimientoActividadVariadaController extends Controller
             if($request->notificar){
                 $mtto_act_variadas->notificar = 1;
             }
+            \App\Services\TenantTallerMotos\MarcaVehiculoService::aplicarAMantenimiento($mtto_act_variadas, 'MAV', $request);
             $mtto_act_variadas->update();
 
             RepuestosBahiaSync::reemplazarManuales(

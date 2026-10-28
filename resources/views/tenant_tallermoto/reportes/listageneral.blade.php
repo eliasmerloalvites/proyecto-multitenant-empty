@@ -20,18 +20,18 @@
             <div class="card shadow-sm border-0 mb-4 bg-light">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label>Fecha Inicio</label>
                             <input type="date" class="form-control" id="fecha_inicio">
                         </div>
                         <!-- FECHA FIN -->
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label>Fecha Fin</label>
                             <input type="date" class="form-control" id="fecha_fin">
                         </div>
 
                         <!-- ESTADO -->
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label>Estado</label>
                             <select class="form-control" id="estado">
                                 <option value="">Todos</option>
@@ -40,8 +40,29 @@
                             </select>
                         </div>
 
+                        <!-- GARANTIA -->
+                        <div class="col-md-2">
+                            <label for="garantia">Garantía</label>
+                            <select class="form-control" id="garantia">
+                                <option value="">Todos</option>
+                                <option value="SI">Solo por garantía</option>
+                                <option value="NO">Sin garantía</option>
+                            </select>
+                        </div>
+
+                        <!-- MARCA -->
+                        <div class="col-md-2">
+                            <label for="marca">Marca</label>
+                            <select class="form-control" id="marca">
+                                <option value="">Todas</option>
+                                @foreach (\App\Services\TenantTallerMotos\MarcaVehiculoService::activas() as $m)
+                                    <option value="{{ $m->MAR_Id }}">{{ $m->MAR_Nombre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <!-- BOTON -->
-                        <div class="col-md-3 d-flex align-items-end">
+                        <div class="col-md-2 d-flex align-items-end">
                             <button class="btn btn-primary btn-block" id="btnFiltrar">
                                 <i class="fas fa-search mr-1"></i>
                                 Filtrar
@@ -259,6 +280,8 @@
                         d.fecha_inicio = $('#fecha_inicio').val();
                         d.fecha_fin    = $('#fecha_fin').val();
                         d.estado       = $('#estado').val();
+                        d.garantia     = $('#garantia').val();
+                        d.marca        = $('#marca').val();
                     }
                 },
                 columns: [
@@ -272,7 +295,8 @@
                         },
                         {
                             data: 'Placa',
-                            name: 'Placa'
+                            name: 'Placa',
+                            render: function(v, t, row) { var p = $('<div>').text(v || '').html(); return row.EsGarantia == 1 ? p + ' <span class="badge badge-primary" title="Mantenimiento por garantía"><i class="fas fa-shield-alt"></i> GARANTÍA</span>' : p; }
                         },
                         {
                             data: 'Propietario',
@@ -284,7 +308,8 @@
                         },
                         {
                             data: 'Unidad',
-                            name: 'Unidad'
+                            name: 'Unidad',
+                            render: function(v, t, row) { var u = $('<div>').text(v || '').html(); return row.Marca ? '<span class="text-muted small d-block">' + $('<div>').text(row.Marca).html() + '</span>' + u : u; }
                         },
                         {
                             data: 'KMEntrada',

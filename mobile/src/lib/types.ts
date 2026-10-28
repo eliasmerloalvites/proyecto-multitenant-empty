@@ -142,3 +142,6 @@ export type PedidoDetalle = PedidoResumen & {
   pasos: { pedido: string | null; confirmado: string | null; listo: string | null; entregado: string | null; cancelado: string | null };
   items: { producto_id: number; nombre: string; precio: string; cantidad: number; subtotal: string; imagen: string | null }[];
 };
+
+/** Marca de vehiculo para elegir (opcional) al reservar. */
+export type MarcaVehiculo = { id: number; nombre: string };

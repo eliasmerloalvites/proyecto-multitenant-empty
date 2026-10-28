@@ -339,6 +339,14 @@ Route::middleware([
         Route::put('/tenant/mantenimientos/planes/{plan}', [MantenimientoPlanController::class, 'update'])->name('tenant.mantenimientos.planes.update');
         Route::delete('/tenant/mantenimientos/planes/{plan}', [MantenimientoPlanController::class, 'destroy'])->name('tenant.mantenimientos.planes.destroy');
 
+        // Marcas de vehiculo (se eligen al reservar y en cada mantenimiento).
+        Route::middleware('can:tenant.mantenimientos.marcas.index')->group(function () {
+            Route::get('/tenant/mantenimientos/marcas', [\App\Http\Controllers\TenantTallerMotos\MarcaVehiculoController::class, 'index'])->name('tenant.mantenimientos.marcas.index');
+            Route::post('/tenant/mantenimientos/marcas', [\App\Http\Controllers\TenantTallerMotos\MarcaVehiculoController::class, 'store'])->name('tenant.mantenimientos.marcas.store');
+            Route::put('/tenant/mantenimientos/marcas/{marca}', [\App\Http\Controllers\TenantTallerMotos\MarcaVehiculoController::class, 'update'])->name('tenant.mantenimientos.marcas.update');
+            Route::delete('/tenant/mantenimientos/marcas/{marca}', [\App\Http\Controllers\TenantTallerMotos\MarcaVehiculoController::class, 'destroy'])->name('tenant.mantenimientos.marcas.destroy');
+        });
+
         Route::post('/tenant/mantenimientos/generalcarburada/{generalcarburada}/crop',[MantenimientoGeneralCarburadaController::class, 'crop'])->name('tenant.mantenimientos.generalcarburada.crop');
         Route::delete('/tenant/mantenimientos/generalcarburada/crop/{generalcarburada}/{item}',[MantenimientoGeneralCarburadaController::class, 'destroyimagen'])->name('tenant.mantenimientos.generalcarburada.destroyimagen');
         Route::put('/tenant/mantenimientos/generalcarburada/{generalcarburada}/actualizarestado', [MantenimientoGeneralCarburadaController::class, 'actualizarestado'])->name('tenant.mantenimientos.generalcarburada.actualizarestado');

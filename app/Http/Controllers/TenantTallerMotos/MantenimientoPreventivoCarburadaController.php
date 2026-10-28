@@ -42,7 +42,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
             if ($rolAdmin) {
                 $data = DB::table('mantenimiento_preventivo_carburada as mpc')
                     ->leftJoin('users as p', 'p.id', '=', 'mpc.PER_Id')
-                    ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_FechaTermino', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_carburada' AND MTO_Id = mpc.MPC_Id) as tiene_recepcion"));
+                    ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_EsGarantia', DB::raw('(SELECT MAR_Nombre FROM marca_vehiculo WHERE MAR_Id = mpc.MAR_Id) as marca'), 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_FechaTermino', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_carburada' AND MTO_Id = mpc.MPC_Id) as tiene_recepcion"));
 
                 if ($request->filled('fecha_inicio')) {
                     $data->whereDate('MPC_FechaCreacion', '>=', $request->fecha_inicio);
@@ -118,7 +118,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
             } else {
                 $data = DB::table('mantenimiento_preventivo_carburada as mpc')
                     ->leftJoin('users as p', 'p.id', '=', 'mpc.PER_Id')
-                    ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_FechaTermino', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_carburada' AND MTO_Id = mpc.MPC_Id) as tiene_recepcion"))
+                    ->select('mpc.MPC_Id', 'mpc.MPC_Placa', 'mpc.MPC_EsGarantia', DB::raw('(SELECT MAR_Nombre FROM marca_vehiculo WHERE MAR_Id = mpc.MAR_Id) as marca'), 'mpc.MPC_Propietario', 'mpc.MPC_celular', 'mpc.notificar', 'mpc.MPC_Unidad', 'mpc.MPC_KMEntrada', 'mpc.MPC_FechaCreacion', 'mpc.MPC_FechaTermino', 'mpc.MPC_Estado', DB::raw('CONCAT(p.name) as personal'), DB::raw("EXISTS(SELECT 1 FROM recepcion_respuesta WHERE MTO_Tabla = 'mantenimiento_preventivo_carburada' AND MTO_Id = mpc.MPC_Id) as tiene_recepcion"))
                     ->where('mpc.PER_Id', '=', $idpersonal);
 
                 if ($request->filled('fecha_inicio')) {
@@ -256,6 +256,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
             $mtto_preventivo_carburadas->MPC_UsuarioEditado = $idusu;
             $mtto_preventivo_carburadas->PER_Id = $request->get('USU_Id');
             $mtto_preventivo_carburadas->PLAN_Id = $request->get('PLAN_Id') ?: null;
+            \App\Services\TenantTallerMotos\MarcaVehiculoService::aplicarAMantenimiento($mtto_preventivo_carburadas, 'MPC', $request);
             $mtto_preventivo_carburadas->save();
 
             RepuestosBahiaSync::reemplazarManuales(
@@ -661,6 +662,7 @@ class MantenimientoPreventivoCarburadaController extends Controller
             if ($request->notificar) {
                 $mtto_preventivo_carburadas->notificar = 1;
             }
+            \App\Services\TenantTallerMotos\MarcaVehiculoService::aplicarAMantenimiento($mtto_preventivo_carburadas, 'MPC', $request);
             $mtto_preventivo_carburadas->update();
 
             RepuestosBahiaSync::reemplazarManuales(

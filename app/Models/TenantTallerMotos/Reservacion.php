@@ -18,6 +18,7 @@ class Reservacion extends Model
     	'BAH_Id',
     	'RES_Placa',
     	'RES_Moto',
+    	'MAR_Id',
     	'RES_Cliente',
     	'RES_Celular',
     	'RES_Detalle',
