@@ -4,6 +4,8 @@ namespace App\Http\Controllers\TenantTallerMotos;
 
 use App\Http\Controllers\Concerns\ResuelvePeriodo;
 use App\Http\Controllers\Controller;
+use App\Services\Caja\FlujoPorMetodoService;
+use App\Services\Reportes\UtilidadService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,37 +40,7 @@ class ReportesFinancierosController extends Controller
 
         $almacenId = $request->input('almacen_id');
 
-        $calcular = function (Carbon $desde, Carbon $hasta) use ($almacenId) {
-            $ventas = DB::table('detalle_venta as dv')
-                ->join('venta as v', 'v.VEN_Id', '=', 'dv.VEN_Id')
-                ->leftJoin('lote as l', 'l.LOT_Id', '=', 'dv.LOT_Id')
-                ->where('v.VEN_Status', 1)
-                ->whereBetween('v.created_at', [$desde, $hasta])
-                ->when($almacenId, fn ($q) => $q->where('v.ALM_Id', $almacenId))
-                ->selectRaw('
-                    COALESCE(SUM(dv.DEV_Cantidad * dv.DEV_PrecioUnitario), 0) as ingresos,
-                    COALESCE(SUM(dv.DEV_Cantidad * COALESCE(l.LOT_PrecioCompra, 0)), 0) as costo
-                ')
-                ->first();
-
-            $gastos = (float) DB::table('gasto')
-                ->where('GAS_Status', 1)
-                ->when($almacenId, fn ($q) => $q->where('ALM_Id', $almacenId))
-                ->whereBetween('GAS_Fecha', [$desde->toDateString(), $hasta->toDateString()])
-                ->sum('GAS_Monto');
-
-            $ingresos = (float) $ventas->ingresos;
-            $costo = (float) $ventas->costo;
-            $utilidadBruta = $ingresos - $costo;
-
-            return [
-                'ingresos' => round($ingresos, 2),
-                'costo' => round($costo, 2),
-                'utilidadBruta' => round($utilidadBruta, 2),
-                'gastos' => round($gastos, 2),
-                'utilidadNeta' => round($utilidadBruta - $gastos, 2),
-            ];
-        };
+        $calcular = fn (Carbon $desde, Carbon $hasta) => UtilidadService::entre($desde, $hasta, $almacenId ? (int) $almacenId : null);
 
         $actual = $calcular($inicio, $fin);
         $anterior = $calcular($inicioAnt, $finAnt);
@@ -262,6 +234,42 @@ class ReportesFinancierosController extends Controller
         $egresosActual = $comprasActual + $gastosActual;
         $egresosAnterior = $comprasAnterior + $gastosAnterior;
 
+        // ================= CREDITO CON PROVEEDORES =================
+        // "Compras del periodo" cuenta lo comprado (aunque sea al credito);
+        // esto muestra cuanto de eso fue al credito, cuanto se pago a
+        // proveedores en el periodo (abonos de cuentas por pagar, de compras
+        // de este u otro periodo) y cuanto se les sigue debiendo hoy.
+
+        $comprasCredito = round((float) DB::table('detalle_compra as dc')
+            ->join('compra as c', 'c.COM_Id', '=', 'dc.COM_Id')
+            ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'c.MEP_Id')
+            ->where('c.COM_Status', 1)
+            ->where('mp.MEP_Pago', 'Credito')
+            ->whereBetween('c.created_at', [$inicio, $fin])
+            ->when($almacenId, fn ($q) => $q->where('dc.ALM_Id', $almacenId))
+            ->when($proveedorId, fn ($q) => $q->where('c.PROV_Id', $proveedorId))
+            ->sum(DB::raw('dc.DCOM_Cantidad * dc.DCOM_PrecioCompra')), 2);
+
+        $hayCuentasPorPagar = \Illuminate\Support\Facades\Schema::hasTable('cuenta_por_pagar_abono');
+
+        $pagadoProveedores = $hayCuentasPorPagar ? round((float) DB::table('cuenta_por_pagar_abono as a')
+            ->join('cuenta_por_pagar as cpp', 'cpp.CPP_Id', '=', 'a.CPP_Id')
+            ->join('compra as c', 'c.COM_Id', '=', 'cpp.COM_Id')
+            ->whereBetween('a.created_at', [$inicio, $fin])
+            ->when($proveedorId, fn ($q) => $q->where('c.PROV_Id', $proveedorId))
+            ->when($almacenId, fn ($q) => $q->whereIn('a.CS_Id', function ($sub) use ($almacenId) {
+                $sub->select('cs.CS_Id')->from('caja_sesion as cs')
+                    ->join('caja as cj', 'cj.CAJ_Id', '=', 'cs.CAJ_Id')
+                    ->where('cj.ALM_Id', $almacenId);
+            }))
+            ->sum('a.CPPA_Monto'), 2) : 0.0;
+
+        $deudaProveedores = $hayCuentasPorPagar ? round((float) DB::table('cuenta_por_pagar as cpp')
+            ->join('compra as c', 'c.COM_Id', '=', 'cpp.COM_Id')
+            ->where('cpp.CPP_Estado', 'PENDIENTE')
+            ->when($proveedorId, fn ($q) => $q->where('c.PROV_Id', $proveedorId))
+            ->sum('cpp.CPP_MontoFaltante'), 2) : 0.0;
+
         // ================= COMPRAS POR PROVEEDOR =================
 
         $comprasPorProveedor = DB::table('detalle_compra as dc')
@@ -356,6 +364,9 @@ class ReportesFinancierosController extends Controller
                 'compras' => $comprasActual,
                 'gastos' => $gastosActual,
                 'egresos' => round($egresosActual, 2),
+                'compras_credito' => $comprasCredito,
+                'pagado_proveedores' => $pagadoProveedores,
+                'deuda_proveedores' => $deudaProveedores,
             ],
             'variacion' => [
                 'egresos' => $this->crecimientoPorcentual($egresosActual, $egresosAnterior),
@@ -412,6 +423,32 @@ class ReportesFinancierosController extends Controller
                 return $r;
             });
 
+        // Saldo que cada cliente aun debe hoy (cuentas por cobrar pendientes),
+        // y lo cobrado en el periodo por abonos (ventas al credito pagadas despues).
+        $hayCuentasPorCobrar = \Illuminate\Support\Facades\Schema::hasTable('cuenta_por_cobrar');
+        $debePorCliente = $hayCuentasPorCobrar
+            ? DB::table('cuenta_por_cobrar as cpc')
+                ->join('venta as v', 'v.VEN_Id', '=', 'cpc.VEN_Id')
+                ->where('cpc.CPC_Estado', 'PENDIENTE')
+                ->groupBy('v.CLI_Id')
+                ->select('v.CLI_Id', DB::raw('SUM(cpc.CPC_MontoFaltante) as debe'))
+                ->pluck('debe', 'CLI_Id')
+            : collect();
+        $porCliente = $porCliente->map(function ($r) use ($debePorCliente) {
+            $r->debe = round((float) ($debePorCliente[$r->CLI_Id] ?? 0), 2);
+
+            return $r;
+        });
+
+        $abonosPeriodo = $hayCuentasPorCobrar && \Illuminate\Support\Facades\Schema::hasTable('cuenta_por_cobrar_abono')
+            ? round((float) DB::table('cuenta_por_cobrar_abono as a')
+                ->join('cuenta_por_cobrar as cpc', 'cpc.CPC_Id', '=', 'a.CPC_Id')
+                ->join('venta as v', 'v.VEN_Id', '=', 'cpc.VEN_Id')
+                ->whereBetween('a.created_at', [$inicio, $fin])
+                ->when($almacenId, fn ($q) => $q->where('v.ALM_Id', $almacenId))
+                ->sum('a.CPA_Monto'), 2)
+            : 0.0;
+
         $clientesNuevos = DB::table('cliente')
             ->where('CLI_Status', 1)
             ->whereBetween('created_at', [$inicio, $fin])
@@ -430,6 +467,8 @@ class ReportesFinancierosController extends Controller
                 'ticketPromedioGeneral' => $porCliente->sum('compras') > 0
                     ? round($porCliente->sum('monto') / $porCliente->sum('compras'), 2)
                     : 0,
+                'porCobrar' => round((float) $debePorCliente->sum(), 2),
+                'abonosPeriodo' => $abonosPeriodo,
             ],
             'topClientes' => $porCliente->take(20)->values(),
             'clientesNuevos' => $clientesNuevos,
@@ -518,6 +557,10 @@ class ReportesFinancierosController extends Controller
             'porCajero' => $porCajero,
             'detalle' => $detalle,
             'serie' => $serie,
+            // Lo que entro y salio por cada metodo en el periodo, con la misma
+            // cuenta que el arqueo (pago mixto repartido, abonos, adelantos,
+            // compras y pagos a proveedores incluidos).
+            'flujo' => FlujoPorMetodoService::entreFechas($inicio, $fin, $almacenId ? (int) $almacenId : null)->resumen(true),
         ]);
     }
 

@@ -88,6 +88,22 @@
                     </div>
                 </div>
 
+                <!-- FLUJO POR METODO DE PAGO -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h6 class="mb-1">Ingresos y egresos por método de pago</h6>
+                        <p class="text-muted mb-3" style="font-size: 12px;">
+                            Dinero que realmente entró y salió en el periodo. Las ventas y compras con pago mixto se reparten en sus métodos;
+                            las ventas al crédito no se cuentan hasta que se cobran (abonos).
+                        </p>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered mb-0" id="tabla_flujo">
+                                <tbody><tr><td class="text-center text-muted">Cargando...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- GRAFICO -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
@@ -179,6 +195,7 @@
                     pintarCajeros(data.porCajero);
                     pintarDetalle(data.detalle);
                     pintarGrafico(data.serie);
+                    pintarFlujo(data.flujo);
                 }).fail(function () {
                     $('#tabla_cajeros_body').html('<tr><td colspan="4" class="text-center text-danger">Error al cargar el reporte.</td></tr>');
                 });
@@ -195,6 +212,35 @@
                 if (t.diferenciaTotal > 0) $icono.addClass('bg-success');
                 else if (t.diferenciaTotal < 0) $icono.addClass('bg-danger');
                 else $icono.addClass('bg-secondary');
+            }
+
+            function pintarFlujo(f) {
+                var $t = $('#tabla_flujo');
+                if (!f || !f.columnas || !f.columnas.length) {
+                    $t.html('<tbody><tr><td class="text-center text-muted">Sin movimientos en este periodo.</td></tr></tbody>');
+                    return;
+                }
+                var cols = f.columnas;
+                var html = '<thead class="bg-light"><tr><th>Movimiento</th>';
+                cols.forEach(function (c) { html += '<th class="text-end">' + escapeHtml(c.nombre) + '</th>'; });
+                html += '<th class="text-end">Total</th></tr></thead><tbody>';
+
+                function fila(titulo, clave, estilo) {
+                    var r = '<tr' + (estilo ? ' style="' + estilo + '"' : '') + '><td>' + titulo + '</td>';
+                    cols.forEach(function (c) { r += '<td class="text-end">' + fmt(c[clave]) + '</td>'; });
+                    return r + '<td class="text-end"><strong>' + fmt(f['total_' + clave]) + '</strong></td></tr>';
+                }
+
+                html += fila('Ventas cobradas', 'ventas');
+                html += fila('Abonos de cuentas por cobrar', 'abonos');
+                html += fila('Adelantos de bahía', 'adelantos');
+                html += fila('<strong>Total ingresos</strong>', 'ingresos', 'background:#F0FDF4;');
+                html += fila('Compras', 'compras');
+                html += fila('Pagos a proveedores (cuentas por pagar)', 'pagos_proveedor');
+                html += fila('Gastos (que afectan caja)', 'gastos');
+                html += fila('<strong>Total egresos</strong>', 'egresos', 'background:#FEF2F2;');
+                html += fila('<strong>Neto</strong>', 'neto', 'border-top:2px solid #94a3b8;');
+                $t.html(html + '</tbody>');
             }
 
             function pintarCajeros(filas) {
