@@ -49,40 +49,66 @@
                 </div>
 
                 <!-- KPIs -->
-                <div class="row mb-4">
-                    <div class="col-md-3 col-6">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 col-12">
                         <div class="info-box shadow-sm">
                             <span class="info-box-icon bg-secondary"><i class="fas fa-calendar-alt"></i></span>
                             <div class="info-box-content">
-                                <span class="info-box-text">Reservas del periodo</span>
+                                <span class="info-box-text">Reservas</span>
                                 <span class="info-box-number" id="kpi_total">0</span>
+                                <span class="small text-muted" id="kpi_total_sub">&nbsp;</span>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-6">
+                    <div class="col-lg-4 col-md-6 col-12">
                         <div class="info-box shadow-sm">
                             <span class="info-box-icon bg-success"><i class="fas fa-check-circle"></i></span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Aprobadas</span>
                                 <span class="info-box-number" id="kpi_aprobadas">0</span>
+                                <span class="small text-muted" id="kpi_aprobadas_sub">&nbsp;</span>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-6">
+                    <div class="col-lg-4 col-md-6 col-12">
                         <div class="info-box shadow-sm">
                             <span class="info-box-icon bg-danger"><i class="fas fa-times-circle"></i></span>
                             <div class="info-box-content">
-                                <span class="info-box-text">Rechazadas</span>
+                                <span class="info-box-text" title="Rechazadas por el taller">Rechazadas</span>
                                 <span class="info-box-number" id="kpi_rechazadas">0</span>
+                                <span class="small text-muted" id="kpi_rechazadas_sub">&nbsp;</span>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-6">
+                </div>
+                <div class="row mb-4">
+                    <div class="col-lg-4 col-md-6 col-12">
                         <div class="info-box shadow-sm">
-                            <span class="info-box-icon bg-primary"><i class="fas fa-percentage"></i></span>
+                            <span class="info-box-icon bg-warning"><i class="fas fa-hourglass-half"></i></span>
                             <div class="info-box-content">
-                                <span class="info-box-text">Tasa de cumplimiento</span>
-                                <span class="info-box-number" id="kpi_tasa">0%</span>
+                                <span class="info-box-text">Sin gestionar</span>
+                                <span class="info-box-number" id="kpi_sin_gestionar">0</span>
+                                <span class="small text-muted" id="kpi_sin_gestionar_sub">Pendientes con fecha ya pasada</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <div class="info-box shadow-sm">
+                            <span class="info-box-icon bg-info"><i class="fas fa-thumbs-up"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text" title="Tasa de aprobación">% Aprobación</span>
+                                <span class="info-box-number" id="kpi_tasa_aprobacion">0</span>
+                                <span class="small text-muted" id="kpi_tasa_aprobacion_sub">Aprobadas ÷ (aprobadas + rechazadas)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <div class="info-box shadow-sm">
+                            <span class="info-box-icon bg-primary"><i class="fas fa-motorcycle"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text" title="Tasa de cumplimiento">% Cumplimiento</span>
+                                <span class="info-box-number" id="kpi_tasa_cumplimiento">0</span>
+                                <span class="small text-muted" id="kpi_tasa_cumplimiento_sub">&nbsp;</span>
                             </div>
                         </div>
                     </div>
@@ -110,10 +136,12 @@
                                         <th class="text-center">Total</th>
                                         <th class="text-center">Aprobadas</th>
                                         <th class="text-center">Rechazadas</th>
+                                        <th class="text-center" title="Canceladas por el cliente desde la app">Canceladas</th>
+                                        <th class="text-center" title="Pendientes con fecha ya pasada">Sin gestionar</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabla_bahias_body">
-                                    <tr><td colspan="4" class="text-center text-muted">Cargando...</td></tr>
+                                    <tr><td colspan="6" class="text-center text-muted">Cargando...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -178,7 +206,8 @@
                     params.fecha_fin = $('#fecha_fin').val();
                 }
 
-                $('#tabla_bahias_body, #tabla_turnos_body, #tabla_mtto_body').html('<tr><td colspan="4" class="text-center text-muted">Cargando...</td></tr>');
+                $('#tabla_bahias_body').html('<tr><td colspan="6" class="text-center text-muted">Cargando...</td></tr>');
+                $('#tabla_turnos_body, #tabla_mtto_body').html('<tr><td colspan="2" class="text-center text-muted">Cargando...</td></tr>');
 
                 $.get("{{ route('tenant.reportes.operacionTaller') }}", params, function (data) {
                     pintarKpis(data.totales);
@@ -187,25 +216,41 @@
                     pintarMtto(data.mantenimientos);
                     pintarGrafico(data.serie);
                 }).fail(function () {
-                    $('#tabla_bahias_body').html('<tr><td colspan="4" class="text-center text-danger">Error al cargar el reporte.</td></tr>');
+                    var error = '<td class="text-center text-danger">Error al cargar el reporte. Vuelve a intentarlo.</td>';
+                    $('#tabla_bahias_body').html('<tr>' + error.replace('<td', '<td colspan="6"') + '</tr>');
+                    $('#tabla_turnos_body, #tabla_mtto_body').html('<tr>' + error.replace('<td', '<td colspan="2"') + '</tr>');
                 });
+            }
+
+            function pct(v) {
+                return v === null || v === undefined ? '—' : v + '%';
             }
 
             function pintarKpis(t) {
                 $('#kpi_total').text(t.totalReservas);
+                $('#kpi_total_sub').text(t.pendientes + ' pendiente(s) por venir');
                 $('#kpi_aprobadas').text(t.aprobadas);
+                $('#kpi_aprobadas_sub').text(t.atendidas + ' llegaron al taller');
                 $('#kpi_rechazadas').text(t.rechazadas);
-                $('#kpi_tasa').text(t.tasaCumplimiento + '%');
+                $('#kpi_rechazadas_sub').text('Por el taller' + (t.canceladas > 0 ? ' · + ' + t.canceladas + ' cancelada(s) por el cliente' : ''));
+                $('#kpi_sin_gestionar').text(t.sinGestionar);
+                $('#kpi_tasa_aprobacion').text(pct(t.tasaAprobacion));
+                $('#kpi_tasa_cumplimiento').text(pct(t.tasaCumplimiento));
+                $('#kpi_tasa_cumplimiento_sub').text(t.atendidas + ' de ' + t.aprobadasYaLlegaron + ' aprobadas ya en fecha llegaron al taller');
             }
 
             function pintarBahias(filas) {
                 if (!filas.length) {
-                    $('#tabla_bahias_body').html('<tr><td colspan="4" class="text-center text-muted">Sin reservas en este periodo.</td></tr>');
+                    $('#tabla_bahias_body').html('<tr><td colspan="6" class="text-center text-muted">Sin reservas en este periodo.</td></tr>');
                     return;
                 }
                 var html = '';
                 filas.forEach(function (f) {
-                    html += '<tr><td>' + escapeHtml(f.BAH_Nombre) + '</td><td class="text-center">' + f.total + '</td><td class="text-center text-success">' + f.aprobadas + '</td><td class="text-center text-danger">' + f.rechazadas + '</td></tr>';
+                    html += '<tr><td>' + escapeHtml(f.BAH_Nombre) + '</td><td class="text-center">' + f.total + '</td>'
+                        + '<td class="text-center text-success">' + f.aprobadas + '</td>'
+                        + '<td class="text-center text-danger">' + f.rechazadas + '</td>'
+                        + '<td class="text-center text-muted">' + f.canceladas + '</td>'
+                        + '<td class="text-center text-warning">' + f.sin_gestionar + '</td></tr>';
                 });
                 $('#tabla_bahias_body').html(html);
             }
@@ -217,7 +262,7 @@
                 }
                 var html = '';
                 filas.forEach(function (f) {
-                    html += '<tr><td>' + escapeHtml(f.TUR_Descripcion) + '</td><td class="text-center">' + f.total + '</td></tr>';
+                    html += '<tr><td>' + escapeHtml(f.turno) + '</td><td class="text-center">' + f.total + '</td></tr>';
                 });
                 $('#tabla_turnos_body').html(html);
             }
@@ -252,8 +297,10 @@
                         labels: serie.map(function (s) { return s.fecha; }),
                         datasets: [
                             { label: 'Aprobadas', data: serie.map(s => s.aprobadas), backgroundColor: 'rgba(0, 166, 90, 0.8)' },
-                            { label: 'Rechazadas', data: serie.map(s => s.rechazadas), backgroundColor: 'rgba(221, 75, 57, 0.8)' },
-                            { label: 'Pendientes', data: serie.map(s => s.pendientes), backgroundColor: 'rgba(243, 156, 18, 0.8)' }
+                            { label: 'Rechazadas (taller)', data: serie.map(s => s.rechazadas), backgroundColor: 'rgba(221, 75, 57, 0.8)' },
+                            { label: 'Canceladas (cliente)', data: serie.map(s => s.canceladas), backgroundColor: 'rgba(108, 117, 125, 0.7)' },
+                            { label: 'Sin gestionar', data: serie.map(s => s.sin_gestionar), backgroundColor: 'rgba(243, 156, 18, 0.85)' },
+                            { label: 'Pendientes (por venir)', data: serie.map(s => s.pendientes), backgroundColor: 'rgba(60, 141, 188, 0.75)' }
                         ]
                     },
                     options: {
