@@ -768,10 +768,12 @@
                     [0, "desc"]
                 ],
                 dom: 'Blfrtip',
+                // Columnas por indice (sin Opciones): asi salen siempre los codigos,
+                // aunque la pantalla sea angosta y la tabla los oculte.
                 buttons: [
-                    'copyHtml5',
-                    'excelHtml5',
-                    'pdfHtml5'
+                    { extend: 'copyHtml5', exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7, 8] } },
+                    { extend: 'excelHtml5', exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7, 8] } },
+                    { extend: 'pdfHtml5', exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7, 8] } }
                 ],
                 ajax: "{{ tenant_url('tenant.inventario.controlinventario.index') }}",
                 columns: [{
