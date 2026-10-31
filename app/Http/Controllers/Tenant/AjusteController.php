@@ -148,48 +148,7 @@ class AjusteController extends Controller
             // igual por otra via.
             $this->validarProductosAjustables($proIds);
 
-            $ajuste = new Ajuste();
-            $ajuste->ALM_Id = $request->ALM_Id;
-            $ajuste->USU_Id = Auth::id();
-            $ajuste->AJU_Motivo = $request->AJU_Motivo;
-            $ajuste->AJU_Observacion = $request->AJU_Observacion;
-            $ajuste->save();
-
-            foreach ($proIds as $i => $proId) {
-                $tipo = $tipos[$i];
-                $cantidad = (float) $cantidades[$i];
-                $loteId = null;
-
-                if ($tipo === AjusteDetalle::TIPO_INCREMENTO) {
-                    $producto = Producto::findOrFail($proId);
-
-                    $loteId = DB::table('lote')->insertGetId([
-                        'ALM_Id' => $request->ALM_Id,
-                        'PRO_Id' => $proId,
-                        'LOT_TipoIngreso' => 'AJUSTE',
-                        'LOT_IdIngreso' => $ajuste->AJU_Id,
-                        'LOT_CantidadReal' => $cantidad,
-                        'LOT_CantidadIngreso' => $cantidad,
-                        'LOT_PrecioCompra' => $producto->PRO_PrecioCompra,
-                        'LOT_PrecioVenta' => $producto->PRO_PrecioVenta,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                } else {
-                    // Descuenta FIFO, igual que una venta o un traslado. Sin
-                    // "permitir sin stock": un ajuste no puede dejar la sede
-                    // en negativo, solo puede corregir hasta lo que hay.
-                    VentaController::ReducirStock($proId, $cantidad, $request->ALM_Id, false);
-                }
-
-                $detalle = new AjusteDetalle();
-                $detalle->AJU_Id = $ajuste->AJU_Id;
-                $detalle->PRO_Id = $proId;
-                $detalle->LOT_Id = $loteId;
-                $detalle->AJD_Tipo = $tipo;
-                $detalle->AJD_Cantidad = $cantidad;
-                $detalle->save();
-            }
+            $ajuste = $this->crearAjuste($request->ALM_Id, $request->AJU_Motivo, $request->AJU_Observacion, $proIds, $tipos, $cantidades);
 
             DB::commit();
 
@@ -199,6 +158,59 @@ class AjusteController extends Controller
 
             return response()->json(['error' => $e->getMessage()], 422);
         }
+    }
+
+    /**
+     * Crea el ajuste y aplica cada linea al stock (lote nuevo para los
+     * incrementos, descuento FIFO para los decrementos). No abre
+     * transaccion: quien llama debe envolverlo en una.
+     */
+    protected function crearAjuste($almacenId, string $motivo, ?string $observacion, array $proIds, array $tipos, array $cantidades): Ajuste
+    {
+        $ajuste = new Ajuste();
+        $ajuste->ALM_Id = $almacenId;
+        $ajuste->USU_Id = Auth::id();
+        $ajuste->AJU_Motivo = $motivo;
+        $ajuste->AJU_Observacion = $observacion;
+        $ajuste->save();
+
+        foreach ($proIds as $i => $proId) {
+            $tipo = $tipos[$i];
+            $cantidad = (float) $cantidades[$i];
+            $loteId = null;
+
+            if ($tipo === AjusteDetalle::TIPO_INCREMENTO) {
+                $producto = Producto::findOrFail($proId);
+
+                $loteId = DB::table('lote')->insertGetId([
+                    'ALM_Id' => $almacenId,
+                    'PRO_Id' => $proId,
+                    'LOT_TipoIngreso' => 'AJUSTE',
+                    'LOT_IdIngreso' => $ajuste->AJU_Id,
+                    'LOT_CantidadReal' => $cantidad,
+                    'LOT_CantidadIngreso' => $cantidad,
+                    'LOT_PrecioCompra' => $producto->PRO_PrecioCompra,
+                    'LOT_PrecioVenta' => $producto->PRO_PrecioVenta,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } else {
+                // Descuenta FIFO, igual que una venta o un traslado. Sin
+                // "permitir sin stock": un ajuste no puede dejar la sede
+                // en negativo, solo puede corregir hasta lo que hay.
+                VentaController::ReducirStock($proId, $cantidad, $almacenId, false);
+            }
+
+            $detalle = new AjusteDetalle();
+            $detalle->AJU_Id = $ajuste->AJU_Id;
+            $detalle->PRO_Id = $proId;
+            $detalle->LOT_Id = $loteId;
+            $detalle->AJD_Tipo = $tipo;
+            $detalle->AJD_Cantidad = $cantidad;
+            $detalle->save();
+        }
+
+        return $ajuste;
     }
 
     /**

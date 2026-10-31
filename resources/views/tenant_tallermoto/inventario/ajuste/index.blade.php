@@ -21,7 +21,13 @@
         <div class="col-12 col-md-5">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">NUEVO AJUSTE</h5>
+                    <div class="d-flex justify-content-between align-items-start flex-wrap" style="gap: 8px;">
+                        <h5 class="card-title mb-0">NUEVO AJUSTE</h5>
+                        <button type="button" class="btn btn-outline-success btn-sm" id="btnAbrirMasivo">
+                            <i class="fas fa-file-excel"></i> Conteo físico masivo (Excel)
+                        </button>
+                    </div>
+                    <div class="mb-2"></div>
                     <p class="text-muted" style="font-size: 13px;">
                         Usa esto para corregir el stock cuando no viene de una compra, venta o traslado:
                         mermas, roturas, vencimientos o diferencias de un conteo físico.
@@ -125,6 +131,90 @@
                                 </tr>
                             </thead>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endcan
+
+    @can('tenant.inventario.producto.create')
+        <div class="modal fade" id="modalMasivo" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-file-excel mr-2"></i>Conteo físico masivo</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted" style="font-size: 13px;">
+                            Descarga la lista de productos del almacén, escribe en <strong>Stock contado</strong> lo que realmente hay
+                            y súbela. El sistema calcula solo lo que se suma o se resta y te lo muestra antes de aplicar.
+                            Lo que dejes vacío no se modifica.
+                        </p>
+
+                        <div class="form-group">
+                            <label class="control-label">1. Almacén:</label>
+                            <div class="input-group">
+                                <select class="form-control" id="masivo_almacen">
+                                    <option value="">Seleccionar ...</option>
+                                    @foreach ($almacenes as $itemAlmacen)
+                                        <option value="{{ $itemAlmacen->ALM_Id }}">{{ $itemAlmacen->ALM_NombreAlmacen }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-success" id="btnPlantillaMasivo" disabled>
+                                        <i class="fas fa-download"></i> Descargar plantilla
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">2. Archivo con el conteo:</label>
+                            <div class="input-group">
+                                <input type="file" class="form-control-file" id="masivo_archivo" accept=".xlsx,.xls,.csv">
+                                <button type="button" class="btn btn-primary btn-sm ml-auto" id="btnRevisarMasivo" disabled>
+                                    <i class="fas fa-search"></i> Revisar diferencias
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="masivo_resultado" style="display:none;">
+                            <hr>
+                            <div id="masivo_resumen" class="mb-2"></div>
+
+                            <div id="masivo_errores_wrap" style="display:none;">
+                                <h6 class="text-danger">Filas con error (corrígelas y vuelve a subir)</h6>
+                                <ul id="masivo_errores" class="small text-danger"></ul>
+                            </div>
+
+                            <div class="table-responsive" id="masivo_items_wrap" style="max-height: 320px; overflow:auto;">
+                                <table class="table table-sm table-bordered mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th class="text-center">Sistema</th>
+                                            <th class="text-center">Contado</th>
+                                            <th class="text-center">Se hará</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="masivo_items"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="form-group mt-3 mb-0">
+                                <label class="control-label">Observación (opcional):</label>
+                                <input type="text" class="form-control" id="masivo_observacion" maxlength="200">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="btnAplicarMasivo" style="display:none;">
+                            <i class="fas fa-check"></i> Aplicar conteo
+                        </button>
                     </div>
                 </div>
             </div>
@@ -423,6 +513,119 @@
                     complete: function() {
                         $btn.prop('disabled', false).html('<i class="fas fa-balance-scale"></i> Registrar Ajuste');
                     }
+                });
+            });
+
+            // ---- Conteo fisico masivo (Excel) ----
+            var masivoListo = false;
+            var esc = function(v) { return $('<div>').text(v == null ? '' : v).html(); };
+
+            function masivoReiniciar() {
+                masivoListo = false;
+                $('#masivo_resultado, #btnAplicarMasivo, #masivo_errores_wrap').hide();
+                $('#btnRevisarMasivo').prop('disabled', !($('#masivo_almacen').val() && $('#masivo_archivo').val()));
+            }
+
+            $('#btnAbrirMasivo').on('click', function() {
+                $('#masivo_almacen').val('');
+                $('#masivo_archivo').val('');
+                $('#masivo_observacion').val('');
+                $('#btnPlantillaMasivo').prop('disabled', true);
+                masivoReiniciar();
+                $('#modalMasivo').modal('show');
+            });
+
+            $('#masivo_almacen').on('change', function() {
+                $('#btnPlantillaMasivo').prop('disabled', !$(this).val());
+                masivoReiniciar();
+            });
+            $('#masivo_archivo').on('change', masivoReiniciar);
+
+            $('#btnPlantillaMasivo').on('click', function() {
+                window.location = "{{ tenant_url('tenant.inventario.ajuste.masivo.plantilla') }}?ALM_Id=" + encodeURIComponent($('#masivo_almacen').val());
+            });
+
+            function masivoDatos() {
+                var fd = new FormData();
+                fd.append('_token', '{{ csrf_token() }}');
+                fd.append('ALM_Id', $('#masivo_almacen').val());
+                fd.append('archivo', $('#masivo_archivo')[0].files[0]);
+                fd.append('AJU_Observacion', $('#masivo_observacion').val());
+                return fd;
+            }
+
+            function masivoError(xhr) {
+                var j = xhr.responseJSON || {};
+                var msg = j.error || (j.errors && Object.values(j.errors)[0][0]) || j.message || 'No se pudo procesar el archivo.';
+                Toast.fire({ type: 'error', title: msg });
+            }
+
+            $('#btnRevisarMasivo').on('click', function() {
+                var $btn = $(this);
+                $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Revisando...');
+                $.ajax({
+                    url: "{{ tenant_url('tenant.inventario.ajuste.masivo.preview') }}",
+                    type: 'POST', data: masivoDatos(), processData: false, contentType: false,
+                    success: function(r) {
+                        var x = r.resumen;
+                        $('#masivo_resumen').html(
+                            '<span class="badge badge-success mr-1">' + x.incrementos + ' se suman</span>' +
+                            '<span class="badge badge-danger mr-1">' + x.decrementos + ' se restan</span>' +
+                            '<span class="badge badge-secondary mr-1">' + x.sin_cambio + ' sin cambio</span>' +
+                            (x.errores ? '<span class="badge badge-warning">' + x.errores + ' con error</span>' : '')
+                        );
+
+                        var $e = $('#masivo_errores').empty();
+                        r.errores.forEach(function(e) { $e.append('<li>Fila ' + e.fila + ': ' + esc(e.detalle) + '</li>'); });
+                        $('#masivo_errores_wrap').toggle(r.errores.length > 0);
+
+                        var $t = $('#masivo_items').empty();
+                        r.items.forEach(function(i) {
+                            var inc = i.tipo === 'INCREMENTO';
+                            $t.append('<tr><td>' + esc(i.producto) + (i.codigo_interno ? ' <small class="text-muted">' + esc(i.codigo_interno) + '</small>' : '') + '</td>' +
+                                '<td class="text-center">' + i.stock_sistema + '</td><td class="text-center">' + i.contado + '</td>' +
+                                '<td class="text-center"><span class="badge badge-' + (inc ? 'success' : 'danger') + '">' + (inc ? '+' : '-') + i.cantidad + '</span></td></tr>');
+                        });
+                        $('#masivo_items_wrap').toggle(r.items.length > 0);
+
+                        masivoListo = r.items.length > 0 && r.errores.length === 0;
+                        $('#btnAplicarMasivo').toggle(masivoListo);
+                        $('#masivo_resultado').show();
+                        if (!r.items.length && !r.errores.length) {
+                            Toast.fire({ type: 'info', title: 'El conteo coincide con el sistema: no hay nada que ajustar.' });
+                        }
+                    },
+                    error: masivoError,
+                    complete: function() {
+                        $btn.prop('disabled', false).html('<i class="fas fa-search"></i> Revisar diferencias');
+                    }
+                });
+            });
+
+            $('#btnAplicarMasivo').on('click', function() {
+                if (!masivoListo) { return; }
+                var $btn = $(this);
+                Swal.fire({
+                    title: '¿Aplicar el conteo?',
+                    text: 'Se registrará un ajuste que modifica el stock. Esto no se puede deshacer.',
+                    type: 'warning', showCancelButton: true,
+                    confirmButtonText: 'Sí, aplicar', cancelButtonText: 'Cancelar'
+                }).then(function(res) {
+                    if (!res.value) { return; }
+                    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Aplicando...');
+                    $.ajax({
+                        url: "{{ tenant_url('tenant.inventario.ajuste.masivo.store') }}",
+                        type: 'POST', data: masivoDatos(), processData: false, contentType: false,
+                        success: function(r) {
+                            Toast.fire({ type: 'success', title: r.success });
+                            $('#modalMasivo').modal('hide');
+                            table.draw();
+                        },
+                        error: masivoError,
+                        complete: function() {
+                            $btn.prop('disabled', false).html('<i class="fas fa-check"></i> Aplicar conteo');
+                        }
+                    });
                 });
             });
 
