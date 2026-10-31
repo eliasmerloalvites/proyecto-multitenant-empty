@@ -875,6 +875,12 @@ Route::middleware([
             Route::get('/tenant/inventario/ajuste', [AjusteController::class, 'index'])->name('tenant.inventario.ajuste.index');
             Route::get('/tenant/inventario/ajuste/productos', [AjusteController::class, 'productos'])->name('tenant.inventario.ajuste.productos');
             Route::post('/tenant/inventario/ajuste', [AjusteController::class, 'store'])->name('tenant.inventario.ajuste.store');
+            Route::middleware('can:tenant.inventario.producto.create')->group(function () {
+                // Conteo fisico masivo por Excel (solo talleres de motos). Antes de {ajuste}.
+                Route::get('/tenant/inventario/ajuste/masivo/plantilla', [AjusteController::class, 'plantillaMasiva'])->name('tenant.inventario.ajuste.masivo.plantilla');
+                Route::post('/tenant/inventario/ajuste/masivo/preview', [AjusteController::class, 'previewMasivo'])->name('tenant.inventario.ajuste.masivo.preview');
+                Route::post('/tenant/inventario/ajuste/masivo', [AjusteController::class, 'storeMasivo'])->name('tenant.inventario.ajuste.masivo.store');
+            });
             Route::get('/tenant/inventario/ajuste/{ajuste}', [AjusteController::class, 'show'])->name('tenant.inventario.ajuste.show');
 
             // Desempaquetar kits (solo talleres de motos).

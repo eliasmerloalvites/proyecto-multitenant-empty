@@ -1076,6 +1076,13 @@
                             obligatorio (Merma, Consumibles —insumos del taller que se gastan en el trabajo, como trapos o lija—, Rotura, Vencimiento, Diferencia de conteo, Otro), y por cada producto indica si es
                             para <strong>Agregar (+)</strong> o <strong>Quitar (−)</strong> y la cantidad.
                         </p>
+                        <p>
+                            <strong>Conteo físico masivo (Excel):</strong> botón verde arriba del formulario. Elige el almacén, descarga la
+                            plantilla (trae todos los productos con su stock en el sistema), escribe en <strong>Stock contado</strong> lo que
+                            realmente hay y súbela. El sistema calcula la diferencia de cada producto, te muestra qué se suma y qué se resta
+                            antes de aplicar, y registra <strong>un solo ajuste</strong> con motivo "Diferencia de conteo". Los productos que
+                            dejes vacíos no se tocan.
+                        </p>
                     </div>
 
                     <div class="ayuda-sub">
