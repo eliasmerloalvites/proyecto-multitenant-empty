@@ -213,8 +213,19 @@ class VentaController extends Controller
 
         $tiposComprobante = ['BOL' => 'Boleta', 'FAC' => 'Factura', 'NCR' => 'Nota de crédito'];
 
-        $filas = $ventas->map(function ($v) use ($tiposComprobante) {
+        // Cuenta por cobrar de las ventas a credito: dice si ya se pago y
+        // cuanto falta. Generico no tiene esa tabla.
+        $cuentasPorCobrar = \Illuminate\Support\Facades\Schema::hasTable('cuenta_por_cobrar')
+            ? DB::table('cuenta_por_cobrar')->whereIn('VEN_Id', $ventas->pluck('VEN_Id'))->get()->keyBy('VEN_Id')
+            : collect();
+
+        $filas = $ventas->map(function ($v) use ($tiposComprobante, $cuentasPorCobrar) {
             $esElectronico = isset($tiposComprobante[$v->DOV_Tipo]);
+
+            // Solo credito (y no anulada): contado y anuladas quedan vacias.
+            $cxc = ((int) $v->tipopago === 2 && ! $v->DOV_Anulado) ? $cuentasPorCobrar->get($v->VEN_Id) : null;
+            $estadoCredito = $cxc ? ($cxc->CPC_Estado === 'PAGADA' ? 'Pagada' : 'Pendiente') : null;
+            $faltaPagar = $cxc ? ($cxc->CPC_Estado === 'PAGADA' ? 0.0 : (float) $cxc->CPC_MontoFaltante) : null;
 
             return [
                 $v->fechaVenta,
@@ -227,6 +238,8 @@ class VentaController extends Controller
                 $v->empleado,
                 $v->MEP_Pago,
                 (int) $v->tipopago === 2 ? 'Crédito' : 'Contado',
+                $estadoCredito,
+                $faltaPagar,
                 $esElectronico ? ucfirst(strtolower((string) $v->estadoDocVenta)) : '—',
                 $v->DOV_Anulado ? 'SI' : 'NO',
                 (float) $v->total_descuento,
@@ -245,6 +258,8 @@ class VentaController extends Controller
             ['titulo' => 'Vendedor', 'ancho' => 20],
             ['titulo' => 'Método de pago', 'ancho' => 18],
             ['titulo' => 'Forma de pago', 'ancho' => 13, 'centrar' => true],
+            ['titulo' => 'Estado del crédito', 'ancho' => 17, 'centrar' => true],
+            ['titulo' => 'Falta pagar', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 13],
             ['titulo' => 'Estado SUNAT', 'ancho' => 14, 'centrar' => true],
             ['titulo' => 'Anulada', 'ancho' => 10, 'centrar' => true],
             ['titulo' => 'Descuento', 'tipo' => ExcelExporter::MONEDA, 'ancho' => 13, 'total' => true],
@@ -308,7 +323,7 @@ class VentaController extends Controller
                 'filtros' => $filtros,
                 'columnas' => $columnas,
                 'filas' => $filas,
-                'total_excluye' => [11, 'SI'],
+                'total_excluye' => [13, 'SI'],
                 'total_etiqueta' => 'TOTAL (sin anuladas)',
             ],
             [
