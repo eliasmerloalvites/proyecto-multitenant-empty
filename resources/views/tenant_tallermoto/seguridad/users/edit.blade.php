@@ -30,6 +30,17 @@
                                     <input type="email" name="email" class="form-control input_user "  placeholder="email" value="{{$usuario->email}}" readonly required>
                                     
                                 </div>
+                                <div class="col-12 mt-3">
+                                    <label class="control-label">Nueva contraseña <small class="text-muted">(opcional)</small>:</label>
+                                    <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="Déjala vacía para no cambiarla" minlength="8" autocomplete="new-password">
+                                    @error('password')
+                                        <span class="invalid-feedback" role="alert"><strong>{{$message}}</strong></span>
+                                    @enderror
+                                </div>
+                                <div class="col-12 mt-2">
+                                    <label class="control-label">Confirmar nueva contraseña:</label>
+                                    <input type="password" name="password_confirmation" class="form-control" placeholder="Repite la contraseña" minlength="8" autocomplete="new-password">
+                                </div>
                             </div>
                     </div>
                 </div>
