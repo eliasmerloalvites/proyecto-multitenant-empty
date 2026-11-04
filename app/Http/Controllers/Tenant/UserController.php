@@ -213,13 +213,20 @@ class UserController extends Controller
         $data = request()->validate(
             [
                 'name' => 'required',
+                // Opcional: solo se cambia si se escribe una nueva.
+                'password' => 'nullable|string|min:8|confirmed',
             ],
             [
                 'name.required' => 'Ingrese nombre',
+                'password.min' => 'La contraseña debe tener al menos 8 caracteres',
+                'password.confirmed' => 'Las contraseñas no coinciden',
             ]
         );
         $usuario =  User::find($id);
         $usuario->name = $request->name;
+        if ($request->filled('password')) {
+            $usuario->password = Hash::make($request->password);
+        }
 
         // Obtengo los roles seleccionados desde la solicitud
         $rolesSeleccionados = $request->input('roles', []);
@@ -235,7 +242,7 @@ class UserController extends Controller
         $tenantName = str_replace(tenant()->tipo_negocio . '_','',tenant()->id);
         return redirect()->route('tenant.seguridad.usuario.index',[
             'tenant' => $tenantName
-        ])->with('datos', 'Usuario actualizado y roles asignados correctamente ...!');
+        ])->with('datos', $request->filled('password') ? 'Usuario actualizado y contraseña cambiada correctamente ...!' : 'Usuario actualizado y roles asignados correctamente ...!');
     }
 
     /**

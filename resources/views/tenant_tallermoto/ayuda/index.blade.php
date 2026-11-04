@@ -1239,6 +1239,8 @@
                     <div class="ayuda-sub">
                         <h3><i class="fas fa-user-tag"></i> Asignar un rol</h3>
                         <p>Entra a <strong>Editar</strong> sobre ese usuario y marca el (o los) rol(es) que le corresponden de la lista de checkboxes. Al guardar, esos roles <strong>reemplazan</strong> los que tenía antes (no se suman).</p>
+                        <h3><i class="fas fa-key"></i> Cambiar la contraseña de un usuario</h3>
+                        <p>En <strong>Editar</strong> ese usuario escribe la <strong>Nueva contraseña</strong> (mínimo 8 caracteres) y repítela en la confirmación. Si dejas esos campos vacíos, la contraseña actual no cambia. Úsalo cuando alguien olvidó su clave: el usuario entra con la nueva desde ese momento.</p>
                         <div class="ayuda-nota warn">
                             <i class="fas fa-triangle-exclamation"></i>
                             <div>Tu plan contratado limita cuántos usuarios puedes crear. Si llegaste al tope, el sistema te avisa al intentar crear uno más.</div>
