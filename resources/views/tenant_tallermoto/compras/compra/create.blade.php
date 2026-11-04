@@ -186,9 +186,20 @@
                         </div>
                     </div>
                 </div>
+                <div class="form-group row mb-1">
+                    <div class="col-12">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="sinIgvCompra">
+                            <label class="custom-control-label" for="sinIgvCompra">
+                                Los precios de esta factura <strong>NO incluyen IGV</strong>
+                                <small class="text-muted">(el sistema les suma 18% y guarda el precio con IGV)</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <div class="form-group row mb-3">
                     <!-- Precio de compra -->
-                    <div class="col-md-4 d-flex align-items-center">
+                    <div class="col-md-4">
                         <div class="input-group ">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">
@@ -196,8 +207,9 @@
                                 </span>
                             </div>
                             <input type="number" id="precioCompra" class="form-control"
-                                placeholder="Precio Compra">
+                                placeholder="Precio Compra" step="0.01">
                         </div>
+                        <small id="hintIgv" class="text-muted ml-2" style="display:none;"></small>
                     </div>
                     <div class="col-md-4 d-flex align-items-center">
                         <div class="input-group ">
@@ -277,6 +289,7 @@
                             </label>
                             <input id="total_venta" name="total_venta" type="hidden" />
                         </div>
+                        <div class="col-12 text-right small text-muted" id="resumenIgv" style="display:none;"></div>
                         <!--<th hidden="true"><input type="hidden" name="totalVenta" id="totalVenta"></th>-->
                     </foot>
                 </div>
@@ -594,6 +607,30 @@
 
             }
 
+            const IGV_FACTOR = 1.18;
+
+            // Desglose informativo del total (que siempre incluye IGV).
+            function resumenIgv() {
+                var t = parseFloat(total1) || 0;
+                if (!ListPedido.length || t <= 0) { $('#resumenIgv').hide(); return; }
+                var base = t / IGV_FACTOR;
+                $('#resumenIgv').html('Base sin IGV: <strong>S/ ' + base.toFixed(2) + '</strong> &nbsp;·&nbsp; IGV 18%: <strong>S/ ' + (t - base).toFixed(2) + '</strong> &nbsp;·&nbsp; Total con IGV: <strong>S/ ' + t.toFixed(2) + '</strong>').show();
+            }
+
+            function actualizarHintIgv() {
+                var v = parseFloat($('#precioCompra').val());
+                if ($('#sinIgvCompra').is(':checked') && v > 0) {
+                    $('#hintIgv').text('Con IGV: S/ ' + (Math.round(v * IGV_FACTOR * 100) / 100).toFixed(2)).show();
+                } else {
+                    $('#hintIgv').hide();
+                }
+            }
+            $('#precioCompra').on('input keyup change', actualizarHintIgv);
+            $('#sinIgvCompra').on('change', function () {
+                if ($('#productoVenta').val()) { mostrarValores(); }
+                actualizarHintIgv();
+            });
+
             function mostrarValores() {
                 /* $('#Almacenid').find('option').remove();
                 $('#Almacenid').selectpicker('refresh'); */
@@ -606,7 +643,9 @@
                 // filtrar();
 
                 if ($precioc > 0.00 || $preciov > 0.00) {
-                    $("#precioCompra").val($precioc.toFixed(2));
+                    // El precio guardado del producto ya incluye IGV: en modo
+                    // "sin IGV" se muestra su base para que el flujo sea coherente.
+                    $("#precioCompra").val(($('#sinIgvCompra').is(':checked') ? $precioc / IGV_FACTOR : $precioc).toFixed(2));
                     $("#precioVenta").val($preciov.toFixed(2));
                 } else {
                     $("#precioCompra").val('');
@@ -624,6 +663,10 @@
                 idProducto = datosArticulo[0];
 
                 pCompra = $("#precioCompra").val();
+                // Factura sin IGV: se registra el precio + 18% (el sistema siempre guarda con IGV).
+                if ($('#sinIgvCompra').is(':checked') && pCompra !== '') {
+                    pCompra = (Math.round(parseFloat(pCompra) * IGV_FACTOR * 100) / 100).toFixed(2);
+                }
                 pVenta = $("#precioVenta").val();
                 cantidad = $("#cantidadCompra").val();
 
@@ -645,7 +688,7 @@
                         total1 = (parseFloat(total1) + parseFloat(ListPedido[i][5])).toFixed(3);
                     }
 
-                    $("#total").html("S/. " + total1);
+                    $("#total").html("S/. " + total1); resumenIgv();
                     $("#total").val(total1);
 
                 } else {
@@ -769,7 +812,7 @@
                 for (var i = 0; i < ListPedido.length; i++) {
                     total1 = (parseFloat(total1) + parseFloat(ListPedido[i][5])).toFixed(3);
                 }
-                $("#total").html("S/. " + total1);
+                $("#total").html("S/. " + total1); resumenIgv();
 
             }
 
@@ -783,12 +826,13 @@
                 for (var i = 0; i < ListPedido.length; i++) {
                     total1 = (parseFloat(total1) + parseFloat(ListPedido[i][5])).toFixed(3);
                 }
-                $("#total").html("S/. " + total1);
+                $("#total").html("S/. " + total1); resumenIgv();
             }
 
             function limpiar() {
                 $("#cantidadCompra").val("");
                 $("#precioCompra").val("");
+                $('#hintIgv').hide();
                 $("#precioVenta").val("");
 
                 $("#productoVenta").val('');
