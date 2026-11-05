@@ -45,6 +45,10 @@ class BahiaVentaController extends Controller
             ? Carbon::createFromFormat('Y-m-d', $fecha, 'America/Lima')
             : Carbon::createFromFormat('Y-m-d', $hoy, 'America/Lima');
 
+        // Cuentas cobradas con una venta que luego se anulo: vuelven a quedar
+        // abiertas para poder cobrarlas de nuevo.
+        BahiaCuenta::reabrirAnuladasDelDia($idAlmacen, $fechaSeleccionada->toDateString());
+
         $bahias = DB::table('bahia')
             ->where('ALM_Id', $idAlmacen)
             ->where('BAH_Estado', 'ACT')

@@ -776,6 +776,13 @@
                             te lleva al punto de venta normal con todo precargado para completar el cobro. Si al final no se cobra
                             nada, puedes usar <strong>"Cerrar sin cobrar"</strong>.
                         </p>
+                        <p>
+                            <strong>¿Anulaste la venta de una bahía</strong> (por ejemplo, el cliente dio mal el DNI)? La cuenta
+                            <strong>vuelve a quedar abierta</strong> en Ventas por Bahía, con sus productos y adelantos, para que
+                            presiones <strong>"Cobrar"</strong> y emitas la venta de nuevo. En una Boleta o Factura ocurre cuando
+                            SUNAT acepta la baja. Si anulaste antes de esta mejora, la cuenta reaparece sola al abrir el tablero
+                            de ese día.
+                        </p>
                     </div>
 
                     <div class="ayuda-sub" id="vta-bahia-adelanto">
