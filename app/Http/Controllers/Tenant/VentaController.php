@@ -2062,9 +2062,13 @@ class VentaController extends Controller
             // como ingreso una vez anulada.
             DB::table('venta')->where('VEN_Id', $id)->update(['VEN_Status' => 0]);
 
+            // Si era el cobro de una bahia, la cuenta vuelve a quedar abierta
+            // para poder cobrarla de nuevo (ej. DNI mal digitado).
+            $bahiaReabierta = \App\Models\TenantTallerMotos\BahiaCuenta::reabrirPorVentaAnulada((int) $id);
+
             DB::commit();
 
-            return response()->json(['success' => 'Nota de venta anulada.']);
+            return response()->json(['success' => 'Nota de venta anulada.' . ($bahiaReabierta ? ' La bahía quedó abierta en Ventas por Bahía para cobrarla de nuevo.' : '')]);
         } catch (Exception $e) {
             DB::rollback();
 

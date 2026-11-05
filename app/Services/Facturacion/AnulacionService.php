@@ -170,6 +170,12 @@ class AnulacionService
                 'DOV_Anulado'            => $aceptado,
             ]);
 
+            // Baja aceptada: si el comprobante cobraba una bahia, esa cuenta
+            // vuelve a quedar abierta para cobrarla de nuevo.
+            if ($aceptado) {
+                \App\Models\TenantTallerMotos\BahiaCuenta::reabrirPorVentaAnulada($ventaId);
+            }
+
             return [
                 'success'     => true,
                 'estado'      => $documento->DOV_EstadoBaja,
