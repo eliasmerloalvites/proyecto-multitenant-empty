@@ -637,7 +637,7 @@
                         </p>
                         <ol>
                             <li><strong>Técnico</strong>: solo el técnico asignado, con su propio usuario.</li>
-                            <li><strong>Representante</strong>: un usuario con rol Admin o Gerente.</li>
+                            <li><strong>Representante</strong>: un usuario con rol Admin o Gerente. Si prefieres que no firme uno por uno, en <span class="ayuda-ruta">Configuración → Empresa → Firma del Representante</span> activa <strong>"Firmar automáticamente"</strong> y sube la imagen de su firma o sello: apenas el técnico firma, la del representante se agrega sola (se ve como <em>firma automática de la empresa</em>) y solo falta el cliente. Apagado, se firma a mano como siempre.</li>
                             <li><strong>Cliente</strong>: al final; se le pasa el equipo del taller, escribe su nombre (y DNI, opcional) y firma. O, si usa la app KaelTech Moto, puede firmar su conformidad desde su celular en el detalle de la orden (le aparece apenas firmaron el técnico y el representante); en el panel se ve como <em>firmó desde la app</em>.</li>
                         </ol>
                         <div class="ayuda-nota info">

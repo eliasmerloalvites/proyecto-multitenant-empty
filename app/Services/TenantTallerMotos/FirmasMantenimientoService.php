@@ -181,7 +181,50 @@ class FirmasMantenimientoService
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            if ($rol === 'TECNICO') {
+                $this->firmarRepresentanteAutomatico($meta, $id, $ip);
+            }
         });
+    }
+
+    /**
+     * Si la empresa tiene activa la firma automatica del representante
+     * (Configuracion > Empresa), al firmar el tecnico se registra sola la
+     * firma del representante con su imagen guardada, y solo falta el
+     * cliente. Se COPIA la imagen a la carpeta del mantenimiento: al
+     * reabrir se borran las firmas del mantenimiento y no debe perderse la
+     * imagen original de la empresa.
+     */
+    private function firmarRepresentanteAutomatico(array $meta, int $id, ?string $ip): void
+    {
+        if (! Schema::hasColumn('empresa_facturacion', 'firma_representante_auto')) {
+            return;
+        }
+
+        $empresa = DB::table('empresa_facturacion')->where('tenant_id', tenant('id'))->first();
+        if (! $empresa || ! $empresa->firma_representante_auto || ! $empresa->firma_representante_imagen) {
+            return;
+        }
+
+        $png = self::contenido($empresa->firma_representante_imagen);
+        if (! $png) {
+            return; // la imagen ya no esta: queda la firma manual de siempre
+        }
+
+        DB::table('mantenimiento_firma')->insert([
+            'FIR_Tabla' => $meta['tabla'],
+            'FIR_RegistroId' => $id,
+            'FIR_Rol' => 'REPRESENTANTE',
+            'FIR_Nombre' => mb_substr(trim((string) $empresa->firma_representante_nombre) ?: 'Representante de la empresa', 0, 150),
+            'FIR_Documento' => null,
+            'FIR_Imagen' => $this->guardarImagen($meta['tabla'], $id, 'REPRESENTANTE', $png),
+            'USU_Id' => null,
+            'FIR_Origen' => 'AUTO',
+            'FIR_Ip' => $ip,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     /**
