@@ -536,6 +536,61 @@
                 </div>
             </div>
 
+            @if (! empty($firmasDisponibles))
+            <!-- FIRMA AUTOMÁTICA DEL REPRESENTANTE -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card config-card">
+                        <div class="card-header card-header-dark">
+                            <h6><i class="fas fa-signature"></i> Firma del Representante en los Mantenimientos</h6>
+                        </div>
+                        <div class="card-body">
+                            <input type="hidden" name="firma_representante_form" value="1">
+                            <div class="custom-control custom-switch mb-3">
+                                <input type="checkbox" class="custom-control-input" id="firma_representante_auto" name="firma_representante_auto" value="1" {{ ($empresa->firma_representante_auto ?? false) ? 'checked' : '' }}>
+                                <label class="custom-control-label font-weight-bold" for="firma_representante_auto">Firmar automáticamente por el dueño o gerente</label>
+                            </div>
+                            <p class="text-muted" style="font-size: 13px;">
+                                <strong>Apagado:</strong> el dueño o gerente firma a mano en cada mantenimiento (como hasta ahora).<br>
+                                <strong>Encendido:</strong> apenas el mecánico firma, la firma del representante se agrega sola con la imagen de abajo,
+                                y solo falta la firma del cliente.
+                            </p>
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <div class="form-group">
+                                        <label for="firma_representante_nombre">Nombre que sale bajo la firma</label>
+                                        <input type="text" class="form-control" id="firma_representante_nombre" name="firma_representante_nombre" maxlength="150"
+                                               placeholder="Ej. Juan Pérez - Gerente" value="{{ $empresa->firma_representante_nombre ?? '' }}">
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <div class="custom-file">
+                                            <input type="file" class="custom-file-input" id="firma_representante_imagen" name="firma_representante_imagen" accept="image/png,image/jpeg,image/webp">
+                                            <label class="custom-file-label" for="firma_representante_imagen">Subir imagen de la firma o sello</label>
+                                        </div>
+                                        <small class="text-muted">PNG, JPG o WEBP, hasta 2 MB. Mejor si tiene fondo blanco o transparente.</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-7">
+                                    <label class="d-block">Firma guardada</label>
+                                    <div style="border:1px dashed #cbd5e1; border-radius:10px; background:#fff; min-height:110px; display:flex; align-items:center; justify-content:center; padding:8px;">
+                                        <img id="preview_firma_representante" src="{{ $firmaRepresentanteUri ?? '' }}" alt="Firma del representante"
+                                             style="max-width:100%; max-height:110px; {{ empty($firmaRepresentanteUri) ? 'display:none;' : '' }}">
+                                        <span id="sin_firma_representante" class="text-muted" style="{{ empty($firmaRepresentanteUri) ? '' : 'display:none;' }}">Aún no hay una firma cargada</span>
+                                    </div>
+                                    @if (! empty($firmaRepresentanteUri))
+                                        <div class="custom-control custom-checkbox mt-2">
+                                            <input type="checkbox" class="custom-control-input" id="firma_representante_quitar" name="firma_representante_quitar" value="1">
+                                            <label class="custom-control-label text-danger" for="firma_representante_quitar">Quitar la firma guardada</label>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- ACCIÓN DE GUARDADO -->
             <div class="text-right mb-5">
                 <button type="submit" class="save-btn" id="saveBtn">
@@ -571,6 +626,28 @@
         handleImagePreview('logo_pdf', 'preview_logo_pdf');
         handleImagePreview('logo_portada1', 'preview_logo_portada1');
         handleImagePreview('logo_portada2', 'preview_logo_portada2');
+
+        // Firma del representante: vista previa y validacion antes de guardar.
+        $('#firma_representante_imagen').on('change', function() {
+            var file = this.files[0];
+            if (!file) { return; }
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#preview_firma_representante').attr('src', e.target.result).show();
+                $('#sin_firma_representante').hide();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        $('#empresa_form').on('submit', function(e) {
+            if (!$('#firma_representante_auto').is(':checked')) { return; }
+            var hayImagen = $('#firma_representante_imagen')[0].files.length > 0
+                || ($('#preview_firma_representante').is(':visible') && !$('#firma_representante_quitar').is(':checked'));
+            if (!hayImagen) {
+                e.preventDefault();
+                Swal.fire({ type: 'warning', title: 'Falta la firma', text: 'Para firmar automáticamente primero sube la imagen de la firma o sello del representante.' });
+            }
+        });
 
         $('.form-control-color').on('input', function() {
             $(this).next('input[type="text"]').val($(this).val());

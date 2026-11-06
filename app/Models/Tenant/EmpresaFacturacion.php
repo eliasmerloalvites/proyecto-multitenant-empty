@@ -92,6 +92,11 @@ class EmpresaFacturacion extends Model
 
         // App movil
         'app_movil_mostrar_precios',
+
+        // Firma automatica del representante en los mantenimientos
+        'firma_representante_auto',
+        'firma_representante_imagen',
+        'firma_representante_nombre',
     ];
 
     /**
@@ -123,6 +128,8 @@ class EmpresaFacturacion extends Model
 
         // App movil: ver el precio de los repuestos en el detalle de la orden.
         'app_movil_mostrar_precios' => 'boolean',
+
+        'firma_representante_auto' => 'boolean',
     ];
 
     /**

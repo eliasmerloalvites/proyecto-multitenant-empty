@@ -34,6 +34,15 @@ class EmpresaFacturacionController extends Controller
         );
     }
 
+    /**
+     * Hook de store(): la firma automatica del representante solo existe en
+     * taller de motos (ver TenantTallerMotos\EmpresaFacturacionController).
+     */
+    protected function guardarFirmaRepresentante(Request $request, $empresa): void
+    {
+        //
+    }
+
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -244,6 +253,8 @@ class EmpresaFacturacionController extends Controller
                     $path . $nombreArchivo
                 );
             }
+
+            $this->guardarFirmaRepresentante($request, $empresa);
 
             $empresa->save();
 
