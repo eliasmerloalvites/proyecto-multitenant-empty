@@ -406,7 +406,8 @@
         })
 
         function actualizarTabla() {
-            $("#detalles tbody").html('');
+            // El id esta en el propio <tbody>: "#detalles tbody" no encontraba nada y las filas se acumulaban.
+            $("#detalles").empty();
 
             for (var i = ListPedido.length - 1; i >= 0; i--) {
                 var col1 = '<tr class="selected" id="fila' + i + '">'
