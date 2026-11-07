@@ -235,6 +235,13 @@ class OrdenesMotoService
     {
         $cfg = RepuestosBahiaSync::CONFIG[$prefijo];
 
+        // Pone al dia los repuestos cargados en la bahia (igual que al abrir
+        // Editar en el panel); si no, la orden mostraba la lista incompleta.
+        $tabla = collect(GestionProcesoService::tipos())->firstWhere('prefijo', $prefijo)['tabla'] ?? null;
+        if ($tabla) {
+            RepuestosBahiaSync::sincronizar($prefijo, $id, DB::table($tabla)->where("{$prefijo}_Id", $id)->value('RES_Id'));
+        }
+
         $filas = DB::table($cfg['tabla'])
             ->where($cfg['idField'], $id)
             ->orderBy($cfg['itemField'])
