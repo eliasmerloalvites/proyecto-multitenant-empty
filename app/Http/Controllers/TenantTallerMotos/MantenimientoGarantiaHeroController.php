@@ -418,6 +418,10 @@ class MantenimientoGarantiaHeroController extends Controller
             ->where('MGH_Id', '=', $id)
             ->first();
 
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MGH', (int) $id, $datos->RES_Id ?? null);
+
         $detalle_reemplazo = DB::table('mgh_detalle_reemplazo')
             ->where('MGH_Id', '=', $id)
             ->get();
@@ -463,6 +467,10 @@ class MantenimientoGarantiaHeroController extends Controller
             ->select('mgh.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MGH_Id', '=', $id)
             ->first();
+
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MGH', (int) $id, $datos->RES_Id ?? null);
 
         $detalle_reemplazo = DB::table('mgh_detalle_reemplazo')
             ->where('MGH_Id', '=', $id)
@@ -555,6 +563,10 @@ class MantenimientoGarantiaHeroController extends Controller
             ->select('mgh.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MGH_Id', '=', $id)
             ->first();
+
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MGH', (int) $id, $datos->RES_Id ?? null);
 
         $detalle_reemplazo = DB::table('mgh_detalle_reemplazo')
             ->where('MGH_Id', '=', $id)

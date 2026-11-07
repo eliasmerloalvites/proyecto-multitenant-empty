@@ -428,6 +428,10 @@ class MantenimientoPreventivoInyectadaController extends Controller
             ->where('MPI_Id', '=', $id)
             ->first();
 
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MPI', (int) $id, $datos->RES_Id ?? null);
+
         $detalle_reemplazo = DB::table('mpi_detalle_reemplazo')
             ->where('MPI_Id', '=', $id)
             ->get();
@@ -473,6 +477,10 @@ class MantenimientoPreventivoInyectadaController extends Controller
             ->select('mpi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPI_Id', '=', $id)
             ->first();
+
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MPI', (int) $id, $datos->RES_Id ?? null);
 
         $detalle_reemplazo = DB::table('mpi_detalle_reemplazo')
             ->where('MPI_Id', '=', $id)
@@ -565,6 +573,10 @@ class MantenimientoPreventivoInyectadaController extends Controller
             ->select('mpi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPI_Id', '=', $id)
             ->first();
+
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MPI', (int) $id, $datos->RES_Id ?? null);
 
         $detalle_reemplazo = DB::table('mpi_detalle_reemplazo')
             ->where('MPI_Id', '=', $id)

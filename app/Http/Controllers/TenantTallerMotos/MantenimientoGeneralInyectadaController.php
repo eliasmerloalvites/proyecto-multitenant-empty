@@ -437,6 +437,10 @@ class MantenimientoGeneralInyectadaController extends Controller
 				->where('MGI_Id','=',$id)
 				->first();
 
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MGI', (int) $id, $datos->RES_Id ?? null);
+
         $detalle_reemplazo = DB::table('mgi_detalle_reemplazo')
 				->where('MGI_Id','=',$id)
 				->get();
@@ -479,6 +483,10 @@ class MantenimientoGeneralInyectadaController extends Controller
             ->select('mgi.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MGI_Id', '=', $id)
             ->first();
+
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MGI', (int) $id, $datos->RES_Id ?? null);
 
         $detalle_reemplazo = DB::table('mgi_detalle_reemplazo')
             ->where('MGI_Id', '=', $id)
@@ -572,6 +580,10 @@ class MantenimientoGeneralInyectadaController extends Controller
 				->select('mgi.*',DB::raw('CONCAT(u.name) as personal'))
 				->where('MGI_Id','=',$id)
 				->first();
+
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MGI', (int) $id, $datos->RES_Id ?? null);
 
         $detalle_reemplazo = DB::table('mgi_detalle_reemplazo')
 				->where('MGI_Id','=',$id)

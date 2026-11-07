@@ -418,6 +418,10 @@ class MantenimientoPreventivoCarburadaController extends Controller
             ->where('MPC_Id', '=', $id)
             ->first();
 
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MPC', (int) $id, $datos->RES_Id ?? null);
+
         $detalle_reemplazo = DB::table('mpc_detalle_reemplazo')
             ->where('MPC_Id', '=', $id)
             ->get();
@@ -463,6 +467,10 @@ class MantenimientoPreventivoCarburadaController extends Controller
             ->select('mpc.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPC_Id', '=', $id)
             ->first();
+
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MPC', (int) $id, $datos->RES_Id ?? null);
 
         $detalle_reemplazo = DB::table('mpc_detalle_reemplazo')
             ->where('MPC_Id', '=', $id)
@@ -555,6 +563,10 @@ class MantenimientoPreventivoCarburadaController extends Controller
             ->select('mpc.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MPC_Id', '=', $id)
             ->first();
+
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MPC', (int) $id, $datos->RES_Id ?? null);
 
         $detalle_reemplazo = DB::table('mpc_detalle_reemplazo')
             ->where('MPC_Id', '=', $id)

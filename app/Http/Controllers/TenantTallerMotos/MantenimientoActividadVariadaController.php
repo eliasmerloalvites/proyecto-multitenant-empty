@@ -405,6 +405,10 @@ class MantenimientoActividadVariadaController extends Controller
 				->where('MAV_Id','=',$id)
 				->first();
 
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MAV', (int) $id, $datos->RES_Id ?? null);
+
         $detalle_reemplazo = DB::table('mav_detalle_reemplazo')
 				->where('MAV_Id','=',$id)
 				->get();
@@ -447,6 +451,10 @@ class MantenimientoActividadVariadaController extends Controller
             ->select('mav.*', DB::raw('CONCAT(u.name) as personal'))
             ->where('MAV_Id', '=', $id)
             ->first();
+
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MAV', (int) $id, $datos->RES_Id ?? null);
 
         $detalle_reemplazo = DB::table('mav_detalle_reemplazo')
             ->where('MAV_Id', '=', $id)
@@ -539,6 +547,10 @@ class MantenimientoActividadVariadaController extends Controller
                 ->select('mav.*', DB::raw('CONCAT(u.name) as personal'))
                 ->where('MAV_Id', '=', $id)
                 ->first();
+
+        // Los repuestos cargados en la bahia entran al mantenimiento al sincronizar;
+        // sin esto el PDF salia sin ellos hasta abrir Editar (que si sincroniza).
+        RepuestosBahiaSync::sincronizar('MAV', (int) $id, $datos->RES_Id ?? null);
 
         $detalle_reemplazo = DB::table('mav_detalle_reemplazo')
                 ->where('MAV_Id', '=', $id)
