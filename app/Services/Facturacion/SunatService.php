@@ -180,7 +180,13 @@ class SunatService
             throw new RuntimeException("La venta $ventaId no tiene productos.");
         }
 
-        return $this->mapearItems($detalle);
+        $items = $this->mapearItems($detalle);
+
+        if (empty($items)) {
+            throw new RuntimeException("Todos los productos de la venta $ventaId valen S/ 0: no hay nada que declarar ante SUNAT en una boleta o factura.");
+        }
+
+        return $items;
     }
 
     /**
@@ -205,6 +211,14 @@ class SunatService
             // DEV_PrecioUnitario ya viene neto (con el descuento del POS
             // aplicado), asi que valor_venta/igv salen correctos sin mas.
             $totalLinea = round($precio * $cantidad, 2);
+
+            // SUNAT rechaza todo el comprobante si una linea gravada vale 0
+            // (ej. cupones o cortesias a S/ 0). No aporta al total, asi que
+            // no se declara; sigue en la venta (y su stock ya salio).
+            if ($totalLinea <= 0) {
+                continue;
+            }
+
             $valorVenta = round($totalLinea / (1 + $porcentajeIgv / 100), 2);
             $igv        = round($totalLinea - $valorVenta, 2);
 
