@@ -736,6 +736,52 @@
                 });
             });
 
+            // Descartar una Boleta/Factura rechazada por SUNAT (devuelve el stock).
+            $('body').on('click', '.descartarRechazado', function() {
+                var id = $(this).data('id');
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Descartar comprobante rechazado',
+                    html:
+                        '<div style="text-align:left;font-size:.9rem;margin-bottom:.5rem">SUNAT rechazó este comprobante, así que no es válido. Al descartarlo se devuelve el stock.</div>' +
+                        '<label for="swalMotivoDescartar" class="swal2-input-label" style="display:block;text-align:left;margin-bottom:.25rem">Motivo</label>' +
+                        '<input id="swalMotivoDescartar" class="swal2-input" placeholder="Ej. DNI mal digitado" style="margin:0 0 .5rem">' +
+                        '<div style="text-align:left;margin-top:.5rem"><label style="font-weight:normal">' +
+                        '<input type="checkbox" id="swalDevolverStockRech" checked> Devolver estos productos al stock</label></div>',
+                    showCancelButton: true,
+                    confirmButtonText: 'Descartar',
+                    cancelButtonText: 'Cancelar',
+                    focusConfirm: false,
+                    preConfirm: function() {
+                        var motivo = $('#swalMotivoDescartar').val();
+                        if (!motivo || !motivo.trim()) {
+                            Swal.showValidationMessage('Escribe el motivo.');
+                            return false;
+                        }
+                        return { motivo: motivo, devolverStock: $('#swalDevolverStockRech').is(':checked') };
+                    }
+                }).then(function(res) {
+                    if (!res.isConfirmed) return;
+
+                    $.ajax({
+                        url: '/tenant/ventas/venta/' + id + '/descartar-rechazado',
+                        method: 'POST',
+                        data: {
+                            motivo: res.value.motivo,
+                            devolver_stock: res.value.devolverStock ? 1 : 0,
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        }
+                    }).done(function(r) {
+                        Swal.fire({ icon: 'success', title: 'Comprobante descartado', text: r.success })
+                            .then(function() { table.ajax.reload(null, false); });
+                    }).fail(function(xhr) {
+                        var r = xhr.responseJSON || {};
+                        Swal.fire({ icon: 'error', title: 'No se pudo descartar', text: r.error || 'Error de conexion.' });
+                    });
+                });
+            });
+
             // Consultar el resultado de una anulacion que quedo en tramite.
             $('body').on('click', '.bajaConsultar', function() {
                 var id = $(this).data('id');

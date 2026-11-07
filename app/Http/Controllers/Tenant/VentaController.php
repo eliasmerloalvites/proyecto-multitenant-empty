@@ -443,7 +443,9 @@ class VentaController extends Controller
         }
 
         if ($anulado) {
-            $html .= '<span class="badge badge-dark" title="El comprobante fue anulado ante SUNAT">ANULADO</span> ';
+            $html .= $row->estadoDocVenta === 'RECHAZADO'
+                ? '<span class="badge badge-dark" title="Rechazado por SUNAT y descartado">DESCARTADO</span> '
+                : '<span class="badge badge-dark" title="El comprobante fue anulado ante SUNAT">ANULADO</span> ';
         } elseif ($bajaEnCurso) {
             $html .= '<span class="badge badge-info" title="La anulacion esta en tramite en SUNAT">BAJA EN TRAMITE</span> ';
         }
@@ -477,6 +479,12 @@ class VentaController extends Controller
         // ni con una baja en curso (evita pedir dos veces lo mismo).
         if ($yaEnSunat && !$anulado && !$bajaEnCurso) {
             $html .= '<button type="button" class="btn btn-outline-danger btn-sm anularComprobante" data-id="' . $id . '" data-tipo="' . $row->DOV_Tipo . '" title="Anular este comprobante"><i class="fa fa-ban"></i></button>';
+        }
+
+        // Rechazado por SUNAT: nunca fue valido, asi que no hay baja que
+        // tramitar; se descarta (devuelve el stock y reabre la bahia).
+        if (in_array($row->DOV_Tipo, ['BOL', 'FAC'], true) && $row->estadoDocVenta === 'RECHAZADO' && ! $anulado) {
+            $html .= '<button type="button" class="btn btn-outline-danger btn-sm descartarRechazado" data-id="' . $id . '" title="Descartar este comprobante rechazado (devuelve el stock)"><i class="fa fa-trash-alt"></i></button>';
         }
 
         // Mientras la baja este en tramite, se ofrece consultarla aparte
@@ -2077,6 +2085,83 @@ class VentaController extends Controller
     }
 
 
+
+    /**
+     * Descarta una Boleta/Factura que SUNAT RECHAZO: como nunca fue valida,
+     * no hay baja que tramitar. Se marca como descartada (el motivo queda
+     * guardado), se devuelve el stock que desconto al venderse y, si era el
+     * cobro de una bahia, esta vuelve a quedar abierta con sus datos para
+     * cobrarla de nuevo.
+     */
+    public function descartarRechazado(Request $request, string $id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $documento = DB::table('documento_venta')->where('VEN_Id', $id)->lockForUpdate()->first();
+
+            if (! $documento) {
+                throw new Exception('Esta venta no tiene un documento asociado.');
+            }
+
+            if (! in_array($documento->DOV_Tipo, ['BOL', 'FAC'], true) || $documento->DOV_Estado !== 'RECHAZADO') {
+                throw new Exception('Solo se puede descartar una Boleta o Factura rechazada por SUNAT.');
+            }
+
+            if ($documento->DOV_Anulado) {
+                throw new Exception('Este comprobante ya fue descartado.');
+            }
+
+            $motivo = trim((string) $request->input('motivo'));
+
+            if ($motivo === '') {
+                throw new Exception('Indica el motivo.');
+            }
+
+            // Una venta al credito con dinero ya cobrado no se descarta sola:
+            // primero hay que resolver ese cobro.
+            $cxc = DB::table('cuenta_por_cobrar')->where('VEN_Id', $id)->first();
+
+            if ($cxc && (float) $cxc->CPC_MontoAbonado > 0.009) {
+                throw new Exception('Esta venta al crédito ya tiene S/ ' . number_format((float) $cxc->CPC_MontoAbonado, 2) . ' cobrados. Resuelve ese cobro antes de descartarla.');
+            }
+
+            if ($request->boolean('devolver_stock', true)) {
+                $detalle = DB::table('detalle_venta')->where('VEN_Id', $id)->get(['LOT_Id', 'DEV_Cantidad']);
+
+                foreach ($detalle as $linea) {
+                    Lote::devolver($linea->LOT_Id, (float) $linea->DEV_Cantidad);
+                }
+            }
+
+            if ($cxc) {
+                DB::table('cuenta_por_cobrar')->where('CPC_Id', $cxc->CPC_Id)->delete();
+            }
+
+            DB::table('documento_venta')->where('VEN_Id', $id)->update([
+                'DOV_Anulado'            => 1,
+                'DOV_MotivoBaja'         => 'Rechazado por SUNAT, descartado: ' . $motivo,
+                'DOV_FechaSolicitudBaja' => now(),
+                'updated_at'             => now(),
+            ]);
+
+            // Deja de contar como ingreso en caja y reportes.
+            DB::table('venta')->where('VEN_Id', $id)->update(['VEN_Status' => 0]);
+
+            $bahiaReabierta = \Illuminate\Support\Facades\Schema::hasTable('bahia_cuenta')
+                && \App\Models\TenantTallerMotos\BahiaCuenta::reabrirPorVentaAnulada((int) $id);
+
+            DB::commit();
+
+            return response()->json(['success' => 'Comprobante descartado.'
+                . ($request->boolean('devolver_stock', true) ? ' El stock fue devuelto.' : '')
+                . ($bahiaReabierta ? ' La bahía quedó abierta en Ventas por Bahía para cobrarla de nuevo.' : '')]);
+        } catch (Exception $e) {
+            DB::rollback();
+
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
 
     /**
      * Descuenta $can unidades de $pro en el almacen $alm, lote por lote
