@@ -216,6 +216,63 @@
 
     mark.ayuda-hl { background: #fde68a; color: #1e293b; border-radius: 3px; padding: 0 2px; }
 
+    /* Diagrama del flujo de firmas */
+    .ayuda-flujo { display: flex; align-items: stretch; gap: 0; margin: 14px 0 6px; }
+    .ayuda-flujo .paso {
+        flex: 1 1 0; min-width: 0;
+        background: var(--bg-card);
+        border: 1px solid rgba(128,128,128,.28);
+        border-top: 4px solid var(--paso, #64748b);
+        border-radius: 10px;
+        padding: 12px 12px 10px;
+        position: relative;
+    }
+    .ayuda-flujo .paso .num {
+        position: absolute; top: -13px; left: 10px;
+        width: 24px; height: 24px; border-radius: 50%;
+        background: var(--paso, #64748b); color: #fff;
+        font-size: .75rem; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .ayuda-flujo .paso h4 { font-size: .92rem; font-weight: 700; margin: 4px 0 2px; color: var(--text-main); }
+    .ayuda-flujo .paso h4 i { color: var(--paso, #64748b); margin-right: 5px; }
+    .ayuda-flujo .paso .quien { font-size: .78rem; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4; }
+    .ayuda-flujo .paso .via {
+        font-size: .76rem; line-height: 1.35; color: var(--text-main);
+        background: rgba(128,128,128,.10); border-radius: 6px;
+        padding: 5px 8px; margin-top: 5px;
+    }
+    .ayuda-flujo .paso .via i { color: var(--paso, #64748b); width: 14px; text-align: center; margin-right: 3px; }
+    .ayuda-flujo .paso .via.auto { background: rgba(124,58,237,.10); }
+    .ayuda-flujo .flecha {
+        flex: 0 0 34px; display: flex; align-items: center; justify-content: center;
+        color: var(--text-muted); font-size: 1.05rem;
+    }
+    .ayuda-flujo .paso.tecnico { --paso: #2563eb; }
+    .ayuda-flujo .paso.representante { --paso: #7c3aed; }
+    .ayuda-flujo .paso.cliente { --paso: #16a34a; }
+    .ayuda-flujo .paso.cerrado { --paso: #475569; }
+    .ayuda-flujo-reabrir {
+        display: flex; align-items: center; gap: 10px;
+        border: 1px dashed rgba(245,158,11,.75); background: rgba(245,158,11,.08);
+        border-radius: 10px; padding: 9px 14px; margin: 10px 0 4px;
+        font-size: .82rem; color: var(--text-main); line-height: 1.45;
+    }
+    .ayuda-flujo-reabrir i { color: #d97706; font-size: 1.05rem; flex-shrink: 0; }
+    .ayuda-flujo-reglas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 8px 0 4px; }
+    .ayuda-flujo-reglas > div {
+        background: var(--bg-card); border: 1px solid rgba(128,128,128,.22);
+        border-radius: 8px; padding: 8px 11px; font-size: .78rem; line-height: 1.45; color: var(--text-main);
+    }
+    .ayuda-flujo-reglas strong { display: block; margin-bottom: 2px; }
+    .ayuda-flujo-wrap { container-type: inline-size; }
+    @container (max-width: 820px) {
+        .ayuda-flujo { flex-direction: column; }
+        .ayuda-flujo .paso { margin-top: 12px; }
+        .ayuda-flujo .flecha { flex: 0 0 26px; transform: rotate(90deg); }
+        .ayuda-flujo-reglas { grid-template-columns: 1fr; }
+    }
+
     @media (max-width: 991px) {
         .ayuda-layout { flex-direction: column; }
         .ayuda-toc {
@@ -635,6 +692,51 @@
                             con el dedo (celular o tablet) o con el mouse. Las firmas salen impresas sobre su línea en la Orden de Servicio
                             y en el PDF del mantenimiento, con nombre y fecha. Disponible en los planes Plus y Empresarial.
                         </p>
+
+                        <p class="mb-0"><strong>Así es el recorrido (siempre en este orden):</strong></p>
+                        <div class="ayuda-flujo-wrap">
+                        <div class="ayuda-flujo" role="img" aria-label="Flujo de firmas: técnico, representante, cliente y mantenimiento cerrado">
+                            <div class="paso tecnico">
+                                <span class="num">1</span>
+                                <h4><i class="fas fa-user-cog"></i> Técnico</h4>
+                                <div class="quien">Solo el mecánico <strong>asignado</strong> al mantenimiento, con su propio usuario.</div>
+                                <div class="via"><i class="fas fa-signature"></i> Firma en pantalla (dedo o mouse)</div>
+                            </div>
+                            <div class="flecha"><i class="fas fa-arrow-right"></i></div>
+                            <div class="paso representante">
+                                <span class="num">2</span>
+                                <h4><i class="fas fa-user-tie"></i> Representante</h4>
+                                <div class="quien">Dueño o gerente: un usuario con rol <strong>Admin</strong> o <strong>Gerente</strong>.</div>
+                                <div class="via"><i class="fas fa-pen-nib"></i> <strong>A mano:</strong> firma en pantalla</div>
+                                <div class="via auto"><i class="fas fa-bolt"></i> <strong>Automática:</strong> se agrega sola cuando firma el técnico (si la activaste en Empresa)</div>
+                            </div>
+                            <div class="flecha"><i class="fas fa-arrow-right"></i></div>
+                            <div class="paso cliente">
+                                <span class="num">3</span>
+                                <h4><i class="fas fa-user"></i> Cliente</h4>
+                                <div class="quien">Firma al final, su conformidad con el trabajo.</div>
+                                <div class="via"><i class="fas fa-store"></i> <strong>En el taller:</strong> en el equipo del taller; escribe su nombre (y DNI, opcional)</div>
+                                <div class="via"><i class="fas fa-mobile-alt"></i> <strong>Desde la app:</strong> le aparece cuando ya firmaron los dos anteriores</div>
+                            </div>
+                            <div class="flecha"><i class="fas fa-arrow-right"></i></div>
+                            <div class="paso cerrado">
+                                <h4><i class="fas fa-lock"></i> Cerrado</h4>
+                                <div class="quien">El mantenimiento ya <strong>no se puede editar</strong>: ni checklist, repuestos, fotos ni estado.</div>
+                                <div class="via"><i class="fas fa-file-pdf"></i> Las 3 firmas salen en el PDF y en la Orden de Servicio</div>
+                            </div>
+                        </div>
+                        <div class="ayuda-flujo-reabrir">
+                            <i class="fas fa-rotate-left"></i>
+                            <div><strong>¿Hay que corregir algo después de cerrado?</strong> Un <strong>Admin</strong> usa <strong>Reabrir</strong> e indica el motivo: se borran las 3 firmas, la reapertura queda registrada y se vuelve al <strong>paso 1</strong> para firmar de nuevo.</div>
+                        </div>
+                        <div class="ayuda-flujo-reglas">
+                            <div><strong><i class="fas fa-ban text-danger"></i> No se puede saltar el orden</strong>La pantalla te explica por qué todavía no puedes firmar (por ejemplo, "primero debe firmar el técnico").</div>
+                            <div><strong><i class="fas fa-user-clock text-warning"></i> Sin técnico, nadie firma</strong>Si el mantenimiento no tiene mecánico asignado, primero hay que asignarlo.</div>
+                            <div><strong><i class="fas fa-user-shield text-primary"></i> Cada uno con su usuario</strong>El técnico y el representante firman con su propia sesión; el cliente queda con un testigo del taller.</div>
+                        </div>
+                        </div>
+
+                        <p class="mt-3 mb-1"><strong>En detalle:</strong></p>
                         <ol>
                             <li><strong>Técnico</strong>: solo el técnico asignado, con su propio usuario.</li>
                             <li><strong>Representante</strong>: un usuario con rol Admin o Gerente. Si prefieres que no firme uno por uno, en <span class="ayuda-ruta">Configuración → Empresa → Firma del Representante</span> activa <strong>"Firmar automáticamente"</strong> y sube la imagen de su firma o sello: apenas el técnico firma, la del representante se agrega sola (se ve como <em>firma automática de la empresa</em>) y solo falta el cliente. Apagado, se firma a mano como siempre.</li>
