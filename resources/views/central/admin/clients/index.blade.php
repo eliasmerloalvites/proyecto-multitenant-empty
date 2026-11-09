@@ -271,7 +271,14 @@
         <div class="col-12 col-md-8">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">LISTA DE CLIENTES</h5>
+                    <div class="d-flex justify-content-between align-items-start flex-wrap">
+                        <h5 class="card-title">LISTA DE CLIENTES</h5>
+                        @can('admin.seguimiento.index')
+                            <a href="{{ route('admin.seguimiento.index') }}" class="btn btn-success btn-sm mb-2">
+                                <i class="fas fa-bullhorn"></i> Seguimiento de clientes y pruebas
+                            </a>
+                        @endcan
+                    </div>
                     <p class="card-text">
 
                     <div class="table-responsive" style="background:#FFF;">

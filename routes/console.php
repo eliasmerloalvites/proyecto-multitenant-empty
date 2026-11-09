@@ -42,3 +42,10 @@ Schedule::command('sunat:reintentar-pendientes')
     ->everyMinute()
     ->timezone('America/Lima')
     ->withoutOverlapping();
+
+// Correos automaticos de seguimiento a clientes en prueba (sin uso, prueba
+// por vencer, prueba vencida). Solo envia si SEGUIMIENTO_AUTOMATICO=true.
+Schedule::command('seguimiento:automatico')
+    ->dailyAt('10:00')
+    ->timezone('America/Lima')
+    ->withoutOverlapping();
