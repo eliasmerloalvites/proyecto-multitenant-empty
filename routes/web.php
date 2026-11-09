@@ -7,6 +7,7 @@ use App\Http\Controllers\Central\EsquemaComisionController;
 use App\Http\Controllers\Central\HomeController;
 use App\Http\Controllers\Central\PagoController;
 use App\Http\Controllers\Central\PlanController;
+use App\Http\Controllers\Central\SeguimientoController;
 use App\Http\Controllers\Central\RegistroController;
 use App\Http\Controllers\Central\AuditLogController;
 use App\Http\Controllers\Central\VendedorController;
@@ -89,6 +90,24 @@ Route::middleware([
     Route::get('admin/cobros', [PagoController::class, 'index'])->name('admin.cobros.index');
     Route::post('admin/cobros/{client}', [PagoController::class, 'store'])->name('admin.cobros.store');
     Route::get('admin/cobros/{client}/historial', [PagoController::class, 'historial'])->name('admin.cobros.historial');
+
+    // --- Seguimiento comercial (pruebas y clientes) ---
+    Route::middleware('can:admin.seguimiento.index')->group(function () {
+      Route::get('admin/seguimiento', [SeguimientoController::class, 'index'])->name('admin.seguimiento.index');
+      Route::get('admin/seguimiento/datos', [SeguimientoController::class, 'datos'])->name('admin.seguimiento.datos');
+      Route::get('admin/seguimiento/resumen', [SeguimientoController::class, 'resumen'])->name('admin.seguimiento.resumen');
+      Route::get('admin/seguimiento/{client}', [SeguimientoController::class, 'ficha'])->whereNumber('client')->name('admin.seguimiento.ficha');
+    });
+    Route::middleware('can:admin.seguimiento.gestionar')->group(function () {
+      Route::post('admin/seguimiento/uso', [SeguimientoController::class, 'actualizarUsoTodos'])->name('admin.seguimiento.uso.todos');
+      Route::post('admin/seguimiento/masivo', [SeguimientoController::class, 'enviarMasivo'])->name('admin.seguimiento.masivo');
+      Route::post('admin/seguimiento/{client}/uso', [SeguimientoController::class, 'actualizarUso'])->whereNumber('client')->name('admin.seguimiento.uso');
+      Route::post('admin/seguimiento/{client}/etapa', [SeguimientoController::class, 'etapa'])->whereNumber('client')->name('admin.seguimiento.etapa');
+      Route::post('admin/seguimiento/{client}/proxima', [SeguimientoController::class, 'proximaAccion'])->whereNumber('client')->name('admin.seguimiento.proxima');
+      Route::post('admin/seguimiento/{client}/nota', [SeguimientoController::class, 'nota'])->whereNumber('client')->name('admin.seguimiento.nota');
+      Route::post('admin/seguimiento/{client}/no-contactar', [SeguimientoController::class, 'noContactar'])->whereNumber('client')->name('admin.seguimiento.nocontactar');
+      Route::post('admin/seguimiento/{client}/correo', [SeguimientoController::class, 'enviarCorreo'])->whereNumber('client')->name('admin.seguimiento.correo');
+    });
 
     Route::get('admin/planes', [PlanController::class, 'index'])->name('admin.planes.index');
     Route::put('admin/planes/{plan}', [PlanController::class, 'update'])->name('admin.planes.update');

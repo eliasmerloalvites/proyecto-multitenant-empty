@@ -18,6 +18,27 @@ return [
         'dias_prueba_gratis' => 7,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | SEGUIMIENTO DE PRUEBAS
+    |--------------------------------------------------------------------------
+    | Correos automaticos a clientes en prueba (comando seguimiento:automatico,
+    | programado a diario). Apagado por defecto: se activa con
+    | SEGUIMIENTO_AUTOMATICO=true en el .env.
+    */
+    'seguimiento' => [
+        'automatico' => (bool) env('SEGUIMIENTO_AUTOMATICO', false),
+
+        // Dias desde el registro sin usar el sistema antes del 1er aviso.
+        'dias_sin_uso' => 2,
+
+        // Avisar cuando falten estos dias (o menos) para que venza la prueba.
+        'dias_por_vencer' => 2,
+
+        // Dias despues del vencimiento durante los que aun se avisa.
+        'dias_vencida' => 7,
+    ],
+
     'plans' => [
 
         'start' => [

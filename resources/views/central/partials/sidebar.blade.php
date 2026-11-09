@@ -43,6 +43,16 @@
                             </a>
                         </li>
                     @endcan
+                    @can('admin.seguimiento.index')
+                        <li class="nav-item">
+                            <a href="{{ route('admin.seguimiento.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.seguimiento*') ? 'active' : '' }}"
+                                id="idSegSeguimiento">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Seguimiento</p>
+                            </a>
+                        </li>
+                    @endcan
                     @can('admin.cobros.index')
                         <li class="nav-item">
                             <a href="{{ route('admin.cobros.index') }}"

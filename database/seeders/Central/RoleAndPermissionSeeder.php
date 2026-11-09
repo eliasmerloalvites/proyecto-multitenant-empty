@@ -52,6 +52,10 @@ class RoleAndPermissionSeeder extends Seeder
             ['admin.clients.show',    'Clientes', 'Ver Cliente',        'Ver Cliente'],
             ['admin.clients.destroy', 'Clientes', 'Eliminar Clientes',  'Eliminar Clientes'],
 
+            // Seguimiento comercial
+            ['admin.seguimiento.index',      'Seguimiento', 'Ver Seguimiento',      'Ver el seguimiento comercial de clientes y pruebas'],
+            ['admin.seguimiento.gestionar',  'Seguimiento', 'Gestionar Seguimiento', 'Enviar mensajes, cambiar etapas y registrar notas de seguimiento'],
+
             // Cobros
             ['admin.cobros.index', 'Cobros', 'Ver Cobros', 'Listar cobros y registrar pagos'],
 
@@ -144,6 +148,9 @@ class RoleAndPermissionSeeder extends Seeder
             'admin.clients.destroy',
 
             'admin.cobros.index',
+
+            'admin.seguimiento.index',
+            'admin.seguimiento.gestionar',
 
             'admin.planes.index',
 
