@@ -1641,10 +1641,7 @@ class VentaController extends Controller
 
 
         if ($calificarventa->VEN_TipoPago == 2) {
-            $datosdecuenta = DB::table('cuentas_por_cobrar as cc')
-                ->select('cc.CPC_Frecuencia', DB::raw('date(cc.CPC_FechaEmision) AS FECHAEMISION'), 'cc.CPC_MontoAbonado', 'cc.CPC_MontoFaltante', 'cc.CPC_FechaVencimiento', 'cc.CPC_Descripcion')
-                ->where('cc.VEN_Id', '=', $idventa)
-                ->first();
+            $datosdecuenta = self::datosCuentaCredito($idventa);
             //$descripcion = 
         } else {
             $datosdecuenta = 0;
@@ -1660,6 +1657,37 @@ class VentaController extends Controller
         $cotizacionCodigo = !empty($ventae->cotizacionId) ? 'COT-' . str_pad($ventae->cotizacionId, 5, '0', STR_PAD_LEFT) : null;
 
         return view('tenant_' . tenant('tipo_negocio') . '/ventas/venta/ticket/ticketventa9cm', compact('ventae', 'detallese', 'Subtotal', 'igv', 'codi', 'UbiDoc', 'NumDoc', 'datosalmacen', 'calificarventa', 'datosdecuenta', 'LetrasTotal', 'generaimagen', 'cotizacionCodigo'));
+    }
+
+    /**
+     * Datos de la cuenta por cobrar de una venta al credito para los
+     * comprobantes (ticket/PDF). Lee la tabla real de cada rubro
+     * (taller: cuenta_por_cobrar; generico: cuenta_cobrar) y devuelve null si
+     * no hay cuenta. Antes consultaba 'cuentas_por_cobrar', que no existe, y
+     * el PDF de toda venta al credito fallaba.
+     */
+    private static function datosCuentaCredito($idventa)
+    {
+        if (\Illuminate\Support\Facades\Schema::hasTable('cuenta_por_cobrar')) {
+            return DB::table('cuenta_por_cobrar as cc')
+                ->select(DB::raw('date(cc.CPC_FechaEmision) AS FECHAEMISION'), 'cc.CPC_MontoAbonado', 'cc.CPC_MontoFaltante', 'cc.CPC_FechaVencimiento')
+                ->where('cc.VEN_Id', '=', $idventa)
+                ->first();
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('cuenta_cobrar')) {
+            return DB::table('cuenta_cobrar as cc')
+                ->select(
+                    DB::raw('date(cc.CXC_FechaEmision) AS FECHAEMISION'),
+                    'cc.CXC_MontoAbonado as CPC_MontoAbonado',
+                    'cc.CXC_MontoPendiente as CPC_MontoFaltante',
+                    'cc.CXC_FechaVencimiento as CPC_FechaVencimiento'
+                )
+                ->where('cc.VEN_Id', '=', $idventa)
+                ->first();
+        }
+
+        return null;
     }
 
     function pdf(string $idventa)
@@ -1718,10 +1746,7 @@ class VentaController extends Controller
 
 
         if ($calificarventa->VEN_TipoPago == 2) {
-            $datosdecuenta = DB::table('cuentas_por_cobrar as cc')
-                ->select('cc.CPC_Frecuencia', DB::raw('date(cc.CPC_FechaEmision) AS FECHAEMISION'), 'cc.CPC_MontoAbonado', 'cc.CPC_MontoFaltante', 'cc.CPC_FechaVencimiento', 'cc.CPC_Descripcion')
-                ->where('cc.VEN_Id', '=', $idventa)
-                ->first();
+            $datosdecuenta = self::datosCuentaCredito($idventa);
             //$descripcion = 
         } else {
             $datosdecuenta = 0;
@@ -1797,10 +1822,7 @@ class VentaController extends Controller
 
 
         if ($calificarventa->VEN_TipoPago == 2) {
-            $datosdecuenta = DB::table('cuentas_por_cobrar as cc')
-                ->select('cc.CPC_Frecuencia', DB::raw('date(cc.CPC_FechaEmision) AS FECHAEMISION'), 'cc.CPC_MontoAbonado', 'cc.CPC_MontoFaltante', 'cc.CPC_FechaVencimiento', 'cc.CPC_Descripcion')
-                ->where('cc.VEN_Id', '=', $idventa)
-                ->first();
+            $datosdecuenta = self::datosCuentaCredito($idventa);
             //$descripcion = 
         } else {
             $datosdecuenta = 0;
