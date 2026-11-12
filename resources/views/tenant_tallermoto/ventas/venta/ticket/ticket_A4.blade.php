@@ -1013,6 +1013,9 @@
 
     </div>
 
+    {{-- Venta al credito: plazos, pagos y saldo --}}
+    @include('tenant_tallermoto.ventas.venta.ticket.partials.detalle-credito', ['formato' => 'a4'])
+
     <!-- FOOTER -->
     <div class="footer-grid">
 

@@ -1669,10 +1669,38 @@ class VentaController extends Controller
     private static function datosCuentaCredito($idventa)
     {
         if (\Illuminate\Support\Facades\Schema::hasTable('cuenta_por_cobrar')) {
-            return DB::table('cuenta_por_cobrar as cc')
-                ->select(DB::raw('date(cc.CPC_FechaEmision) AS FECHAEMISION'), 'cc.CPC_MontoAbonado', 'cc.CPC_MontoFaltante', 'cc.CPC_FechaVencimiento')
+            $cuenta = DB::table('cuenta_por_cobrar as cc')
+                ->select(
+                    'cc.CPC_Id',
+                    DB::raw('date(cc.CPC_FechaEmision) AS FECHAEMISION'),
+                    'cc.CPC_MontoTotal',
+                    'cc.CPC_MontoAbonado',
+                    'cc.CPC_MontoFaltante',
+                    'cc.CPC_FechaVencimiento',
+                    'cc.CPC_Estado'
+                )
                 ->where('cc.VEN_Id', '=', $idventa)
                 ->first();
+
+            if (! $cuenta) {
+                return null;
+            }
+
+            // Pagos registrados contra esta cuenta (inicial y abonos posteriores).
+            $abonos = DB::table('cuenta_por_cobrar_abono as a')
+                ->leftJoin('metodo_pago as m', 'm.MEP_Id', '=', 'a.MEP_Id')
+                ->where('a.CPC_Id', $cuenta->CPC_Id)
+                ->orderBy('a.created_at')
+                ->orderBy('a.CPA_Id')
+                ->get(['a.created_at', 'a.CPA_Monto', 'a.CPA_Observacion', 'm.MEP_Pago']);
+
+            $cuenta->abonos = $abonos;
+            // Lo abonado que no tiene fila de abono es un adelanto cobrado antes
+            // (ej. el adelanto de la bahia): cuenta como pagado, sin detalle.
+            $cuenta->adelanto_previo = max(0, round((float) $cuenta->CPC_MontoAbonado - (float) $abonos->sum('CPA_Monto'), 2));
+            $cuenta->dias_credito = max(0, \Carbon\Carbon::parse($cuenta->FECHAEMISION)->diffInDays(\Carbon\Carbon::parse($cuenta->CPC_FechaVencimiento), false));
+
+            return $cuenta;
         }
 
         if (\Illuminate\Support\Facades\Schema::hasTable('cuenta_cobrar')) {

@@ -391,6 +391,9 @@ body{
 
         </div>
 
+        {{-- Venta al credito: plazos, pagos y saldo --}}
+        @include('tenant_tallermoto.ventas.venta.ticket.partials.detalle-credito', ['formato' => 'ticket'])
+
         <!-- QR -->
         <div class="qr-section">
 
