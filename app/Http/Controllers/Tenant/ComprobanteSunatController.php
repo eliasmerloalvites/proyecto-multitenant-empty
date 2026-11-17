@@ -318,6 +318,24 @@ class ComprobanteSunatController extends Controller
     }
 
     /**
+     * Nombre de archivo que SUNAT usa para el XML ({RUC}-{tipo}-{serie}-{numero}.xml)
+     * o el CDR (R-{RUC}-{tipo}-{serie}-{numero}.zip). Null si no se puede armar.
+     */
+    private function nombreEstandar($documento, string $carpeta): ?string
+    {
+        $tipo = (self::TIPOS_SUNAT + [EmpresaFacturacion::TIPO_NOTA_CREDITO => '07'])[$documento->DOV_Tipo] ?? null;
+        $ruc = EmpresaFacturacion::delTenantActual()?->ruc;
+
+        if (!$tipo || !$ruc || blank($documento->DOV_Serie) || blank($documento->DOV_Numero)) {
+            return null;
+        }
+
+        $base = $ruc . '-' . $tipo . '-' . $documento->DOV_Serie . '-' . (int) $documento->DOV_Numero;
+
+        return $carpeta === 'cdr' ? 'R-' . $base . '.zip' : $base . '.xml';
+    }
+
+    /**
      * Entrega el XML o el CDR guardados al enviar el comprobante.
      */
     private function descargar($ventaId, string $carpeta, string $clave, string $mime)
@@ -327,6 +345,18 @@ class ComprobanteSunatController extends Controller
 
             $respuesta = json_decode($documento->DOV_ResponseSunat ?? '', true);
             $nombre = $respuesta[$clave] ?? null;
+
+            // Si el estado se confirmo con "consultar"/"reenviar" (SUNAT ya
+            // tenia el comprobante), la respuesta guardada solo trae el nombre
+            // del CDR. El XML se guardo igual al enviarlo, con el nombre
+            // estandar de SUNAT: se busca por ese nombre.
+            if (!$nombre) {
+                $candidato = $this->nombreEstandar($documento, $carpeta);
+                $existe = $candidato && Storage::exists(
+                    'tenant/' . tenant('tipo_negocio') . '/' . tenant('id') . '/sunat/' . $carpeta . '/' . $candidato
+                );
+                $nombre = $existe ? $candidato : null;
+            }
 
             if (!$nombre) {
                 throw new RuntimeException(
