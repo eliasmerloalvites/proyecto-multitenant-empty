@@ -709,6 +709,7 @@ Route::middleware([
             Route::get('/tenant/compras/cuentasporpagar', [CuentaPorPagarController::class, 'index'])->name('tenant.compras.cuentasporpagar.index');
             Route::get('/tenant/compras/cuentasporpagar/{id}', [CuentaPorPagarController::class, 'show'])->name('tenant.compras.cuentasporpagar.show');
             Route::post('/tenant/compras/cuentasporpagar/{id}/abonar', [CuentaPorPagarController::class, 'abonar'])->name('tenant.compras.cuentasporpagar.abonar');
+            Route::post('/tenant/compras/cuentasporpagar/{id}/abonos/{abonoId}/anular', [CuentaPorPagarController::class, 'anularAbono'])->name('tenant.compras.cuentasporpagar.abonos.anular');
 
             Route::resource('/tenant/compras/proveedor', ProveedorController::class)->names([
                 'index' => 'tenant.compras.proveedor.index',
@@ -759,6 +760,8 @@ Route::middleware([
             Route::get('/tenant/compras/cuentas-por-pagar/reporte-pdf', [CuentaPagarController::class, 'reportePdf'])->name('tenant.compras.cuentaspagar.reporte.pdf');
             Route::get('/tenant/compras/cuentas-por-pagar/{cuentaPagar}', [CuentaPagarController::class, 'show'])->name('tenant.compras.cuentaspagar.show');
             Route::post('/tenant/compras/cuentas-por-pagar/{cuentaPagar}/abonos', [CuentaPagarAbonoController::class, 'store'])->name('tenant.compras.cuentaspagar.abonos.store');
+            Route::post('/tenant/compras/cuentas-por-pagar/{cuentaPagar}/abonos/{abono}/anular', [CuentaPagarAbonoController::class, 'anular'])->name('tenant.compras.cuentaspagar.abonos.anular');
+            Route::post('/tenant/compras/cuentas-por-pagar/{cuentaPagar}/cuotas/{cuota}/anular-pago', [CuentaPagarAbonoController::class, 'anularPagoCuota'])->name('tenant.compras.cuentaspagar.cuotas.anularpago');
             // Atajo desde el listado general de Compras (compartido con
             // tallermoto, no se toca) hacia el detalle de la cuenta por
             // pagar de una compra especifica, buscando por COM_Id.

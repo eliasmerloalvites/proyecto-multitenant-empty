@@ -341,6 +341,7 @@ class CajaSesionController extends Controller
                 ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'a.MEP_Id')
                 ->leftJoin('users as u', 'u.id', '=', 'a.USU_Id')
                 ->where('a.CS_Id', $id)
+                ->where('a.CPPA_Anulado', false)
                 ->orderByDesc('a.CPPA_Id')
                 ->get(['a.CPPA_Id', 'co.COM_Id', 'co.COM_TipoDocumento', 'co.COM_NumDocumento', 'p.PROV_RazonSocial', 'mp.MEP_Pago', 'a.CPPA_Monto', 'a.created_at', 'u.name as usuario'])
             : collect();

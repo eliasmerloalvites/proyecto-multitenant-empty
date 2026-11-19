@@ -23,10 +23,16 @@ class CuentaPagarAbono extends Model
         'CXPA_Monto',
         'CXPA_Fecha',
         'CXPA_Descripcion',
+        'CXPA_Anulado',
+        'CXPA_FechaAnulacion',
+        'CXPA_UsuarioAnulacion',
+        'CXPA_MotivoAnulacion',
     ];
 
     protected $casts = [
         'CXPA_Fecha' => 'datetime',
+        'CXPA_Anulado' => 'boolean',
+        'CXPA_FechaAnulacion' => 'datetime',
     ];
 
     public function cuentaPagar()
