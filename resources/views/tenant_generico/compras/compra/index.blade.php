@@ -323,15 +323,13 @@
                         name: 'MEP_Pago',
                     },
                     {
-                        data: 'COM_Status',
-                        name: 'COM_Status',
-                        // Exclusivo de 'generico': antes mostraba el 1/0
-                        // crudo de la columna; ahora un badge legible.
-                        'render': function(data) {
-                            return Number(data) === 1
-                                ? '<span class="badge badge-success">Activo</span>'
-                                : '<span class="badge badge-secondary">Anulada</span>';
-                        }
+                        // Estado de pago calculado en el servidor
+                        // (CompraController::index): Pagado, Pendiente
+                        // (con saldo) o Anulada.
+                        data: 'estado_pago',
+                        name: 'estado_pago',
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: null,

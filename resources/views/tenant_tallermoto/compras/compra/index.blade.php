@@ -303,8 +303,10 @@
                         name: 'MEP_Pago',
                     },
                     {
-                        data: 'COM_Status',
-                        name: 'COM_Status',
+                        data: 'estado_pago',
+                        name: 'estado_pago',
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: null,
