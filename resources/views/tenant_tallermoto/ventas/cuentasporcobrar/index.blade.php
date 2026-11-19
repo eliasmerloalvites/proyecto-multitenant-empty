@@ -277,6 +277,15 @@
                     confirmButtonText: 'Si, anular',
                     cancelButtonText: 'Cancelar',
                     confirmButtonColor: '#dc3545',
+                    // Este dialogo se abre encima del modal de detalle y el
+                    // modal de Bootstrap le roba el foco al campo de texto
+                    // (no deja escribir el motivo). Se desactiva su control
+                    // de foco; Bootstrap lo vuelve a poner la proxima vez
+                    // que abre un modal.
+                    didOpen: function() {
+                        $(document).off('focusin.bs.modal');
+                        $('.swal2-input').trigger('focus');
+                    },
                     inputValidator: function(valor) {
                         if (!valor || !valor.trim()) return 'Escribe el motivo';
                     }
