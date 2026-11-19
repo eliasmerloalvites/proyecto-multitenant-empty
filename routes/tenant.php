@@ -165,6 +165,7 @@ Route::middleware([
         Route::get('/tenant/ventas/cuentasporcobrar', [CuentaPorCobrarController::class, 'index'])->name('tenant.ventas.cuentasporcobrar.index');
         Route::get('/tenant/ventas/cuentasporcobrar/{id}', [CuentaPorCobrarController::class, 'show'])->name('tenant.ventas.cuentasporcobrar.show');
         Route::post('/tenant/ventas/cuentasporcobrar/{id}/abonar', [CuentaPorCobrarController::class, 'abonar'])->name('tenant.ventas.cuentasporcobrar.abonar');
+        Route::post('/tenant/ventas/cuentasporcobrar/{id}/abonos/{abonoId}/anular', [CuentaPorCobrarController::class, 'anularAbono'])->name('tenant.ventas.cuentasporcobrar.abonos.anular');
 
         // Exclusivas de 'generico': mismo calculo pero consciente de pagos
         // divididos (venta_pago). No afectan ni modifican las rutas de
@@ -556,6 +557,8 @@ Route::middleware([
             Route::get('/tenant/ventas/cuentas-por-cobrar/reporte-pdf', [CuentaCobrarController::class, 'reportePdf'])->name('tenant.ventas.cuentascobrar.reporte.pdf');
             Route::get('/tenant/ventas/cuentas-por-cobrar/{cuentaCobrar}', [CuentaCobrarController::class, 'show'])->name('tenant.ventas.cuentascobrar.show');
             Route::post('/tenant/ventas/cuentas-por-cobrar/{cuentaCobrar}/abonos', [CuentaCobrarAbonoController::class, 'store'])->name('tenant.ventas.cuentascobrar.abonos.store');
+            Route::post('/tenant/ventas/cuentas-por-cobrar/{cuentaCobrar}/abonos/{abono}/anular', [CuentaCobrarAbonoController::class, 'anular'])->name('tenant.ventas.cuentascobrar.abonos.anular');
+            Route::post('/tenant/ventas/cuentas-por-cobrar/{cuentaCobrar}/cuotas/{cuota}/anular-pago', [CuentaCobrarAbonoController::class, 'anularPagoCuota'])->name('tenant.ventas.cuentascobrar.cuotas.anularpago');
             // Atajo desde el listado general de Ventas (compartido con
             // tallermoto, no se toca) hacia el detalle de la cuenta por
             // cobrar de una venta especifica, buscando por VEN_Id.

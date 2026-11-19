@@ -155,6 +155,7 @@ class CuentaCobrarController extends Controller
         $abonosPorCuenta = DB::table('cuenta_cobrar_abono as cca')
             ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'cca.MEP_Id')
             ->whereIn('cca.CXC_Id', $cxcIds)
+            ->where('cca.CCA_Anulado', false)
             ->select('cca.*', 'mp.MEP_Pago as metodo')
             ->orderBy('cca.CCA_Fecha')
             ->get()
@@ -201,9 +202,16 @@ class CuentaCobrarController extends Controller
             ->orderByDesc('cuenta_cobrar_abono.CCA_Fecha')
             ->get();
 
+        $abonosAnulados = $cuentaCobrar->abonosAnulados()
+            ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'cuenta_cobrar_abono.MEP_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'cuenta_cobrar_abono.CCA_UsuarioAnulacion')
+            ->select('cuenta_cobrar_abono.*', 'mp.MEP_Pago as metodo', 'u.name as anulado_por')
+            ->orderByDesc('cuenta_cobrar_abono.CCA_FechaAnulacion')
+            ->get();
+
         $metodoPago = DB::table('metodo_pago')->where('MEP_Status', 1)->orderBy('MEP_Id')->get();
 
-        return view('tenant_generico.cuentas_cobrar.show', compact('cuentaCobrar', 'venta', 'cuotas', 'abonos', 'metodoPago'));
+        return view('tenant_generico.cuentas_cobrar.show', compact('cuentaCobrar', 'venta', 'cuotas', 'abonos', 'abonosAnulados', 'metodoPago'));
     }
 
     /**

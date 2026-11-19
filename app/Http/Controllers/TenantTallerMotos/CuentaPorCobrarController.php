@@ -127,10 +127,91 @@ class CuentaPorCobrarController extends Controller
             ->join('users as u', 'u.id', '=', 'cpa.USU_Id')
             ->select('cpa.CPA_Id', 'cpa.CPA_Monto', 'cpa.CPA_Observacion', 'cpa.created_at', 'mp.MEP_Pago', 'u.name as usuario')
             ->where('cpa.CPC_Id', $id)
+            ->where('cpa.CPA_Anulado', false)
             ->orderByDesc('cpa.CPA_Id')
             ->get();
 
-        return response()->json(['cuenta' => $cuenta, 'abonos' => $abonos]);
+        $abonosAnulados = DB::table('cuenta_por_cobrar_abono as cpa')
+            ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'cpa.MEP_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'cpa.CPA_UsuarioAnulacion')
+            ->select('cpa.CPA_Id', 'cpa.CPA_Monto', 'cpa.created_at', 'cpa.CPA_FechaAnulacion', 'cpa.CPA_MotivoAnulacion', 'mp.MEP_Pago', 'u.name as anulado_por')
+            ->where('cpa.CPC_Id', $id)
+            ->where('cpa.CPA_Anulado', true)
+            ->orderByDesc('cpa.CPA_FechaAnulacion')
+            ->get();
+
+        return response()->json(['cuenta' => $cuenta, 'abonos' => $abonos, 'abonos_anulados' => $abonosAnulados]);
+    }
+
+    /**
+     * Anula un abono ya registrado: deja de contar como dinero cobrado (el
+     * arqueo de caja y los reportes lo excluyen) y la deuda vuelve al saldo
+     * de la cuenta. El abono no se borra: queda con motivo, usuario y fecha.
+     */
+    public function anularAbono(Request $request, string $id, string $abonoId)
+    {
+        $request->validate([
+            'motivo' => 'required|string|max:150',
+        ], [
+            'motivo.required' => 'Indica el motivo de la anulacion.',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $cuenta = DB::table('cuenta_por_cobrar')->where('CPC_Id', $id)->lockForUpdate()->first();
+
+            if (!$cuenta) {
+                throw new Exception('Cuenta por cobrar no encontrada.');
+            }
+
+            $abono = DB::table('cuenta_por_cobrar_abono')
+                ->where('CPA_Id', $abonoId)
+                ->where('CPC_Id', $id)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$abono) {
+                throw new Exception('Abono no encontrado en esta cuenta.');
+            }
+
+            if ($abono->CPA_Anulado) {
+                throw new Exception('Este abono ya esta anulado.');
+            }
+
+            DB::table('cuenta_por_cobrar_abono')->where('CPA_Id', $abonoId)->update([
+                'CPA_Anulado'          => 1,
+                'CPA_FechaAnulacion'   => now(),
+                'CPA_UsuarioAnulacion' => Auth::id(),
+                'CPA_MotivoAnulacion'  => trim((string) $request->input('motivo')),
+                'updated_at'           => now(),
+            ]);
+
+            // Se descuenta del abonado en vez de recalcularlo desde las filas
+            // de abono: parte de lo abonado puede no tener fila (adelanto
+            // cobrado antes, ej. el de una bahia), y eso debe conservarse.
+            $nuevoAbonado = max(0, round((float) $cuenta->CPC_MontoAbonado - (float) $abono->CPA_Monto, 2));
+            $nuevoFaltante = max(0, round((float) $cuenta->CPC_MontoTotal - $nuevoAbonado, 2));
+
+            DB::table('cuenta_por_cobrar')->where('CPC_Id', $id)->update([
+                'CPC_MontoAbonado'  => $nuevoAbonado,
+                'CPC_MontoFaltante' => $nuevoFaltante,
+                'CPC_Estado'        => $nuevoFaltante <= 0.009 ? 'PAGADA' : 'PENDIENTE',
+                'updated_at'        => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => 'Abono anulado. La deuda volvió a la cuenta.',
+                'saldo'   => $nuevoFaltante,
+                'estado'  => $nuevoFaltante <= 0.009 ? 'PAGADA' : 'PENDIENTE',
+            ]);
+        } catch (Exception $e) {
+            DB::rollback();
+
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
     }
 
     /**

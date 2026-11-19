@@ -23,10 +23,16 @@ class CuentaCobrarAbono extends Model
         'CCA_Monto',
         'CCA_Fecha',
         'CCA_Descripcion',
+        'CCA_Anulado',
+        'CCA_FechaAnulacion',
+        'CCA_UsuarioAnulacion',
+        'CCA_MotivoAnulacion',
     ];
 
     protected $casts = [
         'CCA_Fecha' => 'datetime',
+        'CCA_Anulado' => 'boolean',
+        'CCA_FechaAnulacion' => 'datetime',
     ];
 
     public function cuentaCobrar()

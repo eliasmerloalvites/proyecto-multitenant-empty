@@ -131,10 +131,27 @@
                                     <th>Metodo</th>
                                     <th>Usuario</th>
                                     <th>Observacion</th>
+                                    <th class="text-right">Accion</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody_ver_abonos"></tbody>
                         </table>
+                    </div>
+                    <div id="bloque_abonos_anulados" style="display:none;">
+                        <h6 class="font-weight-bold text-muted">Abonos anulados</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm text-muted">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Abono</th>
+                                        <th>Monto</th>
+                                        <th>Anulado</th>
+                                        <th>Motivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody_ver_abonos_anulados"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -235,10 +252,57 @@
                 });
             });
 
-            $('body').on('click', '.verCuenta', function() {
-                var id = $(this).data('id');
-                $('#modalVerCuenta').modal('show');
+            function esc(t) {
+                return $('<div>').text(t == null ? '' : t).html();
+            }
 
+            $('body').on('click', '.verCuenta', function() {
+                cargarCuenta($(this).data('id'));
+                $('#modalVerCuenta').modal('show');
+            });
+
+            $('body').on('click', '.anularAbono', function() {
+                var cuentaId = $(this).data('cuenta');
+                var abonoId = $(this).data('abono');
+                var monto = parseFloat($(this).data('monto')).toFixed(2);
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Anular abono de S/ ' + monto,
+                    text: 'La deuda vuelve a la cuenta y el abono deja de contar en caja y reportes.',
+                    input: 'text',
+                    inputPlaceholder: 'Motivo de la anulacion (obligatorio)',
+                    inputAttributes: { maxlength: 150 },
+                    showCancelButton: true,
+                    confirmButtonText: 'Si, anular',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#dc3545',
+                    inputValidator: function(valor) {
+                        if (!valor || !valor.trim()) return 'Escribe el motivo';
+                    }
+                }).then(function(res) {
+                    if (!res.isConfirmed) return;
+
+                    $.ajax({
+                        url: "{{ tenant_url('tenant.ventas.cuentasporcobrar.abonos.anular', ['id' => ':id', 'abonoId' => ':abono']) }}"
+                            .replace(':id', cuentaId).replace(':abono', abonoId),
+                        method: 'POST',
+                        data: { _token: '{{ csrf_token() }}', motivo: res.value.trim() },
+                        success: function(r) {
+                            Toast.fire({ type: 'success', icon: 'success', title: r.success });
+                            cargarCuenta(cuentaId);
+                            table.ajax.reload(null, false);
+                        },
+                        error: function(xhr) {
+                            var r = xhr.responseJSON || {};
+                            var msg = r.error || (r.errors && Object.values(r.errors)[0][0]) || 'No se pudo anular el abono.';
+                            Swal.fire({ icon: 'error', title: 'No se pudo anular', text: msg });
+                        }
+                    });
+                });
+            });
+
+            function cargarCuenta(id) {
                 $.get("{{ tenant_url('tenant.ventas.cuentasporcobrar.show', ['id' => ':id']) }}".replace(':id', id), function(data) {
                     var c = data.cuenta;
                     var tipos = { 'PRO': 'Nota', 'BOL': 'Boleta', 'FAC': 'Factura' };
@@ -252,13 +316,21 @@
                     var $tbody = $('#tbody_ver_abonos');
                     $tbody.empty();
                     if (!data.abonos.length) {
-                        $tbody.append('<tr><td colspan="5" class="text-center text-muted">Todavia no hay abonos.</td></tr>');
+                        $tbody.append('<tr><td colspan="6" class="text-center text-muted">Todavia no hay abonos.</td></tr>');
                     }
                     data.abonos.forEach(function(a) {
-                        $tbody.append('<tr><td>' + a.created_at + '</td><td>S/ ' + parseFloat(a.CPA_Monto).toFixed(2) + '</td><td>' + a.MEP_Pago + '</td><td>' + a.usuario + '</td><td>' + (a.CPA_Observacion || '—') + '</td></tr>');
+                        $tbody.append('<tr><td>' + esc(a.created_at) + '</td><td>S/ ' + parseFloat(a.CPA_Monto).toFixed(2) + '</td><td>' + esc(a.MEP_Pago) + '</td><td>' + esc(a.usuario) + '</td><td>' + esc(a.CPA_Observacion || '—') + '</td>'
+                            + '<td class="text-right"><button type="button" class="btn btn-outline-danger btn-sm anularAbono" data-cuenta="' + id + '" data-abono="' + a.CPA_Id + '" data-monto="' + a.CPA_Monto + '" title="Anular este abono"><i class="fa fa-undo"></i> Anular</button></td></tr>');
                     });
+
+                    var $anulados = $('#tbody_ver_abonos_anulados');
+                    $anulados.empty();
+                    (data.abonos_anulados || []).forEach(function(a) {
+                        $anulados.append('<tr><td>' + esc(a.created_at) + ' · ' + esc(a.MEP_Pago) + '</td><td><del>S/ ' + parseFloat(a.CPA_Monto).toFixed(2) + '</del></td><td>' + esc(a.CPA_FechaAnulacion) + '<br><small>' + esc(a.anulado_por) + '</small></td><td>' + esc(a.CPA_MotivoAnulacion) + '</td></tr>');
+                    });
+                    $('#bloque_abonos_anulados').toggle((data.abonos_anulados || []).length > 0);
                 });
-            });
+            }
         });
     </script>
 @endsection

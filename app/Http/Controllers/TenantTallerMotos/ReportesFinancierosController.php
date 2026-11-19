@@ -445,6 +445,7 @@ class ReportesFinancierosController extends Controller
                 ->join('cuenta_por_cobrar as cpc', 'cpc.CPC_Id', '=', 'a.CPC_Id')
                 ->join('venta as v', 'v.VEN_Id', '=', 'cpc.VEN_Id')
                 ->whereBetween('a.created_at', [$inicio, $fin])
+                ->where('a.CPA_Anulado', false)
                 ->when($almacenId, fn ($q) => $q->where('v.ALM_Id', $almacenId))
                 ->sum('a.CPA_Monto'), 2)
             : 0.0;

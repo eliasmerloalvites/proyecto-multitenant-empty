@@ -38,6 +38,6 @@ class CuentaCobrarCuota extends Model
 
     public function abonos()
     {
-        return $this->hasMany(CuentaCobrarAbono::class, 'CCC_Id', 'CCC_Id');
+        return $this->hasMany(CuentaCobrarAbono::class, 'CCC_Id', 'CCC_Id')->where('CCA_Anulado', false);
     }
 }

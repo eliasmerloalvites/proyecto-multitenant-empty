@@ -128,6 +128,7 @@
                                             <th class="text-right">Programado</th>
                                             <th class="text-right">Abonado</th>
                                             <th>Estado</th>
+                                            <th class="text-right">Acción</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -142,6 +143,15 @@
                                                         <span class="cxc-badge cxc-badge-pagado">Pagado</span>
                                                     @else
                                                         <span class="cxc-badge cxc-badge-pendiente">Pendiente</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-right">
+                                                    @if ($cuota->CCC_MontoAbonado > 0)
+                                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                                            title="Anula los pagos de esta cuota y la deuda vuelve a ella"
+                                                            onclick="anularPago('{{ tenant_url('tenant.ventas.cuentascobrar.cuotas.anularpago', ['cuentaCobrar' => $cuentaCobrar->CXC_Id, 'cuota' => $cuota->CCC_Id]) }}', 'Anular el pago de la cuota #{{ $cuota->CCC_Numero }}', 'La cuota volverá a quedar pendiente por S/ {{ number_format($cuota->CCC_MontoProgramado, 2) }}.')">
+                                                            <i class="fas fa-undo"></i> Anular pago
+                                                        </button>
                                                     @endif
                                                 </td>
                                             </tr>
@@ -164,6 +174,7 @@
                                         <th>Método</th>
                                         <th class="text-right">Monto</th>
                                         <th>Cuota</th>
+                                        <th class="text-right">Acción</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -173,10 +184,16 @@
                                             <td>{{ $abono->metodo }}</td>
                                             <td class="text-right">S/ {{ number_format($abono->CCA_Monto, 2) }}</td>
                                             <td>{{ $abono->CCC_Id ? '#' . $abono->CCC_Id : 'Libre' }}</td>
+                                            <td class="text-right">
+                                                <button type="button" class="btn btn-outline-danger btn-sm" title="Anular este abono"
+                                                    onclick="anularPago('{{ tenant_url('tenant.ventas.cuentascobrar.abonos.anular', ['cuentaCobrar' => $cuentaCobrar->CXC_Id, 'abono' => $abono->CCA_Id]) }}', 'Anular abono de S/ {{ number_format($abono->CCA_Monto, 2) }}', 'La deuda vuelve a la cuenta{{ $abono->CCC_Id ? ' y a la cuota que cubría' : '' }}.')">
+                                                    <i class="fas fa-undo"></i> Anular
+                                                </button>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="text-center text-muted py-3">Todavía no hay abonos registrados.</td>
+                                            <td colspan="5" class="text-center text-muted py-3">Todavía no hay abonos registrados.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -184,6 +201,36 @@
                         </div>
                     </div>
                 </div>
+
+                @if ($abonosAnulados->count())
+                    <div class="card cxc-card mt-3">
+                        <div class="card-body">
+                            <h6 class="font-weight-bold mb-3 text-muted">Abonos anulados</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm text-muted">
+                                    <thead>
+                                        <tr>
+                                            <th>Abono</th>
+                                            <th class="text-right">Monto</th>
+                                            <th>Anulado</th>
+                                            <th>Motivo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($abonosAnulados as $an)
+                                            <tr>
+                                                <td>{{ \Illuminate\Support\Carbon::parse($an->CCA_Fecha)->format('d/m/Y H:i') }} · {{ $an->metodo }}{{ $an->CCC_Id ? ' · cuota #' . $an->CCC_Id : '' }}</td>
+                                                <td class="text-right"><del>S/ {{ number_format($an->CCA_Monto, 2) }}</del></td>
+                                                <td>{{ \Illuminate\Support\Carbon::parse($an->CCA_FechaAnulacion)->format('d/m/Y H:i') }}<br><small>{{ $an->anulado_por }}</small></td>
+                                                <td>{{ $an->CCA_MotivoAnulacion }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <div class="col-lg-5">
@@ -226,6 +273,39 @@
 
 @section('script')
     <script>
+        function anularPago(url, titulo, aviso) {
+            Swal.fire({
+                icon: 'warning',
+                title: titulo,
+                text: aviso,
+                input: 'text',
+                inputPlaceholder: 'Motivo de la anulación (obligatorio)',
+                inputAttributes: { maxlength: 150 },
+                showCancelButton: true,
+                confirmButtonText: 'Sí, anular',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#dc3545',
+                inputValidator: function(valor) {
+                    if (!valor || !valor.trim()) return 'Escribe el motivo';
+                }
+            }).then(function(res) {
+                if (!res.isConfirmed) return;
+
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: { motivo: res.value.trim(), _token: $('meta[name="csrf-token"]').attr('content') },
+                    success: function(r) {
+                        Swal.fire({ icon: 'success', title: 'Anulado', text: r.success }).then(function() { location.reload(); });
+                    },
+                    error: function(xhr) {
+                        let d = xhr.responseJSON || {};
+                        Swal.fire({ icon: 'error', title: 'No se pudo anular', text: d.error || d.message || 'Error inesperado.' });
+                    }
+                });
+            });
+        }
+
         function registrarAbono() {
             let monto = parseFloat($('#inputMontoAbono').val());
 
