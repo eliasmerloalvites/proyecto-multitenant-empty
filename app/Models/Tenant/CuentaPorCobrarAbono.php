@@ -16,6 +16,10 @@ class CuentaPorCobrarAbono extends Model
         'CS_Id',
         'CPA_Monto',
         'CPA_Observacion',
+        'CPA_Anulado',
+        'CPA_FechaAnulacion',
+        'CPA_UsuarioAnulacion',
+        'CPA_MotivoAnulacion',
     ];
 
     public function cuentaPorCobrar()

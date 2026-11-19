@@ -50,9 +50,21 @@ class CuentaCobrar extends Model
             ->orderBy('CCC_Numero');
     }
 
+    /**
+     * Abonos vigentes: los anulados no cuentan para el saldo, las cuotas ni
+     * los reportes (se consultan aparte con abonosAnulados()).
+     */
     public function abonos()
     {
         return $this->hasMany(CuentaCobrarAbono::class, 'CXC_Id', 'CXC_Id')
+            ->where('CCA_Anulado', false)
             ->orderBy('CCA_Fecha');
+    }
+
+    public function abonosAnulados()
+    {
+        return $this->hasMany(CuentaCobrarAbono::class, 'CXC_Id', 'CXC_Id')
+            ->where('CCA_Anulado', true)
+            ->orderBy('CCA_FechaAnulacion');
     }
 }

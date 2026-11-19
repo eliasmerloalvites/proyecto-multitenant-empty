@@ -1690,6 +1690,7 @@ class VentaController extends Controller
             $abonos = DB::table('cuenta_por_cobrar_abono as a')
                 ->leftJoin('metodo_pago as m', 'm.MEP_Id', '=', 'a.MEP_Id')
                 ->where('a.CPC_Id', $cuenta->CPC_Id)
+                ->where('a.CPA_Anulado', false)
                 ->orderBy('a.created_at')
                 ->orderBy('a.CPA_Id')
                 ->get(['a.created_at', 'a.CPA_Monto', 'a.CPA_Observacion', 'm.MEP_Pago']);

@@ -128,7 +128,8 @@ class FlujoPorMetodoService
     /** Abonos de cuentas por cobrar recibidos (incluye el monto inicial de una venta al credito). */
     public function abonos(): array
     {
-        return $this->sumaPorMetodo('cuenta_por_cobrar_abono', 'CPA_Monto');
+        // Los abonos anulados dejan de contar como dinero cobrado.
+        return $this->sumaPorMetodo('cuenta_por_cobrar_abono', 'CPA_Monto', 'CPA_Anulado');
     }
 
     /** Adelantos de pago sobre cuentas de bahia. */
@@ -236,13 +237,14 @@ class FlujoPorMetodoService
         return $resultado;
     }
 
-    private function sumaPorMetodo(string $tabla, string $columnaMonto): array
+    private function sumaPorMetodo(string $tabla, string $columnaMonto, ?string $columnaAnulado = null): array
     {
         if (! Schema::hasTable($tabla)) {
             return [];
         }
 
         return $this->filtrar(DB::table("$tabla as t"), 't')
+            ->when($columnaAnulado, fn ($q) => $q->where("t.$columnaAnulado", false))
             ->select('t.MEP_Id', DB::raw("SUM(t.$columnaMonto) as total"))
             ->groupBy('t.MEP_Id')
             ->pluck('total', 'MEP_Id')

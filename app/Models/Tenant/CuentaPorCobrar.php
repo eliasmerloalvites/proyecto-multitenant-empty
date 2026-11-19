@@ -26,8 +26,10 @@ class CuentaPorCobrar extends Model
         return $this->belongsTo(Venta::class, 'VEN_Id', 'VEN_Id');
     }
 
+    /** Abonos vigentes: los anulados no cuentan (ver CuentaPorCobrarController::anularAbono). */
     public function abonos()
     {
-        return $this->hasMany(CuentaPorCobrarAbono::class, 'CPC_Id', 'CPC_Id');
+        return $this->hasMany(CuentaPorCobrarAbono::class, 'CPC_Id', 'CPC_Id')
+            ->where('CPA_Anulado', false);
     }
 }
