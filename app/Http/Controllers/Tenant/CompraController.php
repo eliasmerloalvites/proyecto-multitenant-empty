@@ -139,15 +139,57 @@ class CompraController extends Controller
     {
         if ($request->ajax()) {
 
-            $data = DB::table('compra as c')
+            $consulta = DB::table('compra as c')
                 ->join('proveedor as p', 'p.PROV_Id', '=', 'c.PROV_Id')
                 ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'c.MEP_Id')
-                ->select('c.*','p.PROV_RazonSocial','mp.MEP_Pago')
-                ->get();
+                ->select('c.*','p.PROV_RazonSocial','mp.MEP_Pago');
+
+            // El estado de pago sale de la cuenta por pagar de la compra al
+            // credito. Cada vertical guarda la suya (tallermoto:
+            // cuenta_por_pagar, generico: cuenta_pagar); una compra sin
+            // cuenta (contado o mixto) ya se pago al registrarla.
+            if (Schema::hasTable('cuenta_por_pagar')) {
+                $consulta->leftJoin('cuenta_por_pagar as cpp', 'cpp.COM_Id', '=', 'c.COM_Id')
+                    ->addSelect(
+                        DB::raw('cpp.CPP_Id as cuenta_id'),
+                        DB::raw("cpp.CPP_Estado = 'PAGADA' as cuenta_pagada"),
+                        DB::raw('cpp.CPP_MontoFaltante as cuenta_saldo'),
+                        DB::raw('cpp.CPP_FechaVencimiento as cuenta_vence')
+                    );
+            } elseif (Schema::hasTable('cuenta_pagar')) {
+                $consulta->leftJoin('cuenta_pagar as cxp', 'cxp.COM_Id', '=', 'c.COM_Id')
+                    ->addSelect(
+                        DB::raw('cxp.CXP_Id as cuenta_id'),
+                        DB::raw('cxp.CXP_Estado = 2 as cuenta_pagada'),
+                        DB::raw('cxp.CXP_MontoPendiente as cuenta_saldo'),
+                        DB::raw('cxp.CXP_FechaVencimiento as cuenta_vence')
+                    );
+            }
+
+            $data = $consulta->get();
 
 
             return datatables()::of($data)
                 ->addIndexColumn()
+                ->addColumn('estado_pago', function ($row) {
+                    if ((int) $row->COM_Status !== 1) {
+                        return '<span class="badge badge-secondary">Anulada</span>';
+                    }
+
+                    if (empty($row->cuenta_id) || (int) ($row->cuenta_pagada ?? 0) === 1) {
+                        return '<span class="badge badge-success">Pagado</span>';
+                    }
+
+                    $saldo = 'S/ ' . number_format((float) $row->cuenta_saldo, 2);
+
+                    if (!empty($row->cuenta_vence) && $row->cuenta_vence < now()->toDateString()) {
+                        return '<span class="badge badge-danger" title="Venció el ' . e($row->cuenta_vence) . '">Pendiente · vencida</span>'
+                            . '<div class="small text-muted">Falta ' . $saldo . '</div>';
+                    }
+
+                    return '<span class="badge badge-warning">Pendiente</span>'
+                        . '<div class="small text-muted">Falta ' . $saldo . '</div>';
+                })
                 ->addColumn('action1', function ($row) {
                     $btn = '<a data-toggle="tooltip"  data-id="' . $row->COM_Id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm editCompra" ><i class="fa fa-edit"></i></a>';
                     return $btn;
@@ -162,7 +204,7 @@ class CompraController extends Controller
 
                     return $btn;
                 })
-                ->rawColumns(['action1', 'action2', 'action3'])
+                ->rawColumns(['action1', 'action2', 'action3', 'estado_pago'])
                 ->make(true);
         }
         $proveedor = Proveedor::all();
