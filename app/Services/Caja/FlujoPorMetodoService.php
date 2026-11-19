@@ -174,7 +174,8 @@ class FlujoPorMetodoService
     /** Pagos a proveedores (abonos de cuentas por pagar, incluido el monto inicial). */
     public function pagosProveedor(): array
     {
-        return $this->sumaPorMetodo('cuenta_por_pagar_abono', 'CPPA_Monto');
+        // Los pagos anulados dejan de contar como dinero que salio.
+        return $this->sumaPorMetodo('cuenta_por_pagar_abono', 'CPPA_Monto', 'CPPA_Anulado');
     }
 
     /** Gastos que afectan caja. */

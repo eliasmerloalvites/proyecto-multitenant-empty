@@ -16,6 +16,10 @@ class CuentaPorPagarAbono extends Model
         'CS_Id',
         'CPPA_Monto',
         'CPPA_Observacion',
+        'CPPA_Anulado',
+        'CPPA_FechaAnulacion',
+        'CPPA_UsuarioAnulacion',
+        'CPPA_MotivoAnulacion',
     ];
 
     public function cuentaPorPagar()

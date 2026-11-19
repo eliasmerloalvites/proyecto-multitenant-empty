@@ -155,6 +155,7 @@ class CuentaPagarController extends Controller
         $abonosPorCuenta = DB::table('cuenta_pagar_abono as cxpa')
             ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'cxpa.MEP_Id')
             ->whereIn('cxpa.CXP_Id', $cxpIds)
+            ->where('cxpa.CXPA_Anulado', false)
             ->select('cxpa.*', 'mp.MEP_Pago as metodo')
             ->orderBy('cxpa.CXPA_Fecha')
             ->get()
@@ -201,9 +202,16 @@ class CuentaPagarController extends Controller
             ->orderByDesc('cuenta_pagar_abono.CXPA_Fecha')
             ->get();
 
+        $abonosAnulados = $cuentaPagar->abonosAnulados()
+            ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'cuenta_pagar_abono.MEP_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'cuenta_pagar_abono.CXPA_UsuarioAnulacion')
+            ->select('cuenta_pagar_abono.*', 'mp.MEP_Pago as metodo', 'u.name as anulado_por')
+            ->orderByDesc('cuenta_pagar_abono.CXPA_FechaAnulacion')
+            ->get();
+
         $metodoPago = DB::table('metodo_pago')->where('MEP_Status', 1)->orderBy('MEP_Id')->get();
 
-        return view('tenant_generico.cuentas_pagar.show', compact('cuentaPagar', 'compra', 'cuotas', 'abonos', 'metodoPago'));
+        return view('tenant_generico.cuentas_pagar.show', compact('cuentaPagar', 'compra', 'cuotas', 'abonos', 'abonosAnulados', 'metodoPago'));
     }
 
     /**

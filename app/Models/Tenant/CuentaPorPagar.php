@@ -26,8 +26,10 @@ class CuentaPorPagar extends Model
         return $this->belongsTo(Compra::class, 'COM_Id', 'COM_Id');
     }
 
+    /** Abonos vigentes: los anulados no cuentan (ver CuentaPorPagarController::anularAbono). */
     public function abonos()
     {
-        return $this->hasMany(CuentaPorPagarAbono::class, 'CPP_Id', 'CPP_Id');
+        return $this->hasMany(CuentaPorPagarAbono::class, 'CPP_Id', 'CPP_Id')
+            ->where('CPPA_Anulado', false);
     }
 }

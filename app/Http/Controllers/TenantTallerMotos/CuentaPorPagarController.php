@@ -122,10 +122,89 @@ class CuentaPorPagarController extends Controller
             ->join('users as u', 'u.id', '=', 'cppa.USU_Id')
             ->select('cppa.CPPA_Id', 'cppa.CPPA_Monto', 'cppa.CPPA_Observacion', 'cppa.created_at', 'mp.MEP_Pago', 'u.name as usuario')
             ->where('cppa.CPP_Id', $id)
+            ->where('cppa.CPPA_Anulado', false)
             ->orderByDesc('cppa.CPPA_Id')
             ->get();
 
-        return response()->json(['cuenta' => $cuenta, 'abonos' => $abonos]);
+        $abonosAnulados = DB::table('cuenta_por_pagar_abono as cppa')
+            ->join('metodo_pago as mp', 'mp.MEP_Id', '=', 'cppa.MEP_Id')
+            ->leftJoin('users as u', 'u.id', '=', 'cppa.CPPA_UsuarioAnulacion')
+            ->select('cppa.CPPA_Id', 'cppa.CPPA_Monto', 'cppa.created_at', 'cppa.CPPA_FechaAnulacion', 'cppa.CPPA_MotivoAnulacion', 'mp.MEP_Pago', 'u.name as anulado_por')
+            ->where('cppa.CPP_Id', $id)
+            ->where('cppa.CPPA_Anulado', true)
+            ->orderByDesc('cppa.CPPA_FechaAnulacion')
+            ->get();
+
+        return response()->json(['cuenta' => $cuenta, 'abonos' => $abonos, 'abonos_anulados' => $abonosAnulados]);
+    }
+
+    /**
+     * Anula un pago a proveedor ya registrado: deja de contar como dinero que
+     * salio (el arqueo de caja y los reportes lo excluyen) y la deuda vuelve
+     * al saldo de la cuenta. El abono no se borra: queda con motivo, usuario
+     * y fecha.
+     */
+    public function anularAbono(Request $request, string $id, string $abonoId)
+    {
+        $request->validate([
+            'motivo' => 'required|string|max:150',
+        ], [
+            'motivo.required' => 'Indica el motivo de la anulacion.',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $cuenta = DB::table('cuenta_por_pagar')->where('CPP_Id', $id)->lockForUpdate()->first();
+
+            if (!$cuenta) {
+                throw new Exception('Cuenta por pagar no encontrada.');
+            }
+
+            $abono = DB::table('cuenta_por_pagar_abono')
+                ->where('CPPA_Id', $abonoId)
+                ->where('CPP_Id', $id)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$abono) {
+                throw new Exception('Abono no encontrado en esta cuenta.');
+            }
+
+            if ($abono->CPPA_Anulado) {
+                throw new Exception('Este abono ya esta anulado.');
+            }
+
+            DB::table('cuenta_por_pagar_abono')->where('CPPA_Id', $abonoId)->update([
+                'CPPA_Anulado'          => 1,
+                'CPPA_FechaAnulacion'   => now(),
+                'CPPA_UsuarioAnulacion' => Auth::id(),
+                'CPPA_MotivoAnulacion'  => trim((string) $request->input('motivo')),
+                'updated_at'            => now(),
+            ]);
+
+            $nuevoAbonado = max(0, round((float) $cuenta->CPP_MontoAbonado - (float) $abono->CPPA_Monto, 2));
+            $nuevoFaltante = max(0, round((float) $cuenta->CPP_MontoTotal - $nuevoAbonado, 2));
+
+            DB::table('cuenta_por_pagar')->where('CPP_Id', $id)->update([
+                'CPP_MontoAbonado'  => $nuevoAbonado,
+                'CPP_MontoFaltante' => $nuevoFaltante,
+                'CPP_Estado'        => $nuevoFaltante <= 0.009 ? 'PAGADA' : 'PENDIENTE',
+                'updated_at'        => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => 'Abono anulado. La deuda volvió a la cuenta.',
+                'saldo'   => $nuevoFaltante,
+                'estado'  => $nuevoFaltante <= 0.009 ? 'PAGADA' : 'PENDIENTE',
+            ]);
+        } catch (Exception $e) {
+            DB::rollback();
+
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
     }
 
     /**

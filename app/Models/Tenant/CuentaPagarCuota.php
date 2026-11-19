@@ -38,6 +38,6 @@ class CuentaPagarCuota extends Model
 
     public function abonos()
     {
-        return $this->hasMany(CuentaPagarAbono::class, 'CXPC_Id', 'CXPC_Id');
+        return $this->hasMany(CuentaPagarAbono::class, 'CXPC_Id', 'CXPC_Id')->where('CXPA_Anulado', false);
     }
 }

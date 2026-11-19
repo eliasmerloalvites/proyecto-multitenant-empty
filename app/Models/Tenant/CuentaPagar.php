@@ -50,9 +50,21 @@ class CuentaPagar extends Model
             ->orderBy('CXPC_Numero');
     }
 
+    /**
+     * Abonos vigentes: los anulados no cuentan para el saldo, las cuotas ni
+     * los reportes (se consultan aparte con abonosAnulados()).
+     */
     public function abonos()
     {
         return $this->hasMany(CuentaPagarAbono::class, 'CXP_Id', 'CXP_Id')
+            ->where('CXPA_Anulado', false)
             ->orderBy('CXPA_Fecha');
+    }
+
+    public function abonosAnulados()
+    {
+        return $this->hasMany(CuentaPagarAbono::class, 'CXP_Id', 'CXP_Id')
+            ->where('CXPA_Anulado', true)
+            ->orderBy('CXPA_FechaAnulacion');
     }
 }

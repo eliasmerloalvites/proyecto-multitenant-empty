@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Tenant\Generico;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant\CuentaPagar;
+use App\Models\Tenant\CuentaPagarAbono;
+use App\Models\Tenant\CuentaPagarCuota;
 use App\Services\Tenant\Generico\CuentaPagarAbonoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -64,5 +66,61 @@ class CuentaPagarAbonoController extends Controller
         }
 
         return response()->json(['success' => 'Abono registrado correctamente.']);
+    }
+
+    /**
+     * Anula un abono puntual. La deuda vuelve a la cuota que cubria (y al
+     * saldo de la cuenta); ver CuentaPagarAbonoService::anularAbono().
+     */
+    public function anular(Request $request, CuentaPagar $cuentaPagar, CuentaPagarAbono $abono)
+    {
+        abort_unless((int) $abono->CXP_Id === (int) $cuentaPagar->CXP_Id, 404);
+
+        $motivo = trim((string) $request->input('motivo'));
+
+        if ($motivo === '') {
+            return response()->json(['error' => 'Indica el motivo de la anulación.'], 422);
+        }
+
+        if ($abono->CXPA_Anulado) {
+            return response()->json(['error' => 'Este abono ya está anulado.'], 422);
+        }
+
+        try {
+            (new CuentaPagarAbonoService())->anularAbono($abono, $motivo, (int) Auth::id());
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'No se pudo anular el abono.'], 500);
+        }
+
+        return response()->json(['success' => 'Abono anulado. La deuda volvió a la cuenta.']);
+    }
+
+    /**
+     * Anula el pago de una cuota completa: todos los abonos aplicados a ella
+     * se anulan y la cuota vuelve a quedar pendiente por su monto.
+     */
+    public function anularPagoCuota(Request $request, CuentaPagar $cuentaPagar, CuentaPagarCuota $cuota)
+    {
+        abort_unless((int) $cuota->CXP_Id === (int) $cuentaPagar->CXP_Id, 404);
+
+        $motivo = trim((string) $request->input('motivo'));
+
+        if ($motivo === '') {
+            return response()->json(['error' => 'Indica el motivo de la anulación.'], 422);
+        }
+
+        if ((float) $cuota->CXPC_MontoAbonado <= 0) {
+            return response()->json(['error' => 'Esta cuota no tiene pagos que anular.'], 422);
+        }
+
+        try {
+            $anulados = (new CuentaPagarAbonoService())->anularPagoDeCuota($cuota, $motivo, (int) Auth::id());
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'No se pudo anular el pago de la cuota.'], 500);
+        }
+
+        return response()->json([
+            'success' => 'Pago de la cuota #' . $cuota->CXPC_Numero . ' anulado (' . $anulados . ' abono(s)). La deuda volvió a la cuota.',
+        ]);
     }
 }

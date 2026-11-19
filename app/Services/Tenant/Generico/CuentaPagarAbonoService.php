@@ -4,6 +4,7 @@ namespace App\Services\Tenant\Generico;
 
 use App\Models\Tenant\CuentaPagar;
 use App\Models\Tenant\CuentaPagarAbono;
+use App\Models\Tenant\CuentaPagarCuota;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -105,22 +106,99 @@ class CuentaPagarAbonoService
                 ]);
             }
 
-            // El encabezado siempre se recalcula desde una suma fresca de
-            // los abonos reales, nunca decrementando el cache a ciegas.
-            $totalAbonado = round(
-                (float) $cuentaPagar->abonos()->sum('CXPA_Monto'),
-                2
-            );
-
-            $cuentaPagar->CXP_MontoAbonado = $totalAbonado;
-            $cuentaPagar->CXP_MontoPendiente = max(
-                0,
-                round((float) $cuentaPagar->CXP_MontoTotal - $totalAbonado, 2)
-            );
-            $cuentaPagar->CXP_Estado = $cuentaPagar->CXP_MontoPendiente <= self::TOLERANCIA
-                ? CuentaPagar::ESTADO_PAGADO
-                : CuentaPagar::ESTADO_PENDIENTE;
-            $cuentaPagar->save();
+            $this->recalcularEncabezado($cuentaPagar);
         });
+    }
+
+    /**
+     * Anula un abono ya registrado. La deuda vuelve a donde estaba: si el
+     * abono pagaba (total o parcialmente) una cuota, esa cuota recupera su
+     * saldo y, si ya figuraba como pagada, vuelve a pendiente; el saldo de
+     * la cuenta sube en el monto anulado. El abono no se borra: queda
+     * marcado como anulado con motivo, usuario y fecha.
+     */
+    public function anularAbono(CuentaPagarAbono $abono, string $motivo, int $usuarioId): void
+    {
+        DB::transaction(function () use ($abono, $motivo, $usuarioId) {
+            $this->anularAbonoSinTransaccion($abono, $motivo, $usuarioId);
+
+            $cuenta = CuentaPagar::lockForUpdate()->findOrFail($abono->CXP_Id);
+            $this->recalcularEncabezado($cuenta);
+        });
+    }
+
+    /**
+     * Anula el pago de una cuota: anula todos los abonos vigentes que se
+     * aplicaron a ella y la cuota queda pendiente por su monto completo. Los
+     * abonos de las demas cuotas no se tocan.
+     *
+     * @return int cantidad de abonos anulados
+     */
+    public function anularPagoDeCuota(CuentaPagarCuota $cuota, string $motivo, int $usuarioId): int
+    {
+        return DB::transaction(function () use ($cuota, $motivo, $usuarioId) {
+            $abonos = CuentaPagarAbono::where('CXPC_Id', $cuota->CXPC_Id)
+                ->where('CXPA_Anulado', false)
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($abonos as $abono) {
+                $this->anularAbonoSinTransaccion($abono, $motivo, $usuarioId);
+            }
+
+            $cuenta = CuentaPagar::lockForUpdate()->findOrFail($cuota->CXP_Id);
+            $this->recalcularEncabezado($cuenta);
+
+            return $abonos->count();
+        });
+    }
+
+    private function anularAbonoSinTransaccion(CuentaPagarAbono $abono, string $motivo, int $usuarioId): void
+    {
+        $abono->CXPA_Anulado = true;
+        $abono->CXPA_FechaAnulacion = Carbon::now('America/Lima');
+        $abono->CXPA_UsuarioAnulacion = $usuarioId;
+        $abono->CXPA_MotivoAnulacion = mb_substr($motivo, 0, 150);
+        $abono->save();
+
+        if ($abono->CXPC_Id) {
+            $cuota = CuentaPagarCuota::lockForUpdate()->find($abono->CXPC_Id);
+
+            if ($cuota) {
+                // Se recalcula desde los abonos vigentes que le quedan, no
+                // restando a ciegas, para que nunca se desfase.
+                $abonado = round((float) CuentaPagarAbono::where('CXPC_Id', $cuota->CXPC_Id)
+                    ->where('CXPA_Anulado', false)
+                    ->sum('CXPA_Monto'), 2);
+
+                $cuota->CXPC_MontoAbonado = $abonado;
+                $cuota->CXPC_Estado = $abonado + self::TOLERANCIA >= (float) $cuota->CXPC_MontoProgramado
+                    ? CuentaPagarCuota::ESTADO_PAGADO
+                    : CuentaPagarCuota::ESTADO_PENDIENTE;
+                $cuota->save();
+            }
+        }
+    }
+
+    /**
+     * El encabezado siempre se recalcula desde una suma fresca de los
+     * abonos vigentes, nunca decrementando el cache a ciegas.
+     */
+    private function recalcularEncabezado(CuentaPagar $cuentaPagar): void
+    {
+        $totalAbonado = round(
+            (float) $cuentaPagar->abonos()->sum('CXPA_Monto'),
+            2
+        );
+
+        $cuentaPagar->CXP_MontoAbonado = $totalAbonado;
+        $cuentaPagar->CXP_MontoPendiente = max(
+            0,
+            round((float) $cuentaPagar->CXP_MontoTotal - $totalAbonado, 2)
+        );
+        $cuentaPagar->CXP_Estado = $cuentaPagar->CXP_MontoPendiente <= self::TOLERANCIA
+            ? CuentaPagar::ESTADO_PAGADO
+            : CuentaPagar::ESTADO_PENDIENTE;
+        $cuentaPagar->save();
     }
 }

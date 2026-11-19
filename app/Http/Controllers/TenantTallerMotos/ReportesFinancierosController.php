@@ -256,6 +256,7 @@ class ReportesFinancierosController extends Controller
             ->join('cuenta_por_pagar as cpp', 'cpp.CPP_Id', '=', 'a.CPP_Id')
             ->join('compra as c', 'c.COM_Id', '=', 'cpp.COM_Id')
             ->whereBetween('a.created_at', [$inicio, $fin])
+            ->where('a.CPPA_Anulado', false)
             ->when($proveedorId, fn ($q) => $q->where('c.PROV_Id', $proveedorId))
             ->when($almacenId, fn ($q) => $q->whereIn('a.CS_Id', function ($sub) use ($almacenId) {
                 $sub->select('cs.CS_Id')->from('caja_sesion as cs')
