@@ -41,9 +41,9 @@ class ProductoController extends \App\Http\Controllers\Tenant\ProductoController
     {
         try {
             DB::beginTransaction();
-            $query = Producto::where('PRO_Nombre', '=', $request->get('PRO_Nombre'))->get();
-            if ($query->count() != 0) {
-                return response()->json(['error' => 'Producto ya registrado'], 401);
+            $conflicto = $this->conflictoProductoUnico((string) $request->get('PRO_Nombre'), $request->get('PRO_CodigoInterno'));
+            if ($conflicto) {
+                throw new Exception($conflicto);
             }
 
             $producto = new Producto();
@@ -56,7 +56,7 @@ class ProductoController extends \App\Http\Controllers\Tenant\ProductoController
             // Un servicio no tiene stock que reponer, asi que no tiene
             // sentido pedirle un minimo de alerta.
             $producto->PRO_StockMinimo = $producto->PRO_TipoProducto === 'SERVICIO' ? 0 : ($request->PRO_StockMinimo ?? 0);
-            $producto->PRO_CodigoInterno = $request->PRO_CodigoInterno ?: null;
+            $producto->PRO_CodigoInterno = trim((string) $request->PRO_CodigoInterno) ?: null;
             $producto->PRO_CodigoFabricacion = $request->PRO_CodigoFabricacion ?: null;
             $producto->PRO_MostrarCatalogo = $request->boolean('PRO_MostrarCatalogo');
             $producto->PRO_Status = $request->PRO_Status ?? 1;
@@ -100,6 +100,7 @@ class ProductoController extends \App\Http\Controllers\Tenant\ProductoController
             DB::beginTransaction();
 
             $producto = Producto::find($id);
+            $this->validarProductoUnicoAlEditar($producto, $request);
             $producto->PRO_Nombre = $request->PRO_Nombre;
             $producto->PRO_Descripcion = $request->PRO_Descripcion;
             $producto->PRO_PrecioCompra = $request->PRO_PrecioCompra;
@@ -107,7 +108,7 @@ class ProductoController extends \App\Http\Controllers\Tenant\ProductoController
             $producto->PRO_Marca = $request->PRO_Marca;
             $producto->PRO_TipoProducto = $this->tipoProducto($request);
             $producto->PRO_StockMinimo = $producto->PRO_TipoProducto === 'SERVICIO' ? 0 : ($request->PRO_StockMinimo ?? 0);
-            $producto->PRO_CodigoInterno = $request->PRO_CodigoInterno ?: null;
+            $producto->PRO_CodigoInterno = trim((string) $request->PRO_CodigoInterno) ?: null;
             $producto->PRO_CodigoFabricacion = $request->PRO_CodigoFabricacion ?: null;
             $producto->PRO_MostrarCatalogo = $request->boolean('PRO_MostrarCatalogo');
             $producto->PRO_Status = $request->PRO_Status ?? 1;
@@ -407,6 +408,17 @@ class ProductoController extends \App\Http\Controllers\Tenant\ProductoController
 
             $existente = $this->buscarProductoDuplicado($datos['nombre'], $datos['codigoInterno']);
 
+            // Fila que crearia un producto nuevo pero choca con la regla de
+            // unicidad (codigo ya usado por otro producto, o sin codigo y con
+            // un nombre que ya existe): se reporta como error, no se crea.
+            if (! $existente) {
+                $conflicto = $this->conflictoProductoUnico($datos['nombre'], $datos['codigoInterno']);
+                if ($conflicto) {
+                    $errores[] = ['fila' => $numeroFila, 'detalle' => $conflicto];
+                    continue;
+                }
+            }
+
             if ($existente) {
                 if ($this->esProductoServicio($existente) && $datos['stockInicial'] > 0) {
                     $errores[] = ['fila' => $numeroFila, 'detalle' => "\"{$datos['nombre']}\": es un Servicio, no se le puede agregar stock."];
@@ -528,6 +540,15 @@ class ProductoController extends \App\Http\Controllers\Tenant\ProductoController
                 $catId = $categoriasCache[$claveCategoria];
 
                 $productoExistente = $this->buscarProductoDuplicado($nombre, $datos['codigoInterno']);
+
+                if (! $productoExistente) {
+                    $conflicto = $this->conflictoProductoUnico($nombre, $datos['codigoInterno']);
+                    if ($conflicto) {
+                        $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => $conflicto];
+                        $errores++;
+                        continue;
+                    }
+                }
 
                 if ($productoExistente && $this->esProductoServicio($productoExistente) && $stockInicial > 0) {
                     $resultados[] = ['fila' => $numeroFila, 'estado' => 'error', 'detalle' => "\"$nombre\": es un Servicio, no se le puede agregar stock."];

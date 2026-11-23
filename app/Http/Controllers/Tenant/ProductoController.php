@@ -28,6 +28,72 @@ class ProductoController extends Controller
     }
 
     /**
+     * Regla de unicidad de productos: si el producto tiene Codigo Interno,
+     * ese codigo no puede repetirse en otro producto (el nombre si puede, son
+     * productos distintos); si NO tiene codigo, el nombre no puede repetirse.
+     * Cuenta tambien a los productos desactivados, porque siguen existiendo
+     * y se pueden reactivar. Devuelve el mensaje del conflicto, o null si
+     * todo esta bien. $excluirId evita chocar con el propio producto al editar.
+     */
+    protected function conflictoProductoUnico(string $nombre, ?string $codigoInterno, ?int $excluirId = null): ?string
+    {
+        $nombre = trim($nombre);
+        $codigo = $this->tenantTieneCodigosProducto() ? trim((string) $codigoInterno) : '';
+
+        if ($codigo !== '') {
+            $otro = DB::table('producto')
+                ->whereRaw('LOWER(TRIM(PRO_CodigoInterno)) = ?', [mb_strtolower($codigo)])
+                ->when($excluirId, fn ($q) => $q->where('PRO_Id', '!=', $excluirId))
+                ->first(['PRO_Nombre']);
+
+            return $otro
+                ? 'El código interno "' . $codigo . '" ya lo tiene el producto "' . $otro->PRO_Nombre . '".'
+                : null;
+        }
+
+        $otro = DB::table('producto')
+            ->whereRaw('LOWER(TRIM(PRO_Nombre)) = ?', [mb_strtolower($nombre)])
+            ->when($excluirId, fn ($q) => $q->where('PRO_Id', '!=', $excluirId))
+            ->first(['PRO_Nombre']);
+
+        if (! $otro) {
+            return null;
+        }
+
+        return 'Ya existe un producto llamado "' . $otro->PRO_Nombre . '".'
+            . ($this->tenantTieneCodigosProducto() ? ' Si es otro producto, ponle un código interno distinto.' : '');
+    }
+
+    /**
+     * Al editar solo se valida lo que el usuario cambio: asi un producto
+     * antiguo que ya tenia nombre repetido (de antes de esta regla) se sigue
+     * pudiendo editar (precio, stock minimo, etc.) sin que lo bloquee.
+     *
+     * @throws Exception con el motivo del conflicto
+     */
+    protected function validarProductoUnicoAlEditar(Producto $original, Request $request): void
+    {
+        $codigoNuevo = $this->tenantTieneCodigosProducto() ? mb_strtolower(trim((string) $request->PRO_CodigoInterno)) : '';
+        $codigoAntes = $this->tenantTieneCodigosProducto() ? mb_strtolower(trim((string) ($original->PRO_CodigoInterno ?? ''))) : '';
+        $codigoCambio = $codigoNuevo !== $codigoAntes;
+        $nombreCambio = mb_strtolower(trim((string) $request->PRO_Nombre)) !== mb_strtolower(trim((string) $original->PRO_Nombre));
+
+        // Con codigo: solo importa si cambio el codigo. Sin codigo: importa
+        // si cambio el nombre o si se le acaba de quitar el codigo.
+        $debeValidar = $codigoNuevo !== '' ? $codigoCambio : ($nombreCambio || $codigoCambio);
+
+        if (! $debeValidar) {
+            return;
+        }
+
+        $conflicto = $this->conflictoProductoUnico((string) $request->PRO_Nombre, $request->PRO_CodigoInterno, (int) $original->PRO_Id);
+
+        if ($conflicto) {
+            throw new Exception($conflicto);
+        }
+    }
+
+    /**
      * La galeria adicional (tabla producto_imagen) solo existe en tallermoto
      * — mismo criterio que tenantTieneCodigosProducto(), para no tocar
      * generico desde este controlador compartido.
@@ -261,10 +327,9 @@ class ProductoController extends Controller
     {
         try {
             DB::beginTransaction();
-            $query = Producto::where('PRO_Nombre', '=', $request->get('PRO_Nombre'))->get();
-            if ($query->count() != 0) //si lo encuentra, osea si no esta vacia
-            {
-                return response()->json(['error' => 'Producto ya registrado'], 401);
+            $conflicto = $this->conflictoProductoUnico((string) $request->get('PRO_Nombre'), $request->get('PRO_CodigoInterno'));
+            if ($conflicto) {
+                throw new Exception($conflicto);
             } else {
                 $producto = new Producto();
                 $producto->PRO_Nombre = $request->PRO_Nombre;
@@ -274,7 +339,7 @@ class ProductoController extends Controller
                 $producto->PRO_Marca = $request->PRO_Marca;
                 $producto->PRO_StockMinimo = $request->PRO_StockMinimo ?? 0;
                 if ($this->tenantTieneCodigosProducto()) {
-                    $producto->PRO_CodigoInterno = $request->PRO_CodigoInterno ?: null;
+                    $producto->PRO_CodigoInterno = trim((string) $request->PRO_CodigoInterno) ?: null;
                     $producto->PRO_CodigoFabricacion = $request->PRO_CodigoFabricacion ?: null;
                 }
                 if ($this->tenantTieneCatalogoWeb()) {
@@ -1181,6 +1246,7 @@ class ProductoController extends Controller
             DB::beginTransaction();
 
             $producto = Producto::find($id);
+            $this->validarProductoUnicoAlEditar($producto, $request);
             $producto->PRO_Nombre = $request->PRO_Nombre;
             $producto->PRO_Descripcion = $request->PRO_Descripcion;
             $producto->PRO_PrecioCompra = $request->PRO_PrecioCompra;
@@ -1188,7 +1254,7 @@ class ProductoController extends Controller
             $producto->PRO_Marca = $request->PRO_Marca;
             $producto->PRO_StockMinimo = $request->PRO_StockMinimo ?? 0;
             if ($this->tenantTieneCodigosProducto()) {
-                $producto->PRO_CodigoInterno = $request->PRO_CodigoInterno ?: null;
+                $producto->PRO_CodigoInterno = trim((string) $request->PRO_CodigoInterno) ?: null;
                 $producto->PRO_CodigoFabricacion = $request->PRO_CodigoFabricacion ?: null;
             }
             if ($this->tenantTieneCatalogoWeb()) {
