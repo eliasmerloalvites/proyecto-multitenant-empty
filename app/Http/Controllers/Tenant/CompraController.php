@@ -23,14 +23,17 @@ class CompraController extends Controller
 {
     /**
      * Catalogo ofrecido en "Nueva compra" para elegir que reabastecer. La
-     * base no excluye nada; TenantTallerMotos\CompraController excluye los
-     * productos marcados como Servicio (no tienen stock que comprar).
+     * base solo excluye los productos desactivados (los "eliminados" que
+     * tenian historial se desactivan en vez de borrarse, ver
+     * ProductoController::destroy()); TenantTallerMotos\CompraController
+     * ademas excluye los marcados como Servicio (no tienen stock que comprar).
      */
     protected function productosParaCompra()
     {
         return DB::table('producto as p')
             ->join('categoria as c', 'c.CAT_Id', '=', 'p.CAT_Id')
             ->select('p.*', 'c.*')
+            ->where('p.PRO_Status', 1)
             ->get();
     }
 
