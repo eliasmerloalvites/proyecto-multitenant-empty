@@ -26,6 +26,7 @@ class CompraController extends \App\Http\Controllers\Tenant\CompraController
             ->join('categoria as c', 'c.CAT_Id', '=', 'p.CAT_Id')
             ->select('p.*', 'c.*')
             ->where('p.PRO_TipoProducto', 'PRODUCTO')
+            ->where('p.PRO_Status', 1)
             ->get();
     }
 
