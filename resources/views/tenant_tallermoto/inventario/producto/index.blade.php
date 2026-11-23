@@ -839,7 +839,7 @@
                         console.log('Error:', data);
                         Toast.fire({
                             type: 'error',
-                            title: 'producto fallo al Registrarse.'
+                            title: (data.responseJSON && data.responseJSON.error) ? data.responseJSON.error : 'producto fallo al Registrarse.'
                         })
                     }
                 });
@@ -1178,7 +1178,7 @@
                         console.log('Error:', data);
                         Toast.fire({
                             type: 'error',
-                            title: 'Producto fallo al actualizarse.'
+                            title: (data.responseJSON && data.responseJSON.error) ? data.responseJSON.error : 'Producto fallo al actualizarse.'
                         })
                     }
                 });
